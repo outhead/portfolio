@@ -1,0 +1,108 @@
+baseurl = "https://example.org/"
+languageCode = "ru-en"
+title = "Портфолио Шугаева Егора aka outhead"
+theme = "hugo-creative-theme"
+googleAnalytics = ""
+publishDir = "docs"
+
+[params]
+
+	# You can use Markdown syntax for urls [text](//url.to/source) for
+	# most longer texts.
+
+	# All icons using Fontawesome's icon font. Look at http://fontawesome.io/icons/
+	# for more icons. The icons are represented by their corresponding
+	# CSS class.
+
+	# All projects of the portfolio are defined in their own files.
+	# You can find example projects at 'exampleSite/data/projects'. Copy the 'projects'
+	# folder into the 'data' directory at the root of this Hugo site.
+	# For more information take a look at the README.
+
+	# To provide some metadata for search engines feel free to add some
+	# information about you and your website.
+	name = "Your name"
+	description = "Your description"
+
+	# The path must be relative to the static folder
+	favicon = "favicon.ico"
+
+
+	# Navigation
+	[params.navigation]
+		brand = "Ouhead portfolio"
+
+		[params.navigation.links]
+			about     = "Кровь и бетон"
+			services  = "Мои плюсы"
+			portfolio = "Портфолио"
+			contact   = "Контакты"
+
+
+	# Hero section
+	[params.hero]
+		# To change the background of the hero section, replace the 'header.jpg' at './static/img' with your own.
+		slogan     = "Оформлю ваш message"
+		subtitle   = "в нормальный шейп ведь я в индустрии"
+		buttonText = "арт"
+
+
+	# About section
+	[params.about]
+		headline    = "Ублюдок, мать твою!"
+		description = "[а ну иди сюда говно собачье,](//https://youtu.be/T14wRgVrVEE)  решил ко мне лезть? Ты, засранец вонючий, мать твою, а? Ну иди сюда, попробуй меня трахнуть, я тебя сам трахну ублюдок, онанист чертов, будь ты проклят, иди идиот, трахать тебя и всю семью, говно собачье, жлоб вонючий, дерьмо, сука, падла, иди сюда, мерзавец, негодяй, гад, "
+		buttonText  = "иди сюда ты - говно, ЖОПА!"
+
+
+	# Service section
+	[params.services]
+		headline = "Мои плюсы"
+
+        [[params.services.list]]
+            icon = "fa-diamond"
+            title = "Работаю не только за деньги"
+            description = "Порой за камни, любые, не взирая на совесть, вероисповедание, возраст, пол и погоду за окном. Правда если Путин скажет нет, то нет."
+
+        [[params.services.list]]
+			icon = "fa-paper-plane"
+			title = "Про самолетики"
+			description = "Однажды, я подрабатывал вожатым в шайке 7ми летних монстров, теперь они знают как складывать самолетики 20 способами, а я могу кому угодно объяснить, что у него не так с дизайном."
+
+		[[params.services.list]]
+            icon = "fa-newspaper-o"
+            title = "Пунктуальность и перфекционизм"
+            description = "Зануды это режущее лезвие проекта, они вспоминают все минусы перед тем как проект запущен. Будь моя воля, я бы отдал всю власть занудам с моим чувством юмора."
+
+        [[params.services.list]]
+            icon = "fa-heart"
+            title = "Делаю с любовью"
+            description = "Ровно как этот сайт, он тоже с любовью. Искренне верю, что каждая моя работа спасает котенка где-то в потустороннем мире, и делает джедаев тем кем они есть."
+
+
+    # Portfolio modals
+	[params.portfolio.modal]
+        client = "Client"
+        date = "Date"
+        category = "Category"
+        buttonText = "Close"
+
+    # Aside section
+	[params.aside]
+		headline = "Для серьезных щщей тут есть ссылочка на резюме"
+
+		[params.aside.button]
+			text = "резюме на hh.ru"
+			link = "//github.com/digitalcraftsman/hugo-creative-theme"
+
+	# Contact section
+	[params.contact]
+		headline = "Если коротко, то я"
+		description = "Быстрый, подрывной, с планшетом и прямой рукой!"
+		phone = " (926) 395 70 08 "
+		email = "egor.outhead@gmail.com"
+
+	# Google Maps section
+	# [params.location]
+	# 	latitude  = "34.007850"
+	# 	longitude = "-118.499305"
+	# 	maps_api_key = ""
