@@ -1,5 +1,5 @@
-baseurl = "https://example.org/"
-languageCode = "ru-en"
+baseurl = "https://outhead.github.io/portfolio/"
+languageCode = "ru"
 title = "Портфолио Шугаева Егора aka outhead"
 theme = "hugo-creative-theme"
 googleAnalytics = ""
