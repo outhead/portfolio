@@ -59,9 +59,11 @@ body {
   color: rgba(255, 255, 255, 0.15);
 }
 
-/* === P95 HEADINGS === */
+/* === HEADINGS === */
 .font-p95 {
-  font-family: "P95", monospace;
+  font-family: "Bebas Neue", "Impact", sans-serif;
+  letter-spacing: 0.02em;
+  font-weight: 400;
 }
 
 /* === CARD HOVER === */

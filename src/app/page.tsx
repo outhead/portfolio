@@ -49,11 +49,11 @@ export default function Home() {
         <div className="relative z-[5] px-5 md:px-10 mt-10 md:mt-16">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-px bg-white/[0.06] border border-white/[0.06] rounded-lg overflow-hidden backdrop-blur-sm">
             {[
-              { value: "8.8М+", label: "пользователей" },
-              { value: "100+", label: "дизайнеров в команде" },
-              { value: "−60%", label: "TTM" },
-              { value: "+40%", label: "найм · −60% текучка" },
-              { value: "CX 2024", label: "награда за сервис" },
+              { value: "8.8М+", label: "пользователей", ctx: "МТС Cashback, 2018–21" },
+              { value: "100+", label: "дизайнеров в команде", ctx: "Газпром Нефть, 2022–24" },
+              { value: "−60%", label: "TTM", ctx: "МТС AI, 2024" },
+              { value: "+40% / −60%", label: "найм · текучка", ctx: "Ozon, 2021–22" },
+              { value: "CX 2024", label: "награда за сервис", ctx: "МТС, сервисное окно" },
             ].map((s) => (
               <div
                 key={s.label}
@@ -64,6 +64,9 @@ export default function Home() {
                 </div>
                 <div className="text-[9px] md:text-[10px] tracking-[0.12em] uppercase text-white/40">
                   {s.label}
+                </div>
+                <div className="mt-2 text-[9px] text-white/25 leading-snug">
+                  {s.ctx}
                 </div>
               </div>
             ))}
@@ -83,16 +86,19 @@ export default function Home() {
             <span>Газпром&nbsp;Нефть</span>
             <span className="text-white/15">/</span>
             <span>ВШЭ</span>
-            <span className="text-white/15">/</span>
-            <span>Skillbox</span>
           </div>
         </div>
       </section>
 
       {/* ===== OPEN TO ===== */}
-      <section className="relative z-[1] px-5 md:px-10 py-16 md:py-20 border-t border-white/[0.06] bg-black">
+      <section id="open-to" className="relative z-[1] px-5 md:px-10 py-16 md:py-20 border-t border-white/[0.06] bg-black">
         <ScrollReveal>
           <div className="section-label mb-4">Сейчас открыт к</div>
+          <p className="max-w-3xl text-lg md:text-2xl leading-snug text-white/80 font-light mb-10 md:mb-12">
+            7 лет строил дизайн-функции в МТС, Ozon и Газпром Нефти. Сейчас веду
+            AI-дивизион МТС. Ищу <span className="text-white">C-level роль</span> или{" "}
+            <span className="text-white">консалтинг по AI в дизайне</span>.
+          </p>
           <div className="grid md:grid-cols-3 gap-4 md:gap-6 max-w-6xl">
             {[
               {
@@ -131,6 +137,14 @@ export default function Home() {
               </Link>
             ))}
           </div>
+
+          <div className="mt-10 md:mt-14 max-w-4xl border-t border-white/[0.06] pt-8">
+            <div className="section-label mb-3">Не беру</div>
+            <p className="text-sm md:text-base text-white/45 leading-relaxed">
+              Операционку без продуктового мандата · брендинг и маркетинговый
+              дизайн · проекты короче 3&nbsp;месяцев · роли без доступа к стратегии.
+            </p>
+          </div>
         </ScrollReveal>
       </section>
 
@@ -162,9 +176,9 @@ export default function Home() {
                 единое сервисное окно.
               </p>
               <p className="text-white/45 leading-relaxed text-sm md:text-base">
-                Преподаю прикладное использование ИИ в ВШЭ и Skillbox. Веду
-                менторинг, выступаю на конференциях, пишу код на React и
-                Python, экспериментирую с WebGL и AI-автоматизацией.
+                Преподаю прикладное использование ИИ в ВШЭ. Веду менторинг,
+                выступаю на конференциях, пишу код на React и Python,
+                экспериментирую с WebGL и AI-автоматизацией.
               </p>
             </div>
 
@@ -340,8 +354,8 @@ export default function Home() {
               <div className="section-label mb-4">Преподавание</div>
               <ul className="space-y-3 text-sm text-white/60 leading-relaxed">
                 <li>ВШЭ — прикладное использование ИИ</li>
-                <li>Skillbox — курс по AI для дизайнеров</li>
                 <li>Регулярные воркшопы внутри МТС</li>
+                <li>Закрытые воркшопы для продуктовых команд</li>
               </ul>
             </div>
 
@@ -457,7 +471,7 @@ export default function Home() {
                     format: "AI для дизайнеров",
                     desc: "Как встроить Claude, Cursor, v0 в продуктовую работу",
                     time: "Мастер-класс",
-                    price: "по запросу",
+                    price: "от 50 000 ₽ / группа",
                   },
                 ].map((item) => (
                   <div
@@ -521,7 +535,7 @@ export default function Home() {
       </section>
 
       {/* ===== CONTACTS ===== */}
-      <section className="relative z-[1] px-5 md:px-10 py-20 md:py-24 border-t border-white/[0.06] bg-black">
+      <section id="contacts" className="relative z-[1] px-5 md:px-10 py-20 md:py-24 border-t border-white/[0.06] bg-black">
         <ScrollReveal>
           <div className="section-label mb-3">06 — Контакты</div>
           <h2 className="font-p95 text-[clamp(28px,4vw,56px)] uppercase mb-6">

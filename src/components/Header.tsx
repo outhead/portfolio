@@ -39,10 +39,12 @@ export default function Header() {
 
         <nav className="hidden md:flex gap-7">
           {[
+            { href: "/#open-to", label: "Открыт к" },
             { href: "/#about", label: "Обо мне" },
-            { href: "/#portfolio", label: "Портфолио" },
-            { href: "/#experiments", label: "Эксперименты" },
+            { href: "/#portfolio", label: "Работы" },
+            { href: "/#public", label: "Публично" },
             { href: "/#mentoring", label: "Менторинг" },
+            { href: "/#contacts", label: "Контакты" },
           ].map((link) => (
             <Link
               key={link.href}
@@ -62,8 +64,12 @@ export default function Header() {
           >
             CV ↓
           </Link>
-          <span className="text-[9px] tracking-[0.15em] uppercase text-white/15">
-            МСК 2026
+          <span className="inline-flex items-center gap-1.5 text-[9px] tracking-[0.12em] uppercase text-green-400/70">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400/60 opacity-75" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-400/80" />
+            </span>
+            Open to work
           </span>
         </div>
 
@@ -89,10 +95,12 @@ export default function Header() {
           <div className="absolute top-full left-0 right-0 bg-black/95 backdrop-blur-xl border-b border-white/[0.04] md:hidden mobile-menu-enter">
             <nav className="flex flex-col p-6 gap-4">
               {[
+                { href: "/#open-to", label: "Открыт к" },
                 { href: "/#about", label: "Обо мне" },
-                { href: "/#portfolio", label: "Портфолио" },
-                { href: "/#experiments", label: "Эксперименты" },
+                { href: "/#portfolio", label: "Работы" },
+                { href: "/#public", label: "Публично" },
                 { href: "/#mentoring", label: "Менторинг" },
+                { href: "/#contacts", label: "Контакты" },
               ].map((link) => (
                 <Link
                   key={link.href}
