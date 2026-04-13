@@ -61,9 +61,9 @@ body {
 
 /* === HEADINGS === */
 .font-p95 {
-  font-family: "Oswald", "Impact", sans-serif;
+  font-family: "Bebas Neue Cyrillic", "Bebas Neue", "Impact", sans-serif;
   letter-spacing: 0.02em;
-  font-weight: 600;
+  font-weight: 400;
 }
 
 /* === CARD HOVER === */
