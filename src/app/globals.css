@@ -137,7 +137,7 @@ body {
   top: 0;
   left: 0;
   height: 2px;
-  background: linear-gradient(90deg, rgba(212, 156, 77, 0.6), rgba(212, 156, 77, 0.15));
+  background: linear-gradient(90deg, #A6FF00, rgba(166, 255, 0, 0.2));
   z-index: 200;
   transform-origin: left;
   transition: transform 0.1s linear;
