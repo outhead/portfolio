@@ -125,48 +125,30 @@ export default function MentoringPage() {
 
           <ScrollReveal delay={150}>
           <div className="grid md:grid-cols-2 gap-8">
-            {/* Contact form */}
+            {/* Direct contact */}
             <div className="border border-white/[0.06] rounded-lg p-6 md:p-8 hover:border-white/[0.08] transition-colors duration-300">
-              <h3 className="text-sm font-medium text-white/60 mb-6 uppercase tracking-[0.1em]">
-                Напишите о себе
+              <h3 className="text-sm font-medium text-white/60 mb-4 uppercase tracking-[0.1em]">
+                Напишите мне
               </h3>
-              <form className="space-y-4">
-                <div>
-                  <label className="block text-[10px] tracking-[0.1em] uppercase text-white/20 mb-2">
-                    Имя
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full bg-white/[0.03] border border-white/[0.08] rounded px-3 py-2.5 text-sm text-white/70 outline-none focus:border-white/20 focus:bg-white/[0.05] transition-all duration-200"
-                    placeholder="Как вас зовут"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] tracking-[0.1em] uppercase text-white/20 mb-2">
-                    Контакт
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full bg-white/[0.03] border border-white/[0.08] rounded px-3 py-2.5 text-sm text-white/70 outline-none focus:border-white/20 focus:bg-white/[0.05] transition-all duration-200"
-                    placeholder="Telegram, email или телефон"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] tracking-[0.1em] uppercase text-white/20 mb-2">
-                    Запрос
-                  </label>
-                  <textarea
-                    className="w-full bg-white/[0.03] border border-white/[0.08] rounded px-3 py-2.5 text-sm text-white/70 outline-none focus:border-white/20 focus:bg-white/[0.05] transition-all duration-200 resize-none h-24"
-                    placeholder="Опишите, что хотите обсудить и чего ожидаете"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="w-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.08] rounded py-2.5 text-sm text-white/60 hover:text-white/80 transition-all duration-200 uppercase tracking-[0.1em]"
+              <p className="text-sm text-white/40 leading-relaxed mb-6">
+                Расскажите коротко о себе, что хотите обсудить и какой формат интересен. Я отвечу в течение дня.
+              </p>
+              <div className="space-y-3">
+                <Link
+                  href="https://t.me/egoradi"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full bg-[#A6FF00] hover:bg-[#B8FF33] rounded py-2.5 text-sm text-black font-semibold transition-colors no-underline uppercase tracking-[0.08em]"
                 >
-                  Отправить
-                </button>
-              </form>
+                  Написать в Telegram
+                </Link>
+                <Link
+                  href="mailto:egor.outhead@gmail.com?subject=Менторинг"
+                  className="flex items-center justify-center gap-2 w-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.08] rounded py-2.5 text-sm text-white/60 hover:text-white/80 transition-all duration-200 no-underline uppercase tracking-[0.08em]"
+                >
+                  Написать на Email
+                </Link>
+              </div>
             </div>
 
             {/* Cal.com booking */}
@@ -229,13 +211,13 @@ export default function MentoringPage() {
       </section>
 
       {/* ===== BACK LINK ===== */}
-      <section className="relative z-[1] px-5 md:px-10 py-12 md:py-16 border-t border-white/[0.04] bg-black/75">
+      <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-12 md:py-16 border-t border-white/[0.06] bg-black">
         <Link
-          href="/#mentoring"
+          href="/"
           className="inline-flex items-center gap-2 text-sm text-white/40 hover:text-white/70 hover:gap-3 transition-all duration-200 no-underline"
         >
           <span>←</span>
-          <span>Вернуться к основному сайту</span>
+          <span>На главную</span>
         </Link>
       </section>
     </>

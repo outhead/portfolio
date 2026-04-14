@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://portfolio-egors-projects-baaaa1ca.vercel.app"),
   title: "Егор Шугаев — Дизайн-директор, Head of Design AI Division",
   description:
     "Дизайн-директор с 8+ годами опыта в МТС, OZON, Газпром Нефть. Руковожу дизайном B2C-экосистемы и AI-дивизиона (40+ дизайнеров). Специалист в дизайн-системах, AI/ML продуктах и масштабировании команд. Ментор и консультант.",
@@ -80,7 +81,7 @@ export default function RootLayout({
               },
               email: "egor.outhead@gmail.com",
               url: "https://portfolio-egors-projects-baaaa1ca.vercel.app",
-              image: "https://outhead.github.io/images/photos/photo-5.jpg",
+              image: "https://portfolio-egors-projects-baaaa1ca.vercel.app/images/photos/photo-5.jpg",
               sameAs: [
                 "https://t.me/egoradi",
                 "https://github.com/outhead",
