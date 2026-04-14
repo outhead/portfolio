@@ -239,6 +239,7 @@ export const projects: Project[] = [
     tags: ["AI/ML", "LLM", "B2B", "RAG", "React"],
     type: "experiment",
     coverColor: "#1e1a2e",
+    coverImage: "/images/covers/legal-copilot.svg",
     sections: [
       {
         title: "Проблема",
@@ -271,6 +272,7 @@ export const projects: Project[] = [
     tags: ["Three.js", "GLSL", "WebGL", "Creative Coding"],
     type: "experiment",
     coverColor: "#0a1a2e",
+    coverImage: "/images/covers/webgl-experiments.svg",
     sections: [
       {
         title: "Идея",
@@ -303,6 +305,7 @@ export const projects: Project[] = [
     tags: ["Python", "Claude API", "Telegram Bot", "AI Automation"],
     type: "experiment",
     coverColor: "#1a2e2e",
+    coverImage: "/images/covers/vigrom-agent.svg",
     sections: [
       {
         title: "Проблема",

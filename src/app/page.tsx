@@ -317,28 +317,31 @@ export default function Home() {
           </div>
 
           {/* Career — horizontal timeline */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/[0.04] rounded-lg overflow-hidden">
-            {[
-              { year: "2018", company: "МТС", role: "Head of Direction", scope: "16 команд, 60+ дизайнеров" },
-              { year: "2021", company: "OZON", role: "Design Lead", scope: "Функция с 0 до 17 чел" },
-              { year: "2022", company: "Газпром Нефть", role: "Design Manager", scope: "76 команд, дизайн-система" },
-              { year: "2024", company: "МТС", role: "Head of Design AI", scope: "8 команд, B2C + AI-дивизион", current: true },
-            ].map((job) => (
-              <div key={job.year + job.company} className="bg-black p-4 md:p-5">
-                <div className="text-[10px] text-white/20 font-mono mb-1">{job.year}</div>
-                <div className="text-sm text-white/80 font-medium leading-tight">
-                  {job.company}
-                  {job.current && (
-                    <span className="ml-1.5 text-[9px] tracking-[0.1em] uppercase text-[#A6FF00]/70">
-                      <span className="inline-block h-1 w-1 rounded-full bg-[#A6FF00] animate-pulse mr-1 align-middle" />
-                      now
-                    </span>
-                  )}
+          <div className="relative">
+            {/* Connecting line */}
+            <div className="hidden md:block absolute top-[22px] left-[5%] right-[5%] h-px bg-white/[0.06]" />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+              {[
+                { year: "2018", company: "МТС", role: "Head of Direction", scope: "16 команд, 60+ дизайнеров" },
+                { year: "2021", company: "OZON", role: "Design Lead", scope: "Функция с 0 до 17 чел" },
+                { year: "2022", company: "Газпром Нефть", role: "Design Manager", scope: "76 команд, дизайн-система" },
+                { year: "2024", company: "МТС", role: "Head of Design AI", scope: "8 команд, B2C + AI-дивизион", current: true },
+              ].map((job) => (
+                <div key={job.year + job.company} className="relative">
+                  {/* Timeline dot */}
+                  <div className={`w-2.5 h-2.5 rounded-full mb-3 ${job.current ? 'bg-[#A6FF00]' : 'bg-white/20'} relative z-[1]`} />
+                  <div className="text-[10px] text-white/25 font-mono mb-1">{job.year}</div>
+                  <div className="text-sm text-white/80 font-medium leading-tight">
+                    {job.company}
+                    {job.current && (
+                      <span className="ml-1.5 text-[9px] tracking-[0.1em] uppercase text-[#A6FF00]/70">now</span>
+                    )}
+                  </div>
+                  <div className="text-xs text-white/35 mt-0.5">{job.role}</div>
+                  <div className="text-[10px] text-white/20 mt-0.5">{job.scope}</div>
                 </div>
-                <div className="text-xs text-white/35 mt-0.5">{job.role}</div>
-                <div className="text-[10px] text-white/20 mt-0.5">{job.scope}</div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </SplitSection>

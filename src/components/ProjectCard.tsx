@@ -99,12 +99,22 @@ export default function ProjectCard({ project, index, featured = false }: Projec
           style={{ background: project.coverColor }}
         >
           {project.coverImage && (
-            <Image
-              src={project.coverImage}
-              alt={project.title}
-              fill
-              className="object-cover opacity-40 group-hover:opacity-55 group-hover:scale-105 transition-all duration-500"
-            />
+            project.coverImage.endsWith('.svg') ? (
+              // SVG covers render at full opacity — they have their own bg
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={project.coverImage}
+                alt={project.title}
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+            ) : (
+              <Image
+                src={project.coverImage}
+                alt={project.title}
+                fill
+                className="object-cover opacity-40 group-hover:opacity-55 group-hover:scale-105 transition-all duration-500"
+              />
+            )
           )}
 
           {/* Index badge */}
