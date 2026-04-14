@@ -237,6 +237,8 @@ export const projects: Project[] = [
     longDescription:
       "Legal Copilot — один из ключевых продуктов AI-дивизиона МТС. AI-помощник для юридического отдела: умный поиск по базе документов с RAG-подходом, генерация юридических заключений, анализ рисков в договорах. Спроектировал от концепции до production.",
     tags: ["AI/ML", "LLM", "B2B", "RAG", "React"],
+    metric: "×5",
+    metricLabel: "быстрее поиск",
     type: "experiment",
     coverColor: "#1e1a2e",
     coverImage: "/images/covers/legal-copilot.svg",
@@ -303,6 +305,8 @@ export const projects: Project[] = [
     longDescription:
       "Автоматизация создания контента для Telegram-канала Vigrom. Бот принимает материалы (ссылки, голосовые, скриншоты), транскрибирует через Whisper, парсит статьи через trafilatura, генерирует черновик поста через Claude. Цель — снять рутину сборки и черновика, сохранив авторский голос.",
     tags: ["Python", "Claude API", "Telegram Bot", "AI Automation"],
+    metric: "30с",
+    metricLabel: "от ссылки до черновика",
     type: "experiment",
     coverColor: "#1a2e2e",
     coverImage: "/images/covers/vigrom-agent.svg",

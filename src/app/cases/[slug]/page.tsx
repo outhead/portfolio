@@ -70,7 +70,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
 
-        <div className="relative z-[5] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pb-10 md:pb-16 w-full">
+        <div className="relative z-[5] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pb-10 md:pb-16 w-full animate-fade-in-up">
           {/* Breadcrumb */}
           <Link
             href="/#portfolio"
