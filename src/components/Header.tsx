@@ -6,11 +6,11 @@ import { FileDown, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const navLinks = [
-  { href: "/#open-to", label: "Открыт к" },
-  { href: "/#about", label: "Обо мне" },
   { href: "/#portfolio", label: "Работы" },
+  { href: "/#experiments", label: "Эксперименты" },
+  { href: "/#about", label: "Обо мне" },
   { href: "/#public", label: "Публично" },
-  { href: "/#mentoring", label: "Менторинг" },
+  { href: "/mentoring", label: "Менторинг" },
   { href: "/#contacts", label: "Контакты" },
 ];
 

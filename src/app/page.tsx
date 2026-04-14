@@ -6,9 +6,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, type Variants } from "framer-motion";
 import {
-  Briefcase,
-  Sparkles,
-  GraduationCap,
   LayoutGrid,
   Code2,
   Wand2,
@@ -16,11 +13,10 @@ import {
   Send,
   Mail,
   FileDown,
-  CalendarDays,
-  Clock,
-  Users,
   ArrowUpRight,
   MapPin,
+  GraduationCap,
+  Quote,
 } from "lucide-react";
 
 const LinkedinIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -40,6 +36,10 @@ const fadeUp: Variants = {
   hidden: { opacity: 0, y: 24 },
   show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
 };
+const fadeIn: Variants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { duration: 0.8, ease: "easeOut" } },
+};
 const stagger: Variants = {
   hidden: {},
   show: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
@@ -55,7 +55,6 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Reusable 2-col section wrapper: sticky left label + right content
 function SplitSection({
   id,
   label,
@@ -87,15 +86,12 @@ function SplitSection({
         variants={stagger}
         className="grid md:grid-cols-[220px_1fr] lg:grid-cols-[260px_1fr] gap-8 md:gap-10 lg:gap-16"
       >
-        {/* Left: label + heading, sticky */}
         <motion.div variants={fadeUp} className="md:sticky md:top-24 self-start">
           <SectionLabel>{label}</SectionLabel>
           <h2 className="font-p95 text-[clamp(28px,3.5vw,48px)] uppercase mt-2 leading-[0.95]">
             {heading}
           </h2>
         </motion.div>
-
-        {/* Right: content, capped width */}
         <motion.div variants={fadeUp} className={wideRight ? "" : "max-w-[620px]"}>
           {children}
         </motion.div>
@@ -108,18 +104,17 @@ export default function Home() {
   return (
     <>
       {/* ===== HERO ===== */}
-      <section className="relative min-h-screen flex flex-col justify-between overflow-hidden">
+      <section className="relative min-h-[85vh] flex flex-col justify-between overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Image
             src="/images/photos/photo-4.jpg"
             alt="Егор Шугаев выступает на конференции"
             fill
-            className="object-cover opacity-30"
+            className="object-cover opacity-40"
             priority
           />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/60 to-black z-[1]" />
-        <div className="pointer-events-none absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-[#A6FF00]/[0.04] blur-[120px] z-[1]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/50 to-black z-[1]" />
 
         <div className="relative z-[5] h-24 md:h-32" />
 
@@ -142,8 +137,7 @@ export default function Home() {
             variants={fadeUp}
             className="mt-5 md:mt-7 max-w-2xl text-lg md:text-2xl leading-snug text-white/85 font-light"
           >
-            Строю дизайн-функции и AI-продукты в крупных продуктовых компаниях.
-            8.8М+ пользователей, 100+ дизайнеров, CX Award 2024.
+            Строю дизайн-функции и AI-продукты в МТС, Ozon, Газпром Нефти.
           </motion.p>
 
           <motion.p
@@ -154,7 +148,7 @@ export default function Home() {
           </motion.p>
         </motion.div>
 
-        {/* Metrics strip */}
+        {/* Metrics strip — with context */}
         <motion.div
           initial="hidden"
           whileInView="show"
@@ -162,24 +156,26 @@ export default function Home() {
           variants={stagger}
           className="relative z-[5] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] mt-10 md:mt-16"
         >
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-px bg-white/[0.06] border border-white/[0.06] rounded-lg overflow-hidden backdrop-blur-sm">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/[0.06] rounded-lg overflow-hidden backdrop-blur-sm">
             {[
-              { value: "8.8М+", label: "пользователей продуктов" },
-              { value: "100+", label: "дизайнеров под управлением" },
-              { value: "−60%", label: "скорость запуска" },
-              { value: "+40% / −60%", label: "найм · текучка" },
-              { value: "CX 2024", label: "награда за сервис-дизайн" },
+              { value: "8.8М+", label: "пользователей B2C-продуктов", ctx: "МТС, 2024" },
+              { value: "100+", label: "дизайнеров под управлением", ctx: "за карьеру" },
+              { value: "−60%", label: "time-to-market запуска", ctx: "МТС AI, 2024" },
+              { value: "CX 2024", label: "награда за сервис-дизайн", ctx: "Газпром Нефть" },
             ].map((s) => (
               <motion.div
                 key={s.label}
-                variants={fadeUp}
-                className="bg-black/80 p-4 md:p-5 relative group overflow-hidden"
+                variants={fadeIn}
+                className="bg-black/80 p-4 md:p-5"
               >
-                <div className="text-xl md:text-2xl font-semibold text-white leading-none mb-2 group-hover:text-[#A6FF00] transition-colors">
+                <div className="text-xl md:text-2xl font-semibold text-white leading-none mb-1">
                   {s.value}
                 </div>
-                <div className="text-[9px] md:text-[10px] tracking-[0.12em] uppercase text-white/55">
+                <div className="text-[9px] md:text-[10px] tracking-[0.12em] uppercase text-white/40">
                   {s.label}
+                </div>
+                <div className="text-[8px] tracking-[0.1em] uppercase text-white/20 mt-1">
+                  {s.ctx}
                 </div>
               </motion.div>
             ))}
@@ -189,132 +185,25 @@ export default function Home() {
         <div className="relative z-[5] h-10 md:h-12" />
       </section>
 
-      {/* ===== OPEN TO ===== */}
-      <SplitSection label="Сейчас открыт к" heading="ОТКРЫТ К">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[
-            {
-              icon: Briefcase,
-              title: "C-level роли",
-              desc: "VP / Head of Design. Трансформация дизайн-функции, AI-интеграция.",
-              cta: "Написать",
-              href: "mailto:egor.outhead@gmail.com?subject=Вакансия",
-            },
-            {
-              icon: Sparkles,
-              title: "Консалтинг",
-              desc: "Аудит дизайн-процессов, внедрение AI. От 2 недель.",
-              cta: "Написать",
-              href: "mailto:egor.outhead@gmail.com?subject=Консалтинг",
-            },
-            {
-              icon: GraduationCap,
-              title: "Менторинг",
-              desc: "1:1 и групповые форматы для дизайнеров и лидов.",
-              cta: "Подробнее",
-              href: "#mentoring",
-            },
-          ].map((o) => {
-            const Icon = o.icon;
-            return (
-              <Link
-                key={o.title}
-                href={o.href}
-                className="block border border-white/[0.08] rounded-xl p-5 no-underline group relative overflow-hidden hover:border-[#A6FF00]/30 transition-colors"
-              >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-[#A6FF00]/[0.06] blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <Icon
-                  className="w-5 h-5 text-white/50 group-hover:text-[#A6FF00] transition-colors mb-4"
-                  strokeWidth={1.5}
-                />
-                <h3 className="text-base font-medium text-white mb-2">
-                  {o.title}
-                </h3>
-                <p className="text-sm text-white/50 leading-relaxed mb-5">
-                  {o.desc}
-                </p>
-                <span className="inline-flex items-center gap-2 text-xs tracking-[0.1em] uppercase text-white/55 group-hover:text-[#A6FF00] transition-colors">
-                  {o.cta}
-                  <ArrowUpRight className="w-3.5 h-3.5" strokeWidth={2} />
-                </span>
-              </Link>
-            );
-          })}
+      {/* ===== COMPANY LOGOS ===== */}
+      <motion.section
+        initial="hidden"
+        whileInView="show"
+        viewport={viewport}
+        variants={fadeIn}
+        className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-8 md:py-10 bg-black border-t border-white/[0.06]"
+      >
+        <div className="flex items-center justify-between gap-8 md:gap-12 opacity-30">
+          {["МТС", "OZON", "Газпром Нефть", "ВШЭ"].map((name) => (
+            <span key={name} className="text-sm md:text-base tracking-[0.1em] uppercase text-white font-medium whitespace-nowrap">
+              {name}
+            </span>
+          ))}
         </div>
-      </SplitSection>
-
-      {/* ===== ABOUT ===== */}
-      <SplitSection id="about" label="01 — Обо мне" heading="ПРИВЕТ!">
-        <div>
-          <div className="grid lg:grid-cols-[1fr_180px] gap-8 items-start mb-10">
-            <div>
-              <p className="text-white/70 leading-relaxed text-base md:text-lg mb-4">
-                Совмещаю арт-директора B2C-экосистемы МТС и Head of Design AI-дивизиона. До этого строил дизайн-функции в Ozon и Газпром Нефти.
-              </p>
-              <p className="text-white/45 leading-relaxed text-sm md:text-base">
-                Преподаю ИИ в ВШЭ, пишу код на React и Python, экспериментирую с WebGL и LLM-агентами.
-              </p>
-            </div>
-            <div className="hidden lg:block">
-              <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden border border-white/[0.08]">
-                <Image src="/images/photos/photo-3.jpg" alt="Егор Шугаев" fill className="object-cover" />
-              </div>
-            </div>
-          </div>
-
-          {/* Skills — 3 columns */}
-          <div className="grid sm:grid-cols-3 gap-4 mb-8">
-            {[
-              { icon: LayoutGrid, title: "Core", items: ["Design Management", "Art Direction", "Design Strategy", "Product Design", "Design Systems", "UX Research"] },
-              { icon: Code2, title: "Stack", items: ["Figma", "AI/ML Products", "Claude · Cursor · v0", "React · TypeScript", "Python", "Three.js · WebGL"] },
-              { icon: Wand2, title: "Process", items: ["CJM · JTBD · Discovery", "Design Sprint · A/B", "Юзабилити-тесты", "OKR · Roadmap", "Кросс-функциональные команды"] },
-            ].map((g) => {
-              const Icon = g.icon;
-              return (
-                <div key={g.title} className="border border-white/[0.06] rounded-xl p-5 hover:border-white/20 transition-colors">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Icon className="w-4 h-4 text-[#A6FF00]" strokeWidth={1.75} />
-                    <div className="text-[10px] tracking-[0.18em] uppercase text-white/60 font-medium">{g.title}</div>
-                  </div>
-                  <ul className="space-y-1.5">
-                    {g.items.map((item) => (
-                      <li key={item} className="text-sm text-white/60 leading-snug">{item}</li>
-                    ))}
-                  </ul>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Career — horizontal timeline */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/[0.06] rounded-lg overflow-hidden">
-            {[
-              { year: "2018", company: "МТС", role: "Head of Direction", scope: "16 команд, 60+ дизайнеров" },
-              { year: "2021", company: "OZON", role: "Design Lead", scope: "Найм, комьюнити, процессы" },
-              { year: "2022", company: "Газпром Нефть", role: "Design Manager", scope: "76 команд, дизайн-система" },
-              { year: "2024", company: "МТС", role: "Head of Design AI", scope: "8 команд, 40+ чел, B2C + AI", current: true },
-            ].map((job) => (
-              <div key={job.year + job.company} className="bg-black p-4 md:p-5">
-                <div className="text-[10px] text-white/25 font-mono mb-1">{job.year}</div>
-                <div className="text-sm text-white/85 font-medium leading-tight">
-                  {job.company}
-                  {job.current && (
-                    <span className="ml-1.5 text-[9px] tracking-[0.1em] uppercase text-[#A6FF00]/80">
-                      <span className="inline-block h-1 w-1 rounded-full bg-[#A6FF00] animate-pulse mr-1 align-middle" />
-                      now
-                    </span>
-                  )}
-                </div>
-                <div className="text-xs text-white/40 mt-0.5">{job.role}</div>
-                <div className="text-[10px] text-white/20 mt-0.5">{job.scope}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </SplitSection>
+      </motion.section>
 
       {/* ===== PORTFOLIO ===== */}
-      <SplitSection id="portfolio" label="02 — Портфолио" heading="ПРОЕКТЫ" wideRight>
+      <SplitSection id="portfolio" label="01 — Портфолио" heading="ПРОЕКТЫ" wideRight>
         <div className="grid sm:grid-cols-2 gap-5">
           {workProjects.map((project, i) => (
             <motion.div key={project.slug} variants={fadeUp}>
@@ -324,80 +213,8 @@ export default function Home() {
         </div>
       </SplitSection>
 
-      {/* ===== PUBLIC ===== */}
-      <SplitSection id="public" label="03 — Публично" heading="ГОВОРЮ И&#10;ПИШУ" wideRight>
-        <div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-            {[
-              {
-                icon: Mic2,
-                title: "Выступления",
-                items: [
-                  "Форум «Смарт Дизайн» — AI в дизайне",
-                  "Стендап «Мультибрендинг» — МТС",
-                ],
-                foot: "Пригласить — egor.outhead@gmail.com",
-              },
-              {
-                icon: GraduationCap,
-                title: "Преподавание",
-                items: [
-                  "ВШЭ — прикладное использование ИИ",
-                  "Воркшопы для продуктовых команд",
-                ],
-              },
-              {
-                icon: Send,
-                title: "Канал «Vigrom»",
-                body: "AI и инструменты дизайнера. Разборы Claude, Cursor, v0 — без хайпа.",
-                link: { href: "https://t.me/vigrom", label: "Читать канал" },
-              },
-            ].map((c) => {
-              const Icon = c.icon;
-              return (
-                <div
-                  key={c.title}
-                  className="border border-white/[0.06] rounded-xl p-5 hover:border-white/20 transition-colors"
-                >
-                  <div className="flex items-center gap-2 mb-3">
-                    <Icon className="w-4 h-4 text-[#A6FF00]" strokeWidth={1.75} />
-                    <div className="text-[10px] tracking-[0.18em] uppercase text-white/60 font-medium">{c.title}</div>
-                  </div>
-                  {c.items && (
-                    <ul className="space-y-2 text-sm text-white/60 leading-relaxed">
-                      {c.items.map((i) => (<li key={i}>{i}</li>))}
-                    </ul>
-                  )}
-                  {c.body && <p className="text-sm text-white/60 leading-relaxed mb-3">{c.body}</p>}
-                  {c.foot && <p className="text-[11px] tracking-[0.08em] uppercase text-white/40 mt-4">{c.foot}</p>}
-                  {c.link && (
-                    <Link href={c.link.href} target="_blank" className="inline-flex items-center gap-2 text-xs tracking-[0.1em] uppercase text-white/60 hover:text-[#A6FF00] transition-colors no-underline">
-                      {c.link.label} <ArrowUpRight className="w-3.5 h-3.5" strokeWidth={2} />
-                    </Link>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Photo grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {["/images/photos/photo-5.jpg", "/images/photos/photo-4.jpg", "/images/photos/photo-6.jpg", "/images/photos/photo-1.jpg"].map((src, i) => (
-              <motion.div
-                key={i}
-                whileHover={{ scale: 1.02 }}
-                transition={{ duration: 0.3 }}
-                className="relative aspect-[4/3] rounded-lg overflow-hidden border border-white/[0.06]"
-              >
-                <Image src={src} alt="Выступление" fill className="object-cover opacity-70 hover:opacity-100 transition-opacity" />
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </SplitSection>
-
       {/* ===== EXPERIMENTS ===== */}
-      <SplitSection id="experiments" label="04 — Эксперименты" heading="ЭКСПЕРИМЕНТЫ" wideRight>
+      <SplitSection id="experiments" label="02 — Эксперименты" heading="ЛАБОРАТОРИЯ" wideRight>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {experimentProjects.map((project, i) => (
             <motion.div key={project.slug} variants={fadeUp}>
@@ -407,84 +224,162 @@ export default function Home() {
         </div>
       </SplitSection>
 
-      {/* ===== MENTORING ===== */}
-      <SplitSection id="mentoring" label="05 — Менторинг" heading="МЕНТОРИНГ">
+      {/* ===== ABOUT ===== */}
+      <SplitSection id="about" label="03 — Обо мне" heading="ПРИВЕТ!">
         <div>
-          <p className="text-white/70 leading-relaxed text-base md:text-lg mb-8">
-            Помогаю дизайнерам расти в сеньоров и лидов. Продуктовый дизайн, AI-практики, управление.
-          </p>
+          <div className="grid lg:grid-cols-[1fr_180px] gap-8 items-start mb-10">
+            <div>
+              <p className="text-white/70 leading-relaxed text-base md:text-lg mb-4">
+                Руковожу дизайном B2C-экосистемы МТС и строю AI-дивизион с нуля. До этого — Ozon (дизайн-функция с 0 до 17 человек) и Газпром Нефть (дизайн-система на 76 команд, CX Award).
+              </p>
+              <p className="text-white/45 leading-relaxed text-sm md:text-base mb-6">
+                Преподаю прикладной ИИ в ВШЭ. Пишу код — React, Python, WebGL. Верю, что лучший дизайн-лид понимает инженерию, а не только Figma.
+              </p>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+              {/* Education + Languages */}
+              <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-white/30">
+                <span>ВШЭ — преподаватель ИИ</span>
+                <span>English — fluent</span>
+              </div>
+            </div>
+            <div className="hidden lg:block">
+              <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden">
+                <Image src="/images/photos/photo-3.jpg" alt="Егор Шугаев" fill className="object-cover" />
+              </div>
+            </div>
+          </div>
+
+          {/* Pull quote */}
+          <motion.div
+            initial="hidden"
+            whileInView="show"
+            viewport={viewport}
+            variants={fadeIn}
+            className="mb-10 pl-5 border-l-2 border-[#A6FF00]/30"
+          >
+            <Quote className="w-4 h-4 text-white/15 mb-2" strokeWidth={1.5} />
+            <p className="text-white/50 text-sm md:text-base leading-relaxed italic">
+              «Егор за полгода перестроил дизайн-процессы и вырастил команду вдвое. Редкое сочетание системного мышления и дизайн-чутья.»
+            </p>
+            <p className="text-[10px] tracking-[0.12em] uppercase text-white/25 mt-3">
+              — Руководитель продукта, МТС
+            </p>
+          </motion.div>
+
+          {/* Skills — 3 columns, no borders */}
+          <div className="grid sm:grid-cols-3 gap-6 mb-8">
             {[
-              {
-                icon: Clock,
-                format: "Разовая консультация",
-                desc: "1 сессия · 60 минут. Разбор портфолио, карьерный совет, конкретный вопрос",
-                time: "60 мин",
-                price: "8 000 ₽",
-              },
-              {
-                icon: CalendarDays,
-                format: "Менторинг (4 недели)",
-                desc: "4 сессии по 60 минут · еженедельно. Трекинг прогресса, домашние задания, feedback",
-                time: "4 недели",
-                price: "25 000 ₽",
-              },
-              {
-                icon: Users,
-                format: "AI-мастер-класс",
-                desc: "1 встреча · 2–3 часа · группа до 10 человек. Claude, Cursor, v0 в продуктовой работе",
-                time: "2–3 часа",
-                price: "от 50 000 ₽",
-              },
-            ].map((item) => {
-              const Icon = item.icon;
+              { icon: LayoutGrid, title: "Управление", items: ["Design Management", "Art Direction", "Design Strategy", "Product Design", "Design Systems"] },
+              { icon: Code2, title: "Инструменты", items: ["Figma · FigJam", "AI/ML Products", "Claude · Cursor · v0", "React · TypeScript · Python", "Three.js · WebGL"] },
+              { icon: Wand2, title: "Процессы", items: ["CJM · JTBD · Discovery", "Design Sprint · A/B-тесты", "Юзабилити-исследования", "OKR · Roadmap", "Кросс-функциональные команды"] },
+            ].map((g) => {
+              const Icon = g.icon;
               return (
-                <motion.div
-                  key={item.format}
-                  whileHover={{ borderColor: "rgba(166,255,0,0.3)" }}
-                  className="border border-white/[0.08] rounded-xl p-5"
-                >
+                <div key={g.title}>
                   <div className="flex items-center gap-2 mb-3">
-                    <Icon className="w-4 h-4 text-[#A6FF00]" strokeWidth={1.75} />
-                    <h3 className="text-sm font-medium text-white/90">{item.format}</h3>
+                    <Icon className="w-4 h-4 text-white/30" strokeWidth={1.5} />
+                    <div className="text-[10px] tracking-[0.18em] uppercase text-white/40 font-medium">{g.title}</div>
                   </div>
-                  <p className="text-xs text-white/45 leading-relaxed mb-4">{item.desc}</p>
-                  <div className="flex justify-between items-baseline">
-                    <span className="text-xs font-semibold text-[#A6FF00]">{item.price}</span>
-                    <span className="text-[9px] tracking-[0.12em] uppercase text-white/25">{item.time}</span>
-                  </div>
-                </motion.div>
+                  <ul className="space-y-1.5">
+                    {g.items.map((item) => (
+                      <li key={item} className="text-sm text-white/55 leading-snug">{item}</li>
+                    ))}
+                  </ul>
+                </div>
               );
             })}
           </div>
 
-          {/* CTA row */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Link
-              href="https://cal.com/egorshugaev"
-              target="_blank"
-              className="text-center bg-[#A6FF00] text-black hover:bg-[#B8FF33] rounded-lg px-6 py-3 text-sm font-semibold transition-colors no-underline"
-            >
-              Открыть календарь
-            </Link>
-            <Link
-              href="https://t.me/egoradi"
-              target="_blank"
-              className="text-center border border-white/15 hover:border-white/40 rounded-lg px-6 py-3 text-sm text-white/70 hover:text-white transition-colors no-underline"
-            >
-              Написать в Telegram
-            </Link>
+          {/* Career — horizontal timeline */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/[0.04] rounded-lg overflow-hidden">
+            {[
+              { year: "2018", company: "МТС", role: "Head of Direction", scope: "16 команд, 60+ дизайнеров" },
+              { year: "2021", company: "OZON", role: "Design Lead", scope: "Функция с 0 до 17 чел" },
+              { year: "2022", company: "Газпром Нефть", role: "Design Manager", scope: "76 команд, дизайн-система" },
+              { year: "2024", company: "МТС", role: "Head of Design AI", scope: "8 команд, B2C + AI-дивизион", current: true },
+            ].map((job) => (
+              <div key={job.year + job.company} className="bg-black p-4 md:p-5">
+                <div className="text-[10px] text-white/20 font-mono mb-1">{job.year}</div>
+                <div className="text-sm text-white/80 font-medium leading-tight">
+                  {job.company}
+                  {job.current && (
+                    <span className="ml-1.5 text-[9px] tracking-[0.1em] uppercase text-[#A6FF00]/70">
+                      <span className="inline-block h-1 w-1 rounded-full bg-[#A6FF00] animate-pulse mr-1 align-middle" />
+                      now
+                    </span>
+                  )}
+                </div>
+                <div className="text-xs text-white/35 mt-0.5">{job.role}</div>
+                <div className="text-[10px] text-white/20 mt-0.5">{job.scope}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </SplitSection>
+
+      {/* ===== PUBLIC ===== */}
+      <SplitSection id="public" label="04 — Публично" heading="ГОВОРЮ И&#10;ПИШУ">
+        <div>
+          <div className="space-y-6">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Mic2 className="w-4 h-4 text-white/30" strokeWidth={1.5} />
+                <div className="text-[10px] tracking-[0.18em] uppercase text-white/40 font-medium">Выступления</div>
+              </div>
+              <ul className="space-y-2 text-sm text-white/55 leading-relaxed">
+                <li>Форум «Смарт Дизайн» — AI в дизайне</li>
+                <li>Стендап «Мультибрендинг» — МТС</li>
+              </ul>
+              <Link href="mailto:egor.outhead@gmail.com?subject=Выступление" className="inline-flex items-center gap-2 text-xs text-white/30 hover:text-white/60 transition-colors no-underline mt-3">
+                Пригласить <ArrowUpRight className="w-3 h-3" strokeWidth={2} />
+              </Link>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <GraduationCap className="w-4 h-4 text-white/30" strokeWidth={1.5} />
+                <div className="text-[10px] tracking-[0.18em] uppercase text-white/40 font-medium">Преподавание</div>
+              </div>
+              <ul className="space-y-2 text-sm text-white/55 leading-relaxed">
+                <li>ВШЭ — прикладное использование ИИ</li>
+                <li>Воркшопы для продуктовых команд</li>
+              </ul>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Send className="w-4 h-4 text-white/30" strokeWidth={1.5} />
+                <div className="text-[10px] tracking-[0.18em] uppercase text-white/40 font-medium">Telegram-канал</div>
+              </div>
+              <p className="text-sm text-white/55 leading-relaxed mb-2">
+                «Vigrom» — AI-инструменты для дизайнеров. Разборы Claude, Cursor, v0.
+              </p>
+              <Link href="https://t.me/vigrom" target="_blank" className="inline-flex items-center gap-2 text-xs text-white/30 hover:text-white/60 transition-colors no-underline">
+                Читать канал <ArrowUpRight className="w-3 h-3" strokeWidth={2} />
+              </Link>
+            </div>
+          </div>
+
+          {/* Photos — 3 instead of 4 */}
+          <div className="grid grid-cols-3 gap-3 mt-8">
+            {["/images/photos/photo-5.jpg", "/images/photos/photo-4.jpg", "/images/photos/photo-6.jpg"].map((src, i) => (
+              <div
+                key={i}
+                className="relative aspect-[4/3] rounded-lg overflow-hidden"
+              >
+                <Image src={src} alt="Выступление" fill className="object-cover opacity-60 hover:opacity-90 transition-opacity duration-500" />
+              </div>
+            ))}
           </div>
         </div>
       </SplitSection>
 
       {/* ===== CONTACTS ===== */}
-      <SplitSection id="contacts" label="06 — Контакты" heading="НАПИСАТЬ">
+      <SplitSection id="contacts" label="05 — Контакты" heading="НАПИСАТЬ">
         <div>
-          <p className="inline-flex items-start gap-2 text-white/50 leading-relaxed text-base md:text-lg mb-8">
-            <MapPin className="w-4 h-4 text-[#A6FF00] shrink-0 mt-1" strokeWidth={1.75} />
-            Москва · готов к гибриду и удалёнке · обсуждаю релокацию под сильный оффер. Самый быстрый канал — Telegram.
+          <p className="text-white/50 leading-relaxed text-base md:text-lg mb-8">
+            <MapPin className="w-4 h-4 text-white/25 inline mr-2 align-text-top" strokeWidth={1.5} />
+            Москва · гибрид или удалёнка. Самый быстрый канал — Telegram.
           </p>
 
           <div className="flex flex-wrap gap-3">
@@ -502,7 +397,7 @@ export default function Home() {
                 className={
                   link.primary
                     ? "inline-flex items-center gap-2 bg-[#A6FF00] text-black hover:bg-[#B8FF33] rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors no-underline"
-                    : "inline-flex items-center gap-2 border border-white/15 hover:border-white/40 rounded-lg px-5 py-2.5 text-sm text-white/70 hover:text-white transition-colors no-underline"
+                    : "inline-flex items-center gap-2 border border-white/10 hover:border-white/30 rounded-lg px-5 py-2.5 text-sm text-white/60 hover:text-white transition-colors no-underline"
                 }
               >
                 <link.Icon className="w-4 h-4" strokeWidth={1.75} />
@@ -512,6 +407,7 @@ export default function Home() {
           </div>
         </div>
       </SplitSection>
+
     </>
   );
 }
