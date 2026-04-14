@@ -164,11 +164,11 @@ export default function Home() {
         >
           <div className="grid grid-cols-2 md:grid-cols-5 gap-px bg-white/[0.06] border border-white/[0.06] rounded-lg overflow-hidden backdrop-blur-sm">
             {[
-              { value: "8.8М+", label: "пользователей продуктов", ctx: "МТС Cashback, 2018–21" },
-              { value: "100+", label: "дизайнеров под управлением", ctx: "Газпром Нефть, 2022–24" },
-              { value: "−60%", label: "скорость запуска", ctx: "МТС AI, 2024" },
-              { value: "+40% / −60%", label: "рост найма · снижение текучки", ctx: "Ozon, год к году" },
-              { value: "CX 2024", label: "награда за сервис-дизайн", ctx: "МТС, единое окно" },
+              { value: "8.8М+", label: "пользователей продуктов" },
+              { value: "100+", label: "дизайнеров под управлением" },
+              { value: "−60%", label: "скорость запуска" },
+              { value: "+40% / −60%", label: "найм · текучка" },
+              { value: "CX 2024", label: "награда за сервис-дизайн" },
             ].map((s) => (
               <motion.div
                 key={s.label}
@@ -181,128 +181,78 @@ export default function Home() {
                 <div className="text-[9px] md:text-[10px] tracking-[0.12em] uppercase text-white/55">
                   {s.label}
                 </div>
-                <div className="mt-2 text-[9px] text-white/25 leading-snug">
-                  {s.ctx}
-                </div>
               </motion.div>
             ))}
           </div>
         </motion.div>
 
-        {/* Worked at */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={viewport}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="relative z-[5] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] mt-8 mb-10 md:mb-12"
-        >
-          <div className="text-[9px] tracking-[0.2em] uppercase text-white/25 mb-3">
-            Работал в
-          </div>
-          <div className="flex flex-wrap items-center gap-x-8 md:gap-x-12 gap-y-3 text-sm md:text-base font-medium text-white/55">
-            <span>МТС</span>
-            <span className="text-white/15">/</span>
-            <span>Ozon</span>
-            <span className="text-white/15">/</span>
-            <span>Газпром&nbsp;Нефть</span>
-            <span className="text-white/15">/</span>
-            <span>ВШЭ</span>
-          </div>
-        </motion.div>
+        <div className="relative z-[5] h-10 md:h-12" />
       </section>
 
       {/* ===== OPEN TO ===== */}
       <SplitSection label="Сейчас открыт к" heading="ОТКРЫТ К">
-        <div>
-          <p className="text-lg md:text-xl leading-snug text-white/85 font-light mb-8">
-            Сейчас — Head of Design AI в МТС. Открыт к{" "}
-            <span className="text-[#A6FF00]">C-level ролям</span> и{" "}
-            <span className="text-[#A6FF00]">консалтингу по AI в дизайне</span>.
-          </p>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[
-              {
-                icon: Briefcase,
-                title: "C-level роли",
-                desc: "VP / Head of Design в продуктовых компаниях. Управление 50+ дизайнеров, трансформация, AI-интеграция.",
-                cta: "Написать о вакансии",
-                href: "mailto:egor.outhead@gmail.com?subject=Вакансия",
-              },
-              {
-                icon: Sparkles,
-                title: "Консалтинг",
-                desc: "Внедрение AI в дизайн-процесс, аудит дизайн-функции, разработка стратегии. От 2 недель до 3 месяцев.",
-                cta: "Написать о консалтинге",
-                href: "mailto:egor.outhead@gmail.com?subject=Консалтинг",
-              },
-              {
-                icon: GraduationCap,
-                title: "Менторинг",
-                desc: "1:1 для дизайнеров и лидов. Разовая встреча — 8 000 ₽. Регулярный менторинг — от 25 000 ₽ / месяц.",
-                cta: "Выбрать формат",
-                href: "#mentoring",
-              },
-            ].map((o) => {
-              const Icon = o.icon;
-              return (
-                <Link
-                  key={o.title}
-                  href={o.href}
-                  className="block border border-white/[0.08] rounded-xl p-5 no-underline group relative overflow-hidden hover:border-[#A6FF00]/30 transition-colors"
-                >
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-[#A6FF00]/[0.06] blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <Icon
-                    className="w-5 h-5 text-white/50 group-hover:text-[#A6FF00] transition-colors mb-4"
-                    strokeWidth={1.5}
-                  />
-                  <h3 className="text-base font-medium text-white mb-2">
-                    {o.title}
-                  </h3>
-                  <p className="text-sm text-white/50 leading-relaxed mb-5">
-                    {o.desc}
-                  </p>
-                  <span className="inline-flex items-center gap-2 text-xs tracking-[0.1em] uppercase text-white/55 group-hover:text-[#A6FF00] transition-colors">
-                    {o.cta}
-                    <ArrowUpRight className="w-3.5 h-3.5" strokeWidth={2} />
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
-
-          <div className="mt-8 pt-6 border-t border-white/[0.06]">
-            <SectionLabel>Лучше всего получается</SectionLabel>
-            <p className="text-sm text-white/55 leading-relaxed mt-2">
-              Продуктовый дизайн с мандатом на стратегию · AI-трансформация
-              процессов · проекты от 3 месяцев · роли с прямым влиянием на продукт.
-            </p>
-          </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[
+            {
+              icon: Briefcase,
+              title: "C-level роли",
+              desc: "VP / Head of Design. Трансформация дизайн-функции, AI-интеграция.",
+              cta: "Написать",
+              href: "mailto:egor.outhead@gmail.com?subject=Вакансия",
+            },
+            {
+              icon: Sparkles,
+              title: "Консалтинг",
+              desc: "Аудит дизайн-процессов, внедрение AI. От 2 недель.",
+              cta: "Написать",
+              href: "mailto:egor.outhead@gmail.com?subject=Консалтинг",
+            },
+            {
+              icon: GraduationCap,
+              title: "Менторинг",
+              desc: "1:1 и групповые форматы для дизайнеров и лидов.",
+              cta: "Подробнее",
+              href: "#mentoring",
+            },
+          ].map((o) => {
+            const Icon = o.icon;
+            return (
+              <Link
+                key={o.title}
+                href={o.href}
+                className="block border border-white/[0.08] rounded-xl p-5 no-underline group relative overflow-hidden hover:border-[#A6FF00]/30 transition-colors"
+              >
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#A6FF00]/[0.06] blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <Icon
+                  className="w-5 h-5 text-white/50 group-hover:text-[#A6FF00] transition-colors mb-4"
+                  strokeWidth={1.5}
+                />
+                <h3 className="text-base font-medium text-white mb-2">
+                  {o.title}
+                </h3>
+                <p className="text-sm text-white/50 leading-relaxed mb-5">
+                  {o.desc}
+                </p>
+                <span className="inline-flex items-center gap-2 text-xs tracking-[0.1em] uppercase text-white/55 group-hover:text-[#A6FF00] transition-colors">
+                  {o.cta}
+                  <ArrowUpRight className="w-3.5 h-3.5" strokeWidth={2} />
+                </span>
+              </Link>
+            );
+          })}
         </div>
       </SplitSection>
 
       {/* ===== ABOUT ===== */}
       <SplitSection id="about" label="01 — Обо мне" heading="ПРИВЕТ!">
         <div>
-          <div className="grid lg:grid-cols-[1fr_200px] gap-8 items-start mb-10">
+          <div className="grid lg:grid-cols-[1fr_180px] gap-8 items-start mb-10">
             <div>
-              <p className="text-white/70 leading-relaxed text-base md:text-lg mb-5">
-                За последние 7 лет руководил дизайн-направлениями в МТС, Ozon и
-                Газпром Нефти. Сейчас совмещаю арт-директора B2C-экосистемы МТС
-                (40+ дизайнеров, 8 команд) и Head of Design AI-дивизиона.
-              </p>
-              <p className="text-white/45 leading-relaxed text-sm md:text-base mb-5">
-                Формировал дизайн-стратегию МТС в период трансформации в
-                экосистему. Заложил основы дизайн-комьюнити в Ozon — найм +40%,
-                текучка −60%. Развивал open-source дизайн-систему Consta в
-                Газпром Нефти (10K+ NPM-скачиваний). Получил CX Awards 2024 за
-                единое сервисное окно.
+              <p className="text-white/70 leading-relaxed text-base md:text-lg mb-4">
+                Совмещаю арт-директора B2C-экосистемы МТС и Head of Design AI-дивизиона. До этого строил дизайн-функции в Ozon и Газпром Нефти.
               </p>
               <p className="text-white/45 leading-relaxed text-sm md:text-base">
-                Преподаю прикладное использование ИИ в ВШЭ. Веду менторинг,
-                выступаю на конференциях, пишу код на React и Python,
-                экспериментирую с WebGL и AI-автоматизацией.
+                Преподаю ИИ в ВШЭ, пишу код на React и Python, экспериментирую с WebGL и LLM-агентами.
               </p>
             </div>
             <div className="hidden lg:block">
@@ -390,8 +340,6 @@ export default function Home() {
                 items: [
                   "Форум «Смарт Дизайн» — AI в дизайне",
                   "Стендап «Мультибрендинг» — МТС",
-                  "Конференции по дизайн-системам и ML",
-                  "Мастер-классы для продуктовых команд",
                 ],
                 foot: "Пригласить — egor.outhead@gmail.com",
               },
@@ -400,14 +348,13 @@ export default function Home() {
                 title: "Преподавание",
                 items: [
                   "ВШЭ — прикладное использование ИИ",
-                  "Регулярные воркшопы внутри МТС",
-                  "Закрытые воркшопы для продуктовых команд",
+                  "Воркшопы для продуктовых команд",
                 ],
               },
               {
                 icon: Send,
                 title: "Канал «Vigrom»",
-                body: "Авторский Telegram-канал про AI и инструменты дизайнера. Практика без хайпа — разборы Claude, Cursor, v0.",
+                body: "AI и инструменты дизайнера. Разборы Claude, Cursor, v0 — без хайпа.",
                 link: { href: "https://t.me/vigrom", label: "Читать канал" },
               },
             ].map((c) => {
@@ -469,9 +416,7 @@ export default function Home() {
       <SplitSection id="mentoring" label="05 — Менторинг" heading="МЕНТОРИНГ">
         <div>
           <p className="text-white/70 leading-relaxed text-base md:text-lg mb-8">
-            Помогаю дизайнерам расти в сеньоров и лидов. Фокус — продуктовый
-            дизайн и AI-практики. 8+ лет опыта, управление командами,
-            выстраивание процессов.
+            Помогаю дизайнерам расти в сеньоров и лидов. Продуктовый дизайн, AI-практики, управление.
           </p>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
