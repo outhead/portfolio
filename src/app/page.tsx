@@ -270,7 +270,7 @@ export default function Home() {
             </div>
             <div className="hidden lg:block">
               <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden">
-                <Image src="/images/photos/photo-3.jpg" alt="Егор Шугаев" fill className="object-cover" />
+                <Image src="/images/photos/photo-3.jpg" alt="Егор Шугаев — дизайн-директор и Head of Design AI Division" fill className="object-cover" />
               </div>
             </div>
           </div>
@@ -393,24 +393,71 @@ export default function Home() {
 
           {/* Photos — 3 instead of 4 */}
           <div className="grid grid-cols-3 gap-3 mt-8">
-            {["/images/photos/photo-5.jpg", "/images/photos/photo-4.jpg", "/images/photos/photo-6.jpg"].map((src, i) => (
+            {[
+              { src: "/images/photos/photo-5.jpg", alt: "Егор Шугаев — портрет, Head of Design МТС" },
+              { src: "/images/photos/photo-4.jpg", alt: "Егор Шугаев выступает на конференции по AI в дизайне" },
+              { src: "/images/photos/photo-6.jpg", alt: "Егор Шугаев на воркшопе по дизайн-менеджменту" },
+            ].map((photo, i) => (
               <div
                 key={i}
                 className="relative aspect-[4/3] rounded-lg overflow-hidden"
               >
-                <Image src={src} alt="Выступление" fill className="object-cover opacity-60 hover:opacity-90 transition-opacity duration-500" />
+                <Image src={photo.src} alt={photo.alt} fill className="object-cover opacity-60 hover:opacity-90 transition-opacity duration-500" />
               </div>
             ))}
           </div>
         </div>
       </SplitSection>
 
+      {/* ===== CTA BANNER ===== */}
+      <motion.section
+        initial="hidden"
+        whileInView="show"
+        viewport={viewport}
+        variants={fadeIn}
+        className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-16 md:py-20 bg-black border-t border-white/[0.06]"
+      >
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#A6FF00]/10 via-black to-black border border-[#A6FF00]/15 p-8 md:p-12">
+          <div className="max-w-xl">
+            <h3 className="font-p95 text-2xl md:text-3xl uppercase leading-[0.95] mb-3">
+              Ищете дизайн-лида?
+            </h3>
+            <p className="text-sm md:text-base text-white/50 leading-relaxed mb-6">
+              Открыт к предложениям — Head of Design, Design Director, VP of Design. Также консультирую по дизайн-трансформации и построению команд.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href="https://t.me/egoradi"
+                target="_blank"
+                className="inline-flex items-center gap-2 bg-[#A6FF00] text-black hover:bg-[#B8FF33] rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors no-underline"
+              >
+                <Send className="w-4 h-4" strokeWidth={1.75} />
+                Написать
+              </Link>
+              <Link
+                href="/Egor_Shugaev_CV.pdf"
+                target="_blank"
+                className="inline-flex items-center gap-2 border border-white/15 hover:border-white/30 rounded-lg px-5 py-2.5 text-sm text-white/60 hover:text-white transition-colors no-underline"
+              >
+                <FileDown className="w-4 h-4" strokeWidth={1.75} />
+                Скачать CV
+              </Link>
+            </div>
+          </div>
+          {/* Decorative corner */}
+          <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full bg-[#A6FF00]/[0.03] blur-3xl pointer-events-none" />
+        </div>
+      </motion.section>
+
       {/* ===== CONTACTS ===== */}
       <SplitSection id="contacts" label="05 — Контакты" heading="НАПИСАТЬ">
         <div>
-          <p className="text-white/50 leading-relaxed text-base md:text-lg mb-8">
+          <p className="text-white/50 leading-relaxed text-base md:text-lg mb-3">
             <MapPin className="w-4 h-4 text-white/25 inline mr-2 align-text-top" strokeWidth={1.5} />
             Москва · гибрид или удалёнка. Самый быстрый канал — Telegram.
+          </p>
+          <p className="text-[10px] tracking-[0.1em] uppercase text-white/25 mb-8">
+            Обычно отвечаю в течение нескольких часов
           </p>
 
           <div className="flex flex-wrap gap-3">

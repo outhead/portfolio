@@ -18,6 +18,10 @@ export interface Project {
     title: string;
     content: string;
   }[];
+  results?: {
+    value: string;
+    label: string;
+  }[];
 }
 
 export const projects: Project[] = [
@@ -41,6 +45,12 @@ export const projects: Project[] = [
     ],
     metric: "40+",
     metricLabel: "дизайнеров",
+    results: [
+      { value: "−60%", label: "TTM коммуникаций" },
+      { value: "−40%", label: "бюджет на коммуникации" },
+      { value: "3", label: "AI-продукта в проде" },
+      { value: "40+", label: "дизайнеров" },
+    ],
     type: "work",
     coverColor: "#1a1a2e",
     coverImage: "/images/photos/photo-5.jpg",
@@ -88,6 +98,12 @@ export const projects: Project[] = [
     ],
     metric: "100+",
     metricLabel: "дизайнеров",
+    results: [
+      { value: "<30с", label: "навигация по сервису" },
+      { value: "75%", label: "CSI" },
+      { value: "150", label: "Figma WAU Consta" },
+      { value: "CX 2024", label: "награда" },
+    ],
     type: "work",
     coverColor: "#1a2e1a",
     coverImage: "/images/photos/photo-1.jpg",
@@ -127,6 +143,11 @@ export const projects: Project[] = [
     tags: ["E-commerce", "HR Brand", "Design Process", "Community Building"],
     metric: "17K",
     metricLabel: "подписчиков HR-канала",
+    results: [
+      { value: "+40%", label: "найм дизайнеров" },
+      { value: "−60%", label: "текучка" },
+      { value: "17K", label: "подписчиков канала" },
+    ],
     type: "work",
     coverColor: "#1a1a3e",
     coverImage: "/images/photos/photo-2.jpg",
@@ -166,6 +187,12 @@ export const projects: Project[] = [
     tags: ["Mobile", "B2C", "Telecom", "Design Strategy", "Growth"],
     metric: "8.8М",
     metricLabel: "пользователей Cashback",
+    results: [
+      { value: "8.8М", label: "пользователей Cashback" },
+      { value: "×10", label: "рост транзакций" },
+      { value: "60+", label: "дизайнеров" },
+      { value: "16", label: "продуктовых команд" },
+    ],
     type: "work",
     coverColor: "#2e1a1a",
     coverImage: "/images/photos/photo-4.jpg",

@@ -112,6 +112,24 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
         </div>
       </section>
 
+      {/* Results bar */}
+      {project.results && project.results.length > 0 && (
+        <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] bg-black border-t border-white/[0.06]">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/[0.04] rounded-lg overflow-hidden my-0">
+            {project.results.map((r) => (
+              <div key={r.label} className="bg-black p-5 md:p-6 text-center">
+                <div className="text-xl md:text-2xl font-semibold text-white leading-none mb-1">
+                  {r.value}
+                </div>
+                <div className="text-[9px] md:text-[10px] tracking-[0.1em] uppercase text-white/35">
+                  {r.label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Content */}
       <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-16 md:py-24 bg-black border-t border-white/[0.06]">
         <div className="max-w-3xl">
