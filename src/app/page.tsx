@@ -84,7 +84,6 @@ export default function Home() {
           />
         </div>
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/60 to-black z-[1]" />
-        {/* soft accent glow */}
         <div className="pointer-events-none absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-[#A6FF00]/[0.04] blur-[120px] z-[1]" />
 
         <div className="relative z-[5] h-24 md:h-32" />
@@ -181,7 +180,7 @@ export default function Home() {
       {/* ===== OPEN TO ===== */}
       <section
         id="open-to"
-        className="relative z-[1] px-5 md:px-10 py-16 md:py-24 border-t border-white/[0.06] bg-black"
+        className="relative z-[1] px-5 md:px-10 py-14 md:py-20 border-t border-white/[0.06] bg-black"
       >
         <motion.div
           initial="hidden"
@@ -195,14 +194,15 @@ export default function Home() {
 
           <motion.p
             variants={fadeUp}
-            className="max-w-3xl text-lg md:text-2xl leading-snug text-white/85 font-light mb-10 md:mb-14"
+            className="text-lg md:text-2xl leading-snug text-white/85 font-light mb-10 md:mb-14"
           >
             Сейчас — Head of Design AI в МТС. Открыт к{" "}
             <span className="text-[#A6FF00]">C-level ролям</span> и{" "}
             <span className="text-[#A6FF00]">консалтингу по AI в дизайне</span>.
           </motion.p>
 
-          <div className="grid md:grid-cols-3 gap-4 md:gap-6 max-w-6xl">
+          {/* 3 cards + "best at" in a 4-col grid */}
+          <div className="grid md:grid-cols-4 gap-4 md:gap-5">
             {[
               {
                 icon: Briefcase,
@@ -238,7 +238,7 @@ export default function Home() {
                   <motion.div variants={cardHover}>
                     <Link
                       href={o.href}
-                      className="block border border-white/[0.08] rounded-xl p-5 md:p-6 no-underline group relative overflow-hidden"
+                      className="block border border-white/[0.08] rounded-xl p-5 md:p-6 no-underline group relative overflow-hidden h-full"
                     >
                       <div className="absolute top-0 right-0 w-32 h-32 bg-[#A6FF00]/[0.06] blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                       <Icon
@@ -263,28 +263,28 @@ export default function Home() {
                 </motion.div>
               );
             })}
-          </div>
 
-          <motion.div
-            variants={fadeUp}
-            className="mt-10 md:mt-14 max-w-4xl border-t border-white/[0.06] pt-8"
-          >
-            <div className="mb-3">
-              <SectionLabel>Лучше всего получается</SectionLabel>
-            </div>
-            <p className="text-sm md:text-base text-white/55 leading-relaxed">
-              Продуктовый дизайн с мандатом на стратегию · AI-трансформация
-              процессов · проекты от 3&nbsp;месяцев, где есть время на
-              исследование и итерацию · роли с прямым влиянием на продукт.
-            </p>
-          </motion.div>
+            {/* 4th cell: "Best at" fills the remaining column */}
+            <motion.div
+              variants={fadeUp}
+              className="border border-white/[0.06] rounded-xl p-5 md:p-6 flex flex-col justify-center"
+            >
+              <div className="mb-3">
+                <SectionLabel>Лучше всего получается</SectionLabel>
+              </div>
+              <p className="text-sm text-white/55 leading-relaxed">
+                Продуктовый дизайн с мандатом на стратегию · AI-трансформация
+                процессов · проекты от&nbsp;3&nbsp;месяцев · роли с прямым влиянием на продукт.
+              </p>
+            </motion.div>
+          </div>
         </motion.div>
       </section>
 
       {/* ===== ABOUT ===== */}
       <section
         id="about"
-        className="relative z-[1] px-5 md:px-10 py-20 md:py-28 border-t border-white/[0.06] bg-black"
+        className="relative z-[1] px-5 md:px-10 py-16 md:py-24 border-t border-white/[0.06] bg-black"
       >
         <motion.div
           initial="hidden"
@@ -295,39 +295,38 @@ export default function Home() {
           <motion.div variants={fadeUp} className="mb-3">
             <SectionLabel>01 — Обо мне</SectionLabel>
           </motion.div>
-          <motion.h2
-            variants={fadeUp}
-            className="font-p95 text-[clamp(28px,4vw,56px)] uppercase mb-8 md:mb-12"
-          >
-            ПРИВЕТ!
-          </motion.h2>
 
-          <motion.div
-            variants={fadeUp}
-            className="grid md:grid-cols-[1fr_auto] gap-8 md:gap-16 max-w-5xl"
-          >
+          {/* Asymmetric hero-style layout: big heading + photo right-aligned */}
+          <div className="grid md:grid-cols-[1fr_280px] gap-8 md:gap-12 items-start">
             <div>
-              <p className="text-white/70 leading-relaxed text-base md:text-lg mb-6">
+              <motion.h2
+                variants={fadeUp}
+                className="font-p95 text-[clamp(28px,4vw,56px)] uppercase mb-8"
+              >
+                ПРИВЕТ!
+              </motion.h2>
+
+              <motion.p variants={fadeUp} className="text-white/70 leading-relaxed text-base md:text-lg mb-6">
                 За последние 7 лет руководил дизайн-направлениями в МТС, Ozon и
                 Газпром Нефти. Сейчас совмещаю арт-директора B2C-экосистемы МТС
                 (40+ дизайнеров, 8 команд) и Head of Design AI-дивизиона.
-              </p>
-              <p className="text-white/45 leading-relaxed text-sm md:text-base mb-6">
+              </motion.p>
+              <motion.p variants={fadeUp} className="text-white/45 leading-relaxed text-sm md:text-base mb-6">
                 Формировал дизайн-стратегию МТС в период трансформации в
                 экосистему. Заложил основы дизайн-комьюнити в Ozon — найм +40%,
                 текучка −60%. Развивал open-source дизайн-систему Consta в
                 Газпром Нефти (10K+ NPM-скачиваний). Получил CX Awards 2024 за
                 единое сервисное окно.
-              </p>
-              <p className="text-white/45 leading-relaxed text-sm md:text-base">
+              </motion.p>
+              <motion.p variants={fadeUp} className="text-white/45 leading-relaxed text-sm md:text-base">
                 Преподаю прикладное использование ИИ в ВШЭ. Веду менторинг,
                 выступаю на конференциях, пишу код на React и Python,
                 экспериментирую с WebGL и AI-автоматизацией.
-              </p>
+              </motion.p>
             </div>
 
-            <div className="hidden md:block w-56 shrink-0">
-              <div className="relative w-56 h-72 rounded-xl overflow-hidden border border-white/[0.08]">
+            <motion.div variants={fadeUp} className="hidden md:block">
+              <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden border border-white/[0.08]">
                 <Image
                   src="/images/photos/photo-3.jpg"
                   alt="Егор Шугаев"
@@ -335,17 +334,17 @@ export default function Home() {
                   className="object-cover"
                 />
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </motion.div>
 
-        {/* Skills — grouped, with icons */}
+        {/* Skills — 4 columns: 3 skill groups + career timeline */}
         <motion.div
           initial="hidden"
           whileInView="show"
           viewport={viewport}
           variants={stagger}
-          className="mt-14 md:mt-20 grid md:grid-cols-3 gap-8 md:gap-10 max-w-5xl"
+          className="mt-12 md:mt-16 grid md:grid-cols-4 gap-5 md:gap-6"
         >
           {[
             {
@@ -407,73 +406,74 @@ export default function Home() {
               </motion.div>
             );
           })}
-        </motion.div>
 
-        {/* Career timeline */}
-        <motion.div
-          initial="hidden"
-          whileInView="show"
-          viewport={viewport}
-          variants={stagger}
-          className="mt-14 md:mt-20"
-        >
-          <motion.div variants={fadeUp} className="mb-6">
-            <SectionLabel>Карьера</SectionLabel>
-          </motion.div>
-          <div className="space-y-0">
-            {[
-              {
-                year: "2024",
-                company: "МТС",
-                role: "Арт-директор B2C · Head of Design AI Division",
-                current: true,
-              },
-              {
-                year: "2022",
-                company: "Газпром Нефть",
-                role: "Lead Product Designer → Design Manager",
-              },
-              {
-                year: "2021",
-                company: "OZON",
-                role: "Senior Product Designer → Design Lead",
-              },
-              {
-                year: "2018",
-                company: "МТС",
-                role: "Product Designer → Head of Design Direction",
-              },
-            ].map((job) => (
-              <motion.div
-                key={job.year + job.company}
-                variants={fadeUp}
-                className="flex items-baseline gap-4 md:gap-8 py-3 border-b border-white/[0.06] hover:border-[#A6FF00]/30 transition-colors"
-              >
-                <span className="text-[10px] tracking-[0.15em] uppercase text-white/25 w-12 shrink-0 font-mono">
-                  {job.year}
-                </span>
-                <span className="text-sm text-white/80 w-32 md:w-40 shrink-0">
-                  {job.company}
-                </span>
-                <span className="text-sm text-white/45">
-                  {job.role}
-                  {job.current && (
-                    <span className="ml-2 inline-flex items-center gap-1 text-[9px] tracking-[0.1em] uppercase text-[#A6FF00]/80">
-                      <span className="h-1 w-1 rounded-full bg-[#A6FF00] animate-pulse" />
-                      now
+          {/* Career timeline — 4th column */}
+          <motion.div
+            variants={fadeUp}
+            className="border border-white/[0.06] rounded-xl p-5 md:p-6 hover:border-white/20 transition-colors"
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <Briefcase className="w-4 h-4 text-[#A6FF00]" strokeWidth={1.75} />
+              <div className="text-[10px] tracking-[0.18em] uppercase text-white/60 font-medium">
+                Карьера
+              </div>
+            </div>
+            <div className="space-y-0">
+              {[
+                {
+                  year: "2024",
+                  company: "МТС",
+                  role: "Арт-директор B2C · Head of Design AI",
+                  current: true,
+                },
+                {
+                  year: "2022",
+                  company: "Газпром Нефть",
+                  role: "Lead Designer → Design Manager",
+                },
+                {
+                  year: "2021",
+                  company: "OZON",
+                  role: "Sr. Designer → Design Lead",
+                },
+                {
+                  year: "2018",
+                  company: "МТС",
+                  role: "Designer → Head of Direction",
+                },
+              ].map((job) => (
+                <div
+                  key={job.year + job.company}
+                  className="py-2.5 border-b border-white/[0.06] last:border-0"
+                >
+                  <div className="flex items-baseline gap-3">
+                    <span className="text-[10px] tracking-[0.12em] text-white/25 font-mono w-9 shrink-0">
+                      {job.year}
                     </span>
-                  )}
-                </span>
-              </motion.div>
-            ))}
-          </div>
+                    <span className="text-sm text-white/80 font-medium">
+                      {job.company}
+                      {job.current && (
+                        <span className="ml-2 inline-flex items-center gap-1 text-[9px] tracking-[0.1em] uppercase text-[#A6FF00]/80">
+                          <span className="h-1 w-1 rounded-full bg-[#A6FF00] animate-pulse" />
+                          now
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                  <div className="text-xs text-white/40 mt-0.5 pl-12">
+                    {job.role}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
         </motion.div>
       </section>
 
       {/* ===== PORTFOLIO ===== */}
       <section
         id="portfolio"
-        className="relative z-[1] px-5 md:px-10 py-20 md:py-28 border-t border-white/[0.06] bg-black"
+        className="relative z-[1] px-5 md:px-10 py-16 md:py-24 border-t border-white/[0.06] bg-black"
       >
         <motion.div
           initial="hidden"
@@ -504,7 +504,7 @@ export default function Home() {
       {/* ===== PUBLIC ===== */}
       <section
         id="public"
-        className="relative z-[1] px-5 md:px-10 py-20 md:py-28 border-t border-white/[0.06] bg-black"
+        className="relative z-[1] px-5 md:px-10 py-14 md:py-20 border-t border-white/[0.06] bg-black"
       >
         <motion.div
           initial="hidden"
@@ -522,7 +522,8 @@ export default function Home() {
             ГОВОРЮ И ПИШУ
           </motion.h2>
 
-          <div className="grid md:grid-cols-3 gap-6 md:gap-8 max-w-6xl">
+          {/* 4-col: 3 content cards + photo collage */}
+          <div className="grid md:grid-cols-4 gap-5 md:gap-6">
             {[
               {
                 icon: Mic2,
@@ -594,29 +595,72 @@ export default function Home() {
                 </motion.div>
               );
             })}
+
+            {/* 4th column: stacked photos */}
+            <motion.div variants={fadeUp} className="hidden md:flex flex-col gap-3">
+              {["/images/photos/photo-5.jpg", "/images/photos/photo-6.jpg"].map((src, i) => (
+                <motion.div
+                  key={i}
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ duration: 0.3 }}
+                  className="relative flex-1 min-h-[140px] rounded-lg overflow-hidden border border-white/[0.06]"
+                >
+                  <Image
+                    src={src}
+                    alt="Выступление"
+                    fill
+                    className="object-cover opacity-80 hover:opacity-100 transition-opacity"
+                  />
+                </motion.div>
+              ))}
+            </motion.div>
           </div>
 
+          {/* Photo strip (mobile: full, desktop: below cards) */}
           <motion.div
             variants={fadeUp}
-            className="mt-12 md:mt-16 grid grid-cols-2 md:grid-cols-4 gap-3"
+            className="mt-6 grid grid-cols-2 md:hidden gap-3"
           >
             {[
               "/images/photos/photo-5.jpg",
-              "/images/photos/photo-4.jpg",
               "/images/photos/photo-6.jpg",
-              "/images/photos/photo-1.jpg",
             ].map((src, i) => (
-              <motion.div
+              <div
                 key={i}
-                whileHover={{ scale: 1.02 }}
-                transition={{ duration: 0.3 }}
                 className="relative aspect-[4/3] rounded-lg overflow-hidden border border-white/[0.06]"
               >
                 <Image
                   src={src}
                   alt="Выступление"
                   fill
-                  className="object-cover opacity-80 hover:opacity-100 transition-opacity"
+                  className="object-cover opacity-80"
+                />
+              </div>
+            ))}
+          </motion.div>
+
+          {/* Full-width photo row */}
+          <motion.div
+            variants={fadeUp}
+            className="mt-6 hidden md:grid grid-cols-4 gap-3"
+          >
+            {[
+              "/images/photos/photo-4.jpg",
+              "/images/photos/photo-1.jpg",
+              "/images/photos/photo-3.jpg",
+              "/images/photos/photo-2.jpg",
+            ].map((src, i) => (
+              <motion.div
+                key={i}
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.3 }}
+                className="relative aspect-[16/9] rounded-lg overflow-hidden border border-white/[0.06]"
+              >
+                <Image
+                  src={src}
+                  alt="Выступление"
+                  fill
+                  className="object-cover opacity-70 hover:opacity-100 transition-opacity"
                 />
               </motion.div>
             ))}
@@ -627,7 +671,7 @@ export default function Home() {
       {/* ===== EXPERIMENTS ===== */}
       <section
         id="experiments"
-        className="relative z-[1] px-5 md:px-10 py-20 md:py-28 border-t border-white/[0.06] bg-black"
+        className="relative z-[1] px-5 md:px-10 py-14 md:py-20 border-t border-white/[0.06] bg-black"
       >
         <motion.div
           initial="hidden"
@@ -658,7 +702,7 @@ export default function Home() {
       {/* ===== MENTORING ===== */}
       <section
         id="mentoring"
-        className="relative z-[1] px-5 md:px-10 py-20 md:py-28 border-t border-white/[0.06] bg-black"
+        className="relative z-[1] px-5 md:px-10 py-14 md:py-20 border-t border-white/[0.06] bg-black"
       >
         <motion.div
           initial="hidden"
@@ -671,107 +715,102 @@ export default function Home() {
           </motion.div>
           <motion.h2
             variants={fadeUp}
-            className="font-p95 text-[clamp(28px,4vw,56px)] uppercase mb-8 md:mb-12"
+            className="font-p95 text-[clamp(28px,4vw,56px)] uppercase mb-8 md:mb-10"
           >
             МЕНТОРИНГ
           </motion.h2>
 
-          <div className="grid md:grid-cols-[1.2fr_1fr] gap-10 md:gap-16 max-w-6xl">
+          {/* Full-width: intro spans all columns */}
+          <motion.div variants={fadeUp} className="mb-8">
+            <p className="text-white/70 leading-relaxed text-base md:text-lg max-w-3xl">
+              Помогаю дизайнерам расти в сеньоров и лидов. Фокус — продуктовый
+              дизайн и AI-практики. 8+ лет опыта, управление командами,
+              выстраивание процессов.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-4 gap-4 md:gap-5">
+            {/* 3 pricing cards */}
+            {[
+              {
+                icon: Clock,
+                format: "Разовая консультация",
+                desc: "1 сессия · 60 минут. Разбор портфолио, карьерный совет, конкретный вопрос",
+                time: "60 мин",
+                price: "8 000 ₽",
+              },
+              {
+                icon: CalendarDays,
+                format: "Менторинг (4 недели)",
+                desc: "4 сессии по 60 минут · еженедельно. Трекинг прогресса, домашние задания, feedback",
+                time: "4 недели",
+                price: "25 000 ₽",
+              },
+              {
+                icon: Users,
+                format: "AI-мастер-класс",
+                desc: "1 встреча · 2–3 часа · группа до 10 человек. Claude, Cursor, v0 в продуктовой работе",
+                time: "2–3 часа",
+                price: "от 50 000 ₽",
+              },
+            ].map((item) => {
+              const Icon = item.icon;
+              return (
+                <motion.div
+                  key={item.format}
+                  variants={fadeUp}
+                  whileHover={{ borderColor: "rgba(166,255,0,0.3)" }}
+                  className="border border-white/[0.08] rounded-xl p-5"
+                >
+                  <div className="flex items-center gap-2.5 mb-3">
+                    <Icon className="w-4 h-4 text-[#A6FF00]" strokeWidth={1.75} />
+                    <h3 className="text-sm md:text-base font-medium text-white/90">
+                      {item.format}
+                    </h3>
+                  </div>
+                  <p className="text-xs md:text-sm text-white/45 leading-relaxed mb-4">
+                    {item.desc}
+                  </p>
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-xs font-semibold text-[#A6FF00]">
+                      {item.price}
+                    </span>
+                    <span className="text-[9px] tracking-[0.12em] uppercase text-white/25">
+                      {item.time}
+                    </span>
+                  </div>
+                </motion.div>
+              );
+            })}
+
+            {/* 4th column: booking CTA */}
             <motion.div variants={fadeUp}>
-              <p className="text-white/70 leading-relaxed text-base md:text-lg mb-6">
-                Помогаю дизайнерам расти в сеньоров и лидов. Фокус — продуктовый
-                дизайн и AI-практики. Делюсь конкретными инструментами, а не
-                общими советами.
-              </p>
-              <p className="text-white/45 leading-relaxed text-sm md:text-base mb-10">
-                8+ лет опыта в крупных продуктах, управление командами,
-                выстраивание процессов. Знаю, как расти в корпорации и не терять
-                мотивацию.
-              </p>
-
-              <div className="space-y-3">
-                {[
-                  {
-                    icon: Clock,
-                    format: "Разовая консультация",
-                    desc: "1 сессия · 60 минут. Разбор портфолио, карьерный совет, конкретный вопрос",
-                    time: "60 мин",
-                    price: "8 000 ₽",
-                  },
-                  {
-                    icon: CalendarDays,
-                    format: "Менторинг (4 недели)",
-                    desc: "4 сессии по 60 минут · еженедельно. Трекинг прогресса, домашние задания, feedback между встречами",
-                    time: "4 недели",
-                    price: "25 000 ₽",
-                  },
-                  {
-                    icon: Users,
-                    format: "AI-мастер-класс для команды",
-                    desc: "1 встреча · 2–3 часа · группа до 10 человек. Claude, Cursor, v0 в продуктовой работе",
-                    time: "2–3 часа",
-                    price: "от 50 000 ₽",
-                  },
-                ].map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <motion.div
-                      key={item.format}
-                      whileHover={{ borderColor: "rgba(166,255,0,0.3)" }}
-                      className="border border-white/[0.08] rounded-xl p-5"
-                    >
-                      <div className="flex flex-wrap justify-between items-baseline gap-2 mb-2">
-                        <h3 className="inline-flex items-center gap-2.5 text-sm md:text-base font-medium text-white/90">
-                          <Icon className="w-4 h-4 text-[#A6FF00]" strokeWidth={1.75} />
-                          {item.format}
-                        </h3>
-                        <span className="text-xs font-semibold text-[#A6FF00]">
-                          {item.price}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-start gap-3 pl-6">
-                        <p className="text-xs md:text-sm text-white/45 flex-1">
-                          {item.desc}
-                        </p>
-                        <span className="text-[9px] tracking-[0.12em] uppercase text-white/25 shrink-0">
-                          {item.time}
-                        </span>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </motion.div>
-
-            {/* Booking */}
-            <motion.div variants={fadeUp} className="md:sticky md:top-24 self-start">
-              <div className="border border-white/[0.08] rounded-xl p-6 md:p-8 relative overflow-hidden">
+              <div className="border border-white/[0.08] rounded-xl p-5 md:p-6 relative overflow-hidden h-full flex flex-col justify-between">
                 <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#A6FF00]/[0.06] blur-3xl rounded-full" />
-                <h3 className="text-sm font-medium text-white/70 mb-4 uppercase tracking-[0.1em]">
-                  Записаться
-                </h3>
-                <p className="text-sm text-white/50 leading-relaxed mb-6">
-                  Выберите удобный слот в календаре. Если не нашли время —
-                  напишите в Telegram, подберём вручную.
-                </p>
-                <Link
-                  href="https://cal.com/egorshugaev"
-                  target="_blank"
-                  className="block w-full text-center bg-[#A6FF00] text-black hover:bg-[#B8FF33] rounded-lg px-6 py-3 text-sm font-semibold transition-colors no-underline mb-3"
-                >
-                  Открыть календарь
-                </Link>
-                <Link
-                  href="https://t.me/egoradi"
-                  target="_blank"
-                  className="block w-full text-center bg-transparent border border-white/15 hover:border-white/40 rounded-lg px-6 py-3 text-sm text-white/70 hover:text-white transition-colors no-underline"
-                >
-                  Написать в Telegram
-                </Link>
-              </div>
-
-              <div className="mt-6 text-xs text-white/45 leading-relaxed">
-                Самый быстрый способ связаться — Telegram.
+                <div>
+                  <h3 className="text-sm font-medium text-white/70 mb-3 uppercase tracking-[0.1em]">
+                    Записаться
+                  </h3>
+                  <p className="text-sm text-white/50 leading-relaxed mb-5">
+                    Выберите удобный слот или напишите в Telegram.
+                  </p>
+                </div>
+                <div className="space-y-2.5">
+                  <Link
+                    href="https://cal.com/egorshugaev"
+                    target="_blank"
+                    className="block w-full text-center bg-[#A6FF00] text-black hover:bg-[#B8FF33] rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors no-underline"
+                  >
+                    Открыть календарь
+                  </Link>
+                  <Link
+                    href="https://t.me/egoradi"
+                    target="_blank"
+                    className="block w-full text-center bg-transparent border border-white/15 hover:border-white/40 rounded-lg px-5 py-2.5 text-sm text-white/70 hover:text-white transition-colors no-underline"
+                  >
+                    Написать в Telegram
+                  </Link>
+                </div>
               </div>
             </motion.div>
           </div>
@@ -781,7 +820,7 @@ export default function Home() {
       {/* ===== CONTACTS ===== */}
       <section
         id="contacts"
-        className="relative z-[1] px-5 md:px-10 py-20 md:py-24 border-t border-white/[0.06] bg-black"
+        className="relative z-[1] px-5 md:px-10 py-14 md:py-20 border-t border-white/[0.06] bg-black"
       >
         <motion.div
           initial="hidden"
@@ -789,46 +828,50 @@ export default function Home() {
           viewport={viewport}
           variants={stagger}
         >
-          <motion.div variants={fadeUp} className="mb-3">
-            <SectionLabel>06 — Контакты</SectionLabel>
-          </motion.div>
-          <motion.h2
-            variants={fadeUp}
-            className="font-p95 text-[clamp(28px,4vw,56px)] uppercase mb-6"
-          >
-            НАПИСАТЬ
-          </motion.h2>
-          <motion.p
-            variants={fadeUp}
-            className="inline-flex items-center gap-2 text-white/50 leading-relaxed text-base md:text-lg max-w-2xl mb-10"
-          >
-            <MapPin className="w-4 h-4 text-[#A6FF00] shrink-0" strokeWidth={1.75} />
-            Москва · готов к гибриду и удалёнке · обсуждаю релокацию под сильный оффер. Самый быстрый канал — Telegram.
-          </motion.p>
-
-          <motion.div variants={fadeUp} className="flex flex-wrap gap-3 md:gap-4">
-            {[
-              { label: "Telegram", href: "https://t.me/egoradi", primary: true, Icon: Send },
-              { label: "Email", href: "mailto:egor.outhead@gmail.com", Icon: Mail },
-              { label: "LinkedIn", href: "https://www.linkedin.com/in/egorshugaev/", Icon: LinkedinIcon },
-              { label: "GitHub", href: "https://github.com/outhead", Icon: GithubIcon },
-              { label: "CV", href: "/Egor_Shugaev_CV.pdf", Icon: FileDown },
-            ].map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                target="_blank"
-                className={
-                  link.primary
-                    ? "inline-flex items-center gap-2 bg-[#A6FF00] text-black hover:bg-[#B8FF33] rounded-lg px-6 py-3 text-sm font-semibold transition-colors no-underline"
-                    : "inline-flex items-center gap-2 bg-transparent border border-white/15 hover:border-white/40 rounded-lg px-6 py-3 text-sm text-white/70 hover:text-white transition-colors no-underline"
-                }
+          <div className="grid md:grid-cols-[1fr_auto] gap-8 items-end">
+            <div>
+              <motion.div variants={fadeUp} className="mb-3">
+                <SectionLabel>06 — Контакты</SectionLabel>
+              </motion.div>
+              <motion.h2
+                variants={fadeUp}
+                className="font-p95 text-[clamp(28px,4vw,56px)] uppercase mb-4"
               >
-                <link.Icon className="w-4 h-4" strokeWidth={1.75} />
-                {link.label}
-              </Link>
-            ))}
-          </motion.div>
+                НАПИСАТЬ
+              </motion.h2>
+              <motion.p
+                variants={fadeUp}
+                className="inline-flex items-center gap-2 text-white/50 leading-relaxed text-base md:text-lg max-w-2xl"
+              >
+                <MapPin className="w-4 h-4 text-[#A6FF00] shrink-0" strokeWidth={1.75} />
+                Москва · готов к гибриду и удалёнке · обсуждаю релокацию под сильный оффер.
+              </motion.p>
+            </div>
+
+            <motion.div variants={fadeUp} className="flex flex-wrap gap-3">
+              {[
+                { label: "Telegram", href: "https://t.me/egoradi", primary: true, Icon: Send },
+                { label: "Email", href: "mailto:egor.outhead@gmail.com", Icon: Mail },
+                { label: "LinkedIn", href: "https://www.linkedin.com/in/egorshugaev/", Icon: LinkedinIcon },
+                { label: "GitHub", href: "https://github.com/outhead", Icon: GithubIcon },
+                { label: "CV", href: "/Egor_Shugaev_CV.pdf", Icon: FileDown },
+              ].map((link) => (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  target="_blank"
+                  className={
+                    link.primary
+                      ? "inline-flex items-center gap-2 bg-[#A6FF00] text-black hover:bg-[#B8FF33] rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors no-underline"
+                      : "inline-flex items-center gap-2 bg-transparent border border-white/15 hover:border-white/40 rounded-lg px-5 py-2.5 text-sm text-white/70 hover:text-white transition-colors no-underline"
+                  }
+                >
+                  <link.Icon className="w-4 h-4" strokeWidth={1.75} />
+                  {link.label}
+                </Link>
+              ))}
+            </motion.div>
+          </div>
         </motion.div>
       </section>
     </>
