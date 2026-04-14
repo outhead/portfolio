@@ -27,14 +27,14 @@ const links = [
 export default function Footer() {
   return (
     <footer className="relative z-[1] border-t border-white/[0.04] px-5 md:px-10 py-5 bg-black/75">
-      <div className="flex justify-between flex-wrap gap-4 text-[10px] tracking-[0.12em] uppercase text-white/20">
+      <div className="flex justify-between flex-wrap gap-4 text-[10px] tracking-[0.12em] uppercase text-white/50">
         <div className="flex gap-5">
           {links.map((l) => (
             <Link
               key={l.label}
               href={l.href}
               target="_blank"
-              className="inline-flex items-center gap-1.5 text-white/25 no-underline hover:text-[#A6FF00] transition-colors"
+              className="inline-flex items-center gap-1.5 text-white/55 no-underline hover:text-[#A6FF00] transition-colors min-h-[44px]"
             >
               <l.Icon className="w-3.5 h-3.5" strokeWidth={1.75} />
               {l.label}

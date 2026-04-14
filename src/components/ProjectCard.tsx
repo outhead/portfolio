@@ -68,7 +68,7 @@ export default function ProjectCard({ project, index }: ProjectCardProps) {
           <h3 className="text-base md:text-lg font-medium text-white mb-1">
             {project.title}
           </h3>
-          <p className="text-[11px] tracking-[0.05em] text-white/40 uppercase mb-3">
+          <p className="text-[11px] tracking-[0.05em] text-white/60 uppercase mb-3">
             {project.role} · {project.period}
           </p>
           <p className="text-sm text-white/55 leading-relaxed line-clamp-3">
@@ -78,7 +78,7 @@ export default function ProjectCard({ project, index }: ProjectCardProps) {
             {project.tags.slice(0, 4).map((tag) => (
               <span
                 key={tag}
-                className="text-[9px] tracking-[0.08em] uppercase px-2 py-1 rounded border border-white/[0.08] text-white/35"
+                className="text-[9px] tracking-[0.08em] uppercase px-2 py-1 rounded border border-white/[0.1] text-white/55"
               >
                 {tag}
               </span>

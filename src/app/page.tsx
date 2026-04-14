@@ -106,18 +106,17 @@ export default function Home() {
 
           <motion.p
             variants={fadeUp}
-            className="mt-5 md:mt-7 max-w-3xl text-lg md:text-2xl leading-snug text-white/80 font-light"
+            className="mt-5 md:mt-7 max-w-2xl text-lg md:text-2xl leading-snug text-white/85 font-light"
           >
-            Арт-директор B2C-экосистемы и Head of Design AI-дивизиона&nbsp;МТС.
-            За 7 лет построил дизайн-функции в МТС, Ozon и Газпром&nbsp;Нефти —
-            от процессов и найма до production-продуктов на 8.8М+ пользователей.
+            Строю дизайн-функции и AI-продукты в крупных продуктовых компаниях.
+            8.8М+ пользователей, 100+ дизайнеров, CX Award 2024.
           </motion.p>
 
           <motion.p
             variants={fadeUp}
-            className="mt-3 text-[11px] md:text-xs tracking-[0.15em] uppercase text-white/30"
+            className="mt-3 text-[11px] md:text-xs tracking-[0.15em] uppercase text-white/50"
           >
-            Арт-директор · Head of Design · AI · Ментор · Москва
+            Head of Design · AI Division · МТС · Москва
           </motion.p>
         </motion.div>
 
@@ -131,11 +130,11 @@ export default function Home() {
         >
           <div className="grid grid-cols-2 md:grid-cols-5 gap-px bg-white/[0.06] border border-white/[0.06] rounded-lg overflow-hidden backdrop-blur-sm">
             {[
-              { value: "8.8М+", label: "пользователей", ctx: "МТС Cashback, 2018–21" },
-              { value: "100+", label: "дизайнеров в команде", ctx: "Газпром Нефть, 2022–24" },
-              { value: "−60%", label: "TTM", ctx: "МТС AI, 2024" },
-              { value: "+40% / −60%", label: "найм · текучка", ctx: "Ozon, 2021–22" },
-              { value: "CX 2024", label: "награда за сервис", ctx: "МТС, сервисное окно" },
+              { value: "8.8М+", label: "пользователей продуктов", ctx: "МТС Cashback, 2018–21" },
+              { value: "100+", label: "дизайнеров под управлением", ctx: "Газпром Нефть, 2022–24" },
+              { value: "−60%", label: "скорость запуска", ctx: "МТС AI, 2024" },
+              { value: "+40% / −60%", label: "рост найма · снижение текучки", ctx: "Ozon, год к году" },
+              { value: "CX 2024", label: "награда за сервис-дизайн", ctx: "МТС, единое окно" },
             ].map((s) => (
               <motion.div
                 key={s.label}
@@ -145,7 +144,7 @@ export default function Home() {
                 <div className="text-xl md:text-2xl font-semibold text-white leading-none mb-2 group-hover:text-[#A6FF00] transition-colors">
                   {s.value}
                 </div>
-                <div className="text-[9px] md:text-[10px] tracking-[0.12em] uppercase text-white/40">
+                <div className="text-[9px] md:text-[10px] tracking-[0.12em] uppercase text-white/55">
                   {s.label}
                 </div>
                 <div className="mt-2 text-[9px] text-white/25 leading-snug">
@@ -196,12 +195,11 @@ export default function Home() {
 
           <motion.p
             variants={fadeUp}
-            className="max-w-3xl text-lg md:text-2xl leading-snug text-white/80 font-light mb-10 md:mb-14"
+            className="max-w-3xl text-lg md:text-2xl leading-snug text-white/85 font-light mb-10 md:mb-14"
           >
-            7 лет строил дизайн-функции в МТС, Ozon и Газпром Нефти. Сейчас веду
-            AI-дивизион МТС. Ищу{" "}
-            <span className="text-[#A6FF00]">C-level роль</span> или{" "}
-            <span className="text-[#A6FF00]">консалтинг по AI в дизайне</span>.
+            Сейчас — Head of Design AI в МТС. Открыт к{" "}
+            <span className="text-[#A6FF00]">C-level ролям</span> и{" "}
+            <span className="text-[#A6FF00]">консалтингу по AI в дизайне</span>.
           </motion.p>
 
           <div className="grid md:grid-cols-3 gap-4 md:gap-6 max-w-6xl">
@@ -210,21 +208,21 @@ export default function Home() {
                 icon: Briefcase,
                 title: "C-level роли",
                 desc: "VP / Head of Design в продуктовых компаниях. Управление 50+ дизайнеров, трансформация, AI-интеграция.",
-                cta: "Обсудить роль",
+                cta: "Написать о вакансии",
                 href: "mailto:egor.outhead@gmail.com?subject=Вакансия",
               },
               {
                 icon: Sparkles,
                 title: "Консалтинг",
                 desc: "Внедрение AI в дизайн-процесс, аудит дизайн-функции, разработка стратегии. От 2 недель до 3 месяцев.",
-                cta: "Запросить консалтинг",
+                cta: "Написать о консалтинге",
                 href: "mailto:egor.outhead@gmail.com?subject=Консалтинг",
               },
               {
                 icon: GraduationCap,
                 title: "Менторинг",
                 desc: "1:1 для дизайнеров и лидов. Разовая встреча — 8 000 ₽. Регулярный менторинг — от 25 000 ₽ / месяц.",
-                cta: "Записаться",
+                cta: "Выбрать формат",
                 href: "#mentoring",
               },
             ].map((o) => {
@@ -272,11 +270,12 @@ export default function Home() {
             className="mt-10 md:mt-14 max-w-4xl border-t border-white/[0.06] pt-8"
           >
             <div className="mb-3">
-              <SectionLabel>Не беру</SectionLabel>
+              <SectionLabel>Лучше всего получается</SectionLabel>
             </div>
-            <p className="text-sm md:text-base text-white/45 leading-relaxed">
-              Операционку без продуктового мандата · брендинг и маркетинговый
-              дизайн · проекты короче 3&nbsp;месяцев · роли без доступа к стратегии.
+            <p className="text-sm md:text-base text-white/55 leading-relaxed">
+              Продуктовый дизайн с мандатом на стратегию · AI-трансформация
+              процессов · проекты от 3&nbsp;месяцев, где есть время на
+              исследование и итерацию · роли с прямым влиянием на продукт.
             </p>
           </motion.div>
         </motion.div>
@@ -578,7 +577,7 @@ export default function Home() {
                     </p>
                   )}
                   {c.foot && (
-                    <p className="text-[11px] tracking-[0.08em] uppercase text-white/30 mt-5">
+                    <p className="text-[11px] tracking-[0.08em] uppercase text-white/50 mt-5">
                       {c.foot}
                     </p>
                   )}
@@ -643,7 +642,7 @@ export default function Home() {
             variants={fadeUp}
             className="font-p95 text-[clamp(28px,4vw,56px)] uppercase mb-10 md:mb-14"
           >
-            PET PROJECTS
+            ЭКСПЕРИМЕНТЫ
           </motion.h2>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
@@ -694,24 +693,24 @@ export default function Home() {
                 {[
                   {
                     icon: Clock,
-                    format: "Разовая встреча",
-                    desc: "Разбор портфолио, карьерная консультация, конкретный вопрос",
+                    format: "Разовая консультация",
+                    desc: "1 сессия · 60 минут. Разбор портфолио, карьерный совет, конкретный вопрос",
                     time: "60 мин",
                     price: "8 000 ₽",
                   },
                   {
                     icon: CalendarDays,
-                    format: "Регулярный менторинг",
-                    desc: "Еженедельные сессии, трекинг прогресса, домашние задания",
-                    time: "4–8 недель",
-                    price: "от 25 000 ₽ / мес",
+                    format: "Менторинг (4 недели)",
+                    desc: "4 сессии по 60 минут · еженедельно. Трекинг прогресса, домашние задания, feedback между встречами",
+                    time: "4 недели",
+                    price: "25 000 ₽",
                   },
                   {
                     icon: Users,
-                    format: "AI для дизайнеров",
-                    desc: "Как встроить Claude, Cursor, v0 в продуктовую работу",
-                    time: "Мастер-класс",
-                    price: "от 50 000 ₽ / группа",
+                    format: "AI-мастер-класс для команды",
+                    desc: "1 встреча · 2–3 часа · группа до 10 человек. Claude, Cursor, v0 в продуктовой работе",
+                    time: "2–3 часа",
+                    price: "от 50 000 ₽",
                   },
                 ].map((item) => {
                   const Icon = item.icon;
@@ -771,9 +770,8 @@ export default function Home() {
                 </Link>
               </div>
 
-              <div className="mt-6 text-xs text-white/30 leading-relaxed">
-                Я отвечаю в течение 1 рабочего дня. Если срочно — сразу в
-                Telegram.
+              <div className="mt-6 text-xs text-white/45 leading-relaxed">
+                Самый быстрый способ связаться — Telegram.
               </div>
             </motion.div>
           </div>
