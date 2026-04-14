@@ -17,6 +17,7 @@ export interface Project {
   sections?: {
     title: string;
     content: string;
+    screenshots?: string[];
   }[];
   results?: {
     value: string;
@@ -83,6 +84,16 @@ export const projects: Project[] = [
         title: "AI-дивизион",
         content:
           "Построил дизайн-функцию для нового AI-дивизиона: от найма до процессов, от дизайн-системы до готовых продуктов. Создал MWS AI UI Kit — единую дизайн-систему для всех AI-продуктов. Спроектировал Legal Copilot (AI-ассистент для юристов) и IAM Admin (управление доступами). Внедрил AI-инструменты (Claude, Cursor, v0) в дизайн-процесс. 3 продукта в production, дизайн-система покрывает 90%+ интерфейсов.",
+        screenshots: [
+          "/images/iam-admin/1.1-workspaces.png",
+          "/images/iam-admin/1.5-role-constructor.png",
+          "/images/iam-admin/1.2-ba-users.png",
+          "/images/iam-admin/1.3-ws-users.png",
+          "/images/iam-admin/1.4-ws-roles.png",
+          "/images/iam-admin/1.6-ws-multi.png",
+          "/images/iam-admin/3.1-modal-create-ws.png",
+          "/images/iam-admin/2.1-user-card.png",
+        ],
       },
     ],
     links: [
@@ -128,11 +139,13 @@ export const projects: Project[] = [
         title: "ЕСО — единое сервисное окно",
         content:
           "Спроектировал единую точку входа для всех корпоративных сервисов сотрудников Газпром Нефти. Навигация по любому сервису — менее 30 секунд. Подача заявки — менее 1 минуты. CSI (индекс удовлетворённости) — 75%. Проект получил награду CX Awards 2024.",
+        screenshots: ["/images/figma/gpn-main.jpg"],
       },
       {
         title: "Дизайн-система Consta",
         content:
           "Развивал open-source дизайн-систему Consta для всех цифровых продуктов компании. 150 Figma WAU (еженедельных активных пользователей). 82% CSI среди пользователей системы. 450 NPM WAU, 10 000+ скачиваний. Используется в 50+ цифровых продуктах компании.",
+        screenshots: ["/images/figma/gpn-eso.jpg"],
       },
       {
         title: "Результат",
@@ -177,11 +190,13 @@ export const projects: Project[] = [
         title: "Дизайн-процессы",
         content:
           "Внедрил системный подход к дизайну: design-review для всех критичных фич, регулярные UX-исследования, дизайн-критики. Это стало фундаментом, на котором команда масштабировалась.",
+        screenshots: ["/images/figma/ozon-process.jpg"],
       },
       {
         title: "HR-бренд дизайна",
         content:
           "Создал и развил Telegram-канал дизайн-команды OZON с нуля до 17 000 подписчиков. Результат для бизнеса: найм дизайнеров вырос на 40%, текучка снизилась на 60%. Канал стал одним из главных инструментов привлечения талантов в компанию.",
+        screenshots: ["/images/figma/ozon-hr.jpg"],
       },
       {
         title: "Результат",
@@ -224,16 +239,19 @@ export const projects: Project[] = [
         title: "МТС Cashback",
         content:
           "8.8 миллионов пользователей. Рост количества транзакций в 10 раз. Ключевой продукт монетизации экосистемы МТС — кэшбэк-программа, интегрированная во все сервисы.",
+        screenshots: ["/images/figma/mts-cashback.jpg"],
       },
       {
         title: "МТС Premium & Строки",
         content:
           "МТС Premium: 2.9 миллиона пользователей, рост подписок в 2 раза. МТС Строки (стриминговый сервис): 1.5 миллиона пользователей, рост в 2.5 раза. Два продукта, формирующих подписочную модель экосистемы.",
+        screenshots: ["/images/figma/mts-stroki.jpg"],
       },
       {
         title: "Smart-продукты и Вторая Память",
         content:
           "Smart University: 0.5 миллиона пользователей, 70% вовлечённость. Smart Med: 4 миллиона пользователей, рост 300%. МТС Вторая Память: 1М+ пользователей, рейтинг 4.7/5, 70K+ MAU. Линейка smart-продуктов — от образования до здоровья и облачного хранилища.",
+        screenshots: ["/images/figma/mts-memory.jpg"],
       },
       {
         title: "Масштаб и рост",
@@ -259,22 +277,39 @@ export const projects: Project[] = [
     type: "experiment",
     coverColor: "#1e1a2e",
     coverImage: "/images/covers/legal-copilot-cover.jpg",
+    screenshots: [
+      "/images/legal-copilot/review.png",
+      "/images/legal-copilot/library.jpg",
+      "/images/legal-copilot/quality.jpg",
+      "/images/legal-copilot/how-it-works.jpg",
+      "/images/legal-copilot/user-stories.jpg",
+    ],
     sections: [
       {
         title: "Проблема",
         content:
           "Юристы тратят часы на поиск прецедентов и составление типовых заключений. Документы разбросаны по разным системам, нет единой точки поиска.",
+        screenshots: ["/images/legal-copilot/user-stories.jpg"],
       },
       {
         title: "Решение",
         content:
           "Чат-интерфейс с RAG-подходом: AI ищет по базе документов и генерирует ответы с цитатами из источников. Стек: React, TypeScript, MWS AI UI Kit. Интеграция с внутренними системами документооборота.",
+        screenshots: [
+          "/images/legal-copilot/review.png",
+          "/images/legal-copilot/library.jpg",
+          "/images/legal-copilot/how-it-works.jpg",
+        ],
       },
       {
         title: "Результат",
         content:
           "Время поиска информации сократилось в 5 раз. Юристы используют продукт ежедневно для рутинных задач. Продукт в production.",
+        screenshots: ["/images/legal-copilot/quality.jpg"],
       },
+    ],
+    links: [
+      { label: "MWS AI — облачная AI-платформа МТС", url: "https://mws.ru/services/ai/" },
     ],
   },
   {

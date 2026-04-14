@@ -133,25 +133,39 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
 
       {/* Content */}
       <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-16 md:py-24 bg-black border-t border-white/[0.06]">
-        <div className="max-w-3xl">
-          <p className="text-white/60 leading-relaxed text-base md:text-lg mb-12">
+        <div className="max-w-4xl">
+          <p className="text-white/60 leading-relaxed text-base md:text-lg mb-12 max-w-3xl">
             {project.longDescription}
           </p>
 
-          {/* Sections */}
-          {project.sections?.map((section, i) => (
-            <div key={i} className="mb-10 md:mb-14">
-              <div className="text-[10px] tracking-[0.12em] uppercase text-white/30 mb-3">
-                {String(i + 1).padStart(2, "0")} — {section.title}
+          {/* Sections with inline screenshots */}
+          {project.sections?.map((section, i) => {
+            const hasSectionScreenshots = section.screenshots && section.screenshots.length > 0;
+            return (
+              <div key={i} className="mb-14 md:mb-20">
+                <div className="text-[10px] tracking-[0.12em] uppercase text-white/30 mb-3">
+                  {String(i + 1).padStart(2, "0")} — {section.title}
+                </div>
+                <p className="text-white/50 leading-relaxed text-sm md:text-base">
+                  {section.content}
+                </p>
+                {hasSectionScreenshots && (
+                  <div className="mt-6">
+                    <ImageLightbox
+                      images={section.screenshots!.map((src, n) => ({
+                        src,
+                        alt: `${project.title} — ${section.title} — ${n + 1}`,
+                      }))}
+                    />
+                  </div>
+                )}
               </div>
-              <p className="text-white/50 leading-relaxed text-sm md:text-base">
-                {section.content}
-              </p>
-            </div>
-          ))}
+            );
+          })}
 
-          {/* Screenshots */}
-          {project.screenshots && project.screenshots.length > 0 && (
+          {/* Fallback: top-level screenshots for projects without section-level ones */}
+          {project.screenshots && project.screenshots.length > 0 &&
+            !project.sections?.some((s) => s.screenshots && s.screenshots.length > 0) && (
             <div className="mt-16 mb-12">
               <div className="text-[10px] tracking-[0.12em] uppercase text-white/30 mb-6">Скриншоты</div>
               <ImageLightbox
