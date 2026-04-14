@@ -24,13 +24,27 @@ export const metadata: Metadata = {
   authors: [{ name: "Егор Шугаев", url: "https://outhead.github.io" }],
   robots: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
   openGraph: {
-    title: "Егор Шугаев — Дизайн-директор, Head of Design",
+    title: "Егор Шугаев — Дизайн-директор, Head of Design AI Division",
     description:
-      "8+ лет опыта в крупнейших tech-компаниях России. Руковожу дизайном B2C-экосистемы и AI-продуктов МТС. Эксперт в дизайн-системах и управлении командами.",
+      "Руковожу дизайном B2C-экосистемы и AI-дивизиона МТС. 8.8М+ пользователей, 100+ дизайнеров, CX Award 2024.",
     type: "website",
     locale: "ru_RU",
-    url: "https://outhead.github.io",
+    url: "https://portfolio-egors-projects-baaaa1ca.vercel.app",
     siteName: "Егор Шугаев · Портфолио",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Егор Шугаев — Head of Design, AI Division, МТС",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Егор Шугаев — Дизайн-директор, Head of Design AI Division",
+    description: "Руковожу дизайном B2C-экосистемы и AI-дивизиона МТС.",
+    images: ["/og-image.png"],
   },
 };
 

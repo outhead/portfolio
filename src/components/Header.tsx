@@ -14,10 +14,13 @@ const navLinks = [
   { href: "/#contacts", label: "Контакты" },
 ];
 
+const sectionIds = ["portfolio", "experiments", "about", "public", "contacts"];
+
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [headerSolid, setHeaderSolid] = useState(false);
+  const [activeSection, setActiveSection] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
 
@@ -31,6 +34,25 @@ export default function Header() {
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Intersection Observer for active nav
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
+          }
+        }
+      },
+      { rootMargin: "-40% 0px -55% 0px" }
+    );
+    for (const id of sectionIds) {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    }
+    return () => observer.disconnect();
   }, []);
 
   // Close on Escape
@@ -72,16 +94,24 @@ export default function Header() {
         </Link>
 
         <nav aria-label="Основная навигация" className="hidden md:flex gap-6">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="relative text-[11px] font-normal tracking-[0.1em] uppercase text-white/55 no-underline hover:text-white transition-colors duration-200 group min-h-[44px] flex items-center"
-            >
-              {link.label}
-              <span className="absolute -bottom-1 left-0 h-px w-0 bg-[#A6FF00] transition-all duration-300 group-hover:w-full" />
-            </Link>
-          ))}
+          {navLinks.map((link) => {
+            const sectionId = link.href.replace("/#", "");
+            const isActive = activeSection === sectionId;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`relative text-[11px] font-normal tracking-[0.1em] uppercase no-underline transition-colors duration-200 group min-h-[44px] flex items-center ${
+                  isActive ? "text-white" : "text-white/55 hover:text-white"
+                }`}
+              >
+                {link.label}
+                <span className={`absolute -bottom-1 left-0 h-px bg-[#A6FF00] transition-all duration-300 ${
+                  isActive ? "w-full" : "w-0 group-hover:w-full"
+                }`} />
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="hidden md:flex items-center gap-4">
