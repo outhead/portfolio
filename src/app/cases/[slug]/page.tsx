@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, ExternalLink } from "lucide-react";
 import ImageLightbox from "@/components/ImageLightbox";
 
 export function generateStaticParams() {
@@ -160,6 +160,29 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                   alt: `${project.title} — скриншот ${n + 1}`,
                 }))}
               />
+            </div>
+          )}
+
+          {/* External Links */}
+          {project.links && project.links.length > 0 && (
+            <div className="mt-12 mb-8">
+              <div className="text-[10px] tracking-[0.12em] uppercase text-white/30 mb-4">Ссылки</div>
+              <div className="flex flex-col gap-3">
+                {project.links.map((link) => (
+                  <a
+                    key={link.url}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group inline-flex items-center gap-2 text-sm text-white/40 hover:text-[#A6FF00] transition-colors no-underline"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" strokeWidth={2} />
+                    <span className="border-b border-white/[0.08] group-hover:border-[#A6FF00]/30 transition-colors pb-0.5">
+                      {link.label}
+                    </span>
+                  </a>
+                ))}
+              </div>
             </div>
           )}
         </div>

@@ -22,6 +22,10 @@ export interface Project {
     value: string;
     label: string;
   }[];
+  links?: {
+    label: string;
+    url: string;
+  }[];
 }
 
 export const projects: Project[] = [
@@ -53,12 +57,16 @@ export const projects: Project[] = [
     ],
     type: "work",
     coverColor: "#1a1a2e",
-    coverImage: "/images/photos/photo-5.jpg",
+    coverImage: "/images/covers/mts-2024.jpg",
     screenshots: [
       "/images/iam-admin/1.1-workspaces.png",
       "/images/iam-admin/1.5-role-constructor.png",
       "/images/iam-admin/1.2-ba-users.png",
+      "/images/iam-admin/1.3-ws-users.png",
       "/images/iam-admin/1.4-ws-roles.png",
+      "/images/iam-admin/1.6-ws-multi.png",
+      "/images/iam-admin/3.1-modal-create-ws.png",
+      "/images/iam-admin/2.1-user-card.png",
     ],
     sections: [
       {
@@ -76,6 +84,10 @@ export const projects: Project[] = [
         content:
           "Построил дизайн-функцию для нового AI-дивизиона: от найма до процессов, от дизайн-системы до готовых продуктов. Создал MWS AI UI Kit — единую дизайн-систему для всех AI-продуктов. Спроектировал Legal Copilot (AI-ассистент для юристов) и IAM Admin (управление доступами). Внедрил AI-инструменты (Claude, Cursor, v0) в дизайн-процесс. 3 продукта в production, дизайн-система покрывает 90%+ интерфейсов.",
       },
+    ],
+    links: [
+      { label: "МТС Design — портал дизайна", url: "https://design.mts.ru" },
+      { label: "Дизайн-система GRANAT", url: "https://design.mts.ru/ds" },
     ],
   },
   {
@@ -106,7 +118,7 @@ export const projects: Project[] = [
     ],
     type: "work",
     coverColor: "#1a2e1a",
-    coverImage: "/images/photos/photo-1.jpg",
+    coverImage: "/images/covers/gpn-cover.jpg",
     screenshots: [
       "/images/figma/gpn-main.jpg",
       "/images/figma/gpn-eso.jpg",
@@ -127,6 +139,11 @@ export const projects: Project[] = [
         content:
           "Выстроил дизайн-процессы в enterprise-среде с высокими требованиями к безопасности. Внедрил user research и дизайн-ревью. Команда стала автономной — процессы работают без ручного управления. Победа на CX Awards 2024 подтвердила качество работы.",
       },
+    ],
+    links: [
+      { label: "Consta — open-source дизайн-система", url: "https://consta.design" },
+      { label: "CX World Awards 2024 — победители", url: "https://cx-forum.ru/cxclub/cxa/2024/winners" },
+      { label: "GitHub — Consta Design System", url: "https://github.com/consta-design-system" },
     ],
   },
   {
@@ -150,7 +167,7 @@ export const projects: Project[] = [
     ],
     type: "work",
     coverColor: "#1a1a3e",
-    coverImage: "/images/photos/photo-2.jpg",
+    coverImage: "/images/covers/ozon-cover.jpg",
     screenshots: [
       "/images/figma/ozon-process.jpg",
       "/images/figma/ozon-hr.jpg",
@@ -195,7 +212,7 @@ export const projects: Project[] = [
     ],
     type: "work",
     coverColor: "#2e1a1a",
-    coverImage: "/images/photos/photo-4.jpg",
+    coverImage: "/images/covers/mts-b2c-cover.jpg",
     screenshots: [
       "/images/figma/mts-b2c.jpg",
       "/images/figma/mts-cashback.jpg",
@@ -241,7 +258,7 @@ export const projects: Project[] = [
     metricLabel: "быстрее поиск",
     type: "experiment",
     coverColor: "#1e1a2e",
-    coverImage: "/images/covers/legal-copilot.svg",
+    coverImage: "/images/covers/legal-copilot-cover.jpg",
     sections: [
       {
         title: "Проблема",
