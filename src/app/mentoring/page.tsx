@@ -5,7 +5,7 @@ export default function MentoringPage() {
   return (
     <>
       {/* ===== HERO ===== */}
-      <section className="relative px-5 md:px-10 py-20 md:py-32 border-t border-white/[0.04] bg-black/75">
+      <section className="relative px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-20 md:py-32 border-t border-white/[0.04] bg-black/75">
         <div className="max-w-5xl">
           <div className="animate-fade-in-up">
             <h1 className="font-p95 text-[clamp(48px,10vw,100px)] leading-[0.92] uppercase tracking-tight mb-4 md:mb-6">
@@ -21,7 +21,7 @@ export default function MentoringPage() {
       </section>
 
       {/* ===== FORMATS ===== */}
-      <section className="relative z-[1] px-5 md:px-10 py-20 md:py-32 border-t border-white/[0.04] bg-black/75">
+      <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-20 md:py-32 border-t border-white/[0.04] bg-black/75">
         <div className="max-w-5xl">
           <ScrollReveal>
             <div className="section-label mb-6">Форматы</div>
@@ -70,7 +70,7 @@ export default function MentoringPage() {
       </section>
 
       {/* ===== FOR WHOM ===== */}
-      <section className="relative z-[1] px-5 md:px-10 py-20 md:py-32 border-t border-white/[0.04] bg-black/75">
+      <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-20 md:py-32 border-t border-white/[0.04] bg-black/75">
         <div className="max-w-5xl">
           <ScrollReveal>
             <div className="section-label mb-6">Для кого</div>
@@ -114,7 +114,7 @@ export default function MentoringPage() {
       </section>
 
       {/* ===== BOOKING ===== */}
-      <section className="relative z-[1] px-5 md:px-10 py-20 md:py-32 border-t border-white/[0.04] bg-black/75">
+      <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-20 md:py-32 border-t border-white/[0.04] bg-black/75">
         <div className="max-w-5xl">
           <ScrollReveal>
             <div className="section-label mb-6">Запись</div>

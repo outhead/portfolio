@@ -207,10 +207,15 @@ export default function Home() {
         variants={fadeIn}
         className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-8 md:py-10 bg-black border-t border-white/[0.06]"
       >
-        <div className="flex items-center justify-between gap-8 md:gap-12 opacity-30">
-          {["МТС", "OZON", "Газпром Нефть", "ВШЭ"].map((name) => (
-            <span key={name} className="text-sm md:text-base tracking-[0.1em] uppercase text-white font-medium whitespace-nowrap">
-              {name}
+        <div className="flex items-center justify-between gap-8 md:gap-12">
+          {["МТС", "OZON", "Газпром Нефть", "ВШЭ"].map((name, i, arr) => (
+            <span key={name} className="flex items-center gap-8 md:gap-12">
+              <span className="text-sm md:text-base tracking-[0.12em] uppercase text-white/25 font-medium whitespace-nowrap">
+                {name}
+              </span>
+              {i < arr.length - 1 && (
+                <span className="hidden md:block w-1 h-1 rounded-full bg-white/10" />
+              )}
             </span>
           ))}
         </div>
@@ -244,7 +249,7 @@ export default function Home() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {experimentProjects.map((project, i) => (
             <motion.div key={project.slug} variants={fadeUp}>
-              <ProjectCard project={project} index={i + workProjects.length} />
+              <ProjectCard project={project} index={i} />
             </motion.div>
           ))}
         </div>
@@ -308,7 +313,7 @@ export default function Home() {
                   </div>
                   <ul className="space-y-1.5">
                     {g.items.map((item) => (
-                      <li key={item} className="text-sm text-white/55 leading-snug">{item}</li>
+                      <li key={item} className="text-sm text-white/55 leading-snug hover:text-white/75 transition-colors duration-200">{item}</li>
                     ))}
                   </ul>
                 </div>

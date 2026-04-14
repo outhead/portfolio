@@ -79,7 +79,7 @@ export default function Header() {
       />
       <header
         role="banner"
-        className={`fixed top-0 left-0 right-0 z-[100] flex justify-between items-center px-5 md:px-10 py-4 md:py-5 backdrop-blur-xl border-b transition-all duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-[100] flex justify-between items-center px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-4 md:py-5 backdrop-blur-xl border-b transition-all duration-300 ${
           headerSolid
             ? "bg-black/85 border-white/[0.06]"
             : "bg-black/50 border-transparent"
