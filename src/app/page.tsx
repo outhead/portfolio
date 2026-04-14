@@ -262,21 +262,12 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Principles tags */}
-          <div className="flex flex-wrap gap-2 mb-6">
-            {["Data-driven", "AI-first", "Кросс-функционально", "Растим людей", "Design Strategy", "CJM · A/B", "OKR · Roadmap"].map((tag) => (
-              <span key={tag} className="text-[10px] tracking-[0.14em] uppercase text-[#A6FF00]/60 border border-[#A6FF00]/15 rounded-full px-3 py-1">
-                {tag}
-              </span>
-            ))}
-          </div>
-
-          {/* Skills + career */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Skills — 3 columns */}
+          <div className="grid sm:grid-cols-3 gap-4 mb-8">
             {[
               { icon: LayoutGrid, title: "Core", items: ["Design Management", "Art Direction", "Design Strategy", "Product Design", "Design Systems", "UX Research"] },
               { icon: Code2, title: "Stack", items: ["Figma", "AI/ML Products", "Claude · Cursor · v0", "React · TypeScript", "Python", "Three.js · WebGL"] },
-              { icon: Wand2, title: "Process", items: ["CJM · JTBD", "Discovery · Design Sprint", "A/B · юзабилити-тесты", "OKR · roadmap", "Кросс-функциональные команды"] },
+              { icon: Wand2, title: "Process", items: ["CJM · JTBD · Discovery", "Design Sprint · A/B", "Юзабилити-тесты", "OKR · Roadmap", "Кросс-функциональные команды"] },
             ].map((g) => {
               const Icon = g.icon;
               return (
@@ -293,37 +284,31 @@ export default function Home() {
                 </div>
               );
             })}
+          </div>
 
-            {/* Career */}
-            <div className="border border-white/[0.06] rounded-xl p-5 hover:border-white/20 transition-colors">
-              <div className="flex items-center gap-2 mb-3">
-                <Briefcase className="w-4 h-4 text-[#A6FF00]" strokeWidth={1.75} />
-                <div className="text-[10px] tracking-[0.18em] uppercase text-white/60 font-medium">Карьера</div>
-              </div>
-              {[
-                { year: "2024", company: "МТС", role: "Head of Design AI", scope: "8 команд, 40+ чел, B2C + AI", current: true },
-                { year: "2022", company: "Газпром Нефть", role: "Design Manager", scope: "76 команд, дизайн-система" },
-                { year: "2021", company: "OZON", role: "Design Lead", scope: "найм, комьюнити, процессы" },
-                { year: "2018", company: "МТС", role: "Head of Direction", scope: "16 команд, 60+ дизайнеров" },
-              ].map((job) => (
-                <div key={job.year + job.company} className="py-2 border-b border-white/[0.06] last:border-0">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-[10px] text-white/25 font-mono w-8 shrink-0">{job.year}</span>
-                    <span className="text-sm text-white/80 font-medium">
-                      {job.company}
-                      {job.current && (
-                        <span className="ml-1.5 text-[9px] tracking-[0.1em] uppercase text-[#A6FF00]/80">
-                          <span className="inline-block h-1 w-1 rounded-full bg-[#A6FF00] animate-pulse mr-1 align-middle" />
-                          now
-                        </span>
-                      )}
+          {/* Career — horizontal timeline */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/[0.06] rounded-lg overflow-hidden">
+            {[
+              { year: "2018", company: "МТС", role: "Head of Direction", scope: "16 команд, 60+ дизайнеров" },
+              { year: "2021", company: "OZON", role: "Design Lead", scope: "Найм, комьюнити, процессы" },
+              { year: "2022", company: "Газпром Нефть", role: "Design Manager", scope: "76 команд, дизайн-система" },
+              { year: "2024", company: "МТС", role: "Head of Design AI", scope: "8 команд, 40+ чел, B2C + AI", current: true },
+            ].map((job) => (
+              <div key={job.year + job.company} className="bg-black p-4 md:p-5">
+                <div className="text-[10px] text-white/25 font-mono mb-1">{job.year}</div>
+                <div className="text-sm text-white/85 font-medium leading-tight">
+                  {job.company}
+                  {job.current && (
+                    <span className="ml-1.5 text-[9px] tracking-[0.1em] uppercase text-[#A6FF00]/80">
+                      <span className="inline-block h-1 w-1 rounded-full bg-[#A6FF00] animate-pulse mr-1 align-middle" />
+                      now
                     </span>
-                  </div>
-                  <div className="text-xs text-white/35 pl-10">{job.role}</div>
-                  <div className="text-[10px] text-white/20 pl-10">{job.scope}</div>
+                  )}
                 </div>
-              ))}
-            </div>
+                <div className="text-xs text-white/40 mt-0.5">{job.role}</div>
+                <div className="text-[10px] text-white/20 mt-0.5">{job.scope}</div>
+              </div>
+            ))}
           </div>
         </div>
       </SplitSection>
