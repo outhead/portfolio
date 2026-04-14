@@ -23,7 +23,6 @@ import {
   MapPin,
 } from "lucide-react";
 
-// Brand icons (lucide removed them; use inline SVGs)
 const LinkedinIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
     <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.95v5.66H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z" />
@@ -36,36 +35,68 @@ const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-// === Motion variants ===
+// === Motion ===
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 24 },
   show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
 };
-
 const stagger: Variants = {
   hidden: {},
   show: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
 };
-
-const cardHover = {
-  rest: { y: 0, borderColor: "rgba(255,255,255,0.08)" },
-  hover: {
-    y: -4,
-    borderColor: "rgba(166,255,0,0.35)",
-    transition: { duration: 0.25, ease: "easeOut" as const },
-  },
-};
-
-// Viewport trigger shorthand
 const viewport = { once: true, margin: "-10% 0px -10% 0px" };
 
-// Section label with accent dot
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div className="inline-flex items-center gap-2 text-[10px] md:text-[11px] tracking-[0.22em] uppercase text-white/50 font-medium">
       <span className="h-1 w-1 rounded-full bg-[#A6FF00]" />
       {children}
     </div>
+  );
+}
+
+// Reusable 2-col section wrapper: sticky left label + right content
+function SplitSection({
+  id,
+  label,
+  heading,
+  children,
+  className = "",
+  borderTop = true,
+}: {
+  id?: string;
+  label: string;
+  heading: string;
+  children: React.ReactNode;
+  className?: string;
+  borderTop?: boolean;
+}) {
+  return (
+    <section
+      id={id}
+      className={`relative z-[1] px-5 md:px-10 py-14 md:py-20 bg-black ${
+        borderTop ? "border-t border-white/[0.06]" : ""
+      } ${className}`}
+    >
+      <motion.div
+        initial="hidden"
+        whileInView="show"
+        viewport={viewport}
+        variants={stagger}
+        className="grid md:grid-cols-[280px_1fr] lg:grid-cols-[320px_1fr] gap-8 md:gap-12 lg:gap-20"
+      >
+        {/* Left: label + heading, sticky */}
+        <motion.div variants={fadeUp} className="md:sticky md:top-24 self-start">
+          <SectionLabel>{label}</SectionLabel>
+          <h2 className="font-p95 text-[clamp(28px,4vw,56px)] uppercase mt-2 leading-[0.95]">
+            {heading}
+          </h2>
+        </motion.div>
+
+        {/* Right: content */}
+        <motion.div variants={fadeUp}>{children}</motion.div>
+      </motion.div>
+    </section>
   );
 }
 
@@ -178,31 +209,15 @@ export default function Home() {
       </section>
 
       {/* ===== OPEN TO ===== */}
-      <section
-        id="open-to"
-        className="relative z-[1] px-5 md:px-10 py-14 md:py-20 border-t border-white/[0.06] bg-black"
-      >
-        <motion.div
-          initial="hidden"
-          whileInView="show"
-          viewport={viewport}
-          variants={stagger}
-        >
-          <motion.div variants={fadeUp} className="mb-4">
-            <SectionLabel>Сейчас открыт к</SectionLabel>
-          </motion.div>
-
-          <motion.p
-            variants={fadeUp}
-            className="text-lg md:text-2xl leading-snug text-white/85 font-light mb-10 md:mb-14"
-          >
+      <SplitSection label="Сейчас открыт к" heading="ОТКРЫТ К">
+        <div>
+          <p className="text-lg md:text-xl leading-snug text-white/85 font-light mb-8">
             Сейчас — Head of Design AI в МТС. Открыт к{" "}
             <span className="text-[#A6FF00]">C-level ролям</span> и{" "}
             <span className="text-[#A6FF00]">консалтингу по AI в дизайне</span>.
-          </motion.p>
+          </p>
 
-          {/* 3 cards + "best at" in a 4-col grid */}
-          <div className="grid md:grid-cols-4 gap-4 md:gap-5">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
               {
                 icon: Briefcase,
@@ -228,302 +243,142 @@ export default function Home() {
             ].map((o) => {
               const Icon = o.icon;
               return (
-                <motion.div
+                <Link
                   key={o.title}
-                  variants={fadeUp}
-                  initial="rest"
-                  whileHover="hover"
-                  animate="rest"
+                  href={o.href}
+                  className="block border border-white/[0.08] rounded-xl p-5 no-underline group relative overflow-hidden hover:border-[#A6FF00]/30 transition-colors"
                 >
-                  <motion.div variants={cardHover}>
-                    <Link
-                      href={o.href}
-                      className="block border border-white/[0.08] rounded-xl p-5 md:p-6 no-underline group relative overflow-hidden h-full"
-                    >
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-[#A6FF00]/[0.06] blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                      <Icon
-                        className="w-6 h-6 text-white/60 group-hover:text-[#A6FF00] transition-colors mb-5"
-                        strokeWidth={1.5}
-                      />
-                      <h3 className="text-base md:text-lg font-medium text-white mb-2">
-                        {o.title}
-                      </h3>
-                      <p className="text-sm text-white/50 leading-relaxed mb-6">
-                        {o.desc}
-                      </p>
-                      <span className="inline-flex items-center gap-2 text-xs tracking-[0.1em] uppercase text-white/60 group-hover:text-[#A6FF00] transition-colors">
-                        {o.cta}{" "}
-                        <ArrowUpRight
-                          className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                          strokeWidth={2}
-                        />
-                      </span>
-                    </Link>
-                  </motion.div>
-                </motion.div>
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-[#A6FF00]/[0.06] blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <Icon
+                    className="w-5 h-5 text-white/50 group-hover:text-[#A6FF00] transition-colors mb-4"
+                    strokeWidth={1.5}
+                  />
+                  <h3 className="text-base font-medium text-white mb-2">
+                    {o.title}
+                  </h3>
+                  <p className="text-sm text-white/50 leading-relaxed mb-5">
+                    {o.desc}
+                  </p>
+                  <span className="inline-flex items-center gap-2 text-xs tracking-[0.1em] uppercase text-white/55 group-hover:text-[#A6FF00] transition-colors">
+                    {o.cta}
+                    <ArrowUpRight className="w-3.5 h-3.5" strokeWidth={2} />
+                  </span>
+                </Link>
               );
             })}
-
-            {/* 4th cell: "Best at" fills the remaining column */}
-            <motion.div
-              variants={fadeUp}
-              className="border border-white/[0.06] rounded-xl p-5 md:p-6 flex flex-col justify-center"
-            >
-              <div className="mb-3">
-                <SectionLabel>Лучше всего получается</SectionLabel>
-              </div>
-              <p className="text-sm text-white/55 leading-relaxed">
-                Продуктовый дизайн с мандатом на стратегию · AI-трансформация
-                процессов · проекты от&nbsp;3&nbsp;месяцев · роли с прямым влиянием на продукт.
-              </p>
-            </motion.div>
           </div>
-        </motion.div>
-      </section>
+
+          <div className="mt-8 pt-6 border-t border-white/[0.06]">
+            <SectionLabel>Лучше всего получается</SectionLabel>
+            <p className="text-sm text-white/55 leading-relaxed mt-2">
+              Продуктовый дизайн с мандатом на стратегию · AI-трансформация
+              процессов · проекты от 3 месяцев · роли с прямым влиянием на продукт.
+            </p>
+          </div>
+        </div>
+      </SplitSection>
 
       {/* ===== ABOUT ===== */}
-      <section
-        id="about"
-        className="relative z-[1] px-5 md:px-10 py-16 md:py-24 border-t border-white/[0.06] bg-black"
-      >
-        <motion.div
-          initial="hidden"
-          whileInView="show"
-          viewport={viewport}
-          variants={stagger}
-        >
-          <motion.div variants={fadeUp} className="mb-3">
-            <SectionLabel>01 — Обо мне</SectionLabel>
-          </motion.div>
-
-          {/* Asymmetric hero-style layout: big heading + photo right-aligned */}
-          <div className="grid md:grid-cols-[1fr_280px] gap-8 md:gap-12 items-start">
+      <SplitSection id="about" label="01 — Обо мне" heading="ПРИВЕТ!">
+        <div>
+          <div className="grid lg:grid-cols-[1fr_200px] gap-8 items-start mb-10">
             <div>
-              <motion.h2
-                variants={fadeUp}
-                className="font-p95 text-[clamp(28px,4vw,56px)] uppercase mb-8"
-              >
-                ПРИВЕТ!
-              </motion.h2>
-
-              <motion.p variants={fadeUp} className="text-white/70 leading-relaxed text-base md:text-lg mb-6">
+              <p className="text-white/70 leading-relaxed text-base md:text-lg mb-5">
                 За последние 7 лет руководил дизайн-направлениями в МТС, Ozon и
                 Газпром Нефти. Сейчас совмещаю арт-директора B2C-экосистемы МТС
                 (40+ дизайнеров, 8 команд) и Head of Design AI-дивизиона.
-              </motion.p>
-              <motion.p variants={fadeUp} className="text-white/45 leading-relaxed text-sm md:text-base mb-6">
+              </p>
+              <p className="text-white/45 leading-relaxed text-sm md:text-base mb-5">
                 Формировал дизайн-стратегию МТС в период трансформации в
                 экосистему. Заложил основы дизайн-комьюнити в Ozon — найм +40%,
                 текучка −60%. Развивал open-source дизайн-систему Consta в
                 Газпром Нефти (10K+ NPM-скачиваний). Получил CX Awards 2024 за
                 единое сервисное окно.
-              </motion.p>
-              <motion.p variants={fadeUp} className="text-white/45 leading-relaxed text-sm md:text-base">
+              </p>
+              <p className="text-white/45 leading-relaxed text-sm md:text-base">
                 Преподаю прикладное использование ИИ в ВШЭ. Веду менторинг,
                 выступаю на конференциях, пишу код на React и Python,
                 экспериментирую с WebGL и AI-автоматизацией.
-              </motion.p>
+              </p>
             </div>
-
-            <motion.div variants={fadeUp} className="hidden md:block">
+            <div className="hidden lg:block">
               <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden border border-white/[0.08]">
-                <Image
-                  src="/images/photos/photo-3.jpg"
-                  alt="Егор Шугаев"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            </motion.div>
-          </div>
-        </motion.div>
-
-        {/* Skills — 4 columns: 3 skill groups + career timeline */}
-        <motion.div
-          initial="hidden"
-          whileInView="show"
-          viewport={viewport}
-          variants={stagger}
-          className="mt-12 md:mt-16 grid md:grid-cols-4 gap-5 md:gap-6"
-        >
-          {[
-            {
-              icon: LayoutGrid,
-              title: "Core",
-              items: [
-                "Design Management",
-                "Art Direction",
-                "Design Strategy",
-                "Product Design",
-                "Design Systems",
-                "UX Research",
-              ],
-            },
-            {
-              icon: Code2,
-              title: "Stack",
-              items: [
-                "Figma",
-                "AI/ML Products",
-                "Claude · Cursor · v0",
-                "React · TypeScript",
-                "Python",
-                "Three.js · WebGL",
-              ],
-            },
-            {
-              icon: Wand2,
-              title: "Experiments",
-              items: [
-                "AI-автоматизация",
-                "Generative design",
-                "Creative coding",
-                "Shader-эксперименты",
-                "LLM-агенты",
-              ],
-            },
-          ].map((g) => {
-            const Icon = g.icon;
-            return (
-              <motion.div
-                key={g.title}
-                variants={fadeUp}
-                className="border border-white/[0.06] rounded-xl p-5 md:p-6 hover:border-white/20 transition-colors"
-              >
-                <div className="flex items-center gap-2 mb-4">
-                  <Icon className="w-4 h-4 text-[#A6FF00]" strokeWidth={1.75} />
-                  <div className="text-[10px] tracking-[0.18em] uppercase text-white/60 font-medium">
-                    {g.title}
-                  </div>
-                </div>
-                <ul className="space-y-1.5">
-                  {g.items.map((item) => (
-                    <li key={item} className="text-sm text-white/65 leading-snug">
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </motion.div>
-            );
-          })}
-
-          {/* Career timeline — 4th column */}
-          <motion.div
-            variants={fadeUp}
-            className="border border-white/[0.06] rounded-xl p-5 md:p-6 hover:border-white/20 transition-colors"
-          >
-            <div className="flex items-center gap-2 mb-4">
-              <Briefcase className="w-4 h-4 text-[#A6FF00]" strokeWidth={1.75} />
-              <div className="text-[10px] tracking-[0.18em] uppercase text-white/60 font-medium">
-                Карьера
+                <Image src="/images/photos/photo-3.jpg" alt="Егор Шугаев" fill className="object-cover" />
               </div>
             </div>
-            <div className="space-y-0">
+          </div>
+
+          {/* Skills + career */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { icon: LayoutGrid, title: "Core", items: ["Design Management", "Art Direction", "Design Strategy", "Product Design", "Design Systems", "UX Research"] },
+              { icon: Code2, title: "Stack", items: ["Figma", "AI/ML Products", "Claude · Cursor · v0", "React · TypeScript", "Python", "Three.js · WebGL"] },
+              { icon: Wand2, title: "Experiments", items: ["AI-автоматизация", "Generative design", "Creative coding", "Shader-эксперименты", "LLM-агенты"] },
+            ].map((g) => {
+              const Icon = g.icon;
+              return (
+                <div key={g.title} className="border border-white/[0.06] rounded-xl p-5 hover:border-white/20 transition-colors">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Icon className="w-4 h-4 text-[#A6FF00]" strokeWidth={1.75} />
+                    <div className="text-[10px] tracking-[0.18em] uppercase text-white/60 font-medium">{g.title}</div>
+                  </div>
+                  <ul className="space-y-1.5">
+                    {g.items.map((item) => (
+                      <li key={item} className="text-sm text-white/60 leading-snug">{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+
+            {/* Career */}
+            <div className="border border-white/[0.06] rounded-xl p-5 hover:border-white/20 transition-colors">
+              <div className="flex items-center gap-2 mb-3">
+                <Briefcase className="w-4 h-4 text-[#A6FF00]" strokeWidth={1.75} />
+                <div className="text-[10px] tracking-[0.18em] uppercase text-white/60 font-medium">Карьера</div>
+              </div>
               {[
-                {
-                  year: "2024",
-                  company: "МТС",
-                  role: "Арт-директор B2C · Head of Design AI",
-                  current: true,
-                },
-                {
-                  year: "2022",
-                  company: "Газпром Нефть",
-                  role: "Lead Designer → Design Manager",
-                },
-                {
-                  year: "2021",
-                  company: "OZON",
-                  role: "Sr. Designer → Design Lead",
-                },
-                {
-                  year: "2018",
-                  company: "МТС",
-                  role: "Designer → Head of Direction",
-                },
+                { year: "2024", company: "МТС", role: "Head of Design AI", current: true },
+                { year: "2022", company: "Газпром Нефть", role: "Design Manager" },
+                { year: "2021", company: "OZON", role: "Design Lead" },
+                { year: "2018", company: "МТС", role: "Head of Direction" },
               ].map((job) => (
-                <div
-                  key={job.year + job.company}
-                  className="py-2.5 border-b border-white/[0.06] last:border-0"
-                >
-                  <div className="flex items-baseline gap-3">
-                    <span className="text-[10px] tracking-[0.12em] text-white/25 font-mono w-9 shrink-0">
-                      {job.year}
-                    </span>
+                <div key={job.year + job.company} className="py-2 border-b border-white/[0.06] last:border-0">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-[10px] text-white/25 font-mono w-8 shrink-0">{job.year}</span>
                     <span className="text-sm text-white/80 font-medium">
                       {job.company}
                       {job.current && (
-                        <span className="ml-2 inline-flex items-center gap-1 text-[9px] tracking-[0.1em] uppercase text-[#A6FF00]/80">
-                          <span className="h-1 w-1 rounded-full bg-[#A6FF00] animate-pulse" />
+                        <span className="ml-1.5 text-[9px] tracking-[0.1em] uppercase text-[#A6FF00]/80">
+                          <span className="inline-block h-1 w-1 rounded-full bg-[#A6FF00] animate-pulse mr-1 align-middle" />
                           now
                         </span>
                       )}
                     </span>
                   </div>
-                  <div className="text-xs text-white/40 mt-0.5 pl-12">
-                    {job.role}
-                  </div>
+                  <div className="text-xs text-white/35 pl-10">{job.role}</div>
                 </div>
               ))}
             </div>
-          </motion.div>
-        </motion.div>
-      </section>
+          </div>
+        </div>
+      </SplitSection>
 
       {/* ===== PORTFOLIO ===== */}
-      <section
-        id="portfolio"
-        className="relative z-[1] px-5 md:px-10 py-16 md:py-24 border-t border-white/[0.06] bg-black"
-      >
-        <motion.div
-          initial="hidden"
-          whileInView="show"
-          viewport={viewport}
-          variants={stagger}
-        >
-          <motion.div variants={fadeUp} className="mb-3">
-            <SectionLabel>02 — Портфолио</SectionLabel>
-          </motion.div>
-          <motion.h2
-            variants={fadeUp}
-            className="font-p95 text-[clamp(28px,4vw,56px)] uppercase mb-10 md:mb-14"
-          >
-            ПРОЕКТЫ
-          </motion.h2>
-
-          <div className="grid md:grid-cols-2 gap-5 md:gap-6">
-            {workProjects.map((project, i) => (
-              <motion.div key={project.slug} variants={fadeUp}>
-                <ProjectCard project={project} index={i} />
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-      </section>
+      <SplitSection id="portfolio" label="02 — Портфолио" heading="ПРОЕКТЫ">
+        <div className="grid sm:grid-cols-2 gap-5">
+          {workProjects.map((project, i) => (
+            <motion.div key={project.slug} variants={fadeUp}>
+              <ProjectCard project={project} index={i} />
+            </motion.div>
+          ))}
+        </div>
+      </SplitSection>
 
       {/* ===== PUBLIC ===== */}
-      <section
-        id="public"
-        className="relative z-[1] px-5 md:px-10 py-14 md:py-20 border-t border-white/[0.06] bg-black"
-      >
-        <motion.div
-          initial="hidden"
-          whileInView="show"
-          viewport={viewport}
-          variants={stagger}
-        >
-          <motion.div variants={fadeUp} className="mb-3">
-            <SectionLabel>03 — Публично</SectionLabel>
-          </motion.div>
-          <motion.h2
-            variants={fadeUp}
-            className="font-p95 text-[clamp(28px,4vw,56px)] uppercase mb-10 md:mb-14"
-          >
-            ГОВОРЮ И ПИШУ
-          </motion.h2>
-
-          {/* 4-col: 3 content cards + photo collage */}
-          <div className="grid md:grid-cols-4 gap-5 md:gap-6">
+      <SplitSection id="public" label="03 — Публично" heading="ГОВОРЮ И ПИШУ">
+        <div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             {[
               {
                 icon: Mic2,
@@ -534,7 +389,7 @@ export default function Home() {
                   "Конференции по дизайн-системам и ML",
                   "Мастер-классы для продуктовых команд",
                 ],
-                foot: "Пригласить выступить — egor.outhead@gmail.com",
+                foot: "Пригласить — egor.outhead@gmail.com",
               },
               {
                 icon: GraduationCap,
@@ -548,189 +403,74 @@ export default function Home() {
               {
                 icon: Send,
                 title: "Канал «Vigrom»",
-                body: "Авторский Telegram-канал про AI и инструменты дизайнера. Практика без хайпа — разборы Claude, Cursor, v0 и того, как встраивать их в продуктовую работу.",
+                body: "Авторский Telegram-канал про AI и инструменты дизайнера. Практика без хайпа — разборы Claude, Cursor, v0.",
                 link: { href: "https://t.me/vigrom", label: "Читать канал" },
               },
             ].map((c) => {
               const Icon = c.icon;
               return (
-                <motion.div
+                <div
                   key={c.title}
-                  variants={fadeUp}
-                  className="border border-white/[0.06] rounded-xl p-5 md:p-6 hover:border-white/20 transition-colors"
+                  className="border border-white/[0.06] rounded-xl p-5 hover:border-white/20 transition-colors"
                 >
-                  <div className="flex items-center gap-2 mb-4">
+                  <div className="flex items-center gap-2 mb-3">
                     <Icon className="w-4 h-4 text-[#A6FF00]" strokeWidth={1.75} />
-                    <div className="text-[10px] tracking-[0.18em] uppercase text-white/60 font-medium">
-                      {c.title}
-                    </div>
+                    <div className="text-[10px] tracking-[0.18em] uppercase text-white/60 font-medium">{c.title}</div>
                   </div>
                   {c.items && (
-                    <ul className="space-y-2.5 text-sm text-white/65 leading-relaxed">
-                      {c.items.map((i) => (
-                        <li key={i}>{i}</li>
-                      ))}
+                    <ul className="space-y-2 text-sm text-white/60 leading-relaxed">
+                      {c.items.map((i) => (<li key={i}>{i}</li>))}
                     </ul>
                   )}
-                  {c.body && (
-                    <p className="text-sm text-white/65 leading-relaxed mb-4">
-                      {c.body}
-                    </p>
-                  )}
-                  {c.foot && (
-                    <p className="text-[11px] tracking-[0.08em] uppercase text-white/50 mt-5">
-                      {c.foot}
-                    </p>
-                  )}
+                  {c.body && <p className="text-sm text-white/60 leading-relaxed mb-3">{c.body}</p>}
+                  {c.foot && <p className="text-[11px] tracking-[0.08em] uppercase text-white/40 mt-4">{c.foot}</p>}
                   {c.link && (
-                    <Link
-                      href={c.link.href}
-                      target="_blank"
-                      className="inline-flex items-center gap-2 text-xs tracking-[0.1em] uppercase text-white/70 hover:text-[#A6FF00] transition-colors no-underline"
-                    >
-                      {c.link.label}
-                      <ArrowUpRight className="w-3.5 h-3.5" strokeWidth={2} />
+                    <Link href={c.link.href} target="_blank" className="inline-flex items-center gap-2 text-xs tracking-[0.1em] uppercase text-white/60 hover:text-[#A6FF00] transition-colors no-underline">
+                      {c.link.label} <ArrowUpRight className="w-3.5 h-3.5" strokeWidth={2} />
                     </Link>
                   )}
-                </motion.div>
+                </div>
               );
             })}
-
-            {/* 4th column: stacked photos */}
-            <motion.div variants={fadeUp} className="hidden md:flex flex-col gap-3">
-              {["/images/photos/photo-5.jpg", "/images/photos/photo-6.jpg"].map((src, i) => (
-                <motion.div
-                  key={i}
-                  whileHover={{ scale: 1.02 }}
-                  transition={{ duration: 0.3 }}
-                  className="relative flex-1 min-h-[140px] rounded-lg overflow-hidden border border-white/[0.06]"
-                >
-                  <Image
-                    src={src}
-                    alt="Выступление"
-                    fill
-                    className="object-cover opacity-80 hover:opacity-100 transition-opacity"
-                  />
-                </motion.div>
-              ))}
-            </motion.div>
           </div>
 
-          {/* Photo strip (mobile: full, desktop: below cards) */}
-          <motion.div
-            variants={fadeUp}
-            className="mt-6 grid grid-cols-2 md:hidden gap-3"
-          >
-            {[
-              "/images/photos/photo-5.jpg",
-              "/images/photos/photo-6.jpg",
-            ].map((src, i) => (
-              <div
-                key={i}
-                className="relative aspect-[4/3] rounded-lg overflow-hidden border border-white/[0.06]"
-              >
-                <Image
-                  src={src}
-                  alt="Выступление"
-                  fill
-                  className="object-cover opacity-80"
-                />
-              </div>
-            ))}
-          </motion.div>
-
-          {/* Full-width photo row */}
-          <motion.div
-            variants={fadeUp}
-            className="mt-6 hidden md:grid grid-cols-4 gap-3"
-          >
-            {[
-              "/images/photos/photo-4.jpg",
-              "/images/photos/photo-1.jpg",
-              "/images/photos/photo-3.jpg",
-              "/images/photos/photo-2.jpg",
-            ].map((src, i) => (
+          {/* Photo grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {["/images/photos/photo-5.jpg", "/images/photos/photo-4.jpg", "/images/photos/photo-6.jpg", "/images/photos/photo-1.jpg"].map((src, i) => (
               <motion.div
                 key={i}
                 whileHover={{ scale: 1.02 }}
                 transition={{ duration: 0.3 }}
-                className="relative aspect-[16/9] rounded-lg overflow-hidden border border-white/[0.06]"
+                className="relative aspect-[4/3] rounded-lg overflow-hidden border border-white/[0.06]"
               >
-                <Image
-                  src={src}
-                  alt="Выступление"
-                  fill
-                  className="object-cover opacity-70 hover:opacity-100 transition-opacity"
-                />
-              </motion.div>
-            ))}
-          </motion.div>
-        </motion.div>
-      </section>
-
-      {/* ===== EXPERIMENTS ===== */}
-      <section
-        id="experiments"
-        className="relative z-[1] px-5 md:px-10 py-14 md:py-20 border-t border-white/[0.06] bg-black"
-      >
-        <motion.div
-          initial="hidden"
-          whileInView="show"
-          viewport={viewport}
-          variants={stagger}
-        >
-          <motion.div variants={fadeUp} className="mb-3">
-            <SectionLabel>04 — Эксперименты</SectionLabel>
-          </motion.div>
-          <motion.h2
-            variants={fadeUp}
-            className="font-p95 text-[clamp(28px,4vw,56px)] uppercase mb-10 md:mb-14"
-          >
-            ЭКСПЕРИМЕНТЫ
-          </motion.h2>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
-            {experimentProjects.map((project, i) => (
-              <motion.div key={project.slug} variants={fadeUp}>
-                <ProjectCard project={project} index={i + workProjects.length} />
+                <Image src={src} alt="Выступление" fill className="object-cover opacity-70 hover:opacity-100 transition-opacity" />
               </motion.div>
             ))}
           </div>
-        </motion.div>
-      </section>
+        </div>
+      </SplitSection>
+
+      {/* ===== EXPERIMENTS ===== */}
+      <SplitSection id="experiments" label="04 — Эксперименты" heading="ЭКСПЕРИМЕНТЫ">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {experimentProjects.map((project, i) => (
+            <motion.div key={project.slug} variants={fadeUp}>
+              <ProjectCard project={project} index={i + workProjects.length} />
+            </motion.div>
+          ))}
+        </div>
+      </SplitSection>
 
       {/* ===== MENTORING ===== */}
-      <section
-        id="mentoring"
-        className="relative z-[1] px-5 md:px-10 py-14 md:py-20 border-t border-white/[0.06] bg-black"
-      >
-        <motion.div
-          initial="hidden"
-          whileInView="show"
-          viewport={viewport}
-          variants={stagger}
-        >
-          <motion.div variants={fadeUp} className="mb-3">
-            <SectionLabel>05 — Менторинг</SectionLabel>
-          </motion.div>
-          <motion.h2
-            variants={fadeUp}
-            className="font-p95 text-[clamp(28px,4vw,56px)] uppercase mb-8 md:mb-10"
-          >
-            МЕНТОРИНГ
-          </motion.h2>
+      <SplitSection id="mentoring" label="05 — Менторинг" heading="МЕНТОРИНГ">
+        <div>
+          <p className="text-white/70 leading-relaxed text-base md:text-lg mb-8">
+            Помогаю дизайнерам расти в сеньоров и лидов. Фокус — продуктовый
+            дизайн и AI-практики. 8+ лет опыта, управление командами,
+            выстраивание процессов.
+          </p>
 
-          {/* Full-width: intro spans all columns */}
-          <motion.div variants={fadeUp} className="mb-8">
-            <p className="text-white/70 leading-relaxed text-base md:text-lg max-w-3xl">
-              Помогаю дизайнерам расти в сеньоров и лидов. Фокус — продуктовый
-              дизайн и AI-практики. 8+ лет опыта, управление командами,
-              выстраивание процессов.
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-4 gap-4 md:gap-5">
-            {/* 3 pricing cards */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
             {[
               {
                 icon: Clock,
@@ -758,122 +498,76 @@ export default function Home() {
               return (
                 <motion.div
                   key={item.format}
-                  variants={fadeUp}
                   whileHover={{ borderColor: "rgba(166,255,0,0.3)" }}
                   className="border border-white/[0.08] rounded-xl p-5"
                 >
-                  <div className="flex items-center gap-2.5 mb-3">
+                  <div className="flex items-center gap-2 mb-3">
                     <Icon className="w-4 h-4 text-[#A6FF00]" strokeWidth={1.75} />
-                    <h3 className="text-sm md:text-base font-medium text-white/90">
-                      {item.format}
-                    </h3>
+                    <h3 className="text-sm font-medium text-white/90">{item.format}</h3>
                   </div>
-                  <p className="text-xs md:text-sm text-white/45 leading-relaxed mb-4">
-                    {item.desc}
-                  </p>
+                  <p className="text-xs text-white/45 leading-relaxed mb-4">{item.desc}</p>
                   <div className="flex justify-between items-baseline">
-                    <span className="text-xs font-semibold text-[#A6FF00]">
-                      {item.price}
-                    </span>
-                    <span className="text-[9px] tracking-[0.12em] uppercase text-white/25">
-                      {item.time}
-                    </span>
+                    <span className="text-xs font-semibold text-[#A6FF00]">{item.price}</span>
+                    <span className="text-[9px] tracking-[0.12em] uppercase text-white/25">{item.time}</span>
                   </div>
                 </motion.div>
               );
             })}
-
-            {/* 4th column: booking CTA */}
-            <motion.div variants={fadeUp}>
-              <div className="border border-white/[0.08] rounded-xl p-5 md:p-6 relative overflow-hidden h-full flex flex-col justify-between">
-                <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#A6FF00]/[0.06] blur-3xl rounded-full" />
-                <div>
-                  <h3 className="text-sm font-medium text-white/70 mb-3 uppercase tracking-[0.1em]">
-                    Записаться
-                  </h3>
-                  <p className="text-sm text-white/50 leading-relaxed mb-5">
-                    Выберите удобный слот или напишите в Telegram.
-                  </p>
-                </div>
-                <div className="space-y-2.5">
-                  <Link
-                    href="https://cal.com/egorshugaev"
-                    target="_blank"
-                    className="block w-full text-center bg-[#A6FF00] text-black hover:bg-[#B8FF33] rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors no-underline"
-                  >
-                    Открыть календарь
-                  </Link>
-                  <Link
-                    href="https://t.me/egoradi"
-                    target="_blank"
-                    className="block w-full text-center bg-transparent border border-white/15 hover:border-white/40 rounded-lg px-5 py-2.5 text-sm text-white/70 hover:text-white transition-colors no-underline"
-                  >
-                    Написать в Telegram
-                  </Link>
-                </div>
-              </div>
-            </motion.div>
           </div>
-        </motion.div>
-      </section>
+
+          {/* CTA row */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Link
+              href="https://cal.com/egorshugaev"
+              target="_blank"
+              className="text-center bg-[#A6FF00] text-black hover:bg-[#B8FF33] rounded-lg px-6 py-3 text-sm font-semibold transition-colors no-underline"
+            >
+              Открыть календарь
+            </Link>
+            <Link
+              href="https://t.me/egoradi"
+              target="_blank"
+              className="text-center border border-white/15 hover:border-white/40 rounded-lg px-6 py-3 text-sm text-white/70 hover:text-white transition-colors no-underline"
+            >
+              Написать в Telegram
+            </Link>
+          </div>
+        </div>
+      </SplitSection>
 
       {/* ===== CONTACTS ===== */}
-      <section
-        id="contacts"
-        className="relative z-[1] px-5 md:px-10 py-14 md:py-20 border-t border-white/[0.06] bg-black"
-      >
-        <motion.div
-          initial="hidden"
-          whileInView="show"
-          viewport={viewport}
-          variants={stagger}
-        >
-          <div className="grid md:grid-cols-[1fr_auto] gap-8 items-end">
-            <div>
-              <motion.div variants={fadeUp} className="mb-3">
-                <SectionLabel>06 — Контакты</SectionLabel>
-              </motion.div>
-              <motion.h2
-                variants={fadeUp}
-                className="font-p95 text-[clamp(28px,4vw,56px)] uppercase mb-4"
-              >
-                НАПИСАТЬ
-              </motion.h2>
-              <motion.p
-                variants={fadeUp}
-                className="inline-flex items-center gap-2 text-white/50 leading-relaxed text-base md:text-lg max-w-2xl"
-              >
-                <MapPin className="w-4 h-4 text-[#A6FF00] shrink-0" strokeWidth={1.75} />
-                Москва · готов к гибриду и удалёнке · обсуждаю релокацию под сильный оффер.
-              </motion.p>
-            </div>
+      <SplitSection id="contacts" label="06 — Контакты" heading="НАПИСАТЬ">
+        <div>
+          <p className="inline-flex items-start gap-2 text-white/50 leading-relaxed text-base md:text-lg mb-8">
+            <MapPin className="w-4 h-4 text-[#A6FF00] shrink-0 mt-1" strokeWidth={1.75} />
+            Москва · готов к гибриду и удалёнке · обсуждаю релокацию под сильный оффер. Самый быстрый канал — Telegram.
+          </p>
 
-            <motion.div variants={fadeUp} className="flex flex-wrap gap-3">
-              {[
-                { label: "Telegram", href: "https://t.me/egoradi", primary: true, Icon: Send },
-                { label: "Email", href: "mailto:egor.outhead@gmail.com", Icon: Mail },
-                { label: "LinkedIn", href: "https://www.linkedin.com/in/egorshugaev/", Icon: LinkedinIcon },
-                { label: "GitHub", href: "https://github.com/outhead", Icon: GithubIcon },
-                { label: "CV", href: "/Egor_Shugaev_CV.pdf", Icon: FileDown },
-              ].map((link) => (
-                <Link
-                  key={link.label}
-                  href={link.href}
-                  target="_blank"
-                  className={
-                    link.primary
-                      ? "inline-flex items-center gap-2 bg-[#A6FF00] text-black hover:bg-[#B8FF33] rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors no-underline"
-                      : "inline-flex items-center gap-2 bg-transparent border border-white/15 hover:border-white/40 rounded-lg px-5 py-2.5 text-sm text-white/70 hover:text-white transition-colors no-underline"
-                  }
-                >
-                  <link.Icon className="w-4 h-4" strokeWidth={1.75} />
-                  {link.label}
-                </Link>
-              ))}
-            </motion.div>
+          <div className="flex flex-wrap gap-3">
+            {[
+              { label: "Telegram", href: "https://t.me/egoradi", primary: true, Icon: Send },
+              { label: "Email", href: "mailto:egor.outhead@gmail.com", Icon: Mail },
+              { label: "LinkedIn", href: "https://www.linkedin.com/in/egorshugaev/", Icon: LinkedinIcon },
+              { label: "GitHub", href: "https://github.com/outhead", Icon: GithubIcon },
+              { label: "CV", href: "/Egor_Shugaev_CV.pdf", Icon: FileDown },
+            ].map((link) => (
+              <Link
+                key={link.label}
+                href={link.href}
+                target="_blank"
+                className={
+                  link.primary
+                    ? "inline-flex items-center gap-2 bg-[#A6FF00] text-black hover:bg-[#B8FF33] rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors no-underline"
+                    : "inline-flex items-center gap-2 border border-white/15 hover:border-white/40 rounded-lg px-5 py-2.5 text-sm text-white/70 hover:text-white transition-colors no-underline"
+                }
+              >
+                <link.Icon className="w-4 h-4" strokeWidth={1.75} />
+                {link.label}
+              </Link>
+            ))}
           </div>
-        </motion.div>
-      </section>
+        </div>
+      </SplitSection>
     </>
   );
 }
