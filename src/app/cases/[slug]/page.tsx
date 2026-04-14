@@ -10,12 +10,13 @@ export function generateStaticParams() {
   }));
 }
 
-export function generateMetadata({
+export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
-}): Metadata {
-  const project = getProjectBySlug(params.slug);
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const project = getProjectBySlug(slug);
   if (!project) return {};
 
   return {
@@ -29,8 +30,9 @@ export function generateMetadata({
   };
 }
 
-export default function CasePage({ params }: { params: { slug: string } }) {
-  const project = getProjectBySlug(params.slug);
+export default async function CasePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const project = getProjectBySlug(slug);
 
   if (!project) {
     notFound();
