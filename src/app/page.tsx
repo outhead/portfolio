@@ -262,18 +262,12 @@ export default function Home() {
             </div>
           </div>
 
-          {/* How I work */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-            {[
-              { label: "Data-driven", text: "CJM, юзабилити-тесты, A/B, метрики на каждом этапе. Решения — на данных, не на вкусе." },
-              { label: "AI-first", text: "Внедряю AI в процессы дизайна: от discovery до продакшна. AI Operating Model для команд." },
-              { label: "Кросс-функционально", text: "Работаю на стыке продукта, инженерии и бизнеса. Стейкхолдеры — партнёры, не заказчики." },
-              { label: "Растим людей", text: "Грейды, 1:1, performance review, карьерные треки. Наём, адаптация, удержание." },
-            ].map((p) => (
-              <div key={p.label} className="border border-[#A6FF00]/10 rounded-xl p-4 bg-[#A6FF00]/[0.02]">
-                <div className="text-[10px] tracking-[0.18em] uppercase text-[#A6FF00]/70 font-medium mb-2">{p.label}</div>
-                <p className="text-xs text-white/50 leading-relaxed">{p.text}</p>
-              </div>
+          {/* Principles tags */}
+          <div className="flex flex-wrap gap-2 mb-6">
+            {["Data-driven", "AI-first", "Кросс-функционально", "Растим людей", "Design Strategy", "CJM · A/B", "OKR · Roadmap"].map((tag) => (
+              <span key={tag} className="text-[10px] tracking-[0.14em] uppercase text-[#A6FF00]/60 border border-[#A6FF00]/15 rounded-full px-3 py-1">
+                {tag}
+              </span>
             ))}
           </div>
 
