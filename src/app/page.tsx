@@ -262,12 +262,27 @@ export default function Home() {
             </div>
           </div>
 
+          {/* How I work */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            {[
+              { label: "Data-driven", text: "CJM, юзабилити-тесты, A/B, метрики на каждом этапе. Решения — на данных, не на вкусе." },
+              { label: "AI-first", text: "Внедряю AI в процессы дизайна: от discovery до продакшна. AI Operating Model для команд." },
+              { label: "Кросс-функционально", text: "Работаю на стыке продукта, инженерии и бизнеса. Стейкхолдеры — партнёры, не заказчики." },
+              { label: "Растим людей", text: "Грейды, 1:1, performance review, карьерные треки. Наём, адаптация, удержание." },
+            ].map((p) => (
+              <div key={p.label} className="border border-[#A6FF00]/10 rounded-xl p-4 bg-[#A6FF00]/[0.02]">
+                <div className="text-[10px] tracking-[0.18em] uppercase text-[#A6FF00]/70 font-medium mb-2">{p.label}</div>
+                <p className="text-xs text-white/50 leading-relaxed">{p.text}</p>
+              </div>
+            ))}
+          </div>
+
           {/* Skills + career */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
               { icon: LayoutGrid, title: "Core", items: ["Design Management", "Art Direction", "Design Strategy", "Product Design", "Design Systems", "UX Research"] },
               { icon: Code2, title: "Stack", items: ["Figma", "AI/ML Products", "Claude · Cursor · v0", "React · TypeScript", "Python", "Three.js · WebGL"] },
-              { icon: Wand2, title: "Experiments", items: ["AI-автоматизация", "Generative design", "Creative coding", "Shader-эксперименты", "LLM-агенты"] },
+              { icon: Wand2, title: "Process", items: ["CJM · JTBD", "Discovery · Design Sprint", "A/B · юзабилити-тесты", "OKR · roadmap", "Кросс-функциональные команды"] },
             ].map((g) => {
               const Icon = g.icon;
               return (
@@ -292,10 +307,10 @@ export default function Home() {
                 <div className="text-[10px] tracking-[0.18em] uppercase text-white/60 font-medium">Карьера</div>
               </div>
               {[
-                { year: "2024", company: "МТС", role: "Head of Design AI", current: true },
-                { year: "2022", company: "Газпром Нефть", role: "Design Manager" },
-                { year: "2021", company: "OZON", role: "Design Lead" },
-                { year: "2018", company: "МТС", role: "Head of Direction" },
+                { year: "2024", company: "МТС", role: "Head of Design AI", scope: "8 команд, 40+ чел, B2C + AI", current: true },
+                { year: "2022", company: "Газпром Нефть", role: "Design Manager", scope: "76 команд, дизайн-система" },
+                { year: "2021", company: "OZON", role: "Design Lead", scope: "найм, комьюнити, процессы" },
+                { year: "2018", company: "МТС", role: "Head of Direction", scope: "16 команд, 60+ дизайнеров" },
               ].map((job) => (
                 <div key={job.year + job.company} className="py-2 border-b border-white/[0.06] last:border-0">
                   <div className="flex items-baseline gap-2">
@@ -311,6 +326,7 @@ export default function Home() {
                     </span>
                   </div>
                   <div className="text-xs text-white/35 pl-10">{job.role}</div>
+                  <div className="text-[10px] text-white/20 pl-10">{job.scope}</div>
                 </div>
               ))}
             </div>
