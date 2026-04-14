@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { Send, Mail, ArrowUp } from "lucide-react";
 
@@ -40,13 +42,13 @@ export default function Footer() {
 
         <div className="flex items-center gap-4 text-[10px] tracking-[0.12em] uppercase text-white/25">
           <span>Егор Шугаев © {new Date().getFullYear()}</span>
-          <Link
-            href="#"
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             aria-label="Наверх"
-            className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-white/[0.08] text-white/30 hover:text-white/60 hover:border-white/20 transition-colors no-underline"
+            className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-white/[0.08] text-white/30 hover:text-white/60 hover:border-white/20 transition-colors cursor-pointer bg-transparent"
           >
             <ArrowUp className="w-3.5 h-3.5" strokeWidth={2} />
-          </Link>
+          </button>
         </div>
       </div>
     </footer>
