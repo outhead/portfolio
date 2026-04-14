@@ -63,6 +63,7 @@ function SplitSection({
   children,
   className = "",
   borderTop = true,
+  wideRight = false,
 }: {
   id?: string;
   label: string;
@@ -70,11 +71,12 @@ function SplitSection({
   children: React.ReactNode;
   className?: string;
   borderTop?: boolean;
+  wideRight?: boolean;
 }) {
   return (
     <section
       id={id}
-      className={`relative z-[1] px-5 md:px-10 py-14 md:py-20 bg-black ${
+      className={`relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-24 bg-black ${
         borderTop ? "border-t border-white/[0.06]" : ""
       } ${className}`}
     >
@@ -83,18 +85,20 @@ function SplitSection({
         whileInView="show"
         viewport={viewport}
         variants={stagger}
-        className="grid md:grid-cols-[280px_1fr] lg:grid-cols-[320px_1fr] gap-8 md:gap-12 lg:gap-20"
+        className="grid md:grid-cols-[220px_1fr] lg:grid-cols-[260px_1fr] gap-8 md:gap-10 lg:gap-16"
       >
         {/* Left: label + heading, sticky */}
         <motion.div variants={fadeUp} className="md:sticky md:top-24 self-start">
           <SectionLabel>{label}</SectionLabel>
-          <h2 className="font-p95 text-[clamp(28px,4vw,56px)] uppercase mt-2 leading-[0.95]">
+          <h2 className="font-p95 text-[clamp(28px,3.5vw,48px)] uppercase mt-2 leading-[0.95]">
             {heading}
           </h2>
         </motion.div>
 
-        {/* Right: content */}
-        <motion.div variants={fadeUp}>{children}</motion.div>
+        {/* Right: content, capped width */}
+        <motion.div variants={fadeUp} className={wideRight ? "" : "max-w-[620px]"}>
+          {children}
+        </motion.div>
       </motion.div>
     </section>
   );
@@ -123,7 +127,7 @@ export default function Home() {
           initial="hidden"
           animate="show"
           variants={stagger}
-          className="relative z-[5] px-5 md:px-10 w-full"
+          className="relative z-[5] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] w-full"
         >
           <motion.h1
             variants={fadeUp}
@@ -156,7 +160,7 @@ export default function Home() {
           whileInView="show"
           viewport={viewport}
           variants={stagger}
-          className="relative z-[5] px-5 md:px-10 mt-10 md:mt-16"
+          className="relative z-[5] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] mt-10 md:mt-16"
         >
           <div className="grid grid-cols-2 md:grid-cols-5 gap-px bg-white/[0.06] border border-white/[0.06] rounded-lg overflow-hidden backdrop-blur-sm">
             {[
@@ -191,7 +195,7 @@ export default function Home() {
           whileInView={{ opacity: 1 }}
           viewport={viewport}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="relative z-[5] px-5 md:px-10 mt-8 mb-10 md:mb-12"
+          className="relative z-[5] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] mt-8 mb-10 md:mb-12"
         >
           <div className="text-[9px] tracking-[0.2em] uppercase text-white/25 mb-3">
             Работал в
@@ -365,7 +369,7 @@ export default function Home() {
       </SplitSection>
 
       {/* ===== PORTFOLIO ===== */}
-      <SplitSection id="portfolio" label="02 — Портфолио" heading="ПРОЕКТЫ">
+      <SplitSection id="portfolio" label="02 — Портфолио" heading="ПРОЕКТЫ" wideRight>
         <div className="grid sm:grid-cols-2 gap-5">
           {workProjects.map((project, i) => (
             <motion.div key={project.slug} variants={fadeUp}>
@@ -376,7 +380,7 @@ export default function Home() {
       </SplitSection>
 
       {/* ===== PUBLIC ===== */}
-      <SplitSection id="public" label="03 — Публично" heading="ГОВОРЮ И ПИШУ">
+      <SplitSection id="public" label="03 — Публично" heading="ГОВОРЮ И&#10;ПИШУ" wideRight>
         <div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             {[
@@ -451,7 +455,7 @@ export default function Home() {
       </SplitSection>
 
       {/* ===== EXPERIMENTS ===== */}
-      <SplitSection id="experiments" label="04 — Эксперименты" heading="ЭКСПЕРИМЕНТЫ">
+      <SplitSection id="experiments" label="04 — Эксперименты" heading="ЭКСПЕРИМЕНТЫ" wideRight>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {experimentProjects.map((project, i) => (
             <motion.div key={project.slug} variants={fadeUp}>
