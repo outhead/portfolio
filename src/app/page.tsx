@@ -204,14 +204,26 @@ export default function Home() {
 
       {/* ===== PORTFOLIO ===== */}
       <SplitSection id="portfolio" label="01 — Портфолио" heading="ПРОЕКТЫ" wideRight>
-        <div className="grid sm:grid-cols-2 gap-5">
-          {workProjects.map((project, i) => (
-            <motion.div key={project.slug} variants={fadeUp}>
-              <ProjectCard project={project} index={i} />
-            </motion.div>
-          ))}
+        <div className="space-y-5">
+          {/* Featured first project */}
+          <motion.div variants={fadeUp}>
+            <ProjectCard project={workProjects[0]} index={0} featured />
+          </motion.div>
+          {/* Remaining projects in grid */}
+          <div className="grid sm:grid-cols-2 gap-5">
+            {workProjects.slice(1).map((project, i) => (
+              <motion.div key={project.slug} variants={fadeUp}>
+                <ProjectCard project={project} index={i + 1} />
+              </motion.div>
+            ))}
+          </div>
         </div>
       </SplitSection>
+
+      {/* Divider */}
+      <div className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] bg-black">
+        <div className="h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
+      </div>
 
       {/* ===== EXPERIMENTS ===== */}
       <SplitSection id="experiments" label="02 — Эксперименты" heading="ЛАБОРАТОРИЯ" wideRight>
@@ -316,6 +328,11 @@ export default function Home() {
           </div>
         </div>
       </SplitSection>
+
+      {/* Divider */}
+      <div className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] bg-black">
+        <div className="h-px bg-gradient-to-r from-transparent via-[#A6FF00]/10 to-transparent" />
+      </div>
 
       {/* ===== PUBLIC ===== */}
       <SplitSection id="public" label="04 — Публично" heading="ГОВОРЮ И&#10;ПИШУ">

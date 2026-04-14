@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Send, Mail } from "lucide-react";
+import { Send, Mail, ArrowUp } from "lucide-react";
 
 const LinkedinIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
@@ -17,31 +17,37 @@ const links = [
   { href: "https://t.me/egoradi", label: "Telegram", Icon: Send },
   { href: "mailto:egor.outhead@gmail.com", label: "Email", Icon: Mail },
   { href: "https://github.com/outhead", label: "GitHub", Icon: GithubIcon },
-  {
-    href: "https://www.linkedin.com/in/egorshugaev/",
-    label: "LinkedIn",
-    Icon: LinkedinIcon,
-  },
+  { href: "https://www.linkedin.com/in/egorshugaev/", label: "LinkedIn", Icon: LinkedinIcon },
 ];
 
 export default function Footer() {
   return (
-    <footer className="relative z-[1] border-t border-white/[0.04] px-5 md:px-10 py-5 bg-black/75">
-      <div className="flex justify-between flex-wrap gap-4 text-[10px] tracking-[0.12em] uppercase text-white/50">
-        <div className="flex gap-5">
+    <footer className="relative z-[1] border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-6 md:py-8 bg-black">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex items-center gap-5">
           {links.map((l) => (
             <Link
               key={l.label}
               href={l.href}
               target="_blank"
-              className="inline-flex items-center gap-1.5 text-white/55 no-underline hover:text-[#A6FF00] transition-colors min-h-[44px]"
+              aria-label={l.label}
+              className="text-white/35 no-underline hover:text-white/70 transition-colors min-h-[44px] flex items-center"
             >
-              <l.Icon className="w-3.5 h-3.5" strokeWidth={1.75} />
-              {l.label}
+              <l.Icon className="w-4 h-4" strokeWidth={1.75} />
             </Link>
           ))}
         </div>
-        <div>Егор Шугаев © 2026</div>
+
+        <div className="flex items-center gap-4 text-[10px] tracking-[0.12em] uppercase text-white/25">
+          <span>Егор Шугаев © {new Date().getFullYear()}</span>
+          <Link
+            href="#"
+            aria-label="Наверх"
+            className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-white/[0.08] text-white/30 hover:text-white/60 hover:border-white/20 transition-colors no-underline"
+          >
+            <ArrowUp className="w-3.5 h-3.5" strokeWidth={2} />
+          </Link>
+        </div>
       </div>
     </footer>
   );

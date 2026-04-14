@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     "OZON",
     "Газпром Нефть",
   ],
-  authors: [{ name: "Егор Шугаев", url: "https://outhead.github.io" }],
+  authors: [{ name: "Егор Шугаев", url: "https://portfolio-egors-projects-baaaa1ca.vercel.app" }],
   robots: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
   openGraph: {
     title: "Егор Шугаев — Дизайн-директор, Head of Design AI Division",
@@ -79,8 +79,7 @@ export default function RootLayout({
                 url: "https://mts.ru",
               },
               email: "egor.outhead@gmail.com",
-              telephone: "+7-XXX-XXX-XXXX",
-              url: "https://outhead.github.io",
+              url: "https://portfolio-egors-projects-baaaa1ca.vercel.app",
               image: "https://outhead.github.io/images/photos/photo-5.jpg",
               sameAs: [
                 "https://t.me/egoradi",
