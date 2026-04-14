@@ -131,6 +131,20 @@ export default function ProjectCard({ project, index, featured = false }: Projec
             {String(index + 1).padStart(2, "0")}
           </div>
 
+          {/* Result badges — top-right row */}
+          {project.results && project.results.length > 0 && (
+            <div className="absolute top-4 right-14 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              {project.results.slice(0, 2).map((r) => (
+                <span
+                  key={r.label}
+                  className="text-[8px] tracking-[0.05em] uppercase px-2 py-1 rounded bg-black/60 backdrop-blur-sm text-white/70 border border-white/[0.08] whitespace-nowrap"
+                >
+                  {r.value} {r.label}
+                </span>
+              ))}
+            </div>
+          )}
+
           {/* External arrow */}
           <div className="absolute top-4 right-4 w-8 h-8 rounded-full border border-white/10 flex items-center justify-center bg-black/30 backdrop-blur-sm opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all duration-300">
             <ArrowUpRight className="w-3.5 h-3.5 text-white/70" strokeWidth={2} />

@@ -126,11 +126,11 @@ export default function Home() {
         >
           <motion.h1
             variants={fadeUp}
-            className="font-p95 text-[clamp(56px,11vw,160px)] leading-[0.92] uppercase tracking-tight text-white"
+            className="font-p95 text-[clamp(56px,11vw,160px)] leading-[0.92] uppercase tracking-tight"
           >
-            ЕГОР
+            <span className="text-white">ЕГОР</span>
             <br />
-            ШУГАЕВ
+            <span className="gradient-text">ШУГАЕВ</span>
           </motion.h1>
 
           <motion.p
@@ -140,12 +140,23 @@ export default function Home() {
             Строю дизайн-функции и AI-продукты в МТС, Ozon, Газпром Нефти.
           </motion.p>
 
-          <motion.p
+          <motion.div
             variants={fadeUp}
-            className="mt-3 text-[11px] md:text-xs tracking-[0.15em] uppercase text-white/50"
+            className="mt-4 flex flex-wrap items-center gap-3"
           >
-            Head of Design · AI Division · МТС · Москва
-          </motion.p>
+            <span className="text-[11px] md:text-xs tracking-[0.15em] uppercase text-white/50">
+              Head of Design · AI Division · МТС · Москва
+            </span>
+            <span className="hidden md:inline-block h-4 w-px bg-white/15" />
+            <Link
+              href="https://t.me/egoradi"
+              target="_blank"
+              className="inline-flex items-center gap-1.5 text-[11px] md:text-xs tracking-[0.1em] uppercase text-[#A6FF00]/70 hover:text-[#A6FF00] transition-colors no-underline"
+            >
+              <Send className="w-3 h-3" strokeWidth={2} />
+              Написать
+            </Link>
+          </motion.div>
         </motion.div>
 
         {/* Metrics strip — with context */}
@@ -258,24 +269,34 @@ export default function Home() {
       {/* ===== ABOUT ===== */}
       <SplitSection id="about" label="03 — Обо мне" heading="ПРИВЕТ!">
         <div>
-          <div className="grid lg:grid-cols-[1fr_180px] gap-8 items-start mb-10">
+          {/* Photo — large visual anchor */}
+          <div className="relative aspect-[16/9] md:aspect-[2.4/1] rounded-xl overflow-hidden mb-10">
+            <Image
+              src="/images/photos/photo-3.jpg"
+              alt="Егор Шугаев — дизайн-директор и Head of Design AI Division"
+              fill
+              className="object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            <div className="absolute bottom-4 left-5 md:bottom-6 md:left-7">
+              <div className="text-[10px] tracking-[0.15em] uppercase text-white/50">Москва · Head of Design AI Division</div>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-[1fr_1fr] gap-6 md:gap-10 mb-10">
             <div>
-              <p className="text-white/70 leading-relaxed text-base md:text-lg mb-4">
+              <p className="text-white/70 leading-relaxed text-base md:text-lg">
                 Руковожу дизайном B2C-экосистемы МТС и строю AI-дивизион с нуля. До этого — Ozon (дизайн-функция с 0 до 17 человек) и Газпром Нефть (дизайн-система на 76 команд, CX Award).
               </p>
-              <p className="text-white/45 leading-relaxed text-sm md:text-base mb-6">
+            </div>
+            <div>
+              <p className="text-white/45 leading-relaxed text-sm md:text-base mb-4">
                 Преподаю прикладной ИИ в ВШЭ. Пишу код — React, Python, WebGL. Верю, что лучший дизайн-лид понимает инженерию, а не только Figma.
               </p>
-
               {/* Education + Languages */}
               <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-white/30">
                 <span>ВШЭ — преподаватель ИИ</span>
                 <span>English — fluent</span>
-              </div>
-            </div>
-            <div className="hidden lg:block">
-              <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden">
-                <Image src="/images/photos/photo-3.jpg" alt="Егор Шугаев — дизайн-директор и Head of Design AI Division" fill className="object-cover" />
               </div>
             </div>
           </div>
@@ -395,6 +416,20 @@ export default function Home() {
               </p>
               <Link href="https://t.me/vigrom" target="_blank" className="inline-flex items-center gap-2 text-xs text-white/30 hover:text-white/60 transition-colors no-underline">
                 Читать канал <ArrowUpRight className="w-3 h-3" strokeWidth={2} />
+              </Link>
+            </div>
+
+            {/* Mentoring CTA */}
+            <div className="mt-6 pt-6 border-t border-white/[0.06]">
+              <Link
+                href="/mentoring"
+                className="group flex items-center justify-between gap-4 p-5 rounded-xl border border-white/[0.08] hover:border-[#A6FF00]/20 bg-white/[0.02] hover:bg-[#A6FF00]/[0.03] transition-all duration-300 no-underline"
+              >
+                <div>
+                  <div className="text-sm text-white/80 font-medium mb-1 group-hover:text-white transition-colors">Менторинг</div>
+                  <div className="text-xs text-white/35">1-on-1 сессии, карьерный трекинг, мастерклассы для дизайнеров и лидов</div>
+                </div>
+                <ArrowUpRight className="w-5 h-5 text-white/20 group-hover:text-[#A6FF00]/60 transition-colors flex-shrink-0" strokeWidth={1.5} />
               </Link>
             </div>
           </div>
