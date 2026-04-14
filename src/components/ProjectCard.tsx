@@ -28,12 +28,21 @@ export default function ProjectCard({ project, index, featured = false }: Projec
               style={{ background: project.coverColor }}
             >
               {project.coverImage && (
-                <Image
-                  src={project.coverImage}
-                  alt={project.title}
-                  fill
-                  className="object-cover opacity-50 group-hover:opacity-65 group-hover:scale-105 transition-all duration-700"
-                />
+                project.coverImage.endsWith('.svg') ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={project.coverImage}
+                    alt={project.title}
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
+                ) : (
+                  <Image
+                    src={project.coverImage}
+                    alt={project.title}
+                    fill
+                    className="object-cover opacity-50 group-hover:opacity-65 group-hover:scale-105 transition-all duration-700"
+                  />
+                )
               )}
               {/* Metric */}
               {project.metric && (

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import ImageLightbox from "@/components/ImageLightbox";
 
 export function generateStaticParams() {
   return projects.map((project) => ({
@@ -153,21 +154,12 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
           {project.screenshots && project.screenshots.length > 0 && (
             <div className="mt-16 mb-12">
               <div className="text-[10px] tracking-[0.12em] uppercase text-white/30 mb-6">Скриншоты</div>
-              <div className="grid md:grid-cols-2 gap-4">
-                {project.screenshots.map((src, n) => (
-                  <div
-                    key={n}
-                    className="relative aspect-video rounded-lg border border-white/[0.06] overflow-hidden group"
-                  >
-                    <Image
-                      src={src}
-                      alt={`${project.title} — скриншот ${n + 1}`}
-                      fill
-                      className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-                ))}
-              </div>
+              <ImageLightbox
+                images={project.screenshots.map((src, n) => ({
+                  src,
+                  alt: `${project.title} — скриншот ${n + 1}`,
+                }))}
+              />
             </div>
           )}
         </div>
