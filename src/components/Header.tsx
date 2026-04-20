@@ -1,22 +1,22 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { FileDown, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const navLinks = [
   { href: "/#portfolio", label: "Работы" },
-  { href: "/#experiments", label: "Эксперименты" },
-  { href: "/#about", label: "Обо мне" },
-  { href: "/#public", label: "Публично" },
+  { href: "/experiments", label: "Эксперименты" },
+  { href: "/speaking", label: "Выступления" },
   { href: "/mentoring", label: "Менторинг" },
-  { href: "/#contacts", label: "Контакты" },
 ];
 
-const sectionIds = ["portfolio", "experiments", "about", "public", "contacts"];
+const sectionIds = ["portfolio", "about", "contacts"];
 
 export default function Header() {
+  const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [headerSolid, setHeaderSolid] = useState(false);
@@ -95,8 +95,12 @@ export default function Header() {
 
         <nav aria-label="Основная навигация" className="hidden md:flex gap-6">
           {navLinks.map((link) => {
-            const sectionId = link.href.replace("/#", "");
-            const isActive = activeSection === sectionId;
+            // Определяем активный пункт: для якорей — по активной секции на главной,
+            // для внешних страниц (/experiments, /speaking, /mentoring) — по pathname
+            const isAnchor = link.href.startsWith("/#");
+            const isActive = isAnchor
+              ? pathname === "/" && activeSection === link.href.replace("/#", "")
+              : pathname === link.href;
             return (
               <Link
                 key={link.href}

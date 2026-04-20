@@ -5,12 +5,14 @@ import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://portfolio-egors-projects-baaaa1ca.vercel.app"),
-  title: "Егор Шугаев — Дизайн-директор, Head of Design AI Division",
+  title: "Егор Шугаев — Дизайн-директор · Fractional CDO · Ментор",
   description:
-    "Дизайн-директор с 8+ годами опыта в МТС, OZON, Газпром Нефть. Руковожу дизайном B2C-экосистемы и AI-дивизиона (40+ дизайнеров). Специалист в дизайн-системах, AI/ML продуктах и масштабировании команд. Ментор и консультант.",
+    "11 лет в дизайне, 9 — в Big Tech России: МТС (Art Director B2C и Design Director), Ozon (Community Lead), Газпром Нефть (Head of Design), MWS AI (AI Visioner). 11М+ пользователей, 100+ дизайнеров, CX Award 2024. Сейчас — Fractional CDO, advisory, менторинг.",
   keywords: [
     "дизайн-директор",
     "head of design",
+    "design director",
+    "AI visioner",
     "product design",
     "AI design",
     "UX/UI",
@@ -18,16 +20,18 @@ export const metadata: Metadata = {
     "design systems",
     "Figma",
     "ментор дизайнеров",
+    "design consulting",
     "МТС",
-    "OZON",
+    "Ozon",
     "Газпром Нефть",
+    "MWS AI",
   ],
   authors: [{ name: "Егор Шугаев", url: "https://portfolio-egors-projects-baaaa1ca.vercel.app" }],
   robots: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
   openGraph: {
-    title: "Егор Шугаев — Дизайн-директор, Head of Design AI Division",
+    title: "Егор Шугаев — Дизайн-директор · Fractional CDO · Ментор",
     description:
-      "Руковожу дизайном B2C-экосистемы и AI-дивизиона МТС. 8.8М+ пользователей, 100+ дизайнеров, CX Award 2024.",
+      "11 лет в дизайне, 9 — в Big Tech: МТС, Ozon, Газпром Нефть, MWS AI. 11М+ пользователей, 100+ дизайнеров, CX Award 2024.",
     type: "website",
     locale: "ru_RU",
     url: "https://portfolio-egors-projects-baaaa1ca.vercel.app",
@@ -37,14 +41,14 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Егор Шугаев — Head of Design, AI Division, МТС",
+        alt: "Егор Шугаев — Дизайн-директор, ментор и независимый консультант",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Егор Шугаев — Дизайн-директор, Head of Design AI Division",
-    description: "Руковожу дизайном B2C-экосистемы и AI-дивизиона МТС.",
+    title: "Егор Шугаев — Дизайн-директор · Fractional CDO · Ментор",
+    description: "11 лет в дизайне, 9 — в Big Tech. Сейчас — Fractional CDO, advisory, менторинг.",
     images: ["/og-image.png"],
   },
 };
@@ -63,6 +67,41 @@ export default function RootLayout({
         <meta name="theme-color" content="#000000" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* Фикс «рефреш открывает низ страницы»:
+            - отключаем scroll-restoration браузера,
+            - срезаем #hash (частая причина прыжка к #contacts),
+            - форсим scroll(0,0) в трёх точках загрузки (head, DOMContentLoaded, load),
+            - только после load включаем .js-scroll-smooth, чтобы якорные клики остались плавными. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function () {
+                try {
+                  if ('scrollRestoration' in history) {
+                    history.scrollRestoration = 'manual';
+                  }
+                  // Убираем #hash, чтобы браузер не прыгал к якорю на загрузке
+                  if (window.location.hash) {
+                    history.replaceState(
+                      null,
+                      '',
+                      window.location.pathname + window.location.search
+                    );
+                  }
+                  var toTop = function () { window.scrollTo(0, 0); };
+                  toTop();
+                  document.addEventListener('DOMContentLoaded', toTop);
+                  window.addEventListener('load', function () {
+                    toTop();
+                    requestAnimationFrame(function () {
+                      document.documentElement.classList.add('js-scroll-smooth');
+                    });
+                  });
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -74,14 +113,15 @@ export default function RootLayout({
               givenName: "Егор",
               familyName: "Шугаев",
               jobTitle: [
-                "Head of Design, AI Division",
                 "Design Director",
-                "Design Manager",
+                "Fractional CDO",
+                "Independent Design Consultant",
+                "AI Visioner",
+                "Mentor",
               ],
               worksFor: {
                 "@type": "Organization",
-                name: "МТС",
-                url: "https://mts.ru",
+                name: "Независимый консультант",
               },
               email: "egor.outhead@gmail.com",
               url: "https://portfolio-egors-projects-baaaa1ca.vercel.app",
@@ -116,7 +156,7 @@ export default function RootLayout({
                 "CX Awards 2024 - Unified Service Portal (ESO) Design",
               ],
               description:
-                "Дизайн-директор с 8+ годами опыта в крупнейших технологических компаниях России (МТС, OZON, Газпром Нефть). Руковожу дизайном B2C-экосистемы и AI-дивизиона. Специалист в дизайн-системах, управлении дизайн-командами и AI-продуктах. Ментор для продуктовых дизайнеров и консультант по дизайн-трансформации.",
+                "Дизайн-директор с 11 годами опыта в крупнейших технологических компаниях России: МТС (Art Director B2C-экосистемы, Design Director), Ozon (Community Lead), Газпром Нефть (Head of Design, CX Award 2024), MWS AI (AI Visioner). Специалист в дизайн-системах, управлении дизайн-командами и AI-продуктах. Сейчас на свободном графике: менторинг, консалтинг, независимые проекты.",
             }),
           }}
         />
@@ -131,7 +171,6 @@ export default function RootLayout({
         <Header />
         <main id="main-content">{children}</main>
         <Footer />
-        <div className="grid-overlay" />
       </body>
     </html>
   );
