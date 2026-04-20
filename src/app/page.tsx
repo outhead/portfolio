@@ -544,15 +544,18 @@ export default function Home() {
               </div>
 
               {/* Inline stats row */}
-              <div className="grid grid-cols-3 gap-0 border-t border-white/[0.08] pt-5 mb-7">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-5 border-t border-white/[0.08] pt-5 mb-7">
                 {[
-                  { v: "11", l: "лет в дизайне" },
-                  { v: "5", l: "ролей руководителя" },
+                  { v: "11+", l: "лет в дизайне" },
+                  { v: "5", l: "лидерских ролей" },
                   { v: "8+", l: "лет в управлении" },
                 ].map((s, i) => (
-                  <div key={s.l} className={`${i > 0 ? "border-l border-white/[0.06] pl-4" : ""}`}>
+                  <div
+                    key={s.l}
+                    className={`min-w-0 ${i > 0 ? "sm:border-l sm:border-white/[0.06] sm:pl-4" : ""}`}
+                  >
                     <div className="font-p95 text-2xl md:text-3xl text-white leading-none">{s.v}</div>
-                    <div className="text-[11px] md:text-[12px] tracking-[0.1em] uppercase text-white/45 mt-1.5 leading-tight">
+                    <div className="text-[10px] md:text-[11px] tracking-[0.05em] uppercase text-white/45 mt-2 leading-snug">
                       {s.l}
                     </div>
                   </div>
@@ -775,7 +778,7 @@ export default function Home() {
                 n: "01",
                 title: "Дизайн должен считаться.",
                 body:
-                  "Если после релиза я не могу показать метрику, которая двинулась — это был не дизайн, это была иллюстрация. Работаю через discovery, гипотезы, A/B. CX Awards'24 получили за измеримое сокращение времени задач, а не за визуал.",
+                  "Если после релиза метрика не двинулась — я не считаю работу сделанной. Discovery, гипотезы, A/B, обратная связь с продуктом. CX Awards'24 получили за измеримое сокращение времени задач — не за визуал.",
               },
               {
                 n: "02",

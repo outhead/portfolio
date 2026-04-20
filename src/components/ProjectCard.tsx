@@ -30,7 +30,7 @@ export default function ProjectCard({ project, index, featured = false }: Projec
           alt=""
           aria-hidden
           fill
-          className={`object-cover opacity-55 group-hover:opacity-75 transition-all duration-700 ${className ?? ""}`}
+          className={`object-cover opacity-35 group-hover:opacity-60 transition-all duration-700 ${className ?? ""}`}
         />
       )
     ) : null;
@@ -51,7 +51,7 @@ export default function ProjectCard({ project, index, featured = false }: Projec
             <Cover className="group-hover:scale-[1.03]" />
 
             {/* Gradient floor for legibility */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/55 to-black/20" />
 
             {/* Index — top-left */}
             <div className="absolute top-5 left-5 md:top-6 md:left-6 font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-white/55">
@@ -103,7 +103,7 @@ export default function ProjectCard({ project, index, featured = false }: Projec
           style={{ background: project.coverColor }}
         >
           <Cover className="group-hover:scale-[1.04]" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
 
           {/* Index */}
           <div className="absolute top-4 left-4 font-p95 text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-white/50">
