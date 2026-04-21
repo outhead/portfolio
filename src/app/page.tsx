@@ -426,7 +426,7 @@ export default function Home() {
                 variants={fadeUp}
                 className="max-w-[560px] text-lg md:text-[20px] leading-snug text-white/70 font-light"
               >
-                От процессов и культуры — до AI. Открыт к найму и консалтингу.
+                От процессов и культуры — до AI.
               </motion.p>
 
               {/* 2 CTAs — primary green, secondary outline */}
@@ -461,7 +461,7 @@ export default function Home() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[#A6FF00]" />
               </span>
-              Сейчас · 9 лет: МТС · Ozon · Газпром Нефть · MWS AI
+              Сейчас — открыт к найму и консалтингу
             </motion.div>
           </div>
 
