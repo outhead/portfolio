@@ -110,26 +110,26 @@ export default function ProjectCard({ project, index, featured = false }: Projec
             {String(index + 1).padStart(2, "0")}
           </div>
 
-          {/* Metric — top-right, minimal */}
+          {/* Metric — top-right, minimal, softer to let title dominate */}
           {project.metric && (
-            <div className="absolute top-4 right-4 text-right max-w-[150px]">
-              <div className="font-p95 text-xl md:text-2xl text-white/85 leading-none">
+            <div className="absolute top-4 right-4 text-right max-w-[130px]">
+              <div className="font-p95 text-base md:text-lg text-white/55 leading-none">
                 {project.metric}
               </div>
               {project.metricLabel && (
-                <div className="text-[9px] md:text-[10px] tracking-[0.1em] uppercase text-white/45 mt-1.5 leading-tight">
+                <div className="text-[9px] md:text-[10px] tracking-[0.1em] uppercase text-white/35 mt-1 leading-tight">
                   {project.metricLabel}
                 </div>
               )}
             </div>
           )}
 
-          {/* Bottom — company + title */}
+          {/* Bottom — company + title (title is the hero) */}
           <div className="absolute bottom-0 left-0 right-0 p-5 md:p-6">
-            <div className="font-p95 text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-white/50 mb-1.5">
+            <div className="font-p95 text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-white/50 mb-2">
               {project.company}
             </div>
-            <h3 className="font-p95 text-[clamp(20px,2.2vw,30px)] uppercase leading-[0.98] text-white">
+            <h3 className="font-p95 text-[clamp(24px,2.6vw,36px)] uppercase leading-[0.95] text-white max-w-[85%]">
               {project.title}
             </h3>
           </div>
