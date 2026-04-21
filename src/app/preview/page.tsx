@@ -913,13 +913,6 @@ export default function PreviewHome() {
                       "radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.55) 100%)",
                   }}
                 />
-
-                {/* Имя снизу */}
-                <div className="pointer-events-none absolute bottom-5 left-5 right-5 flex items-end">
-                  <div className="font-p95 text-[14px] md:text-[16px] tracking-[0.08em] uppercase text-white/90 leading-none">
-                    ЕГОР<br />ШУГАЕВ
-                  </div>
-                </div>
               </div>
             </motion.div>
 
