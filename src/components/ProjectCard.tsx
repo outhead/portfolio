@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { Project } from "@/data/projects";
@@ -14,54 +13,6 @@ interface ProjectCardProps {
   featured?: boolean;
   /** Широкая 2×1-карточка, разбивающая ритм сетки. */
   wide?: boolean;
-}
-
-/**
- * Media — автоматически выбирает видео или картинку.
- * Fill-карточки stokt-style: обложка занимает всю карту без сильного оверлея.
- */
-function ProjectMedia({
-  project,
-  hoverScale = "group-hover:scale-[1.03]",
-}: {
-  project: Project;
-  hoverScale?: string;
-}) {
-  if (project.coverVideo) {
-    return (
-      <video
-        src={project.coverVideo}
-        poster={project.coverImage}
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="metadata"
-        className={`absolute inset-0 w-full h-full object-cover transition-transform duration-700 ${hoverScale}`}
-      />
-    );
-  }
-  if (!project.coverImage) return null;
-  if (project.coverImage.endsWith(".svg")) {
-    // eslint-disable-next-line @next/next/no-img-element
-    return (
-      <img
-        src={project.coverImage}
-        alt=""
-        aria-hidden
-        className={`absolute inset-0 w-full h-full object-cover transition-transform duration-700 ${hoverScale}`}
-      />
-    );
-  }
-  return (
-    <Image
-      src={project.coverImage}
-      alt=""
-      aria-hidden
-      fill
-      className={`object-cover transition-transform duration-700 ${hoverScale}`}
-    />
-  );
 }
 
 /** Маленький chip — stokt-style pill под title. */
@@ -156,7 +107,7 @@ export default function ProjectCard({
             className="relative h-full min-h-[340px] md:min-h-[480px] overflow-hidden"
             style={{ background: project.coverColor }}
           >
-            <ProjectMedia project={project} hoverScale="group-hover:scale-[1.03]" />
+            {/* картинки-заглушки убраны — осталась чистая типографика поверх coverColor */}
             {GradientFloor}
             {HoverArrow}
             {BottomContent}
@@ -179,7 +130,6 @@ export default function ProjectCard({
             className="relative h-full min-h-[280px] md:min-h-[360px] overflow-hidden"
             style={{ background: project.coverColor }}
           >
-            <ProjectMedia project={project} hoverScale="group-hover:scale-[1.04]" />
             {GradientFloor}
             {HoverArrow}
             {BottomContent}
@@ -201,7 +151,6 @@ export default function ProjectCard({
           className="relative h-full min-h-[240px] md:min-h-[320px] overflow-hidden"
           style={{ background: project.coverColor }}
         >
-          <ProjectMedia project={project} />
           {GradientFloor}
           {HoverArrow}
           {BottomContent}
