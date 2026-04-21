@@ -114,7 +114,7 @@ export default function RootLayout({
               familyName: "Шугаев",
               jobTitle: [
                 "Design Director",
-                "Fractional CDO",
+                "Part-time Design Director",
                 "Independent Design Consultant",
                 "AI Visioner",
                 "Mentor",
