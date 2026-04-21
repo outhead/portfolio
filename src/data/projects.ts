@@ -13,6 +13,11 @@ export interface Project {
   type: "work" | "experiment";
   coverColor: string;
   coverImage?: string;
+  /**
+   * Optional cover video (mp4/webm). Если задан — карточка показывает автоплей-видео
+   * вместо статичного coverImage. coverImage при этом служит постером для <video>.
+   */
+  coverVideo?: string;
   screenshots?: string[];
   sections?: {
     title: string;

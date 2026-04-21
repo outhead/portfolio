@@ -9,49 +9,83 @@ import { Project } from "@/data/projects";
 interface ProjectCardProps {
   project: Project;
   index: number;
+  /** Крупная горизонтальная карточка (2-строчная высота в сетке). */
   featured?: boolean;
+  /** Широкая 2×1-карточка, разбивающая ритм сетки (colorblind.cc-style). */
+  wide?: boolean;
 }
 
-export default function ProjectCard({ project, index, featured = false }: ProjectCardProps) {
-  // Common cover image renderer
-  const Cover = ({ className }: { className?: string }) =>
-    project.coverImage ? (
-      project.coverImage.endsWith(".svg") ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={project.coverImage}
-          alt=""
-          aria-hidden
-          className={`absolute inset-0 w-full h-full object-cover transition-transform duration-700 ${className ?? ""}`}
-        />
-      ) : (
-        <Image
-          src={project.coverImage}
-          alt=""
-          aria-hidden
-          fill
-          className={`object-cover opacity-35 group-hover:opacity-60 transition-all duration-700 ${className ?? ""}`}
-        />
-      )
-    ) : null;
+/**
+ * Media — автоматически выбирает видео или картинку.
+ * Видео играет автоплеем без звука, картинка затемнена, на hover — просветляется.
+ */
+function ProjectMedia({
+  project,
+  hoverScale = "group-hover:scale-[1.04]",
+}: {
+  project: Project;
+  hoverScale?: string;
+}) {
+  if (project.coverVideo) {
+    return (
+      <video
+        src={project.coverVideo}
+        poster={project.coverImage}
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        className={`absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-90 transition-all duration-700 ${hoverScale}`}
+      />
+    );
+  }
+  if (!project.coverImage) return null;
+  if (project.coverImage.endsWith(".svg")) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return (
+      <img
+        src={project.coverImage}
+        alt=""
+        aria-hidden
+        className={`absolute inset-0 w-full h-full object-cover transition-transform duration-700 ${hoverScale}`}
+      />
+    );
+  }
+  return (
+    <Image
+      src={project.coverImage}
+      alt=""
+      aria-hidden
+      fill
+      className={`object-cover opacity-45 group-hover:opacity-70 transition-all duration-700 ${hoverScale}`}
+    />
+  );
+}
 
-  // === FEATURED — big hero card ===
+export default function ProjectCard({
+  project,
+  index,
+  featured = false,
+  wide = false,
+}: ProjectCardProps) {
+  // === FEATURED — крупная hero-карточка ===
   if (featured) {
     return (
-      <Link href={`/cases/${project.slug}`} className="no-underline group">
+      <Link href={`/cases/${project.slug}`} className="no-underline group h-full block">
         <motion.article
           whileHover={{ y: -4 }}
           transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          className="relative rounded-2xl overflow-hidden bg-[#0a0a0a] border border-white/[0.06] group-hover:border-white/20 transition-colors duration-300"
+          className="relative rounded-2xl overflow-hidden bg-[#0a0a0a] border border-white/[0.06] group-hover:border-white/20 transition-colors duration-300 h-full"
         >
           <div
-            className="relative h-[340px] md:h-[420px] lg:h-[460px] overflow-hidden"
+            className="relative h-full min-h-[340px] md:min-h-[480px] overflow-hidden"
             style={{ background: project.coverColor }}
           >
-            <Cover className="group-hover:scale-[1.03]" />
+            <ProjectMedia project={project} hoverScale="group-hover:scale-[1.03]" />
 
-            {/* Gradient floor for legibility */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/55 to-black/20" />
+            {/* Gradient floor для читаемости */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-black/15" />
 
             {/* Index — top-left */}
             <div className="absolute top-5 left-5 md:top-6 md:left-6 font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-white/55">
@@ -90,27 +124,80 @@ export default function ProjectCard({ project, index, featured = false }: Projec
     );
   }
 
-  // === REGULAR — compact bento card ===
+  // === WIDE — 2×1 акцент-карта (разбивает ритм grid'а) ===
+  if (wide) {
+    return (
+      <Link href={`/cases/${project.slug}`} className="no-underline group h-full block">
+        <motion.article
+          whileHover={{ y: -4 }}
+          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          className="relative rounded-2xl overflow-hidden bg-[#0a0a0a] border border-white/[0.06] group-hover:border-white/20 transition-colors duration-300 h-full"
+        >
+          <div
+            className="relative h-full min-h-[280px] md:min-h-[340px] overflow-hidden"
+            style={{ background: project.coverColor }}
+          >
+            <ProjectMedia project={project} hoverScale="group-hover:scale-[1.04]" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/45 to-transparent md:via-black/30" />
+
+            {/* Index */}
+            <div className="absolute top-5 left-5 md:top-6 md:left-6 font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-white/55">
+              {String(index + 1).padStart(2, "0")}
+            </div>
+
+            {/* Arrow */}
+            <div className="absolute top-5 right-5 md:top-6 md:right-6 w-9 h-9 md:w-10 md:h-10 rounded-full border border-white/15 flex items-center justify-center bg-black/40 backdrop-blur-sm opacity-70 group-hover:opacity-100 group-hover:border-white/40 transition-all duration-300">
+              <ArrowUpRight className="w-4 h-4 text-white/80" strokeWidth={2} />
+            </div>
+
+            {/* Content — слева (как colorblind wide card) */}
+            <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 lg:p-10 flex flex-col md:flex-row md:items-end md:justify-between gap-4 md:gap-6">
+              <div className="max-w-xl">
+                <div className="font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-white/55 mb-2">
+                  {project.company}
+                </div>
+                <h3 className="font-p95 text-[clamp(24px,3.2vw,44px)] uppercase leading-[0.95] text-white">
+                  {project.title}
+                </h3>
+              </div>
+              {project.metric && (
+                <div className="text-right shrink-0">
+                  <div className="font-p95 text-[clamp(24px,3.2vw,44px)] leading-none text-white/90">
+                    {project.metric}
+                  </div>
+                  <div className="text-[11px] md:text-[12px] tracking-[0.15em] uppercase text-white/45 mt-1.5">
+                    {project.metricLabel}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </motion.article>
+      </Link>
+    );
+  }
+
+  // === REGULAR — компактная bento-карточка ===
   return (
-    <Link href={`/cases/${project.slug}`} className="no-underline group h-full">
+    <Link href={`/cases/${project.slug}`} className="no-underline group h-full block">
       <motion.article
         whileHover={{ y: -4 }}
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
         className="relative rounded-2xl overflow-hidden bg-[#0a0a0a] border border-white/[0.06] group-hover:border-white/20 h-full transition-colors duration-300"
       >
         <div
-          className="relative h-[240px] md:h-[280px] overflow-hidden"
+          className="relative h-full min-h-[240px] md:min-h-[300px] overflow-hidden"
           style={{ background: project.coverColor }}
         >
-          <Cover className="group-hover:scale-[1.04]" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
+          <ProjectMedia project={project} />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/55 to-black/20" />
 
           {/* Index */}
           <div className="absolute top-4 left-4 font-p95 text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-white/50">
             {String(index + 1).padStart(2, "0")}
           </div>
 
-          {/* Metric — top-right, minimal, softer to let title dominate */}
+          {/* Metric — top-right, minimal */}
           {project.metric && (
             <div className="absolute top-4 right-4 text-right max-w-[130px]">
               <div className="font-p95 text-base md:text-lg text-white/55 leading-none">
@@ -124,12 +211,12 @@ export default function ProjectCard({ project, index, featured = false }: Projec
             </div>
           )}
 
-          {/* Bottom — company + title (title is the hero) */}
+          {/* Bottom — company + title */}
           <div className="absolute bottom-0 left-0 right-0 p-5 md:p-6">
             <div className="font-p95 text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-white/50 mb-2">
               {project.company}
             </div>
-            <h3 className="font-p95 text-[clamp(24px,2.6vw,36px)] uppercase leading-[0.95] text-white max-w-[85%]">
+            <h3 className="font-p95 text-[clamp(22px,2.4vw,32px)] uppercase leading-[0.95] text-white max-w-[85%]">
               {project.title}
             </h3>
           </div>

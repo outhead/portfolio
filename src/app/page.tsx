@@ -16,7 +16,6 @@ import {
   ArrowRight,
   Users,
   Sparkles,
-  ChevronDown,
 } from "lucide-react";
 
 const LinkedinIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -36,10 +35,6 @@ const fadeUp: Variants = {
   hidden: { opacity: 0, y: 24 },
   show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
 };
-const fadeIn: Variants = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { duration: 0.8, ease: "easeOut" } },
-};
 const stagger: Variants = {
   hidden: {},
   show: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
@@ -56,7 +51,9 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-// === Accordion-бенто для Skills (главный структурный ход из Stokt) ===
+// ───────────────────────────────────────────────────────────────────
+// SKILLS — accordion-бенто (stokt-style)
+// ───────────────────────────────────────────────────────────────────
 interface SkillPanel {
   key: string;
   label: string;
@@ -69,8 +66,6 @@ interface SkillPanel {
 
 function SkillsAccordion({ panels }: { panels: SkillPanel[] }) {
   const [active, setActive] = useState<string>(panels[0].key);
-  // Фиксированная ширина контентной области: текст не перекомпонуется при росте flex-а,
-  // потому что его ширина константна вне зависимости от того, какой flex у родителя.
   const CONTENT_WIDTH = 560;
   const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
   return (
@@ -86,20 +81,14 @@ function SkillsAccordion({ panels }: { panels: SkillPanel[] }) {
               className="absolute top-6 right-6 md:top-8 md:right-8 h-2 w-2 rounded-full"
               style={{ backgroundColor: p.accent }}
             />
-
             <div className="inline-flex items-center gap-2 font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/75 mb-4">
               <p.Icon className="w-4 h-4" strokeWidth={1.75} style={{ color: p.accent }} />
               <span>{p.label}</span>
             </div>
-
             <h3 className="font-p95 text-[clamp(22px,2.6vw,36px)] leading-[0.98] uppercase text-white mb-4">
               {p.title}
             </h3>
-
-            <p className="text-sm md:text-[15px] text-white/60 leading-relaxed mb-6">
-              {p.body}
-            </p>
-
+            <p className="text-sm md:text-[15px] text-white/60 leading-relaxed mb-6">{p.body}</p>
             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 mt-auto">
               {p.items.map((item) => (
                 <li
@@ -129,7 +118,7 @@ function SkillsAccordion({ panels }: { panels: SkillPanel[] }) {
             }`}
             aria-expanded={isActive}
           >
-            {/* === Десктоп: вертикальная рейка (свёрнутое состояние) === */}
+            {/* Desktop: вертикальная рейка (свёрнутое состояние) */}
             <div
               className="hidden md:flex flex-col items-center justify-between absolute inset-0 py-6 px-3 transition-opacity duration-300 ease-out"
               style={{
@@ -151,7 +140,7 @@ function SkillsAccordion({ panels }: { panels: SkillPanel[] }) {
               />
             </div>
 
-            {/* === Мобильный свёрнутый вид === */}
+            {/* Mobile свёрнутый */}
             <div className={`md:hidden ${isActive ? "hidden" : "flex"} items-center justify-between px-5 py-4`}>
               <div className="flex items-center gap-3">
                 <p.Icon className="w-4 h-4 text-white/50" strokeWidth={1.5} />
@@ -162,9 +151,6 @@ function SkillsAccordion({ panels }: { panels: SkillPanel[] }) {
               <ArrowRight className="w-4 h-4 text-white/40" strokeWidth={1.75} />
             </div>
 
-            {/* === Контент раскрытой панели ===
-                 Десктоп: абсолют с фиксированной шириной, fade через opacity.
-                 Mobile: height-based AnimatePresence для плавного раскрытия. */}
             {/* Desktop overlay */}
             <div
               className="hidden md:block md:absolute md:inset-0 md:overflow-hidden transition-opacity duration-[350ms] ease-out"
@@ -176,6 +162,7 @@ function SkillsAccordion({ panels }: { panels: SkillPanel[] }) {
             >
               <div className="md:flex md:items-start h-full">{PanelContent}</div>
             </div>
+
             {/* Mobile expand */}
             <AnimatePresence initial={false}>
               {isActive && (
@@ -199,51 +186,9 @@ function SkillsAccordion({ panels }: { panels: SkillPanel[] }) {
   );
 }
 
-function SplitSection({
-  id,
-  label,
-  heading,
-  children,
-  className = "",
-  borderTop = true,
-  wideRight = false,
-}: {
-  id?: string;
-  label: string;
-  heading: string;
-  children: React.ReactNode;
-  className?: string;
-  borderTop?: boolean;
-  wideRight?: boolean;
-}) {
-  return (
-    <section
-      id={id}
-      className={`relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-24 bg-black ${
-        borderTop ? "border-t border-white/[0.06]" : ""
-      } ${className}`}
-    >
-      <motion.div
-        initial="hidden"
-        whileInView="show"
-        viewport={viewport}
-        variants={stagger}
-        className="grid md:grid-cols-[220px_1fr] lg:grid-cols-[260px_1fr] gap-8 md:gap-10 lg:gap-16"
-      >
-        <motion.div variants={fadeUp} className="md:sticky md:top-24 self-start">
-          <SectionLabel>{label}</SectionLabel>
-          <h2 className="font-p95 text-[clamp(28px,3.5vw,48px)] uppercase mt-2 leading-[0.95]">
-            {heading}
-          </h2>
-        </motion.div>
-        <motion.div variants={fadeUp} className={wideRight ? "" : "max-w-[620px]"}>
-          {children}
-        </motion.div>
-      </motion.div>
-    </section>
-  );
-}
-
+// ───────────────────────────────────────────────────────────────────
+// CAREER — hover-reveal list (без состояния, CSS grid-rows [0fr]→[1fr])
+// ───────────────────────────────────────────────────────────────────
 const careerJobs: Array<{
   year: string;
   company: string;
@@ -320,99 +265,135 @@ const careerJobs: Array<{
   },
 ];
 
-function CareerAccordion() {
-  const [openIdx, setOpenIdx] = useState(0);
+function CareerHoverList() {
   return (
     <div className="rounded-2xl border border-white/[0.06] overflow-hidden bg-white/[0.015]">
-      {careerJobs.map((job, i) => {
-        const isOpen = openIdx === i;
-        return (
-          <div
-            key={job.year + job.company}
-            className={i > 0 ? "border-t border-white/[0.06]" : ""}
-          >
-            <button
-              type="button"
-              onClick={() => setOpenIdx(isOpen ? -1 : i)}
-              aria-expanded={isOpen}
-              className="group w-full flex items-center gap-4 md:gap-6 px-5 md:px-7 py-4 md:py-5 text-left hover:bg-white/[0.02] transition-colors"
-            >
-              {/* Dot */}
-              <span
-                className={`shrink-0 w-2 h-2 rounded-full ${
-                  job.current ? "bg-[#A6FF00]" : "bg-white/25"
-                }`}
-                aria-hidden
-              />
-              {/* Year */}
-              <span className="shrink-0 font-p95 text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-white/50 w-[90px] md:w-[110px]">
-                {job.year}
+      {careerJobs.map((job, i) => (
+        <div
+          key={job.year + job.company}
+          className={`group relative ${i > 0 ? "border-t border-white/[0.06]" : ""} hover:bg-white/[0.025] transition-colors`}
+        >
+          {/* Row — всегда видна */}
+          <div className="flex items-center gap-4 md:gap-6 px-5 md:px-7 py-4 md:py-5">
+            <span
+              className={`shrink-0 w-2 h-2 rounded-full ${
+                job.current ? "bg-[#A6FF00]" : "bg-white/25"
+              }`}
+              aria-hidden
+            />
+            <span className="shrink-0 font-p95 text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-white/50 w-[88px] md:w-[110px]">
+              {job.year}
+            </span>
+            <span className="flex-1 min-w-0 flex flex-col md:flex-row md:items-baseline md:gap-3">
+              <span className="font-p95 text-[15px] md:text-[17px] text-white uppercase leading-tight truncate">
+                {job.company}
+                {job.current && (
+                  <span className="ml-2 text-[10px] tracking-[0.12em] uppercase text-[#A6FF00]/85">
+                    now
+                  </span>
+                )}
               </span>
-              {/* Company + role */}
-              <span className="flex-1 min-w-0 flex flex-col md:flex-row md:items-baseline md:gap-3">
-                <span className="font-p95 text-[15px] md:text-[17px] text-white uppercase leading-tight truncate">
-                  {job.company}
-                  {job.current && (
-                    <span className="ml-2 text-[10px] tracking-[0.12em] uppercase text-[#A6FF00]/85">
-                      now
-                    </span>
-                  )}
-                </span>
-                <span className="text-[12px] md:text-[13px] text-white/55 leading-tight truncate">
-                  {job.role}
-                </span>
+              <span className="text-[12px] md:text-[13px] text-white/55 leading-tight truncate">
+                {job.role}
               </span>
-              {/* Chevron */}
-              <ChevronDown
-                className={`shrink-0 w-4 h-4 text-white/40 transition-transform duration-300 ${
-                  isOpen ? "rotate-180 text-white/80" : "group-hover:text-white/70"
-                }`}
-                strokeWidth={2}
-              />
-            </button>
-            <AnimatePresence initial={false}>
-              {isOpen && (
-                <motion.div
-                  key="content"
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                  className="overflow-hidden"
-                >
-                  <div className="px-5 md:px-7 pb-5 md:pb-7 pl-[calc(20px+8px+16px+90px)] md:pl-[calc(28px+8px+24px+110px)]">
-                    <p className="text-[13px] md:text-[14px] text-white/65 leading-relaxed mb-3">
-                      {job.scope}
-                    </p>
-                    {job.details && (
-                      <ul className="space-y-1.5">
-                        {job.details.map((d) => (
-                          <li
-                            key={d}
-                            className="flex items-start gap-2 text-[12px] md:text-[13px] text-white/55 leading-snug"
-                          >
-                            <span className="mt-[7px] h-px w-2 shrink-0 bg-white/30" />
-                            <span>{d}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            </span>
           </div>
-        );
-      })}
+
+          {/* Desktop hover-reveal — CSS grid-rows trick (без JS) */}
+          {job.details && (
+            <div
+              className="hidden md:grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-[420ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+              aria-hidden="true"
+            >
+              <div className="overflow-hidden">
+                <div className="px-5 md:px-7 pb-5 md:pb-6 pl-[calc(28px+8px+24px+110px)]">
+                  <p className="text-[13px] md:text-[14px] text-white/65 leading-relaxed mb-3">
+                    {job.scope}
+                  </p>
+                  <ul className="space-y-1.5">
+                    {job.details.map((d) => (
+                      <li
+                        key={d}
+                        className="flex items-start gap-2 text-[12px] md:text-[13px] text-white/55 leading-snug"
+                      >
+                        <span className="mt-[7px] h-px w-2 shrink-0 bg-white/30" />
+                        <span>{d}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Mobile — короткий scope всегда виден под строкой */}
+          {job.details && (
+            <div className="md:hidden px-5 pb-4 pl-[calc(20px+8px+16px+88px)]">
+              <p className="text-[12px] text-white/55 leading-snug">{job.scope}</p>
+            </div>
+          )}
+        </div>
+      ))}
     </div>
   );
 }
 
+// ───────────────────────────────────────────────────────────────────
+// SplitSection — лейбл + большой заголовок + контент
+// ───────────────────────────────────────────────────────────────────
+function SplitSection({
+  id,
+  label,
+  heading,
+  children,
+  className = "",
+  borderTop = true,
+  wideRight = false,
+}: {
+  id?: string;
+  label: string;
+  heading: string;
+  children: React.ReactNode;
+  className?: string;
+  borderTop?: boolean;
+  wideRight?: boolean;
+}) {
+  return (
+    <section
+      id={id}
+      className={`relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-24 bg-black ${
+        borderTop ? "border-t border-white/[0.06]" : ""
+      } ${className}`}
+    >
+      <motion.div
+        initial="hidden"
+        whileInView="show"
+        viewport={viewport}
+        variants={stagger}
+        className="grid md:grid-cols-[220px_1fr] lg:grid-cols-[260px_1fr] gap-8 md:gap-10 lg:gap-16"
+      >
+        <motion.div variants={fadeUp} className="md:sticky md:top-24 self-start">
+          <SectionLabel>{label}</SectionLabel>
+          <h2 className="font-p95 text-[clamp(28px,3.5vw,48px)] uppercase mt-2 leading-[0.95]">
+            {heading}
+          </h2>
+        </motion.div>
+        <motion.div variants={fadeUp} className={wideRight ? "" : "max-w-[620px]"}>
+          {children}
+        </motion.div>
+      </motion.div>
+    </section>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PAGE
+// ═══════════════════════════════════════════════════════════════════
 export default function Home() {
   return (
     <>
-      {/* ===== HERO ===== */}
-      <section className="relative min-h-[85vh] flex flex-col justify-between overflow-hidden">
+      {/* ═══════ HERO — компакт 60vh ═══════ */}
+      <section className="relative min-h-[60vh] md:min-h-[62vh] flex flex-col justify-end overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Image
             src="/images/photos/photo-4.jpg"
@@ -422,19 +403,17 @@ export default function Home() {
             priority
           />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/50 to-black z-[1]" />
-
-        <div className="relative z-[5] h-24 md:h-32" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/55 to-black z-[1]" />
 
         <motion.div
           initial="hidden"
           animate="show"
           variants={stagger}
-          className="relative z-[5] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] w-full"
+          className="relative z-[5] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] w-full pt-24 md:pt-28 pb-10 md:pb-14"
         >
           <motion.h1
             variants={fadeUp}
-            className="font-p95 text-[clamp(56px,11vw,160px)] leading-[0.92] uppercase tracking-tight"
+            className="font-p95 text-[clamp(56px,10vw,140px)] leading-[0.92] uppercase tracking-tight"
           >
             <span className="text-white">ЕГОР</span>
             <br />
@@ -444,67 +423,55 @@ export default function Home() {
 
           <motion.p
             variants={fadeUp}
-            className="mt-5 md:mt-7 max-w-2xl text-lg md:text-2xl leading-snug text-white/85 font-light"
+            className="mt-5 md:mt-6 max-w-2xl text-base md:text-xl leading-snug text-white/80 font-light"
           >
-            В МТС и Газпром Нефти строил дизайн-функции, в Ozon — дизайн-комьюнити, в MWS AI — AI-направление. Сейчас — менторинг, консалтинг и независимые проекты.
+            В МТС и Газпром Нефти строил дизайн-функции, в Ozon — дизайн-комьюнити, в&nbsp;MWS AI — AI-направление. Сейчас — менторинг, консалтинг и независимые проекты.
           </motion.p>
 
-          {/* Статус «сейчас» — одна строка вместо многоярусного стека */}
+          {/* Статус — одной строкой */}
           <motion.div
             variants={fadeUp}
-            className="mt-7 md:mt-9 inline-flex flex-wrap items-center gap-x-3 gap-y-2"
+            className="mt-6 md:mt-8 flex flex-wrap items-center gap-x-4 gap-y-2"
           >
-            <span className="inline-flex items-center gap-2 font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/65">
+            <span className="inline-flex items-center gap-2 font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-white/65">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[#A6FF00]" />
               </span>
               Сейчас
             </span>
-            <span className="text-base md:text-xl text-white/85 font-medium leading-tight">
+            <span className="text-sm md:text-lg text-white/80 font-medium leading-tight">
               Свободный график · Консультирую · Менторю
             </span>
-          </motion.div>
-
-          <motion.div
-            variants={fadeUp}
-            className="mt-5 flex flex-wrap items-center gap-3"
-          >
-            <span className="text-[12px] md:text-[13px] tracking-[0.12em] uppercase text-white/50">
-              Москва · гибрид / удалёнка
-            </span>
             <span className="hidden md:inline-block h-4 w-px bg-white/15" />
+            <span className="text-[11px] md:text-[12px] tracking-[0.12em] uppercase text-white/45">
+              МСК · гибрид / удалёнка
+            </span>
             <Link
               href="https://t.me/egoradi"
               target="_blank"
-              className="inline-flex items-center gap-1.5 text-[12px] md:text-[13px] tracking-[0.1em] uppercase text-[#A6FF00]/90 hover:text-[#A6FF00] transition-colors no-underline"
+              className="inline-flex items-center gap-1.5 text-[11px] md:text-[12px] tracking-[0.1em] uppercase text-[#A6FF00]/90 hover:text-[#A6FF00] transition-colors no-underline"
             >
               <Send className="w-3.5 h-3.5" strokeWidth={2} />
-              Написать в Telegram
+              Telegram
             </Link>
           </motion.div>
         </motion.div>
-
-        <div className="pb-10 md:pb-14" />
       </section>
 
-      {/* ===== METRICS — отдельная крупная секция с гигантскими числами ===== */}
+      {/* ═══════ METRICS + COMPANIES — одна плотная секция ═══════ */}
       <section className="relative z-[1] bg-black border-t border-white/[0.06] overflow-hidden">
         <motion.div
           initial="hidden"
           whileInView="show"
           viewport={viewport}
           variants={stagger}
-          className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-20 md:py-28"
+          className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pt-14 md:pt-20 pb-8 md:pb-12"
         >
-          <motion.div variants={fadeUp} className="mb-10 md:mb-14">
-            <div className="inline-flex items-center gap-1.5 font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/75">
-              <span className="text-[#A6FF00]/80">[</span>
-              <span>ЦИФРЫ</span>
-              <span className="text-[#A6FF00]/80">]</span>
-            </div>
-            <h2 className="font-p95 text-[clamp(32px,5vw,64px)] uppercase mt-3 leading-[0.95] max-w-3xl">
-              9 лет опыта в крупнейших бигтех-компаниях России<span className="text-[#A6FF00]">.</span>
+          <motion.div variants={fadeUp} className="mb-8 md:mb-12">
+            <SectionLabel>ЦИФРЫ</SectionLabel>
+            <h2 className="font-p95 text-[clamp(26px,3.8vw,52px)] uppercase mt-2 leading-[0.95] max-w-3xl">
+              9 лет в крупнейших бигтех-компаниях России<span className="text-[#A6FF00]">.</span>
             </h2>
           </motion.div>
 
@@ -518,125 +485,142 @@ export default function Home() {
               <motion.div
                 key={s.label}
                 variants={fadeUp}
-                className={`py-8 md:py-12 ${
+                className={`py-6 md:py-10 ${
                   i > 0 ? "md:border-l border-white/[0.08]" : ""
                 } ${i === 1 ? "border-l md:border-l" : ""} ${
                   i === 2 ? "border-t md:border-t-0" : ""
-                } ${i === 3 ? "border-t md:border-t-0 border-l" : ""} px-4 md:px-6`}
+                } ${i === 3 ? "border-t md:border-t-0 border-l" : ""} px-3 md:px-5`}
               >
-                <div className="font-p95 text-[clamp(48px,8vw,112px)] leading-none text-white tracking-tight">
+                <div className="font-p95 text-[clamp(40px,6.5vw,88px)] leading-none text-white tracking-tight">
                   {s.value}
                 </div>
-                <div className="mt-3 md:mt-4 text-sm md:text-base tracking-[0.08em] uppercase text-white/65">
+                <div className="mt-2 md:mt-3 text-[12px] md:text-sm tracking-[0.08em] uppercase text-white/65">
                   {s.label}
                 </div>
-                <div className="text-[12px] md:text-[13px] tracking-[0.1em] uppercase text-white/40 mt-1.5">
+                <div className="text-[10px] md:text-[12px] tracking-[0.1em] uppercase text-white/40 mt-1">
                   {s.ctx}
                 </div>
               </motion.div>
             ))}
           </div>
         </motion.div>
-      </section>
 
-      {/* ===== COMPANY MARQUEE — бесконечная бегущая лента как у Stokt ===== */}
-      <section
-        aria-label="Компании, в которых я работал"
-        className="relative z-[1] bg-black border-t border-b border-white/[0.06] py-10 md:py-14 overflow-hidden"
-      >
-        <div className="flex items-center gap-4 md:gap-6">
-          <div className="flex-shrink-0 pl-5 md:pl-[6%] lg:pl-[10%] xl:pl-[14%] pr-4 md:pr-6">
-            <div className="inline-flex items-center gap-2 font-p95 text-[11px] md:text-[12px] tracking-[0.24em] uppercase text-white/45 whitespace-nowrap">
-              <span className="inline-block w-6 md:w-10 h-px bg-white/25" />
-              <span>Работал в</span>
+        {/* Marquee — пришит к метрикам без отдельной секции */}
+        <div
+          aria-label="Компании, в которых я работал"
+          className="relative z-[1] border-t border-white/[0.06] py-8 md:py-10 overflow-hidden"
+        >
+          <div className="flex items-center gap-4 md:gap-6">
+            <div className="flex-shrink-0 pl-5 md:pl-[6%] lg:pl-[10%] xl:pl-[14%] pr-4 md:pr-6">
+              <div className="inline-flex items-center gap-2 font-p95 text-[11px] md:text-[12px] tracking-[0.24em] uppercase text-white/45 whitespace-nowrap">
+                <span className="inline-block w-6 md:w-10 h-px bg-white/25" />
+                <span>Работал в</span>
+              </div>
             </div>
-          </div>
-          <div className="relative flex-1 overflow-hidden">
-            {/* Edge fades */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-y-0 left-0 w-16 md:w-24 z-10"
-              style={{
-                background: "linear-gradient(to right, rgba(0,0,0,1), rgba(0,0,0,0))",
-              }}
-            />
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-y-0 right-0 w-16 md:w-24 z-10"
-              style={{
-                background: "linear-gradient(to left, rgba(0,0,0,1), rgba(0,0,0,0))",
-              }}
-            />
-            <div className="flex items-center whitespace-nowrap marquee">
-              {/* Два одинаковых блока → translateX(-50%) даёт бесшовный цикл */}
-              {[0, 1].map((loopIdx) => (
-                <div key={loopIdx} className="flex items-center shrink-0" aria-hidden={loopIdx === 1}>
-                  {[
-                    "МТС",
-                    "Ozon",
-                    "Газпром Нефть",
-                    "MWS AI",
-                    "ВШЭ",
-                  ].map((name) => (
-                    <span key={name + loopIdx} className="flex items-center">
-                      <span className="font-p95 text-[28px] md:text-[40px] lg:text-[48px] tracking-[0.04em] uppercase text-white/80 leading-none px-8 md:px-12">
-                        {name}
+            <div className="relative flex-1 overflow-hidden">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-y-0 left-0 w-16 md:w-24 z-10"
+                style={{ background: "linear-gradient(to right, rgba(0,0,0,1), rgba(0,0,0,0))" }}
+              />
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-y-0 right-0 w-16 md:w-24 z-10"
+                style={{ background: "linear-gradient(to left, rgba(0,0,0,1), rgba(0,0,0,0))" }}
+              />
+              <div className="flex items-center whitespace-nowrap marquee">
+                {[0, 1].map((loopIdx) => (
+                  <div key={loopIdx} className="flex items-center shrink-0" aria-hidden={loopIdx === 1}>
+                    {["МТС", "Ozon", "Газпром Нефть", "MWS AI", "ВШЭ"].map((name) => (
+                      <span key={name + loopIdx} className="flex items-center">
+                        <span className="font-p95 text-[22px] md:text-[32px] lg:text-[40px] tracking-[0.04em] uppercase text-white/80 leading-none px-6 md:px-10">
+                          {name}
+                        </span>
+                        <span aria-hidden className="text-white/20 text-2xl md:text-3xl select-none leading-none">·</span>
                       </span>
-                      <span aria-hidden className="text-white/20 text-2xl md:text-3xl select-none leading-none">·</span>
-                    </span>
-                  ))}
-                </div>
-              ))}
+                    ))}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ===== PORTFOLIO ===== */}
-      <SplitSection id="portfolio" label="ИЗБРАННЫЕ РАБОТЫ" heading="ПРОЕКТЫ" wideRight>
-        <div className="space-y-5">
-          {/* Featured first project — full width, 2-col internal */}
-          <motion.div variants={fadeUp}>
-            <ProjectCard project={workProjects[0]} index={0} featured />
+      {/* ═══════ PROJECTS — полноширинный асимметричный бенто ═══════ */}
+      <section
+        id="portfolio"
+        className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-20"
+      >
+        <motion.div
+          initial="hidden"
+          whileInView="show"
+          viewport={viewport}
+          variants={stagger}
+        >
+          <motion.div
+            variants={fadeUp}
+            className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8 md:mb-10"
+          >
+            <div>
+              <SectionLabel>ИЗБРАННЫЕ РАБОТЫ</SectionLabel>
+              <h2 className="font-p95 text-[clamp(32px,5vw,64px)] uppercase mt-2 leading-[0.92]">
+                ПРОЕКТЫ<span className="text-[#A6FF00]">.</span>
+              </h2>
+            </div>
+            <Link
+              href="/experiments"
+              className="inline-flex items-center gap-2 text-[12px] md:text-[13px] tracking-[0.1em] uppercase text-white/55 hover:text-white transition-colors no-underline group self-start md:self-end"
+            >
+              Эксперименты · код · шейдеры
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" strokeWidth={2} />
+            </Link>
           </motion.div>
 
-          {/* Row 1: two 1x1 cards */}
-          {workProjects[1] && workProjects[2] && (
-            <div className="grid sm:grid-cols-2 gap-5">
+          {/* Асимметричная бенто-сетка — 3 колонки, 3 ряда.
+              Row 1: [ FEATURED (2 cols, 2 rows tall) ] [ compact ]
+                                                        [ compact ]
+              Row 2: [ WIDE 2×1                             ]
+              Row 3: [ compact ] [ compact ] [ CTA tile ] */}
+          <div className="grid md:grid-cols-3 gap-4 md:gap-5">
+            {/* Featured — занимает 2 колонки и 2 ряда на десктопе */}
+            <motion.div variants={fadeUp} className="md:col-span-2 md:row-span-2">
+              <ProjectCard project={workProjects[0]} index={0} featured />
+            </motion.div>
+
+            {/* 2 вертикальных 1×1 справа от featured */}
+            {workProjects[1] && (
               <motion.div variants={fadeUp}>
                 <ProjectCard project={workProjects[1]} index={1} />
               </motion.div>
+            )}
+            {workProjects[2] && (
               <motion.div variants={fadeUp}>
                 <ProjectCard project={workProjects[2]} index={2} />
               </motion.div>
-            </div>
-          )}
+            )}
 
-          {/* Row 2: widescreen accent card — 2x1 bento break */}
-          {workProjects[3] && (
-            <motion.div variants={fadeUp}>
-              <ProjectCard project={workProjects[3]} index={3} featured />
-            </motion.div>
-          )}
+            {/* Широкая 2×1 карта — разбивает ритм (colorblind.cc-style) */}
+            {workProjects[3] && (
+              <motion.div variants={fadeUp} className="md:col-span-3">
+                <ProjectCard project={workProjects[3]} index={3} wide />
+              </motion.div>
+            )}
 
-          {/* Row 3: last 1x1 + CTA-card in the empty slot */}
-          <div className="grid sm:grid-cols-2 gap-5">
+            {/* Финальный ряд: 1 проект + CTA-плитка */}
             {workProjects[4] && (
-              <motion.div variants={fadeUp}>
-                <ProjectCard project={workProjects[4]} index={4} />
+              <motion.div variants={fadeUp} className="md:col-span-2">
+                <ProjectCard project={workProjects[4]} index={4} wide />
               </motion.div>
             )}
             <motion.div variants={fadeUp}>
-              <Link
-                href="/experiments"
-                className="no-underline group block h-full"
-              >
-                <div className="relative h-full min-h-[240px] md:min-h-[280px] rounded-2xl overflow-hidden border border-white/[0.06] group-hover:border-[#A6FF00]/40 bg-[#0a0a0a] transition-colors duration-300 p-6 md:p-8 flex flex-col justify-between">
+              <Link href="/experiments" className="no-underline group block h-full">
+                <div className="relative h-full min-h-[280px] md:min-h-[340px] rounded-2xl overflow-hidden border border-white/[0.06] group-hover:border-[#A6FF00]/40 bg-[#0a0a0a] transition-colors duration-300 p-6 md:p-7 flex flex-col justify-between">
                   <div>
                     <div className="font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-white/50 mb-3">
                       ЭКСПЕРИМЕНТЫ
                     </div>
-                    <h3 className="font-p95 text-[clamp(24px,3.5vw,40px)] uppercase leading-[0.95] text-white">
+                    <h3 className="font-p95 text-[clamp(22px,3vw,36px)] uppercase leading-[0.95] text-white">
                       Код,<br />WebGL,<br />шейдеры.
                     </h3>
                   </div>
@@ -648,247 +632,96 @@ export default function Home() {
               </Link>
             </motion.div>
           </div>
-        </div>
-      </SplitSection>
+        </motion.div>
+      </section>
 
-      {/* Divider */}
-      <div className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] bg-black">
-        <div className="h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
-      </div>
+      {/* ═══════ SKILLS — stokt accordion-бенто ═══════ */}
+      <section
+        id="skills"
+        className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-20"
+      >
+        <motion.div
+          initial="hidden"
+          whileInView="show"
+          viewport={viewport}
+          variants={stagger}
+        >
+          <motion.div variants={fadeUp} className="mb-8 md:mb-10">
+            <SectionLabel>ЧТО УМЕЮ</SectionLabel>
+            <h2 className="font-p95 text-[clamp(28px,4.5vw,56px)] uppercase mt-2 leading-[0.95]">
+              Управление <span className="text-white/35">·</span> Продукт <span className="text-white/35">·</span> Ремесло<span className="text-[#A6FF00]">.</span>
+            </h2>
+          </motion.div>
+          <SkillsAccordion
+            panels={[
+              {
+                key: "management",
+                label: "УПРАВЛЕНИЕ",
+                title: "Строю и масштабирую дизайн-функции",
+                Icon: Users,
+                accent: "#A6FF00",
+                body:
+                  "В МТС — 16 команд и 60+ дизайнеров в B2C-экосистеме. В Газпром Нефти — 76 команд, 42 лида, 100+ дизайнеров на единой дизайн-системе. Умею нанимать, выстраивать процессы и защищать бюджет перед топ-менеджментом.",
+                items: [
+                  "Design Management",
+                  "Org Design · Hiring",
+                  "Дизайн-процессы",
+                  "OKR · Roadmap",
+                  "Работа с топ-менеджментом",
+                  "Community · Employer Brand",
+                ],
+              },
+              {
+                key: "product",
+                label: "ПРОДУКТ",
+                title: "Делаю AI и B2C-продукты с фокусом на метриках",
+                Icon: Sparkles,
+                accent: "#C9A66B",
+                body:
+                  "AI Visioner в MWS AI — задавал AI-направление двум продуктам. До этого — 11М+ пользователей МТС B2C-экосистемы, ×10 рост транзакций в МТС Cashback, CX Award в Газпром Нефти. Понимаю что такое discovery, метрики и как измерить дизайн.",
+                items: [
+                  "AI/ML продукты",
+                  "B2C-экосистемы",
+                  "Discovery · Research",
+                  "CJM · JTBD · Job Stories",
+                  "A/B-тесты · метрики",
+                  "Product Strategy",
+                ],
+              },
+              {
+                key: "craft",
+                label: "РЕМЕСЛО",
+                title: "Сам пишу код и дизайн-системы",
+                Icon: Code2,
+                accent: "#4FC3F7",
+                body:
+                  "Запустил open-source Consta (150 Figma WAU, 10K+ NPM), MWS AI UI Kit. Пишу на React/TypeScript/Python, делаю WebGL-эксперименты. Верю что дизайн-лид должен уметь в инженерию.",
+                items: [
+                  "Figma · Design Systems",
+                  "Art Direction · Визуальный язык",
+                  "React · TypeScript",
+                  "Python · Node.js",
+                  "Three.js · WebGL · Shaders",
+                  "Claude · Cursor · v0",
+                ],
+              },
+            ]}
+          />
+        </motion.div>
+      </section>
 
-      {/* ===== ABOUT ===== */}
-      <SplitSection id="about" label="ОБО МНЕ" heading="ПРИВЕТ!" wideRight>
-        <div>
-          {/* ===== FOUNDER CARD — фото + крупный манифест (stokt-style) ===== */}
-          <div className="relative mb-14 md:mb-20 grid md:grid-cols-[minmax(220px,300px)_1fr] gap-6 md:gap-10 items-start">
-            {/* Photo — вертикальный кроп с зелёным дуотоном-тинтом */}
-            <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border border-white/[0.06]">
-              <Image
-                src="/images/photos/photo-3.jpg"
-                alt="Егор Шугаев — дизайн-директор, ментор и независимый консультант"
-                fill
-                className="object-cover"
-              />
-              {/* Duotone-like tint */}
-              <div
-                className="absolute inset-0 mix-blend-multiply"
-                style={{ background: "linear-gradient(180deg, rgba(166,255,0,0.12) 0%, rgba(0,0,0,0.25) 100%)" }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-              {/* Photo caption */}
-              <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
-                <div className="font-p95 text-[10px] tracking-[0.22em] uppercase text-white/70">
-                  <span className="text-[#A6FF00]/70">[</span> FOUNDER <span className="text-[#A6FF00]/70">]</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-[9px] tracking-[0.2em] uppercase text-white/60">
-                  <span className="relative flex h-1.5 w-1.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#A6FF00]" />
-                  </span>
-                  Сейчас · МСК
-                </div>
-              </div>
-            </div>
-
-            {/* Right column — bio split into 2 columns on wide screens to shorten vertical */}
-            <div className="pt-2">
-              <div className="grid lg:grid-cols-2 gap-x-10 gap-y-4 md:gap-y-5 text-white/75 leading-relaxed text-base md:text-lg mb-6 md:mb-8">
-                <p className="lg:col-span-2 max-w-[68ch]">
-                  11 лет в дизайне, 9 — в бигтехе. В МТС — Art Director B2C-экосистемы: 16 команд, 60+ дизайнеров, 11М+ пользователей. В Ozon — Community Lead: канал с 0 до 17К подписчиков, −60% к оттоку на найме.
-                </p>
-                <p>
-                  В Газпром Нефти — Head of Design: 76 команд, 42 лида, 100+ дизайнеров, CX Award&rsquo;24. В MWS AI — AI Visioner: задавал AI-направление двум продуктам дивизиона.
-                </p>
-                <p>
-                  Сейчас на свободном графике: менторю, консультирую, преподаю прикладной ИИ в ВШЭ. Код пишу с ИИ — React, Python, WebGL.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Stats row + credentials — full width under founder grid */}
-          <div className="mb-14 md:mb-20">
-            <div className="border-t border-white/[0.08] pt-6">
-              <div className="font-p95 text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-white/45 mb-4">
-                Помимо основного
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  "ВШЭ — преподаватель ИИ",
-                  "CX Awards'24",
-                  "English fluent",
-                  "40+ менторинг-сессий",
-                ].map((c) => (
-                  <span
-                    key={c}
-                    className="text-[11px] md:text-[12px] tracking-[0.08em] uppercase px-3 py-1.5 rounded border border-white/[0.12] text-white/70"
-                  >
-                    {c}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* ===== TESTIMONIALS — типографический заголовок с астериксом (stokt-style) ===== */}
-          <div className="mb-14 md:mb-20">
-            <motion.div
-              initial="hidden"
-              whileInView="show"
-              viewport={viewport}
-              variants={stagger}
-            >
-              <motion.div
-                variants={fadeUp}
-                className="font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/75 mb-5"
-              >
-                <span className="text-[#A6FF00]/80">[</span> ОТЗЫВЫ <span className="text-[#A6FF00]/80">]</span>
-              </motion.div>
-
-              <motion.h3
-                variants={fadeUp}
-                className="font-p95 text-[clamp(32px,6vw,80px)] leading-[0.92] uppercase tracking-tight mb-10 md:mb-14 max-w-4xl"
-              >
-                <span className="text-white/35">не верьте мне.</span>
-                <br />
-                <span className="text-white/35">читайте тех,</span>
-                <br />
-                <span className="text-white">
-                  кто со мной работал<span className="text-[#A6FF00]">.</span>
-                </span>
-              </motion.h3>
-
-              <motion.div
-                variants={stagger}
-                className="grid md:grid-cols-2 gap-4 md:gap-5"
-              >
-                {[
-                  {
-                    quote:
-                      "Инноватор, шарит за ИИ. Уравновешенный — принимает только хорошо обдуманные решения. Собирает сильные команды, строит отлаженные процессы. И при этом очень приятный человек.",
-                    name: "Никита Вишневский",
-                    role: "Управляющий директор, Райффайзен (ранее — МТС)",
-                  },
-                  {
-                    quote:
-                      "Работал с Егором и в Газпром нефти и когда он был в МТС. Лучше чем Егора найти трудно. Он легенда дизайна, ИИ и менеджмента.",
-                    name: "Егор Гончарук",
-                    role: "Руководитель проектного офиса, Газпром Нефть",
-                  },
-                ].map((t) => (
-                  <motion.div
-                    key={t.name}
-                    variants={fadeUp}
-                    className="relative p-6 md:p-7 rounded-2xl border border-white/[0.06] bg-white/[0.015] hover:border-[#A6FF00]/20 transition-colors duration-300"
-                  >
-                    <Quote className="w-5 h-5 text-[#A6FF00]/40 mb-4" strokeWidth={1.5} />
-                    <p className="text-white/75 text-base md:text-[17px] leading-relaxed mb-5">
-                      {t.quote}
-                    </p>
-                    <div className="pt-4 border-t border-white/[0.06]">
-                      <div className="text-sm text-white font-medium leading-tight">
-                        {t.name}
-                      </div>
-                      <div className="text-[11px] text-white/40 mt-1 leading-snug">
-                        {t.role}
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </motion.div>
-            </motion.div>
-          </div>
-
-          {/* ===== SKILLS LABEL ===== */}
-          <div className="font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/75 mb-5">
-            <span className="text-[#A6FF00]/80">[</span> ЧТО УМЕЮ <span className="text-[#A6FF00]/80">]</span>
-          </div>
-
-          {/* Skills — accordion-бенто: одна раскрытая + две вертикальных рейки */}
-          <div className="mb-8">
-            <SkillsAccordion
-              panels={[
-                {
-                  key: "management",
-                  label: "УПРАВЛЕНИЕ",
-                  title: "Строю и масштабирую дизайн-функции",
-                  Icon: Users,
-                  accent: "#A6FF00",
-                  body:
-                    "В МТС — 16 команд и 60+ дизайнеров в B2C-экосистеме. В Газпром Нефти — 76 команд, 42 лида, 100+ дизайнеров на единой дизайн-системе. Умею нанимать, выстраивать процессы и защищать бюджет перед топ-менеджментом.",
-                  items: [
-                    "Design Management",
-                    "Org Design · Hiring",
-                    "Дизайн-процессы",
-                    "OKR · Roadmap",
-                    "Работа с топ-менеджментом",
-                    "Community · Employer Brand",
-                  ],
-                },
-                {
-                  key: "product",
-                  label: "ПРОДУКТ",
-                  title: "Делаю AI и B2C-продукты с фокусом на метриках",
-                  Icon: Sparkles,
-                  accent: "#C9A66B",
-                  body:
-                    "AI Visioner в MWS AI — задавал AI-направление двум продуктам. До этого — 11М+ пользователей МТС B2C-экосистемы, ×10 рост транзакций в МТС Cashback, CX Award в Газпром Нефти. Понимаю что такое discovery, метрики и как измерить дизайн.",
-                  items: [
-                    "AI/ML продукты",
-                    "B2C-экосистемы",
-                    "Discovery · Research",
-                    "CJM · JTBD · Job Stories",
-                    "A/B-тесты · метрики",
-                    "Product Strategy",
-                  ],
-                },
-                {
-                  key: "craft",
-                  label: "РЕМЕСЛО",
-                  title: "Сам пишу код и дизайн-системы",
-                  Icon: Code2,
-                  accent: "#4FC3F7",
-                  body:
-                    "Запустил open-source Consta (150 Figma WAU, 10K+ NPM), MWS AI UI Kit. Пишу на React/TypeScript/Python, делаю WebGL-эксперименты. Верю что дизайн-лид должен уметь в инженерию.",
-                  items: [
-                    "Figma · Design Systems",
-                    "Art Direction · Визуальный язык",
-                    "React · TypeScript",
-                    "Python · Node.js",
-                    "Three.js · WebGL · Shaders",
-                    "Claude · Cursor · v0",
-                  ],
-                },
-              ]}
-            />
-          </div>
-
-          {/* Career — vertical accordion timeline */}
-          <div className="mt-14 md:mt-20">
-            <div className="font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/75 mb-5">
-              Карьера
-            </div>
-            <CareerAccordion />
-          </div>
-        </div>
-      </SplitSection>
-
-      {/* ===== PRINCIPLES — манифест в стиле «digital design powerhouse» ===== */}
+      {/* ═══════ PRINCIPLES — 4-up манифест ═══════ */}
       <section className="relative z-[1] bg-black border-t border-white/[0.06] overflow-hidden">
         <motion.div
           initial="hidden"
           whileInView="show"
           viewport={viewport}
           variants={stagger}
-          className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-20 md:py-28"
+          className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-20"
         >
-          <motion.div variants={fadeUp} className="mb-12 md:mb-16">
-            <div className="inline-flex items-center gap-1.5 font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/75 mb-4">
-              <span className="text-[#A6FF00]/80">[</span>
-              <span>ПРИНЦИПЫ</span>
-              <span className="text-[#A6FF00]/80">]</span>
-            </div>
-            <h2 className="font-p95 text-[clamp(32px,6vw,80px)] uppercase leading-[0.92] tracking-tight max-w-3xl">
+          <motion.div variants={fadeUp} className="mb-8 md:mb-12">
+            <SectionLabel>ПРИНЦИПЫ</SectionLabel>
+            <h2 className="font-p95 text-[clamp(28px,5vw,64px)] uppercase mt-2 leading-[0.92] tracking-tight max-w-3xl">
               <span className="text-white/40">как я</span>{" "}
               <span className="text-white">работаю<span className="text-[#A6FF00]">.</span></span>
             </h2>
@@ -920,17 +753,17 @@ export default function Home() {
                 body:
                   "AI меняет не «один экран», а всю ось: как пользователь формулирует намерение, как мы проектируем failure-моды, что считается интерфейсом. В MWS AI задавал направление двум продуктам именно с этим в голове.",
               },
-            ].map((p, i) => (
+            ].map((p) => (
               <motion.div
                 key={p.n}
                 variants={fadeUp}
-                className="bg-black p-8 md:p-10 lg:p-12 flex flex-col justify-between min-h-[240px] md:min-h-[300px]"
+                className="bg-black p-7 md:p-9 flex flex-col justify-between min-h-[220px] md:min-h-[260px]"
               >
                 <div>
-                  <div className="font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-[#A6FF00]/85 mb-4">
+                  <div className="font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-[#A6FF00]/85 mb-3">
                     {p.n} /
                   </div>
-                  <h3 className="font-p95 text-[clamp(22px,2.6vw,36px)] uppercase leading-[1.02] text-white mb-5">
+                  <h3 className="font-p95 text-[clamp(20px,2.4vw,32px)] uppercase leading-[1.02] text-white mb-4">
                     {p.title}
                   </h3>
                 </div>
@@ -943,14 +776,155 @@ export default function Home() {
         </motion.div>
       </section>
 
-      {/* ===== MENTORING + SPEAKING TEASERS — двумя крупными картами ===== */}
+      {/* ═══════ ABOUT + CAREER — founder card + hover-list side-by-side ═══════ */}
+      <section
+        id="about"
+        className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-20"
+      >
+        <motion.div
+          initial="hidden"
+          whileInView="show"
+          viewport={viewport}
+          variants={stagger}
+        >
+          <motion.div variants={fadeUp} className="mb-8 md:mb-12">
+            <SectionLabel>КТО Я</SectionLabel>
+            <h2 className="font-p95 text-[clamp(32px,5vw,64px)] uppercase mt-2 leading-[0.92]">
+              ПРИВЕТ<span className="text-[#A6FF00]">.</span>
+            </h2>
+          </motion.div>
+
+          <div className="grid lg:grid-cols-[minmax(260px,340px)_1fr] gap-6 md:gap-10">
+            {/* Founder card — monochrome (без зелёного дуотона) */}
+            <motion.div variants={fadeUp} className="lg:sticky lg:top-24 self-start">
+              <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border border-white/[0.06]">
+                <Image
+                  src="/images/photos/photo-3.jpg"
+                  alt="Егор Шугаев — дизайн-директор, ментор и независимый консультант"
+                  fill
+                  className="object-cover grayscale contrast-[1.05]"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
+                  <div className="font-p95 text-[10px] tracking-[0.22em] uppercase text-white/70">
+                    <span className="text-[#A6FF00]/70">[</span> FOUNDER <span className="text-[#A6FF00]/70">]</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[9px] tracking-[0.2em] uppercase text-white/60">
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#A6FF00]" />
+                    </span>
+                    Сейчас · МСК
+                  </div>
+                </div>
+              </div>
+
+              {/* Короткий bio под фото */}
+              <p className="mt-5 md:mt-6 text-sm md:text-[15px] text-white/70 leading-relaxed max-w-sm">
+                11 лет в дизайне, 9 — в бигтехе. Сейчас на свободном графике: менторю,
+                консультирую, преподаю прикладной ИИ в ВШЭ. Код пишу с ИИ — React,
+                Python, WebGL.
+              </p>
+
+              {/* Chips: «помимо основного» */}
+              <div className="mt-5 flex flex-wrap gap-1.5">
+                {[
+                  "ВШЭ · преподаватель ИИ",
+                  "CX Awards'24",
+                  "English fluent",
+                  "40+ менторинг-сессий",
+                ].map((c) => (
+                  <span
+                    key={c}
+                    className="text-[10px] md:text-[11px] tracking-[0.08em] uppercase px-2.5 py-1 rounded border border-white/[0.12] text-white/60"
+                  >
+                    {c}
+                  </span>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Career hover-list */}
+            <motion.div variants={fadeUp}>
+              <div className="mb-4 flex items-center justify-between">
+                <SectionLabel>КАРЬЕРА</SectionLabel>
+                <span className="text-[10px] md:text-[11px] tracking-[0.15em] uppercase text-white/35 hidden md:inline">
+                  Наведи, чтобы раскрыть
+                </span>
+              </div>
+              <CareerHoverList />
+            </motion.div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* ═══════ TESTIMONIALS — 2-up типографический заголовок ═══════ */}
+      <section className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-20">
+        <motion.div
+          initial="hidden"
+          whileInView="show"
+          viewport={viewport}
+          variants={stagger}
+        >
+          <motion.div variants={fadeUp} className="mb-8 md:mb-10">
+            <SectionLabel>ОТЗЫВЫ</SectionLabel>
+          </motion.div>
+
+          <motion.h3
+            variants={fadeUp}
+            className="font-p95 text-[clamp(28px,5vw,64px)] leading-[0.92] uppercase tracking-tight mb-8 md:mb-12 max-w-4xl"
+          >
+            <span className="text-white/35">не верьте мне.</span>
+            <br />
+            <span className="text-white/35">читайте тех,</span>
+            <br />
+            <span className="text-white">
+              кто со мной работал<span className="text-[#A6FF00]">.</span>
+            </span>
+          </motion.h3>
+
+          <motion.div variants={stagger} className="grid md:grid-cols-2 gap-4 md:gap-5">
+            {[
+              {
+                quote:
+                  "Инноватор, шарит за ИИ. Уравновешенный — принимает только хорошо обдуманные решения. Собирает сильные команды, строит отлаженные процессы. И при этом очень приятный человек.",
+                name: "Никита Вишневский",
+                role: "Управляющий директор, Райффайзен (ранее — МТС)",
+              },
+              {
+                quote:
+                  "Работал с Егором и в Газпром нефти и когда он был в МТС. Лучше чем Егора найти трудно. Он легенда дизайна, ИИ и менеджмента.",
+                name: "Егор Гончарук",
+                role: "Руководитель проектного офиса, Газпром Нефть",
+              },
+            ].map((t) => (
+              <motion.div
+                key={t.name}
+                variants={fadeUp}
+                className="relative p-6 md:p-7 rounded-2xl border border-white/[0.06] bg-white/[0.015] hover:border-[#A6FF00]/20 transition-colors duration-300"
+              >
+                <Quote className="w-5 h-5 text-[#A6FF00]/40 mb-4" strokeWidth={1.5} />
+                <p className="text-white/75 text-base md:text-[17px] leading-relaxed mb-5">
+                  {t.quote}
+                </p>
+                <div className="pt-4 border-t border-white/[0.06]">
+                  <div className="text-sm text-white font-medium leading-tight">{t.name}</div>
+                  <div className="text-[11px] text-white/40 mt-1 leading-snug">{t.role}</div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </motion.div>
+      </section>
+
+      {/* ═══════ MENTORING + SPEAKING — 2-up offer-карты ═══════ */}
       <section className="relative z-[1] bg-black border-t border-white/[0.06]">
         <motion.div
           initial="hidden"
           whileInView="show"
           viewport={viewport}
           variants={stagger}
-          className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-16 md:py-24"
+          className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-20"
         >
           <div className="grid md:grid-cols-2 gap-4 md:gap-5">
             {[
@@ -974,11 +948,8 @@ export default function Home() {
               },
             ].map((t) => (
               <motion.div key={t.href} variants={fadeUp}>
-                <Link
-                  href={t.href}
-                  className="no-underline group block h-full"
-                >
-                  <div className="relative h-full rounded-2xl overflow-hidden border border-white/[0.06] group-hover:border-white/20 bg-[#0a0a0a] transition-colors duration-300 p-7 md:p-9 flex flex-col justify-between min-h-[280px]">
+                <Link href={t.href} className="no-underline group block h-full">
+                  <div className="relative h-full rounded-2xl overflow-hidden border border-white/[0.06] group-hover:border-white/20 bg-[#0a0a0a] transition-colors duration-300 p-7 md:p-9 flex flex-col justify-between min-h-[260px]">
                     <div
                       className="absolute top-7 right-7 md:top-9 md:right-9 h-2 w-2 rounded-full"
                       style={{ backgroundColor: t.accent }}
@@ -989,7 +960,7 @@ export default function Home() {
                         <span>{t.label}</span>
                         <span className="text-[#A6FF00]/80">]</span>
                       </div>
-                      <h3 className="font-p95 text-[clamp(22px,3vw,36px)] uppercase leading-[1] text-white mb-4 max-w-sm">
+                      <h3 className="font-p95 text-[clamp(20px,2.6vw,32px)] uppercase leading-[1] text-white mb-4 max-w-sm">
                         {t.title}
                       </h3>
                       <p className="text-sm md:text-[15px] text-white/55 leading-relaxed max-w-md">
@@ -1008,16 +979,15 @@ export default function Home() {
         </motion.div>
       </section>
 
-      {/* ===== FINAL CTA — большой typographic punchline перед контактами ===== */}
+      {/* ═══════ TRANSITION «Если вы дочитали…» ═══════ */}
       <section className="relative z-[1] bg-black border-t border-white/[0.06] overflow-hidden">
         <motion.div
           initial="hidden"
           whileInView="show"
           viewport={viewport}
           variants={stagger}
-          className="relative px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-24 md:py-40"
+          className="relative px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-20 md:py-32"
         >
-          {/* Ambient glow */}
           <div
             aria-hidden
             className="absolute inset-0 pointer-events-none opacity-40"
@@ -1028,28 +998,23 @@ export default function Home() {
           />
 
           <motion.div variants={fadeUp} className="relative">
-            <div className="inline-flex items-center gap-1.5 font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/75 mb-8 md:mb-10">
-              <span className="text-[#A6FF00]/80">[</span>
-              <span>ПОГОВОРИМ</span>
-              <span className="text-[#A6FF00]/80">]</span>
-            </div>
+            <SectionLabel>ПОГОВОРИМ</SectionLabel>
           </motion.div>
 
           <motion.h2
             variants={fadeUp}
-            className="relative font-p95 text-[clamp(48px,10vw,144px)] leading-[0.9] uppercase tracking-tight max-w-5xl"
+            className="relative font-p95 text-[clamp(44px,9vw,128px)] leading-[0.9] uppercase tracking-tight max-w-5xl mt-8 md:mt-10"
           >
             <span className="text-white/30">Если вы</span>
             <br />
             <span className="text-white/30">дочитали, то нам</span>
             <br />
-            <span className="text-white">пора поговорить<span className="text-[#A6FF00]">.</span></span>
+            <span className="text-white">
+              пора поговорить<span className="text-[#A6FF00]">.</span>
+            </span>
           </motion.h2>
 
-          <motion.div
-            variants={fadeUp}
-            className="relative mt-10 md:mt-14"
-          >
+          <motion.div variants={fadeUp} className="relative mt-10 md:mt-14">
             <Link
               href="#contacts"
               className="inline-flex items-center gap-2 text-sm md:text-base tracking-[0.1em] uppercase text-white/60 hover:text-white transition-colors no-underline group"
@@ -1061,12 +1026,11 @@ export default function Home() {
         </motion.div>
       </section>
 
-      {/* ===== CONTACTS ===== */}
+      {/* ═══════ CONTACTS ═══════ */}
       <SplitSection id="contacts" label="КОНТАКТЫ" heading="НАПИСАТЬ">
         <div className="max-w-3xl">
-          {/* 1. CHANNELS — primary block, on top */}
-          <div className="mb-10 md:mb-12">
-            {/* Primary CTA */}
+          {/* Primary CTA */}
+          <div className="mb-8 md:mb-10">
             <Link
               href="https://t.me/egoradi"
               target="_blank"
@@ -1077,7 +1041,6 @@ export default function Home() {
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" strokeWidth={2} />
             </Link>
 
-            {/* Secondary channels — one row, consistent sizing */}
             <div className="flex flex-wrap gap-2.5">
               {[
                 { label: "Email", href: "mailto:egor.outhead@gmail.com", Icon: Mail },
@@ -1098,8 +1061,8 @@ export default function Home() {
             </div>
           </div>
 
-          {/* 2. META — location + response time, under channels */}
-          <div className="pt-6 md:pt-8 border-t border-white/[0.06] space-y-1.5 mb-10 md:mb-12">
+          {/* Meta */}
+          <div className="pt-6 md:pt-8 border-t border-white/[0.06] space-y-1.5 mb-8 md:mb-10">
             <p className="text-white/60 text-[15px] md:text-base">
               <MapPin className="w-4 h-4 text-white/30 inline mr-2 align-text-top" strokeWidth={1.5} />
               Москва · гибрид / удалёнка
@@ -1109,7 +1072,7 @@ export default function Home() {
             </p>
           </div>
 
-          {/* 3. ENGAGEMENT MODELS — bottom */}
+          {/* Engagement models */}
           <div className="pt-6 md:pt-8 border-t border-white/[0.06]">
             <div className="font-p95 text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-white/45 mb-4">
               Беру на
@@ -1132,7 +1095,6 @@ export default function Home() {
           </div>
         </div>
       </SplitSection>
-
     </>
   );
 }
