@@ -72,17 +72,57 @@ function SkillsAccordion({ panels }: { panels: SkillPanel[] }) {
   // Фиксированная ширина контентной области: текст не перекомпонуется при росте flex-а,
   // потому что его ширина константна вне зависимости от того, какой flex у родителя.
   const CONTENT_WIDTH = 560;
+  const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
   return (
     <div className="flex flex-col md:flex-row gap-2 md:gap-3 w-full md:h-[440px]">
       {panels.map((p) => {
         const isActive = active === p.key;
+        const PanelContent = (
+          <div
+            className="relative p-6 md:p-8 md:h-full md:flex md:flex-col"
+            style={{ width: `min(100%, ${CONTENT_WIDTH}px)` }}
+          >
+            <div
+              className="absolute top-6 right-6 md:top-8 md:right-8 h-2 w-2 rounded-full"
+              style={{ backgroundColor: p.accent }}
+            />
+
+            <div className="inline-flex items-center gap-2 font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/75 mb-4">
+              <p.Icon className="w-4 h-4" strokeWidth={1.75} style={{ color: p.accent }} />
+              <span>{p.label}</span>
+            </div>
+
+            <h3 className="font-p95 text-[clamp(22px,2.6vw,36px)] leading-[0.98] uppercase text-white mb-4">
+              {p.title}
+            </h3>
+
+            <p className="text-sm md:text-[15px] text-white/60 leading-relaxed mb-6">
+              {p.body}
+            </p>
+
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 mt-auto">
+              {p.items.map((item) => (
+                <li
+                  key={item}
+                  className="flex items-start gap-2 text-sm text-white/70 leading-snug"
+                >
+                  <span
+                    className="mt-[7px] h-px w-2 shrink-0"
+                    style={{ backgroundColor: p.accent, opacity: 0.7 }}
+                  />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+
         return (
           <button
             key={p.key}
             type="button"
             onClick={() => setActive(p.key)}
-            onMouseEnter={() => setActive(p.key)}
-            className={`group relative text-left rounded-2xl border overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] md:h-full ${
+            className={`group relative text-left rounded-2xl border overflow-hidden transition-[flex,border-color,background-color] duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)] md:h-full ${
               isActive
                 ? "border-white/15 bg-[#0a0a0a] md:flex-[6]"
                 : "border-white/[0.06] bg-[#080808] hover:border-white/15 md:flex-[1] md:min-w-[72px]"
@@ -91,10 +131,9 @@ function SkillsAccordion({ panels }: { panels: SkillPanel[] }) {
           >
             {/* === Десктоп: вертикальная рейка (свёрнутое состояние) === */}
             <div
-              className="hidden md:flex flex-col items-center justify-between absolute inset-0 py-6 px-3 transition-opacity duration-300"
+              className="hidden md:flex flex-col items-center justify-between absolute inset-0 py-6 px-3 transition-opacity duration-300 ease-out"
               style={{
                 opacity: isActive ? 0 : 1,
-                transitionDelay: isActive ? "0ms" : "300ms",
                 pointerEvents: isActive ? "none" : "auto",
               }}
               aria-hidden={isActive}
@@ -104,7 +143,7 @@ function SkillsAccordion({ panels }: { panels: SkillPanel[] }) {
                 className="font-p95 text-[13px] tracking-[0.2em] uppercase text-white/55 group-hover:text-white/85 transition-colors whitespace-nowrap"
                 style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
               >
-                [ {p.label} ]
+                {p.label}
               </div>
               <div
                 className="h-2 w-2 rounded-full"
@@ -117,67 +156,42 @@ function SkillsAccordion({ panels }: { panels: SkillPanel[] }) {
               <div className="flex items-center gap-3">
                 <p.Icon className="w-4 h-4 text-white/50" strokeWidth={1.5} />
                 <div className="font-p95 text-[13px] tracking-[0.2em] uppercase text-white/75">
-                  [ {p.label} ]
+                  {p.label}
                 </div>
               </div>
               <ArrowRight className="w-4 h-4 text-white/40" strokeWidth={1.75} />
             </div>
 
             {/* === Контент раскрытой панели ===
-                 Десктоп: абсолют с фиксированной шириной — при изменении flex ширины контент
-                 не перекомпонуется. Появляется после того как flex успел раскрыться (delay ~300ms).
-                 Мобайл: обычный поток, fade-in при клике. */}
+                 Десктоп: абсолют с фиксированной шириной, fade через opacity.
+                 Mobile: height-based AnimatePresence для плавного раскрытия. */}
+            {/* Desktop overlay */}
             <div
-              className={`transition-opacity duration-300 ease-out md:absolute md:inset-0 md:overflow-hidden ${
-                isActive ? "block md:flex md:items-start" : "hidden md:block"
-              }`}
+              className="hidden md:block md:absolute md:inset-0 md:overflow-hidden transition-opacity duration-[350ms] ease-out"
               style={{
                 opacity: isActive ? 1 : 0,
-                transitionDelay: isActive ? "300ms" : "0ms",
                 pointerEvents: isActive ? "auto" : "none",
               }}
               aria-hidden={!isActive}
             >
-              <div
-                className="relative p-6 md:p-8 md:h-full md:flex md:flex-col"
-                style={{ width: `min(100%, ${CONTENT_WIDTH}px)` }}
-              >
-                <div
-                  className="absolute top-6 right-6 md:top-8 md:right-8 h-2 w-2 rounded-full"
-                  style={{ backgroundColor: p.accent }}
-                />
-
-                <div className="inline-flex items-center gap-2 font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/75 mb-4">
-                  <p.Icon className="w-4 h-4" strokeWidth={1.75} style={{ color: p.accent }} />
-                  <span className="text-[#A6FF00]/80">[</span>
-                  <span>{p.label}</span>
-                  <span className="text-[#A6FF00]/80">]</span>
-                </div>
-
-                <h3 className="font-p95 text-[clamp(22px,2.6vw,36px)] leading-[0.98] uppercase text-white mb-4">
-                  {p.title}
-                </h3>
-
-                <p className="text-sm md:text-[15px] text-white/60 leading-relaxed mb-6">
-                  {p.body}
-                </p>
-
-                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 mt-auto">
-                  {p.items.map((item) => (
-                    <li
-                      key={item}
-                      className="flex items-start gap-2 text-sm text-white/70 leading-snug"
-                    >
-                      <span
-                        className="mt-[7px] h-px w-2 shrink-0"
-                        style={{ backgroundColor: p.accent, opacity: 0.7 }}
-                      />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <div className="md:flex md:items-start h-full">{PanelContent}</div>
             </div>
+            {/* Mobile expand */}
+            <AnimatePresence initial={false}>
+              {isActive && (
+                <motion.div
+                  key="mobile-expand"
+                  className="md:hidden overflow-hidden"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.28, ease: EASE }}
+                  aria-hidden={!isActive}
+                >
+                  {PanelContent}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </button>
         );
       })}
