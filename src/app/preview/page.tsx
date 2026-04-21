@@ -1,6 +1,7 @@
 "use client";
 
 import ProjectCard from "@/components/ProjectCard";
+import ParticleSphere from "@/components/ParticleSphere";
 import { workProjects } from "@/data/projects";
 import Link from "next/link";
 import Image from "next/image";
@@ -893,26 +894,21 @@ export default function PreviewHome() {
               variants={fadeUp}
               className="col-span-12 md:col-span-4 md:row-span-2"
             >
-              <div className="relative h-full min-h-[360px] md:min-h-[560px] rounded-3xl overflow-hidden border border-white/[0.1]">
-                <Image
-                  src="/images/photos/photo-4.jpg"
-                  alt="Егор Шугаев"
-                  fill
-                  className="object-cover grayscale contrast-[1.05]"
-                  priority
-                />
-                {/* Bronze tinting */}
+              <div className="relative h-full min-h-[360px] md:min-h-[560px] rounded-3xl overflow-hidden border border-white/[0.1] bg-black">
+                {/* Particle sphere — замена фото */}
+                <ParticleSphere className="absolute inset-0 w-full h-full" />
+
+                {/* Мягкий радиальный виньет поверх, чтобы плитка не сливалась с фоном */}
                 <div
-                  className="absolute inset-0 mix-blend-hard-light opacity-45"
+                  className="pointer-events-none absolute inset-0"
                   style={{
                     background:
-                      "linear-gradient(135deg, rgba(201,166,107,0.55) 0%, rgba(0,0,0,0) 45%, rgba(166,255,0,0.2) 100%)",
+                      "radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.55) 100%)",
                   }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-tr from-black/70 via-transparent to-transparent" />
 
                 {/* Имя снизу */}
-                <div className="absolute bottom-5 left-5 right-5 flex items-end">
+                <div className="pointer-events-none absolute bottom-5 left-5 right-5 flex items-end">
                   <div className="font-p95 text-[14px] md:text-[16px] tracking-[0.08em] uppercase text-white/90 leading-none">
                     ЕГОР<br />ШУГАЕВ
                   </div>
