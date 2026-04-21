@@ -402,30 +402,37 @@ export default function Home() {
         >
           {/* === LEFT COLUMN — content === */}
           <div className="md:col-span-7 flex flex-col justify-between gap-10 md:gap-12">
-            <div className="flex flex-col gap-8 md:gap-10">
-              {/* headline — large, 2 lines */}
+            <div className="flex flex-col gap-7 md:gap-9">
+              {/* name + role — подпись сверху */}
+              <motion.div
+                variants={fadeUp}
+                className="inline-flex items-center gap-2 font-p95 text-[12px] md:text-[13px] tracking-[0.22em] uppercase text-white/65"
+              >
+                <span className="text-[#A6FF00]/80">[</span>
+                <span>Егор Шугаев · Дизайн-директор</span>
+                <span className="text-[#A6FF00]/80">]</span>
+              </motion.div>
+
+              {/* manifest headline — 2 lines, main hero */}
               <motion.h1
                 variants={fadeUp}
-                className="font-p95 text-[clamp(60px,9.5vw,148px)] leading-[0.9] uppercase tracking-tight"
+                className="font-p95 text-[clamp(38px,5.4vw,82px)] leading-[0.96] uppercase tracking-tight text-white max-w-[780px]"
               >
-                <span className="text-white">ЕГОР</span>
-                <br />
-                <span className="text-white">ШУГАЕВ</span>
-                <span className="text-[#A6FF00]">.</span>
+                Строю дизайн-команды,<br />которые двигают продукт<span className="text-[#A6FF00]">.</span>
               </motion.h1>
 
-              {/* short subtitle — one line */}
+              {/* short subtitle */}
               <motion.p
                 variants={fadeUp}
-                className="max-w-[560px] text-lg md:text-[22px] leading-snug text-white/80 font-light"
+                className="max-w-[560px] text-lg md:text-[20px] leading-snug text-white/70 font-light"
               >
-                Дизайн-директор. 9 лет в бигтехе. Сейчас — менторинг, консалтинг, свои проекты.
+                От процессов и культуры — до AI. Открыт к найму и консалтингу.
               </motion.p>
 
               {/* 2 CTAs — primary green, secondary outline */}
               <motion.div
                 variants={fadeUp}
-                className="flex flex-wrap items-center gap-3 mt-1"
+                className="flex flex-wrap items-center gap-3 mt-2"
               >
                 <Link
                   href="https://t.me/egoradi"
@@ -454,7 +461,7 @@ export default function Home() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[#A6FF00]" />
               </span>
-              Сейчас · открыт к сотрудничеству
+              Сейчас · 9 лет: МТС · Ozon · Газпром Нефть · MWS AI
             </motion.div>
           </div>
 
