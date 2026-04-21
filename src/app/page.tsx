@@ -392,32 +392,21 @@ function SplitSection({
 export default function Home() {
   return (
     <>
-      {/* ═══════ HERO — stokt-style asymmetric 2-col ═══════ */}
-      <section className="relative min-h-[88vh] md:min-h-[92vh] overflow-hidden bg-black">
+      {/* ═══════ HERO — stokt-style asymmetric 2-col, large & sparse ═══════ */}
+      <section className="relative min-h-[92vh] md:min-h-[94vh] overflow-hidden bg-black">
         <motion.div
           initial="hidden"
           animate="show"
           variants={stagger}
-          className="relative z-[2] grid grid-cols-1 md:grid-cols-12 min-h-[88vh] md:min-h-[92vh] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pt-24 md:pt-28 pb-10 md:pb-12"
+          className="relative z-[2] grid grid-cols-1 md:grid-cols-12 min-h-[92vh] md:min-h-[94vh] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pt-24 md:pt-28 pb-8 md:pb-10"
         >
           {/* === LEFT COLUMN — content === */}
-          <div className="md:col-span-5 flex flex-col justify-between gap-10 md:gap-12">
-            <div className="flex flex-col gap-7 md:gap-9">
-              {/* bracket-label with arrow */}
-              <motion.div
-                variants={fadeUp}
-                className="inline-flex items-center gap-2 font-p95 text-[12px] md:text-[13px] tracking-[0.22em] uppercase text-white/70"
-              >
-                <span className="text-[#A6FF00]/80">[</span>
-                <span>Дизайн-директор · ментор</span>
-                <span className="text-[#A6FF00]/80">]</span>
-                <ArrowRight className="w-3.5 h-3.5 text-[#A6FF00]/80" strokeWidth={2} />
-              </motion.div>
-
-              {/* compact headline — 2 lines */}
+          <div className="md:col-span-7 flex flex-col justify-between gap-10 md:gap-12">
+            <div className="flex flex-col gap-8 md:gap-10">
+              {/* headline — large, 2 lines */}
               <motion.h1
                 variants={fadeUp}
-                className="font-p95 text-[clamp(44px,6.4vw,92px)] leading-[0.92] uppercase tracking-tight"
+                className="font-p95 text-[clamp(60px,9.5vw,148px)] leading-[0.9] uppercase tracking-tight"
               >
                 <span className="text-white">ЕГОР</span>
                 <br />
@@ -425,14 +414,12 @@ export default function Home() {
                 <span className="text-[#A6FF00]">.</span>
               </motion.h1>
 
-              {/* subtitle */}
+              {/* short subtitle — one line */}
               <motion.p
                 variants={fadeUp}
-                className="max-w-[520px] text-base md:text-[17px] leading-snug text-white/75 font-light"
+                className="max-w-[560px] text-lg md:text-[22px] leading-snug text-white/80 font-light"
               >
-                В МТС и Газпром Нефти строил дизайн-функции, в Ozon — дизайн-комьюнити,
-                в&nbsp;MWS&nbsp;AI — AI-направление. Сейчас — менторинг, консалтинг
-                и независимые проекты.
+                Дизайн-директор. 9 лет в бигтехе. Сейчас — менторинг, консалтинг, свои проекты.
               </motion.p>
 
               {/* 2 CTAs — primary green, secondary outline */}
@@ -443,47 +430,38 @@ export default function Home() {
                 <Link
                   href="https://t.me/egoradi"
                   target="_blank"
-                  className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-[#A6FF00] text-black font-p95 text-[12px] md:text-[13px] tracking-[0.12em] uppercase hover:bg-white transition-colors no-underline"
+                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-[#A6FF00] text-black font-p95 text-[13px] md:text-sm tracking-[0.12em] uppercase hover:bg-white transition-colors no-underline"
                 >
                   <Send className="w-4 h-4" strokeWidth={2.2} />
                   Написать в Telegram
                 </Link>
                 <Link
                   href="#portfolio"
-                  className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-white/20 text-white/85 font-p95 text-[12px] md:text-[13px] tracking-[0.12em] uppercase hover:border-white/50 hover:text-white transition-colors no-underline"
+                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 font-p95 text-[13px] md:text-sm tracking-[0.12em] uppercase hover:border-white/50 hover:text-white transition-colors no-underline"
                 >
                   Смотреть проекты
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" strokeWidth={2} />
+                  <ArrowRight className="w-4 h-4" strokeWidth={2} />
                 </Link>
               </motion.div>
             </div>
 
-            {/* status-line at bottom */}
+            {/* minimal status-line at bottom */}
             <motion.div
               variants={fadeUp}
-              className="flex flex-wrap items-center gap-x-3 gap-y-2 pt-6 md:pt-0 border-t md:border-t-0 border-white/[0.08]"
+              className="inline-flex items-center gap-2 font-p95 text-[11px] md:text-[12px] tracking-[0.22em] uppercase text-white/55"
             >
-              <span className="inline-flex items-center gap-2 font-p95 text-[11px] md:text-[12px] tracking-[0.22em] uppercase text-white/65">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#A6FF00]" />
-                </span>
-                Сейчас
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#A6FF00]" />
               </span>
-              <span className="text-[13px] md:text-sm text-white/80 font-medium leading-tight">
-                Свободный график · Консультирую · Менторю
-              </span>
-              <span className="hidden md:inline-block h-3 w-px bg-white/15" />
-              <span className="text-[11px] md:text-[12px] tracking-[0.14em] uppercase text-white/45">
-                МСК · гибрид / удалёнка
-              </span>
+              Сейчас · открыт к сотрудничеству
             </motion.div>
           </div>
 
           {/* === RIGHT COLUMN — full-bleed photo === */}
           <motion.div
             variants={fadeUp}
-            className="md:col-span-7 relative mt-8 md:mt-0 md:ml-6 lg:ml-10 rounded-2xl overflow-hidden border border-white/[0.06] min-h-[320px] md:min-h-0"
+            className="md:col-span-5 relative mt-8 md:mt-0 md:ml-6 lg:ml-10 rounded-2xl overflow-hidden border border-white/[0.06] min-h-[320px] md:min-h-0"
           >
             <Image
               src="/images/photos/photo-4.jpg"
@@ -492,20 +470,7 @@ export default function Home() {
               className="object-cover"
               priority
             />
-            {/* subtle vignette — помогает оторвать от фона и даёт глубину */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-black/40 via-transparent to-transparent pointer-events-none" />
-            {/* corner meta — stokt-like */}
-            <div className="absolute top-4 left-4 md:top-5 md:left-5 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/45 backdrop-blur-sm border border-white/12">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#A6FF00]" />
-              <span className="font-p95 text-[10px] md:text-[11px] tracking-[0.2em] uppercase text-white/75">
-                Портфолио · 2017–2026
-              </span>
-            </div>
-            <div className="absolute bottom-4 right-4 md:bottom-5 md:right-5 text-right">
-              <div className="font-p95 text-[10px] md:text-[11px] tracking-[0.22em] uppercase text-white/55">
-                ↓ Скролл
-              </div>
-            </div>
+            <div className="absolute inset-0 bg-gradient-to-tr from-black/35 via-transparent to-transparent pointer-events-none" />
           </motion.div>
         </motion.div>
       </section>
