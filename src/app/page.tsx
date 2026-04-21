@@ -1063,18 +1063,55 @@ export default function Home() {
 
       {/* ===== CONTACTS ===== */}
       <SplitSection id="contacts" label="КОНТАКТЫ" heading="НАПИСАТЬ">
-        <div>
-          <p className="text-white/50 leading-relaxed text-base md:text-lg mb-3">
-            <MapPin className="w-4 h-4 text-white/25 inline mr-2 align-text-top" strokeWidth={1.5} />
-            Москва · гибрид / удалёнка. Самый быстрый канал — Telegram.
-          </p>
-          <p className="text-[10px] tracking-[0.1em] uppercase text-white/25 mb-8">
-            Обычно отвечаю в течение нескольких часов.
-          </p>
+        <div className="max-w-3xl">
+          {/* 1. CHANNELS — primary block, on top */}
+          <div className="mb-10 md:mb-12">
+            {/* Primary CTA */}
+            <Link
+              href="https://t.me/egoradi"
+              target="_blank"
+              className="group inline-flex items-center gap-3 bg-[#A6FF00] text-black hover:bg-[#B8FF33] rounded-lg px-6 py-4 md:py-5 text-base md:text-[17px] font-semibold transition-colors no-underline mb-5 md:mb-6"
+            >
+              <Send className="w-5 h-5" strokeWidth={2} />
+              <span>Написать в Telegram</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" strokeWidth={2} />
+            </Link>
 
-          {/* Engagement model */}
-          <div className="mb-8 pt-5 border-t border-white/[0.06]">
-            <div className="font-p95 text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-white/45 mb-3">
+            {/* Secondary channels — one row, consistent sizing */}
+            <div className="flex flex-wrap gap-2.5">
+              {[
+                { label: "Email", href: "mailto:egor.outhead@gmail.com", Icon: Mail },
+                { label: "LinkedIn", href: "https://www.linkedin.com/in/egorshugaev/", Icon: LinkedinIcon },
+                { label: "GitHub", href: "https://github.com/outhead", Icon: GithubIcon },
+                { label: "CV", href: "/Egor_Shugaev_CV.pdf", Icon: FileDown },
+              ].map((link) => (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  target="_blank"
+                  className="inline-flex items-center gap-2 border border-white/10 hover:border-white/30 rounded-lg px-4 py-2.5 text-sm text-white/65 hover:text-white transition-colors no-underline"
+                >
+                  <link.Icon className="w-4 h-4" strokeWidth={1.75} />
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* 2. META — location + response time, under channels */}
+          <div className="pt-6 md:pt-8 border-t border-white/[0.06] space-y-1.5 mb-10 md:mb-12">
+            <p className="text-white/60 text-[15px] md:text-base">
+              <MapPin className="w-4 h-4 text-white/30 inline mr-2 align-text-top" strokeWidth={1.5} />
+              Москва · гибрид / удалёнка
+            </p>
+            <p className="text-[11px] tracking-[0.1em] uppercase text-white/35">
+              Обычно отвечаю в течение нескольких часов
+            </p>
+          </div>
+
+          {/* 3. ENGAGEMENT MODELS — bottom */}
+          <div className="pt-6 md:pt-8 border-t border-white/[0.06]">
+            <div className="font-p95 text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-white/45 mb-4">
               Беру на
             </div>
             <div className="flex flex-wrap gap-2">
@@ -1092,30 +1129,6 @@ export default function Home() {
                 </span>
               ))}
             </div>
-          </div>
-
-          <div className="flex flex-wrap gap-3">
-            {[
-              { label: "Telegram", href: "https://t.me/egoradi", primary: true, Icon: Send },
-              { label: "Email", href: "mailto:egor.outhead@gmail.com", Icon: Mail },
-              { label: "LinkedIn", href: "https://www.linkedin.com/in/egorshugaev/", Icon: LinkedinIcon },
-              { label: "GitHub", href: "https://github.com/outhead", Icon: GithubIcon },
-              { label: "CV", href: "/Egor_Shugaev_CV.pdf", Icon: FileDown },
-            ].map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                target="_blank"
-                className={
-                  link.primary
-                    ? "inline-flex items-center gap-2 bg-[#A6FF00] text-black hover:bg-[#B8FF33] rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors no-underline"
-                    : "inline-flex items-center gap-2 border border-white/10 hover:border-white/30 rounded-lg px-5 py-2.5 text-sm text-white/60 hover:text-white transition-colors no-underline"
-                }
-              >
-                <link.Icon className="w-4 h-4" strokeWidth={1.75} />
-                {link.label}
-              </Link>
-            ))}
           </div>
         </div>
       </SplitSection>
