@@ -418,7 +418,10 @@ export default function ParticleSphere({
           // нормируем относительно половины размеров canvas
           const nx = Math.max(-1, Math.min(1, dxC / (cssW * 0.5)));
           const ny = Math.max(-1, Math.min(1, dyC / (cssH * 0.5)));
-          const desiredYaw = nx * cursorYawMax;
+          // Горизонталь инвертирована только для cursor-follow: фигура
+          // смотрит «в ту же сторону», куда ведёт курсор, а не вслед за ним.
+          // В драге остаётся обычное поведение.
+          const desiredYaw = -nx * cursorYawMax;
           const desiredPitch = ny * cursorPitchMax;
           const k = 1 - Math.exp(-cursorLerpPerSec * dt);
           yaw += (desiredYaw - yaw) * k;

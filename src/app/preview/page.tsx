@@ -847,13 +847,10 @@ export default function PreviewHome() {
                   <h1 className="font-p95 text-[clamp(44px,7.2vw,112px)] leading-[0.92] uppercase tracking-tight text-white">
                     <span className="block text-white">РАЗВИВАЮ</span>
                     <span className="block">
-                      <span className="text-white/35">(</span>
                       <FlippingWord
                         words={["ЛЮДЕЙ", "КОМАНДЫ", "ВИЗУАЛ", "СЕРВИСЫ", "ИНТЕРЕС"]}
                         className="text-white"
                       />
-                      <span className="text-white/35">)</span>
-                      <span className="text-[#A6FF00]">.</span>
                     </span>
                   </h1>
 
