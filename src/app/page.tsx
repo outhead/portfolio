@@ -1,11 +1,13 @@
 "use client";
 
 import ProjectCard from "@/components/ProjectCard";
+import ParticleSphere from "@/components/ParticleSphere";
+import FlippingWord from "@/components/FlippingWord";
 import { workProjects } from "@/data/projects";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Code2,
   Send,
@@ -16,6 +18,8 @@ import {
   ArrowRight,
   Users,
   Sparkles,
+  Trophy,
+  Globe,
 } from "lucide-react";
 
 const LinkedinIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -41,18 +45,291 @@ const stagger: Variants = {
 };
 const viewport = { once: true, margin: "-10% 0px -10% 0px" };
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
+// ───────────────────────────────────────────────────────────────────
+// SectionLabel (bracket mono)
+// ───────────────────────────────────────────────────────────────────
+function SectionLabel({
+  children,
+  tone = "dark",
+}: {
+  children: React.ReactNode;
+  tone?: "dark" | "light";
+}) {
+  const isLight = tone === "light";
   return (
-    <div className="inline-flex items-center gap-1.5 font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/75">
-      <span className="text-[#A6FF00]/80">[</span>
+    <div
+      className={`inline-flex items-center gap-1.5 font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase ${
+        isLight ? "text-black/65" : "text-white/75"
+      }`}
+    >
+      <span className="text-[#A6FF00]">[</span>
       <span>{children}</span>
-      <span className="text-[#A6FF00]/80">]</span>
+      <span className="text-[#A6FF00]">]</span>
     </div>
   );
 }
 
 // ───────────────────────────────────────────────────────────────────
-// SKILLS — accordion-бенто (stokt-style)
+// Asterisk — маленький зелёный `*` как типографический приём (stokt)
+// ───────────────────────────────────────────────────────────────────
+function Star() {
+  return (
+    <span className="text-[#A6FF00] font-p95 align-top inline-block translate-y-[-0.15em]">
+      *
+    </span>
+  );
+}
+
+// ───────────────────────────────────────────────────────────────────
+// DotGlobe — интерактивный дотовый глобус: точки только на суше
+// (world-atlas 110m, 180×90 bitgrid), drag-to-rotate + автовращение,
+// маркер Москвы с пульсацией. Рендер в canvas для плавности.
+// ───────────────────────────────────────────────────────────────────
+const LAND_GRID_B64 =
+  "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf4AP/AAAAAAAAAAAAAAAAAAAAAAAAX/z///+AAAAAAAABAAAAAAAAAAAAAYd8P///wAA+AAAAAA8AAAAAAAAAAAwAnw////4AAIAAAAAAGAAAAAAAAAAADivwAf//wAAAAADAAf/wAHYAAAAAADoi3sAP//gAAAAAMAD///sAAAAgBgACfwz/AD/+gAAAwAEHf///////+AP//////////////4A//EgAAAAAAAgH///////////////gAFAAgAAAAAAAAz///////////////BhQAAAAAAAAAAAAP/////4A0B4AAAD5/////////////Af3////gHgA4AAAH5///////////LwAHgH///gHkAAAAAH4/////////+CIAABAB///4D+AAAAGCx/////////4A8AAIAAf///n/gAAAOCD/////////wA4AAAAAf///n/wAAAbP///////////AgAAAAAP/////wAAADf//////////9AAAAAAAF////0YAAAB///////////9AAAAAAAD////8EAAAB///////////5AAAAAAAD////2AAAAB/f5fP//////wAAAAAAAD////gAAAAfxnwPP//////jAAAAAAAD////AAAAAPCb3/n/////+CAAAAAAAD///8AAAAAfALf/n////+ECAAAAAAAB///8AAAAAGHQP/n/////mMAAAAAAAA///8AAAAAH+Ai///////E8AAAAAAAAf//wAAAAAP/AA///////BgAAAAAAAAP//gAAAAAf/73///////gAAAAAAAAAD/AQAAAAAf////f/////gAAAAAAAAAF+AQAAAAB///+/n/////AAAAAAAAAAC+AAAAAAB///+f0H////AAAAAAAAAAAeAwAAAAD////f/B///8gAAAAAAAAAAeGEAAAAH////v+B/z/AAAAAAAAAAAAPMAgAAAD////n+A/B+gAAAAAAAAAAAD8AAAAAD////n4AeB/AgAAAAAAAAAAAPAAAAAH////3gAcAfAgAAAAAAAAAAADAAAAAD////6AAcAfggAAAAAAAAAAABDwAAAD////8wAMATAIAAAAAAAAAAAAr/AAAB/////gAKASAAAAAAAAAAAAAAH/gAAA/////gACAAAIAAAAAAAAAAAAH/8AAAaH///AAAAsGAAAAAAAAAAAAAH/+AAAAB//+AAAAUOAAAAAAAAAAAAAP/+AAAAB//8AAAAYegAAAAAAAAAAAAP//gAAAD//4AAAAMeBgAAAAAAAAAAAP//8AAAB//wAAAAGdiuAAAAAAAAAAAf///AAAA//wAAAACAQHgAAAAAAAAAAP///gAAA//wAAAABwAHwgAAAAAAAAAH///AAAA//wAAAAACIDQIAAAAAAAAAH//+AAAAf/wAAAAAAAAAAAAAAAAAAAD//+AAAA//wgAAAAABxAAAAAAAAAAAD//+AAAA//wgAAAAAPxgBAAAAAAAAAA//8AAAA//jgAAAAAf5gAAAAAAAAAAAf/8AAAA//DgAAAAAf/gAAAAAAAAAAAf/8AAAAf/DAAAAAD//4CAAAAAAAAAAf/wAAAAf/DAAAAAH//4AAAAAAAAAAAf/AAAAAf+CAAAAAH//8AAAAAAAAAAAf/AAAAAP8AAAAAAH//+AAAAAAAAAAA/+AAAAAP8AAAAAAH//+AAAAAAAAAAA/+AAAAAH4AAAAAAD//+AAAAAAAAAAA/8AAAAAHwAAAAAADwf8AAAAAAAAAAA/gAAAAAAAAAAAAACAH4AIAAAAAAAAB/wAAAAAAAAAAAAAAAD4AEAAAAAAAAB+AAAAAAAAAAAAAAAAAAAGAAAAAAAAB6AAAAAAAAAAAAAAAAAwAMAAAAAAAAA8AAAAAAAAAAAAAAAAAQAYAAAAAAAAB4AAAAAAAAAAAAAAAAAAAwAAAAAAAAB4AAAAAAAAAAAAAAAAAAAAAAAAAAAADwAAAAAAAAAACAAAAAAAAAAAAAAAAADgAAAAAAAAAAAAAAAAAAAAAAAAAAAABwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAAAAAAAeAAIP+f/gAAAAAAAAAAAMAAAAAAABP/+H//////AAAAAAAAAAA+AAAAAf////8////////AAAAAAAOEAPAAAB///////////////gAAAP//T//8AAAH//////////////+AAAH/////4AAAH///////////////8AAE//////4ABw////////////////8AAAD//////gCA////////////////wAAAf/////////////////////////+AAH/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+
+// Побережья — упрощённые полилинии из world-atlas land-110m.json
+// Формат: uint16 numArcs, затем на каждую дугу: uint16 N, потом N × (int16 lon*100, int16 lat*100)
+const COASTLINE_B64 =
+  "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";
+
+function DotGlobe() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // ── Декод grid точек на суше ────────────────────────────────
+    const LON_STEPS = 180;
+    const LAT_STEPS = 90;
+    const gridBin = atob(LAND_GRID_B64);
+    const landDots: Array<{ lon: number; lat: number }> = [];
+    for (let la = 0; la < LAT_STEPS; la++) {
+      const lat = ((90 - (la + 0.5) * (180 / LAT_STEPS)) * Math.PI) / 180;
+      for (let lo = 0; lo < LON_STEPS; lo++) {
+        // шахматное прореживание — сбивает плотность в 2 раза и ломает
+        // ровные ряды, визуально спокойнее
+        if (((la + lo) & 1) === 0) continue;
+        const idx = la * LON_STEPS + lo;
+        const bit = (gridBin.charCodeAt(idx >> 3) >> (7 - (idx & 7))) & 1;
+        if (bit) {
+          const lon = ((-180 + (lo + 0.5) * (360 / LON_STEPS)) * Math.PI) / 180;
+          landDots.push({ lon, lat });
+        }
+      }
+    }
+
+    // Побережья отключены — линии при 110m+DP упрощении корявые.
+    // Константа COASTLINE_B64 оставлена в файле на случай будущего использования.
+
+    // Без графикулы — чистый глобус в стиле референса
+    const DEG = Math.PI / 180;
+
+    // Москва
+    const MOS_LAT = 55.75 * DEG;
+    const MOS_LON = 37.62 * DEG;
+
+    // Состояние анимации
+    let rotLon = -0.4;
+    let rotLat = 0.32;
+    const autoSpeed = 0.08;
+    let dragging = false;
+    let lastPX = 0;
+    let lastPY = 0;
+    let lastMoveT = performance.now();
+    // Инерция (рад/с) — задаётся в onMove, затухает после onUp
+    let velLon = 0;
+    let velLat = 0;
+    let last = performance.now();
+    let idleResumeAt = 0;
+    let rafId = 0;
+
+    const resize = () => {
+      const DPR = Math.min(window.devicePixelRatio || 1, 2);
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.round(rect.width * DPR);
+      canvas.height = Math.round(rect.height * DPR);
+    };
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(canvas);
+
+    const render = (now: number) => {
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      if (!dragging) {
+        const spd = Math.hypot(velLon, velLat);
+        if (spd > 0.02) {
+          // Инерционный выбег: экспоненциальное затухание (~12% за секунду)
+          rotLon += velLon * dt;
+          rotLat = Math.max(-1.1, Math.min(1.1, rotLat + velLat * dt));
+          const decay = Math.pow(0.12, dt);
+          velLon *= decay;
+          velLat *= decay;
+        } else if (now > idleResumeAt) {
+          velLon = 0;
+          velLat = 0;
+          rotLon += autoSpeed * dt;
+        }
+      }
+
+      const W = canvas.width;
+      const H = canvas.height;
+      const cx = W / 2;
+      const cy = H / 2;
+      const R = Math.min(W, H) * 0.46;
+
+      ctx.clearRect(0, 0, W, H);
+
+      const cosT = Math.cos(rotLat);
+      const sinT = Math.sin(rotLat);
+
+      // Проекция lon/lat → экран + z (глубина)
+      // project inline — избегаем аллокаций
+      const projCache = { sx: 0, sy: 0, z: 0 };
+      const project = (lon: number, lat: number) => {
+        const cLat = Math.cos(lat);
+        const sLat = Math.sin(lat);
+        const eLon = lon + rotLon;
+        const x1 = cLat * Math.sin(eLon);
+        const y1 = sLat;
+        const z1 = cLat * Math.cos(eLon);
+        const y2 = y1 * cosT - z1 * sinT;
+        const z2 = y1 * sinT + z1 * cosT;
+        projCache.sx = cx + x1 * R;
+        projCache.sy = cy - y2 * R;
+        projCache.z = z2;
+        return projCache;
+      };
+
+      // Слой 1: точки внутренности континентов (без контуров — они корявые)
+      for (let i = 0; i < landDots.length; i++) {
+        const p = landDots[i];
+        const { sx, sy, z } = project(p.lon, p.lat);
+        if (z < 0.04) continue;
+        const op = 0.28 + 0.5 * z;
+        const rr = 0.55 + 0.75 * z;
+        ctx.globalAlpha = op;
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(sx, sy, rr, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+
+      // Слой 2: тонкий контур лимба (горизонт сферы)
+      ctx.strokeStyle = "rgba(255,255,255,0.14)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Слой 5: маркер Москвы с пульсацией
+      const m = project(MOS_LON, MOS_LAT);
+      if (m.z > -0.15) {
+        const visible = m.z > 0.02;
+        const alphaMul = visible ? 1 : Math.max(0, 1 + m.z / 0.15);
+        const pulse = 0.5 + 0.5 * Math.sin(now * 0.003);
+        ctx.fillStyle = `rgba(166,255,0,${0.05 * alphaMul})`;
+        ctx.beginPath();
+        ctx.arc(m.sx, m.sy, 22 + 10 * pulse, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = `rgba(166,255,0,${0.22 * alphaMul})`;
+        ctx.beginPath();
+        ctx.arc(m.sx, m.sy, 9, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = `rgba(166,255,0,${alphaMul})`;
+        ctx.beginPath();
+        ctx.arc(m.sx, m.sy, 4.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      rafId = requestAnimationFrame(render);
+    };
+
+    rafId = requestAnimationFrame(render);
+
+    // Pointer-интеракция
+    const onDown = (e: PointerEvent) => {
+      dragging = true;
+      lastPX = e.clientX;
+      lastPY = e.clientY;
+      lastMoveT = performance.now();
+      velLon = 0;
+      velLat = 0;
+      canvas.setPointerCapture(e.pointerId);
+      canvas.style.cursor = "grabbing";
+    };
+    const onMove = (e: PointerEvent) => {
+      if (!dragging) return;
+      const now = performance.now();
+      const mdt = Math.max(0.008, (now - lastMoveT) / 1000);
+      lastMoveT = now;
+      const dx = e.clientX - lastPX;
+      const dy = e.clientY - lastPY;
+      lastPX = e.clientX;
+      lastPY = e.clientY;
+      const dLon = dx * 0.006;
+      const dLat = dy * 0.006;
+      rotLon += dLon;
+      rotLat = Math.max(-1.1, Math.min(1.1, rotLat + dLat));
+      // Сглаженная угловая скорость (рад/с) — ema с быстрым хвостом
+      const vxNow = dLon / mdt;
+      const vyNow = dLat / mdt;
+      velLon = velLon * 0.5 + vxNow * 0.5;
+      velLat = velLat * 0.5 + vyNow * 0.5;
+    };
+    const onUp = (e: PointerEvent) => {
+      if (!dragging) return;
+      dragging = false;
+      try {
+        canvas.releasePointerCapture(e.pointerId);
+      } catch {}
+      canvas.style.cursor = "grab";
+      // Ограничиваем максимальную инерцию, чтобы резкий «швырок» не улетал
+      const maxV = 4.0;
+      const sp = Math.hypot(velLon, velLat);
+      if (sp > maxV) {
+        velLon = (velLon / sp) * maxV;
+        velLat = (velLat / sp) * maxV;
+      }
+      // Если пользователь не двигал шар вообще (клик) — не нужно идле-паузы
+      idleResumeAt = performance.now() + (Math.hypot(velLon, velLat) > 0.02 ? 2400 : 600);
+    };
+
+    canvas.addEventListener("pointerdown", onDown);
+    canvas.addEventListener("pointermove", onMove);
+    canvas.addEventListener("pointerup", onUp);
+    canvas.addEventListener("pointercancel", onUp);
+    canvas.addEventListener("pointerleave", onUp);
+    canvas.style.cursor = "grab";
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      ro.disconnect();
+      canvas.removeEventListener("pointerdown", onDown);
+      canvas.removeEventListener("pointermove", onMove);
+      canvas.removeEventListener("pointerup", onUp);
+      canvas.removeEventListener("pointercancel", onUp);
+      canvas.removeEventListener("pointerleave", onUp);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 w-full h-full touch-none select-none"
+      aria-hidden
+    />
+  );
+}
+
+// ───────────────────────────────────────────────────────────────────
+// SKILLS — accordion-бенто (stokt-style) — УСТАРЕЛО, оставлено для референса
 // ───────────────────────────────────────────────────────────────────
 interface SkillPanel {
   key: string;
@@ -64,6 +341,7 @@ interface SkillPanel {
   items: string[];
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function SkillsAccordion({ panels }: { panels: SkillPanel[] }) {
   const [active, setActive] = useState<string>(panels[0].key);
   const CONTENT_WIDTH = 560;
@@ -187,7 +465,7 @@ function SkillsAccordion({ panels }: { panels: SkillPanel[] }) {
 }
 
 // ───────────────────────────────────────────────────────────────────
-// CAREER — hover-reveal list (без состояния, CSS grid-rows [0fr]→[1fr])
+// CAREER — hover-reveal list
 // ───────────────────────────────────────────────────────────────────
 const careerJobs: Array<{
   year: string;
@@ -273,7 +551,6 @@ function CareerHoverList() {
           key={job.year + job.company}
           className={`group relative ${i > 0 ? "border-t border-white/[0.06]" : ""} hover:bg-white/[0.025] transition-colors`}
         >
-          {/* Row — всегда видна */}
           <div className="flex items-center gap-4 md:gap-6 px-5 md:px-7 py-4 md:py-5">
             <span
               className={`shrink-0 w-2 h-2 rounded-full ${
@@ -299,7 +576,6 @@ function CareerHoverList() {
             </span>
           </div>
 
-          {/* Desktop hover-reveal — CSS grid-rows trick (без JS) */}
           {job.details && (
             <div
               className="hidden md:grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-[420ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
@@ -326,7 +602,6 @@ function CareerHoverList() {
             </div>
           )}
 
-          {/* Mobile — короткий scope всегда виден под строкой */}
           {job.details && (
             <div className="md:hidden px-5 pb-4 pl-[calc(20px+8px+16px+88px)]">
               <p className="text-[12px] text-white/55 leading-snug">{job.scope}</p>
@@ -386,170 +661,362 @@ function SplitSection({
   );
 }
 
+// ───────────────────────────────────────────────────────────────────
+// TOOLBOX — ряд инструментов (stokt «Everyday's Toolbox»)
+// ───────────────────────────────────────────────────────────────────
+const tools: Array<{ name: string; icon: React.ReactNode }> = [
+  {
+    name: "Figma",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+        <path d="M8.25 24a4.5 4.5 0 0 0 4.5-4.5V15H8.25a4.5 4.5 0 1 0 0 9zm-4.5-13.5A4.5 4.5 0 0 1 8.25 6h4.5v9h-4.5a4.5 4.5 0 0 1-4.5-4.5zm0-9A4.5 4.5 0 0 1 8.25 0h4.5v6h-4.5a4.5 4.5 0 0 1-4.5-4.5zM12.75 0h4.5a4.5 4.5 0 1 1 0 9h-4.5V0zm0 10.5a4.5 4.5 0 1 1 4.5 4.5 4.5 4.5 0 0 1-4.5-4.5z" />
+      </svg>
+    ),
+  },
+  {
+    name: "Photoshop",
+    icon: (
+      <svg viewBox="0 0 24 24" className="w-full h-full">
+        <rect x="2" y="2" width="20" height="20" rx="3" stroke="currentColor" strokeWidth="1.5" fill="none" />
+        <text
+          x="12"
+          y="16.5"
+          textAnchor="middle"
+          fontFamily="Inter, system-ui, sans-serif"
+          fontWeight="700"
+          fontSize="11"
+          fill="currentColor"
+        >
+          Ps
+        </text>
+      </svg>
+    ),
+  },
+  {
+    name: "Illustrator",
+    icon: (
+      <svg viewBox="0 0 24 24" className="w-full h-full">
+        <rect x="2" y="2" width="20" height="20" rx="3" stroke="currentColor" strokeWidth="1.5" fill="none" />
+        <text
+          x="12"
+          y="16.5"
+          textAnchor="middle"
+          fontFamily="Inter, system-ui, sans-serif"
+          fontWeight="700"
+          fontSize="11"
+          fill="currentColor"
+        >
+          Ai
+        </text>
+      </svg>
+    ),
+  },
+  {
+    name: "Claude",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+        <path d="M4.709 15.955l4.72-2.647.079-.23-.079-.128H9.2l-.79-.048-2.698-.073-2.339-.097-2.266-.122-.571-.121L0 11.784l.055-.352.48-.321.686.061 1.52.103 2.278.158 1.652.097 2.449.255h.389l.055-.157-.134-.098-.103-.097-2.358-1.596-2.552-1.688-1.336-.972-.724-.491-.364-.462-.158-1.008.656-.722.881.06.225.061.893.686 1.908 1.476 2.491 1.833.365.304.145-.103.019-.073-.164-.274-1.355-2.446-1.446-2.49-.644-1.032-.17-.619a2.97 2.97 0 01-.104-.729L6.283.134 6.696 0l.996.134.42.364.62 1.414 1.002 2.229 1.555 3.03.456.898.243.832.091.255h.158V9.01l.128-1.706.237-2.095.23-2.695.08-.76.376-.91.747-.492.584.28.48.685-.067.444-.286 1.851-.559 2.903-.364 1.942h.212l.243-.242.985-1.306 1.652-2.064.729-.82.85-.904.547-.431h1.033l.76 1.129-.34 1.166-1.064 1.347-.881 1.142-1.264 1.7-.79 1.36.073.11.188-.02 2.856-.606 1.543-.28 1.841-.315.833.388.091.395-.328.807-1.969.486-2.309.462-3.439.813-.042.03.049.061 1.549.146.662.036h1.622l3.02.225.79.522.474.638-.079.485-1.215.62-1.64-.389-3.829-.91-1.312-.329h-.182v.11l1.093 1.068 2.006 1.81 2.509 2.33.127.578-.322.455-.34-.049-2.205-1.657-.851-.747-1.926-1.62h-.128v.17l.444.649 2.345 3.521.122 1.08-.17.353-.608.213-.668-.122-1.374-1.925-1.415-2.167-1.143-1.943-.14.08-.674 7.254-.316.37-.729.28-.607-.461-.322-.747.322-1.476.389-1.924.315-1.53.286-1.9.17-.632-.012-.042-.14.018-1.434 1.967-2.18 2.945-1.726 1.845-.414.164-.717-.37.067-.662.401-.589 2.388-3.036 1.44-1.882.929-1.086-.006-.158h-.055L4.132 18.56l-1.13.146-.487-.456.061-.746.231-.243 1.908-1.312z" />
+      </svg>
+    ),
+  },
+  {
+    name: "Nano Banana",
+    icon: (
+      <svg viewBox="0 0 2251 2251" fill="currentColor" className="w-full h-full">
+        <path fillRule="evenodd" d="M1772.87 1489.18C1772.87 1709.22 1696.62 1857.03 1583.32 1857.03C1478.19 1857.03 1460.46 1753.16 1441.67 1643.28C1430.82 1542.96 1398.81 1446.07 1347.77 1359.03C1287.89 1420.18 1205.75 1454.40 1120.17 1453.87C1000.44 1462.73 882.38 1421.67 793.98 1340.44C730.62 1270.29 697.80 1177.81 702.76 1083.41L702.76 1021.01L761.88 999.61C871.69 1128.32 1035.47 1198.13 1204.37 1188.21L1218.55 1188.01C1051.01 1018.00 836.68 901.67 602.84 853.81L502.11 853.81L502.11 654.50L598.02 650.48C705.66 607.08 820.78 585.26 936.84 586.28C1110.99 586.67 1280.10 644.77 1417.73 751.47C1394.91 647.77 1358.65 547.49 1309.84 453.18L1329.91 404.43C1339.76 401.76 1349.93 400.46 1360.14 400.55C1488.82 400.55 1701.77 601.12 1701.77 829.73C1701.16 898.11 1682.14 965.06 1646.73 1023.55C1730.61 1164.29 1774.24 1325.35 1772.87 1489.18ZM1507.61 1631.98C1527.21 1746.81 1538.78 1790.15 1583.32 1790.15C1654.42 1790.15 1705.99 1663.54 1705.99 1489.18C1707.00 1347.68 1672.11 1208.23 1604.59 1083.88C1570.54 1127.47 1528.05 1163.75 1479.66 1190.56L1441.54 1218.58C1428.65 1249.74 1412.16 1279.28 1392.38 1306.59C1455.94 1404.43 1495.43 1515.94 1507.61 1631.98ZM769.37 1103.88C769.10 1174.14 795.07 1241.98 842.21 1294.09C918.25 1361.78 1018.71 1395.36 1120.17 1386.99C1217.09 1385.53 1305.82 1332.30 1352.71 1247.47C1303.47 1253.08 1253.93 1255.63 1204.37 1255.09C1045.32 1262.55 889.53 1208.41 769.37 1103.94ZM568.99 718.70L568.99 787.19L608.45 787.46C616.68 788.79 625.04 791.27 633.40 792.94L631.80 709.74C627.45 711.48 622.70 712.75 618.42 714.56ZM936.84 653.16C856.12 653.02 775.78 664.28 698.21 686.60L698.75 715.02C716.53 714.42 731.25 714.36 741.22 714.36C1004.73 714.36 1228.25 794.28 1370.91 939.55L1323.16 986.43C1193.27 854.00 986.61 781.17 741.28 781.17C731.58 781.17 717.34 781.31 700.02 781.91L700.48 807.52C933.95 874.91 1144.32 1005.33 1308.51 1184.47C1335.89 1182.31 1363.14 1178.61 1390.10 1173.37L1433.71 1141.26C1441.62 1092.36 1445.64 1042.92 1445.75 993.39C1445.62 946.24 1442.31 899.16 1435.85 852.46C1300.90 725.02 1122.47 653.75 936.84 653.16ZM1395.05 473.98C1470.32 636.93 1510.40 813.91 1512.70 993.39C1512.70 1025.69 1511.16 1057.86 1508.29 1088.62C1585.53 1024.37 1631.61 930.15 1634.89 829.73C1631.06 754.22 1606.70 681.19 1564.43 618.51C1522.17 555.82 1463.61 505.85 1395.05 473.98Z" />
+      </svg>
+    ),
+  },
+  {
+    name: "Cursor",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+        <path d="M11.925 24l10.425-6-10.425-6L1.5 18l10.425 6z M22.35 18L11.925 12V0L22.35 6v12z M1.5 18V6l10.425 6v12L1.5 18z" />
+      </svg>
+    ),
+  },
+  {
+    name: "Seedance",
+    icon: (
+      <svg viewBox="0 0 24 24" className="w-full h-full" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 15 Q 7.5 5, 12 15 T 21 15" />
+        <circle cx="3" cy="15" r="1.4" fill="currentColor" stroke="none" />
+        <circle cx="21" cy="15" r="1.4" fill="currentColor" stroke="none" />
+      </svg>
+    ),
+  },
+  {
+    name: "Three.js",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+        <path d="M.38 0a.27.27 0 0 0-.256.332l2.894 12.236a.27.27 0 0 0 .407.17l3.726-2.42 2.504 9.998a.27.27 0 0 0 .41.167L23.877 12.3a.27.27 0 0 0 .046-.416L.565.077A.27.27 0 0 0 .381 0zm.47.602L22.98 11.655l-11.832 7.59L8.614 9.12a.27.27 0 0 0-.408-.169L4.48 11.372z" />
+      </svg>
+    ),
+  },
+];
+
+function Toolbox() {
+  return (
+    <section className="relative z-[1] bg-black border-t border-white/[0.06]">
+      <div className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-20">
+        <motion.div
+          initial="hidden"
+          whileInView="show"
+          viewport={viewport}
+          variants={stagger}
+        >
+          <motion.div variants={fadeUp} className="mb-8 md:mb-10 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+            <SectionLabel>В РАБОТЕ</SectionLabel>
+            <p className="text-[12px] md:text-[13px] text-white/50 tracking-[0.08em] uppercase max-w-sm">
+              Провожу с ними большую часть дня.
+            </p>
+          </motion.div>
+          {/* Bento-grid плиток: 4 кол., каждая — квадратная мини-карточка */}
+          <motion.div
+            variants={stagger}
+            className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4"
+          >
+            {tools.map((t) => (
+              <motion.div
+                key={t.name}
+                variants={fadeUp}
+                title={t.name}
+                className="group relative rounded-xl border border-white/[0.06] bg-white/[0.02] hover:border-[#A6FF00]/30 hover:bg-white/[0.035] transition-colors p-5 md:p-6 flex flex-col items-start justify-between min-h-[130px] md:min-h-[150px] overflow-hidden"
+              >
+                <div className="w-7 h-7 md:w-8 md:h-8 text-white/55 group-hover:text-white transition-colors">
+                  {t.icon}
+                </div>
+                <span className="font-p95 text-[12px] md:text-[13px] tracking-[0.18em] uppercase text-white/70 group-hover:text-white transition-colors">
+                  {t.name}
+                </span>
+              </motion.div>
+            ))}
+          </motion.div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // PAGE
 // ═══════════════════════════════════════════════════════════════════
-export default function Home() {
+export default function PreviewHome() {
   return (
     <>
-      {/* ═══════ HERO — stokt-style asymmetric 2-col, large & sparse ═══════ */}
-      <section className="relative min-h-[92vh] md:min-h-[94vh] overflow-hidden bg-black">
+      {/* ═══════ HERO — bento-грид: 1 большая content-плитка + 1 photo-плитка + 3 метрики ═══════ */}
+      <section className="relative min-h-[100vh] overflow-hidden bg-black">
+        {/* Фоновая радиальная подсветка — вне карточек, как amber-lighting студии */}
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none opacity-70"
+          style={{
+            background:
+              "radial-gradient(ellipse 55% 60% at 85% 55%, rgba(201,166,107,0.18), transparent 60%), radial-gradient(ellipse 45% 50% at 20% 80%, rgba(166,255,0,0.08), transparent 70%)",
+          }}
+        />
+
         <motion.div
           initial="hidden"
           animate="show"
           variants={stagger}
-          className="relative z-[2] grid grid-cols-1 md:grid-cols-12 min-h-[92vh] md:min-h-[94vh] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pt-24 md:pt-28 pb-8 md:pb-10"
+          className="relative z-[2] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pt-24 md:pt-28 pb-10 md:pb-14"
         >
-          {/* === LEFT COLUMN — content === */}
-          <div className="md:col-span-7 flex flex-col justify-between gap-10 md:gap-12">
-            <div className="flex flex-col gap-7 md:gap-9">
-              {/* name + role — подпись сверху */}
-              <motion.div
-                variants={fadeUp}
-                className="inline-flex items-center gap-2 font-p95 text-[12px] md:text-[13px] tracking-[0.22em] uppercase text-white/65"
-              >
-                <span className="text-[#A6FF00]/80">[</span>
-                <span>Егор Шугаев · Дизайн-директор</span>
-                <span className="text-[#A6FF00]/80">]</span>
-              </motion.div>
-
-              {/* manifest headline — 2 lines, main hero */}
-              <motion.h1
-                variants={fadeUp}
-                className="font-p95 text-[clamp(38px,5.4vw,82px)] leading-[0.96] uppercase tracking-tight text-white max-w-[780px]"
-              >
-                Строю дизайн-команды,<br />которые двигают продукт<span className="text-[#A6FF00]">.</span>
-              </motion.h1>
-
-              {/* short subtitle */}
-              <motion.p
-                variants={fadeUp}
-                className="max-w-[560px] text-lg md:text-[20px] leading-snug text-white/70 font-light"
-              >
-                От процессов и культуры — до AI.
-              </motion.p>
-
-              {/* 2 CTAs — primary green, secondary outline */}
-              <motion.div
-                variants={fadeUp}
-                className="flex flex-wrap items-center gap-3 mt-2"
-              >
-                <Link
-                  href="https://t.me/egoradi"
-                  target="_blank"
-                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-[#A6FF00] text-black font-p95 text-[13px] md:text-sm tracking-[0.12em] uppercase hover:bg-white transition-colors no-underline"
-                >
-                  <Send className="w-4 h-4" strokeWidth={2.2} />
-                  Написать в Telegram
-                </Link>
-                <Link
-                  href="#portfolio"
-                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 font-p95 text-[13px] md:text-sm tracking-[0.12em] uppercase hover:border-white/50 hover:text-white transition-colors no-underline"
-                >
-                  Смотреть проекты
-                  <ArrowRight className="w-4 h-4" strokeWidth={2} />
-                </Link>
-              </motion.div>
-            </div>
-
-            {/* minimal status-line at bottom */}
+          {/* Bento: 12-колоночный грид с разными размерами */}
+          <div className="grid grid-cols-12 gap-3 md:gap-4">
+            {/* === TILE 1: Главная content-плитка (col-span-8, row-span-2) === */}
             <motion.div
               variants={fadeUp}
-              className="inline-flex items-center gap-2 font-p95 text-[11px] md:text-[12px] tracking-[0.22em] uppercase text-white/55"
+              className="col-span-12 md:col-span-8 md:row-span-2"
             >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#A6FF00]" />
-              </span>
-              Сейчас — открыт к найму и консалтингу
+              <div className="relative h-full rounded-3xl border border-white/[0.1] bg-gradient-to-br from-white/[0.025] via-white/[0.01] to-transparent p-7 md:p-10 lg:p-12 flex flex-col justify-between gap-10 md:gap-14 min-h-[420px] md:min-h-[560px] overflow-hidden">
+                {/* Верхний ряд якорей */}
+                <div className="flex items-start justify-between gap-4">
+                  <div className="font-p95 text-[11px] md:text-[12px] tracking-[0.22em] uppercase text-white/65">
+                    <span className="text-[#A6FF00]/80">[</span>
+                    <span className="mx-2">Егор Шугаев · Дизайн-директор</span>
+                    <span className="text-[#A6FF00]/80">]</span>
+                  </div>
+                  <div className="font-p95 text-[10px] md:text-[11px] tracking-[0.22em] uppercase text-white/30 whitespace-nowrap">
+                    Portfolio · 2026
+                  </div>
+                </div>
+
+                {/* Центральный контент */}
+                <div className="flex flex-col gap-6 md:gap-8">
+                  <h1 className="font-p95 text-[clamp(44px,7.2vw,112px)] leading-[0.92] uppercase tracking-tight text-white">
+                    <span className="block text-white">РАЗВИВАЮ</span>
+                    <span className="block">
+                      <FlippingWord
+                        words={["ЛЮДЕЙ", "КОМАНДЫ", "ВИЗУАЛ", "СЕРВИСЫ", "ИНТЕРЕС"]}
+                        className="text-white"
+                      />
+                    </span>
+                  </h1>
+
+                  <p className="max-w-[560px] text-lg md:text-[20px] leading-snug text-white/70 font-light">
+                    От процессов и культуры — до AI.
+                  </p>
+
+                  <div className="flex flex-wrap items-center gap-3 mt-2">
+                    <Link
+                      href="https://t.me/egoradi"
+                      target="_blank"
+                      className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-[#A6FF00] text-black font-p95 text-[13px] md:text-sm tracking-[0.12em] uppercase hover:bg-white transition-colors no-underline"
+                    >
+                      <Send className="w-4 h-4" strokeWidth={2.2} />
+                      Написать в Telegram
+                    </Link>
+                    <Link
+                      href="#portfolio"
+                      className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 font-p95 text-[13px] md:text-sm tracking-[0.12em] uppercase hover:border-white/50 hover:text-white transition-colors no-underline"
+                    >
+                      Смотреть проекты
+                      <ArrowRight className="w-4 h-4" strokeWidth={2} />
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Нижний ряд якорей */}
+                <div className="flex items-end justify-between gap-4">
+                  <div className="font-p95 text-[10px] md:text-[11px] tracking-[0.22em] uppercase text-white/30 whitespace-nowrap">
+                    Москва
+                  </div>
+                  <div className="inline-flex items-center gap-2 font-p95 text-[10px] md:text-[11px] tracking-[0.22em] uppercase text-white/55 whitespace-nowrap">
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#A6FF00]" />
+                    </span>
+                    Открыт к найму и консалтингу
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* === TILE 2: Photo-плитка (col-span-4, row-span-2) === */}
+            <motion.div
+              variants={fadeUp}
+              className="col-span-12 md:col-span-4 md:row-span-2"
+            >
+              <div className="relative h-full min-h-[360px] md:min-h-[560px] rounded-3xl overflow-hidden border border-white/[0.1] bg-black">
+                {/* Particle sphere — замена фото */}
+                <ParticleSphere className="absolute inset-0 w-full h-full" />
+
+                {/* Мягкий радиальный виньет поверх, чтобы плитка не сливалась с фоном */}
+                <div
+                  className="pointer-events-none absolute inset-0"
+                  style={{
+                    background:
+                      "radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.55) 100%)",
+                  }}
+                />
+              </div>
+            </motion.div>
+
+            {/* === TILE 3: CX'24 ЯКОРЬ (col-span-6) — расширенная плитка-награда === */}
+            <motion.div
+              variants={fadeUp}
+              className="col-span-12 md:col-span-6"
+            >
+              <div className="relative h-full min-h-[200px] md:min-h-[240px] rounded-2xl border border-[#C9A66B]/30 bg-gradient-to-br from-[#C9A66B]/[0.08] via-[#C9A66B]/[0.03] to-transparent p-5 md:p-7 flex flex-col justify-between overflow-hidden group hover:border-[#C9A66B]/55 transition-colors">
+                {/* Верхняя мета-строка */}
+                <div className="flex items-start">
+                  <span className="inline-flex items-center gap-2.5 pl-3 pr-3.5 py-1.5 rounded-full border border-[#C9A66B]/30 bg-[#C9A66B]/[0.06]">
+                    <Trophy className="w-3.5 h-3.5 shrink-0 text-[#C9A66B]" strokeWidth={1.75} />
+                    <span className="font-p95 text-[10px] md:text-[11px] tracking-[0.2em] uppercase text-[#C9A66B]/90 leading-none">
+                      Награда · 2024
+                    </span>
+                  </span>
+                </div>
+
+                {/* Блок титула */}
+                <div>
+                  <div className="font-p95 text-[clamp(36px,4.8vw,64px)] uppercase tracking-tight text-white leading-[0.92]">
+                    CX&apos;24
+                  </div>
+                  <div className="text-[11px] md:text-[13px] tracking-[0.14em] uppercase text-white/75 mt-2">
+                    Customer Experience Awards · Winner
+                  </div>
+                  <div className="text-[11px] md:text-[12.5px] text-white/50 mt-1.5 leading-relaxed max-w-md">
+                    «Единое сервисное окно» — корпоративные Госуслуги для сотрудников Газпром&nbsp;Нефти.
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* === TILE 4: 100+ designers (col-span-3) === */}
+            <motion.div
+              variants={fadeUp}
+              className="col-span-6 md:col-span-3"
+            >
+              <div className="relative h-full min-h-[200px] md:min-h-[240px] rounded-2xl border border-white/[0.1] bg-white/[0.02] p-5 md:p-6 flex flex-col justify-between overflow-hidden">
+                <Users className="w-5 h-5 text-white/55" strokeWidth={1.75} />
+                <div>
+                  <div className="font-p95 text-[clamp(28px,3vw,40px)] uppercase tracking-tight text-white leading-none">
+                    100+
+                  </div>
+                  <div className="text-[10px] md:text-[11px] tracking-[0.14em] uppercase text-white/45 mt-1.5">
+                    дизайнеров под рукой
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* === TILE 5: 11М+ пользователей (col-span-3) === */}
+            <motion.div
+              variants={fadeUp}
+              className="col-span-6 md:col-span-3"
+            >
+              <div className="relative h-full min-h-[200px] md:min-h-[240px] rounded-2xl border border-[#A6FF00]/25 bg-[#A6FF00]/[0.06] p-5 md:p-6 flex flex-col justify-between overflow-hidden">
+                <Globe className="w-5 h-5 text-[#A6FF00]" strokeWidth={1.75} />
+                <div>
+                  <div className="font-p95 text-[clamp(28px,3vw,40px)] uppercase tracking-tight text-white leading-none">
+                    11М+
+                  </div>
+                  <div className="text-[10px] md:text-[11px] tracking-[0.14em] uppercase text-[#A6FF00]/80 mt-1.5">
+                    Пользователей · МТС B2C
+                  </div>
+                </div>
+              </div>
             </motion.div>
           </div>
-
-          {/* === RIGHT COLUMN — full-bleed photo === */}
-          <motion.div
-            variants={fadeUp}
-            className="md:col-span-5 relative mt-8 md:mt-0 md:ml-6 lg:ml-10 rounded-2xl overflow-hidden border border-white/[0.06] min-h-[320px] md:min-h-0"
-          >
-            <Image
-              src="/images/photos/photo-4.jpg"
-              alt="Егор Шугаев"
-              fill
-              className="object-cover"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-tr from-black/35 via-transparent to-transparent pointer-events-none" />
-          </motion.div>
         </motion.div>
+
       </section>
 
-      {/* ═══════ METRICS + COMPANIES — одна плотная секция ═══════ */}
+      {/* ═══════ EXPERIENCE + COMPANIES ═══════ */}
       <section className="relative z-[1] bg-black border-t border-white/[0.06] overflow-hidden">
         <motion.div
           initial="hidden"
           whileInView="show"
           viewport={viewport}
           variants={stagger}
-          className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pt-14 md:pt-20 pb-8 md:pb-12"
+          className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pt-14 md:pt-20 pb-6 md:pb-8"
         >
-          <motion.div variants={fadeUp} className="mb-8 md:mb-12">
-            <SectionLabel>ЦИФРЫ</SectionLabel>
+          <motion.div variants={fadeUp}>
+            <SectionLabel>ОПЫТ</SectionLabel>
             <h2 className="font-p95 text-[clamp(26px,3.8vw,52px)] uppercase mt-2 leading-[0.95] max-w-3xl">
-              9 лет в крупнейших бигтех-компаниях России<span className="text-[#A6FF00]">.</span>
+              9 лет в крупнейших бигтех-компаниях<span className="text-[#A6FF00]">.</span>
             </h2>
           </motion.div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 border-t border-white/[0.08]">
-            {[
-              { value: "11М+", label: "пользователей", ctx: "МТС B2C-экосистема" },
-              { value: "100+", label: "дизайнеров", ctx: "Газпром Нефть, 76 команд" },
-              { value: "×10", label: "рост транзакций", ctx: "МТС Cashback" },
-              { value: "CX'24", label: "CX Awards", ctx: "Газпром Нефть" },
-            ].map((s, i) => (
-              <motion.div
-                key={s.label}
-                variants={fadeUp}
-                className={`py-6 md:py-10 ${
-                  i > 0 ? "md:border-l border-white/[0.08]" : ""
-                } ${i === 1 ? "border-l md:border-l" : ""} ${
-                  i === 2 ? "border-t md:border-t-0" : ""
-                } ${i === 3 ? "border-t md:border-t-0 border-l" : ""} px-3 md:px-5`}
-              >
-                <div className="font-p95 text-[clamp(40px,6.5vw,88px)] leading-none text-white tracking-tight">
-                  {s.value}
-                </div>
-                <div className="mt-2 md:mt-3 text-[12px] md:text-sm tracking-[0.08em] uppercase text-white/65">
-                  {s.label}
-                </div>
-                <div className="text-[10px] md:text-[12px] tracking-[0.1em] uppercase text-white/40 mt-1">
-                  {s.ctx}
-                </div>
-              </motion.div>
-            ))}
-          </div>
         </motion.div>
 
-        {/* Marquee — пришит к метрикам без отдельной секции */}
-        <div
-          aria-label="Компании, в которых я работал"
-          className="relative z-[1] border-t border-white/[0.06] py-8 md:py-10 overflow-hidden"
-        >
-          <div className="flex items-center gap-4 md:gap-6">
-            <div className="flex-shrink-0 pl-5 md:pl-[6%] lg:pl-[10%] xl:pl-[14%] pr-4 md:pr-6">
-              <div className="inline-flex items-center gap-2 font-p95 text-[11px] md:text-[12px] tracking-[0.24em] uppercase text-white/45 whitespace-nowrap">
-                <span className="inline-block w-6 md:w-10 h-px bg-white/25" />
-                <span>Работал в</span>
-              </div>
-            </div>
-            <div className="relative flex-1 overflow-hidden">
+        {/* Marquee — bento-band card */}
+        <div className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pb-10 md:pb-14">
+          <div
+            aria-label="Компании, в которых я работал"
+            className="relative rounded-2xl border border-white/[0.08] bg-white/[0.015] py-6 md:py-8 overflow-hidden"
+          >
+            <div className="relative overflow-hidden">
               <div
                 aria-hidden
                 className="pointer-events-none absolute inset-y-0 left-0 w-16 md:w-24 z-10"
-                style={{ background: "linear-gradient(to right, rgba(0,0,0,1), rgba(0,0,0,0))" }}
+                style={{ background: "linear-gradient(to right, rgba(10,10,10,1), rgba(10,10,10,0))" }}
               />
               <div
                 aria-hidden
                 className="pointer-events-none absolute inset-y-0 right-0 w-16 md:w-24 z-10"
-                style={{ background: "linear-gradient(to left, rgba(0,0,0,1), rgba(0,0,0,0))" }}
+                style={{ background: "linear-gradient(to left, rgba(10,10,10,1), rgba(10,10,10,0))" }}
               />
               <div className="flex items-center whitespace-nowrap marquee">
                 {[0, 1].map((loopIdx) => (
@@ -600,18 +1067,11 @@ export default function Home() {
             </Link>
           </motion.div>
 
-          {/* Асимметричная бенто-сетка — 3 колонки, 3 ряда.
-              Row 1: [ FEATURED (2 cols, 2 rows tall) ] [ compact ]
-                                                        [ compact ]
-              Row 2: [ WIDE 2×1                             ]
-              Row 3: [ compact ] [ compact ] [ CTA tile ] */}
           <div className="grid md:grid-cols-3 gap-4 md:gap-5">
-            {/* Featured — занимает 2 колонки и 2 ряда на десктопе */}
             <motion.div variants={fadeUp} className="md:col-span-2 md:row-span-2">
               <ProjectCard project={workProjects[0]} index={0} featured />
             </motion.div>
 
-            {/* 2 вертикальных 1×1 справа от featured */}
             {workProjects[1] && (
               <motion.div variants={fadeUp}>
                 <ProjectCard project={workProjects[1]} index={1} />
@@ -623,14 +1083,12 @@ export default function Home() {
               </motion.div>
             )}
 
-            {/* Широкая 2×1 карта — разбивает ритм (colorblind.cc-style) */}
             {workProjects[3] && (
               <motion.div variants={fadeUp} className="md:col-span-3">
                 <ProjectCard project={workProjects[3]} index={3} wide />
               </motion.div>
             )}
 
-            {/* Финальный ряд: 1 проект + CTA-плитка */}
             {workProjects[4] && (
               <motion.div variants={fadeUp} className="md:col-span-2">
                 <ProjectCard project={workProjects[4]} index={4} wide />
@@ -658,7 +1116,7 @@ export default function Home() {
         </motion.div>
       </section>
 
-      {/* ═══════ SKILLS — stokt accordion-бенто ═══════ */}
+      {/* ═══════ SERVICES / EXPERTISE — 3-колоночный бенто по мотивам Stokt ═══════ */}
       <section
         id="skills"
         className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-20"
@@ -669,128 +1127,170 @@ export default function Home() {
           viewport={viewport}
           variants={stagger}
         >
-          <motion.div variants={fadeUp} className="mb-8 md:mb-10">
-            <SectionLabel>ЧТО УМЕЮ</SectionLabel>
-            <h2 className="font-p95 text-[clamp(28px,4.5vw,56px)] uppercase mt-2 leading-[0.95]">
-              Управление <span className="text-white/35">·</span> Продукт <span className="text-white/35">·</span> Ремесло<span className="text-[#A6FF00]">.</span>
-            </h2>
+          {/* Заголовок — meta + мощный слоган */}
+          <motion.div variants={fadeUp} className="mb-10 md:mb-14 max-w-4xl">
+            <SectionLabel>УСЛУГИ &amp; ЭКСПЕРТИЗА</SectionLabel>
           </motion.div>
-          <SkillsAccordion
-            panels={[
+
+          {/* 3 плитки side-by-side — статичный бенто */}
+          <div className="grid md:grid-cols-3 gap-3 md:gap-4">
+            {[
               {
                 key: "management",
+                index: "01",
                 label: "УПРАВЛЕНИЕ",
                 title: "Строю и масштабирую дизайн-функции",
                 Icon: Users,
                 accent: "#A6FF00",
                 body:
-                  "В МТС — 16 команд и 60+ дизайнеров в B2C-экосистеме. В Газпром Нефти — 76 команд, 42 лида, 100+ дизайнеров на единой дизайн-системе. Умею нанимать, выстраивать процессы и защищать бюджет перед топ-менеджментом.",
+                  "Собираю команды под задачу, выстраиваю процессы, культуру и дизайн-систему. Нанимаю на рост, развиваю лидов, защищаю бюджет. Уходя — оставляю функцию, которая продолжает расти без меня.",
                 items: [
                   "Design Management",
                   "Org Design · Hiring",
                   "Дизайн-процессы",
                   "OKR · Roadmap",
-                  "Работа с топ-менеджментом",
                   "Community · Employer Brand",
                 ],
               },
               {
                 key: "product",
+                index: "02",
                 label: "ПРОДУКТ",
-                title: "Делаю AI и B2C-продукты с фокусом на метриках",
+                title: "AI и B2C с фокусом на метрики",
                 Icon: Sparkles,
                 accent: "#C9A66B",
                 body:
-                  "AI Visioner в MWS AI — задавал AI-направление двум продуктам. До этого — 11М+ пользователей МТС B2C-экосистемы, ×10 рост транзакций в МТС Cashback, CX Award в Газпром Нефти. Понимаю что такое discovery, метрики и как измерить дизайн.",
+                  "Работаю на число. Discovery, гипотезы, CJM, A/B, research внутри процесса. Умею считать дизайн и доказывать его ценность продакт-менеджеру и C-левелу.",
                 items: [
                   "AI/ML продукты",
                   "B2C-экосистемы",
                   "Discovery · Research",
-                  "CJM · JTBD · Job Stories",
-                  "A/B-тесты · метрики",
-                  "Product Strategy",
+                  "CJM · JTBD",
+                  "A/B · Product Strategy",
                 ],
               },
               {
                 key: "craft",
+                index: "03",
                 label: "РЕМЕСЛО",
-                title: "Сам пишу код и дизайн-системы",
+                title: "Дизайн + код",
                 Icon: Code2,
                 accent: "#4FC3F7",
                 body:
-                  "Запустил open-source Consta (150 Figma WAU, 10K+ NPM), MWS AI UI Kit. Пишу на React/TypeScript/Python, делаю WebGL-эксперименты. Верю что дизайн-лид должен уметь в инженерию.",
+                  "Остаюсь в макетах и в IDE. React/TS/Python, WebGL, AI-инструменты. Поэтому понимаю, что реально сделать руками и сколько это стоит в человеко-неделях.",
                 items: [
                   "Figma · Design Systems",
-                  "Art Direction · Визуальный язык",
+                  "Art Direction",
                   "React · TypeScript",
                   "Python · Node.js",
                   "Three.js · WebGL · Shaders",
-                  "Claude · Cursor · v0",
                 ],
               },
-            ]}
-          />
+            ].map(({ key, index, label, title, Icon, accent, body, items }) => (
+              <motion.div
+                key={key}
+                variants={fadeUp}
+                className="group relative rounded-2xl border border-white/[0.08] bg-white/[0.015] hover:border-white/[0.2] transition-colors p-6 md:p-8 flex flex-col gap-6 min-h-[420px] md:min-h-[520px] overflow-hidden"
+              >
+                {/* Верх: index / icon / label */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <Icon
+                      className="w-5 h-5 md:w-6 md:h-6"
+                      style={{ color: accent }}
+                      strokeWidth={1.75}
+                    />
+                    <span
+                      className="font-p95 text-[10px] md:text-[11px] tracking-[0.22em] uppercase"
+                      style={{ color: `${accent}CC` }}
+                    >
+                      ( {label} )
+                    </span>
+                  </div>
+                  <span className="font-p95 text-[10px] md:text-[11px] tracking-[0.22em] uppercase text-white/30">
+                    {index} /
+                  </span>
+                </div>
+
+                {/* Центр: title + body */}
+                <div className="flex-1 flex flex-col justify-end">
+                  <h3 className="font-p95 text-[clamp(22px,2.4vw,32px)] uppercase leading-[1.02] text-white">
+                    {title}
+                  </h3>
+                  <p className="mt-3 md:mt-4 text-[13px] md:text-[14px] leading-relaxed text-white/60">
+                    {body}
+                  </p>
+                </div>
+
+                {/* Низ: items — горизонтальный список через · */}
+                <div className="pt-4 md:pt-5 border-t border-white/[0.06] text-[11px] md:text-[12px] tracking-[0.04em] text-white/45 leading-relaxed">
+                  {items.join(" · ")}
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </motion.div>
       </section>
 
-      {/* ═══════ PRINCIPLES — 4-up манифест ═══════ */}
+      {/* ═══════ PRINCIPLES — тёмный блок ═══════ */}
       <section className="relative z-[1] bg-black border-t border-white/[0.06] overflow-hidden">
         <motion.div
           initial="hidden"
           whileInView="show"
           viewport={viewport}
           variants={stagger}
-          className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-20"
+          className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-16 md:py-24"
         >
-          <motion.div variants={fadeUp} className="mb-8 md:mb-12">
+          <motion.div variants={fadeUp} className="mb-10 md:mb-14">
             <SectionLabel>ПРИНЦИПЫ</SectionLabel>
-            <h2 className="font-p95 text-[clamp(28px,5vw,64px)] uppercase mt-2 leading-[0.92] tracking-tight max-w-3xl">
-              <span className="text-white/40">как я</span>{" "}
-              <span className="text-white">работаю<span className="text-[#A6FF00]">.</span></span>
-            </h2>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 gap-px bg-white/[0.06]">
+          {/* Bento-grid: 01 — широкая карточка (col-span-2), 02/03 — обычные, 04 — широкая */}
+          <div className="grid md:grid-cols-2 gap-4 md:gap-5">
             {[
               {
                 n: "01",
                 title: "Дизайн должен считаться.",
                 body:
-                  "Если после релиза метрика не двинулась — я не считаю работу сделанной. Discovery, гипотезы, A/B, обратная связь с продуктом. CX Awards'24 получили за измеримое сокращение времени задач — не за визуал.",
+                  "Если после релиза метрика не двинулась — работа не сделана. Discovery, гипотезы, A/B, обратная связь с продуктом. Красиво — не критерий.",
+                wide: true,
               },
               {
                 n: "02",
                 title: "Инженерия важнее слайдов.",
                 body:
-                  "Лид, который не открывает DevTools, быстро теряет контакт с продуктом — и команда за ним. Сам пишу на React/TS/Python, делаю WebGL-эксперименты, дружу с AI-инструментами. Это ускоряет всех вокруг.",
+                  "Лид, который не открывает DevTools, быстро теряет контакт с продуктом, а за ним — и команда. Руки в коде держат ответственность за реальность.",
               },
               {
                 n: "03",
                 title: "Команда сильнее героя.",
                 body:
-                  "За 8+ лет управления усвоил: лучше 10 сильных людей без меня, чем один я на износе. Нанимаю на рост, даю зоны ответственности, не микроменеджу — и это правда работает.",
+                  "10 сильных людей без меня делают больше, чем я один на износе. Нанимаю на рост, даю зоны, не микроменеджу.",
               },
               {
                 n: "04",
                 title: "AI — не фича, это новая ось.",
                 body:
-                  "AI меняет не «один экран», а всю ось: как пользователь формулирует намерение, как мы проектируем failure-моды, что считается интерфейсом. В MWS AI задавал направление двум продуктам именно с этим в голове.",
+                  "AI меняет не «один экран», а всю ось: как пользователь формулирует намерение, как мы проектируем failure-моды, что вообще считается интерфейсом.",
+                wide: true,
               },
             ].map((p) => (
               <motion.div
                 key={p.n}
                 variants={fadeUp}
-                className="bg-black p-7 md:p-9 flex flex-col justify-between min-h-[220px] md:min-h-[260px]"
+                className={`rounded-2xl border border-white/[0.08] bg-white/[0.02] hover:border-white/[0.2] hover:bg-white/[0.04] transition-colors p-7 md:p-10 flex flex-col justify-between min-h-[240px] md:min-h-[280px] ${
+                  p.wide ? "md:col-span-2" : ""
+                }`}
               >
                 <div>
-                  <div className="font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-[#A6FF00]/85 mb-3">
+                  <div className="font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/45 mb-3">
                     {p.n} /
                   </div>
-                  <h3 className="font-p95 text-[clamp(20px,2.4vw,32px)] uppercase leading-[1.02] text-white mb-4">
+                  <h3 className="font-p95 text-[clamp(22px,3.2vw,44px)] uppercase leading-[0.98] text-white mb-4 max-w-2xl">
                     {p.title}
                   </h3>
                 </div>
-                <p className="text-sm md:text-[15px] text-white/60 leading-relaxed max-w-md">
+                <p className="text-sm md:text-[15px] text-white/60 leading-relaxed max-w-2xl">
                   {p.body}
                 </p>
               </motion.div>
@@ -799,7 +1299,7 @@ export default function Home() {
         </motion.div>
       </section>
 
-      {/* ═══════ ABOUT + CAREER — founder card + hover-list side-by-side ═══════ */}
+      {/* ═══════ ABOUT + CAREER — о себе + hover-list side-by-side ═══════ */}
       <section
         id="about"
         className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-20"
@@ -811,15 +1311,12 @@ export default function Home() {
           variants={stagger}
         >
           <motion.div variants={fadeUp} className="mb-8 md:mb-12">
-            <SectionLabel>КТО Я</SectionLabel>
-            <h2 className="font-p95 text-[clamp(32px,5vw,64px)] uppercase mt-2 leading-[0.92]">
-              ПРИВЕТ<span className="text-[#A6FF00]">.</span>
-            </h2>
+            <SectionLabel>О СЕБЕ</SectionLabel>
           </motion.div>
 
-          <div className="grid lg:grid-cols-[minmax(260px,340px)_1fr] gap-6 md:gap-10">
-            {/* Founder card — monochrome (без зелёного дуотона) */}
-            <motion.div variants={fadeUp} className="lg:sticky lg:top-24 self-start">
+          {/* Верхний ряд: фото (узкая колонка) + bio + chips + CTA рядом */}
+          <div className="grid lg:grid-cols-[minmax(260px,320px)_1fr] gap-6 md:gap-10 mb-12 md:mb-16">
+            <motion.div variants={fadeUp}>
               <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border border-white/[0.06]">
                 <Image
                   src="/images/photos/photo-3.jpg"
@@ -827,61 +1324,58 @@ export default function Home() {
                   fill
                   className="object-cover grayscale contrast-[1.05]"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
-                  <div className="font-p95 text-[10px] tracking-[0.22em] uppercase text-white/70">
-                    <span className="text-[#A6FF00]/70">[</span> FOUNDER <span className="text-[#A6FF00]/70">]</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-[9px] tracking-[0.2em] uppercase text-white/60">
-                    <span className="relative flex h-1.5 w-1.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#A6FF00]" />
-                    </span>
-                    Сейчас · МСК
-                  </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4 flex items-center gap-1.5 text-[9px] tracking-[0.2em] uppercase text-white/60">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#A6FF00]" />
+                  </span>
+                  Сейчас · МСК
                 </div>
               </div>
-
-              {/* Короткий bio под фото */}
-              <p className="mt-5 md:mt-6 text-sm md:text-[15px] text-white/70 leading-relaxed max-w-sm">
-                11 лет в дизайне, 9 — в бигтехе. Сейчас на свободном графике: менторю,
-                консультирую, преподаю прикладной ИИ в ВШЭ. Код пишу с ИИ — React,
-                Python, WebGL.
-              </p>
-
-              {/* Chips: «помимо основного» */}
-              <div className="mt-5 flex flex-wrap gap-1.5">
-                {[
-                  "ВШЭ · преподаватель ИИ",
-                  "CX Awards'24",
-                  "English fluent",
-                  "40+ менторинг-сессий",
-                ].map((c) => (
-                  <span
-                    key={c}
-                    className="text-[10px] md:text-[11px] tracking-[0.08em] uppercase px-2.5 py-1 rounded border border-white/[0.12] text-white/60"
-                  >
-                    {c}
-                  </span>
-                ))}
-              </div>
             </motion.div>
 
-            {/* Career hover-list */}
-            <motion.div variants={fadeUp}>
-              <div className="mb-4 flex items-center justify-between">
-                <SectionLabel>КАРЬЕРА</SectionLabel>
-                <span className="text-[10px] md:text-[11px] tracking-[0.15em] uppercase text-white/35 hidden md:inline">
-                  Наведи, чтобы раскрыть
-                </span>
+            <motion.div variants={fadeUp} className="flex flex-col">
+              {/* 3 параграфа — bio */}
+              <div className="space-y-4 md:space-y-5 max-w-2xl">
+                <p className="text-sm md:text-[15px] text-white/70 leading-relaxed">
+                  Пришёл в дизайн из агентств и&nbsp;остался в&nbsp;нём из-за простого: нравится соединять несочетаемое — людей, цифры и&nbsp;ремесло. Это оказалось рабочей профессией.
+                </p>
+                <p className="text-sm md:text-[15px] text-white/70 leading-relaxed">
+                  Сейчас мне интересна связка «дизайн + AI». Преподаю это в&nbsp;ВШЭ, экспериментирую сам, пишу код.
+                </p>
+                <p className="text-sm md:text-[15px] text-white/70 leading-relaxed">
+                  Работаю от задачи, а&nbsp;не от процесса. Участвую глубоко — от стратегии до&nbsp;ревью макетов. Верю, что хороший лид должен уметь и&nbsp;собрать команду, и&nbsp;открыть редактор кода.
+                </p>
               </div>
-              <CareerHoverList />
+
+              {/* CTA — Work with Egor, в стиле Stokt */}
+              <a
+                href="#contact"
+                className="mt-6 md:mt-7 inline-flex items-center gap-2 group self-start text-[13px] md:text-[14px] tracking-[0.14em] uppercase text-white hover:text-[#A6FF00] transition-colors"
+              >
+                <span className="font-p95">Работать вместе</span>
+                <span className="flex items-center justify-center w-7 h-7 rounded-full border border-white/20 group-hover:border-[#A6FF00]/60 group-hover:bg-[#A6FF00]/10 transition-colors">
+                  <ArrowRight className="w-3.5 h-3.5" strokeWidth={1.75} />
+                </span>
+              </a>
             </motion.div>
           </div>
+
+          {/* Карьера — отдельной строкой, на всю ширину */}
+          <motion.div variants={fadeUp} className="pt-8 md:pt-10 border-t border-white/[0.06]">
+            <div className="mb-4 flex items-center justify-between">
+              <SectionLabel>КАРЬЕРА</SectionLabel>
+              <span className="text-[10px] md:text-[11px] tracking-[0.15em] uppercase text-white/35 hidden md:inline">
+                Наведи, чтобы раскрыть
+              </span>
+            </div>
+            <CareerHoverList />
+          </motion.div>
         </motion.div>
       </section>
 
-      {/* ═══════ TESTIMONIALS — 2-up типографический заголовок ═══════ */}
+      {/* ═══════ TESTIMONIALS — с астериксом * (stokt) ═══════ */}
       <section className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-20">
         <motion.div
           initial="hidden"
@@ -889,22 +1383,16 @@ export default function Home() {
           viewport={viewport}
           variants={stagger}
         >
-          <motion.div variants={fadeUp} className="mb-8 md:mb-10">
+          {/* Центрированный заголовочный блок: ярлык → крупный хедлайн → астерикс-сноска */}
+          <motion.div variants={fadeUp} className="mb-14 md:mb-20 text-center">
             <SectionLabel>ОТЗЫВЫ</SectionLabel>
+            <h3 className="mt-5 md:mt-7 font-p95 text-[clamp(40px,8.5vw,128px)] leading-[0.9] uppercase tracking-tight text-white">
+              Не&nbsp;верьте мне на&nbsp;слово<Star />
+            </h3>
+            <p className="mt-5 md:mt-7 font-p95 text-[clamp(12px,1.15vw,15px)] tracking-[0.22em] uppercase text-[#A6FF00]">
+              *&nbsp;Спросите тех, кто со&nbsp;мной работал
+            </p>
           </motion.div>
-
-          <motion.h3
-            variants={fadeUp}
-            className="font-p95 text-[clamp(28px,5vw,64px)] leading-[0.92] uppercase tracking-tight mb-8 md:mb-12 max-w-4xl"
-          >
-            <span className="text-white/35">не верьте мне.</span>
-            <br />
-            <span className="text-white/35">читайте тех,</span>
-            <br />
-            <span className="text-white">
-              кто со мной работал<span className="text-[#A6FF00]">.</span>
-            </span>
-          </motion.h3>
 
           <motion.div variants={stagger} className="grid md:grid-cols-2 gap-4 md:gap-5">
             {[
@@ -978,10 +1466,8 @@ export default function Home() {
                       style={{ backgroundColor: t.accent }}
                     />
                     <div>
-                      <div className="inline-flex items-center gap-1.5 font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/75 mb-4">
-                        <span className="text-[#A6FF00]/80">[</span>
-                        <span>{t.label}</span>
-                        <span className="text-[#A6FF00]/80">]</span>
+                      <div className="inline-flex items-center font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/75 mb-4">
+                        {t.label}
                       </div>
                       <h3 className="font-p95 text-[clamp(20px,2.6vw,32px)] uppercase leading-[1] text-white mb-4 max-w-sm">
                         {t.title}
@@ -1002,122 +1488,170 @@ export default function Home() {
         </motion.div>
       </section>
 
-      {/* ═══════ TRANSITION «Если вы дочитали…» ═══════ */}
-      <section className="relative z-[1] bg-black border-t border-white/[0.06] overflow-hidden">
+      {/* ═══════ TOOLBOX — ряд инструментов ═══════ */}
+      <Toolbox />
+
+      {/* ═══════ FINAL CTA — мега-bento-тайл с самоиронией ═══════ */}
+      <section className="relative z-[1] bg-black border-t border-white/[0.06]">
+        <div className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-20">
+          <motion.div
+            initial="hidden"
+            whileInView="show"
+            viewport={viewport}
+            variants={stagger}
+            className="relative rounded-3xl border border-white/[0.1] bg-gradient-to-br from-[#0c0c0c] via-[#0a0a0a] to-[#080808] overflow-hidden p-8 md:p-14 lg:p-20"
+          >
+            {/* Мягкое свечение внутри карточки */}
+            <div
+              aria-hidden
+              className="absolute inset-0 pointer-events-none opacity-80"
+              style={{
+                background:
+                  "radial-gradient(ellipse 60% 40% at 50% 65%, rgba(166,255,0,0.12), transparent 65%), radial-gradient(ellipse 40% 30% at 85% 15%, rgba(201,166,107,0.14), transparent 70%)",
+              }}
+            />
+            <motion.div variants={fadeUp} className="relative mb-8 md:mb-10">
+              <SectionLabel>БЕЗ ЦЕРЕМОНИЙ</SectionLabel>
+            </motion.div>
+
+            <motion.h2
+              variants={fadeUp}
+              className="relative font-p95 text-[clamp(56px,13vw,200px)] leading-[0.85] uppercase tracking-tight max-w-[1400px]"
+            >
+              <span className="block text-white">ДАВАЙ</span>
+              <span className="block text-white">
+                ПО ДЕЛУ<span className="text-[#A6FF00]">.</span>{" "}
+                <span className="inline-block align-middle">🫡</span>
+              </span>
+            </motion.h2>
+
+            <motion.div
+              variants={fadeUp}
+              className="relative mt-10 md:mt-14 flex flex-wrap items-center gap-3"
+            >
+              <Link
+                href="https://t.me/egoradi"
+                target="_blank"
+                className="inline-flex items-center gap-2 px-7 py-4 md:px-8 md:py-5 rounded-full bg-[#A6FF00] text-black font-p95 text-sm md:text-[15px] tracking-[0.14em] uppercase hover:bg-white transition-colors no-underline"
+              >
+                <Send className="w-4 h-4 md:w-5 md:h-5" strokeWidth={2.2} />
+                Написать в Telegram
+              </Link>
+              <Link
+                href="#contacts"
+                className="inline-flex items-center gap-2 px-7 py-4 md:px-8 md:py-5 rounded-full border border-white/20 text-white/85 font-p95 text-sm md:text-[15px] tracking-[0.14em] uppercase hover:border-white/50 hover:text-white transition-colors no-underline"
+              >
+                Все каналы
+                <ArrowRight className="w-4 h-4" strokeWidth={2} />
+              </Link>
+            </motion.div>
+
+            <motion.p
+              variants={fadeUp}
+              className="relative mt-8 md:mt-10 text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-white/40 max-w-md"
+            >
+              Отвечаю быстро. Без питчей, без «созвонимся обсудить».
+              Пиши сразу, что нужно.
+            </motion.p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ═══════ CONTACTS — bento-грид из action-тайлов ═══════ */}
+      <section
+        id="contacts"
+        className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-20"
+      >
         <motion.div
           initial="hidden"
           whileInView="show"
           viewport={viewport}
           variants={stagger}
-          className="relative px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-20 md:py-32"
         >
-          <div
-            aria-hidden
-            className="absolute inset-0 pointer-events-none opacity-40"
-            style={{
-              background:
-                "radial-gradient(ellipse 60% 50% at 50% 50%, rgba(166,255,0,0.08), transparent 70%)",
-            }}
-          />
-
-          <motion.div variants={fadeUp} className="relative">
-            <SectionLabel>ПОГОВОРИМ</SectionLabel>
+          <motion.div variants={fadeUp} className="mb-8 md:mb-10">
+            <SectionLabel>КОНТАКТЫ</SectionLabel>
           </motion.div>
 
-          <motion.h2
-            variants={fadeUp}
-            className="relative font-p95 text-[clamp(44px,9vw,128px)] leading-[0.9] uppercase tracking-tight max-w-5xl mt-8 md:mt-10"
-          >
-            <span className="text-white/30">Если вы</span>
-            <br />
-            <span className="text-white/30">дочитали, то нам</span>
-            <br />
-            <span className="text-white">
-              пора поговорить<span className="text-[#A6FF00]">.</span>
-            </span>
-          </motion.h2>
+          {/* Bento 4×N: Telegram — широкая (col-span-2), Email/LI/GH/CV — 4 одинарных, Location — col-span-2, Accepting — col-span-2 */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            {/* 1. Telegram — главная широкая плитка */}
+            <motion.div variants={fadeUp} className="col-span-2 md:col-span-2 md:row-span-2">
+              <Link
+                href="https://t.me/egoradi"
+                target="_blank"
+                className="group no-underline block h-full"
+              >
+                <div className="relative h-full min-h-[180px] md:min-h-[260px] rounded-2xl overflow-hidden border border-[#A6FF00]/30 bg-[#A6FF00] hover:bg-[#B8FF33] transition-colors p-6 md:p-8 flex flex-col justify-between">
+                  <div className="flex items-start justify-between">
+                    <div className="font-p95 text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-black/60">
+                      TELEGRAM
+                    </div>
+                    <Send className="w-5 h-5 md:w-6 md:h-6 text-black" strokeWidth={2} />
+                  </div>
+                  <div>
+                    <div className="font-p95 text-[clamp(28px,4.5vw,56px)] uppercase leading-[0.95] text-black">
+                      @egoradi
+                    </div>
+                    <div className="mt-3 inline-flex items-center gap-2 text-[12px] md:text-[13px] tracking-[0.12em] uppercase text-black/70 group-hover:text-black transition-colors">
+                      Написать
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" strokeWidth={2.2} />
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
 
-          <motion.div variants={fadeUp} className="relative mt-10 md:mt-14">
-            <Link
-              href="#contacts"
-              className="inline-flex items-center gap-2 text-sm md:text-base tracking-[0.1em] uppercase text-white/60 hover:text-white transition-colors no-underline group"
-            >
-              Все мои каналы ниже
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" strokeWidth={2} />
-            </Link>
-          </motion.div>
-        </motion.div>
-      </section>
-
-      {/* ═══════ CONTACTS ═══════ */}
-      <SplitSection id="contacts" label="КОНТАКТЫ" heading="НАПИСАТЬ">
-        <div className="max-w-3xl">
-          {/* Primary CTA */}
-          <div className="mb-8 md:mb-10">
-            <Link
-              href="https://t.me/egoradi"
-              target="_blank"
-              className="group inline-flex items-center gap-3 bg-[#A6FF00] text-black hover:bg-[#B8FF33] rounded-lg px-6 py-4 md:py-5 text-base md:text-[17px] font-semibold transition-colors no-underline mb-5 md:mb-6"
-            >
-              <Send className="w-5 h-5" strokeWidth={2} />
-              <span>Написать в Telegram</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" strokeWidth={2} />
-            </Link>
-
-            <div className="flex flex-wrap gap-2.5">
-              {[
-                { label: "Email", href: "mailto:egor.outhead@gmail.com", Icon: Mail },
-                { label: "LinkedIn", href: "https://www.linkedin.com/in/egorshugaev/", Icon: LinkedinIcon },
-                { label: "GitHub", href: "https://github.com/outhead", Icon: GithubIcon },
-                { label: "CV", href: "/Egor_Shugaev_CV.pdf", Icon: FileDown },
-              ].map((link) => (
+            {/* 2-5. Email, LinkedIn, GitHub, CV — 4 равных мини-плитки */}
+            {[
+              { label: "Email", value: "egor.outhead@gmail.com", href: "mailto:egor.outhead@gmail.com", Icon: Mail },
+              { label: "LinkedIn", value: "egorshugaev", href: "https://www.linkedin.com/in/egorshugaev/", Icon: LinkedinIcon },
+              { label: "GitHub", value: "outhead", href: "https://github.com/outhead", Icon: GithubIcon },
+              { label: "CV / PDF", value: "Скачать", href: "/Egor_Shugaev_CV.pdf", Icon: FileDown },
+            ].map((link) => (
+              <motion.div key={link.label} variants={fadeUp}>
                 <Link
-                  key={link.label}
                   href={link.href}
                   target="_blank"
-                  className="inline-flex items-center gap-2 border border-white/10 hover:border-white/30 rounded-lg px-4 py-2.5 text-sm text-white/65 hover:text-white transition-colors no-underline"
+                  className="group no-underline block h-full"
                 >
-                  <link.Icon className="w-4 h-4" strokeWidth={1.75} />
-                  {link.label}
+                  <div className="relative h-full min-h-[120px] md:min-h-[130px] rounded-2xl overflow-hidden border border-white/[0.08] bg-white/[0.015] hover:border-white/[0.2] hover:bg-white/[0.035] transition-colors p-5 flex flex-col justify-between">
+                    <div className="flex items-start justify-between">
+                      <div className="font-p95 text-[10px] md:text-[11px] tracking-[0.2em] uppercase text-white/50">
+                        {link.label.toUpperCase()}
+                      </div>
+                      <link.Icon className="w-4 h-4 text-white/45 group-hover:text-white transition-colors" strokeWidth={1.75} />
+                    </div>
+                    <div className="font-p95 text-[13px] md:text-[14px] tracking-[0.05em] text-white/80 group-hover:text-white transition-colors leading-tight truncate">
+                      {link.value}
+                    </div>
+                  </div>
                 </Link>
-              ))}
-            </div>
-          </div>
+              </motion.div>
+            ))}
 
-          {/* Meta */}
-          <div className="pt-6 md:pt-8 border-t border-white/[0.06] space-y-1.5 mb-8 md:mb-10">
-            <p className="text-white/60 text-[15px] md:text-base">
-              <MapPin className="w-4 h-4 text-white/30 inline mr-2 align-text-top" strokeWidth={1.5} />
-              Москва · гибрид / удалёнка
-            </p>
-            <p className="text-[11px] tracking-[0.1em] uppercase text-white/35">
-              Обычно отвечаю в течение нескольких часов
-            </p>
+            {/* 6. Location — широкая плитка с полусферическим глобусом */}
+            <motion.div variants={fadeUp} className="col-span-2 md:col-span-4">
+              <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0a0a0a] min-h-[360px] md:min-h-[480px]">
+                {/* Текст — по центру сверху */}
+                <div className="relative z-[2] flex flex-col items-center gap-3 pt-10 md:pt-14 px-6 text-center">
+                  <h4 className="font-p95 text-[clamp(22px,2.8vw,36px)] uppercase tracking-[0.02em] text-white">
+                    Москва, Россия
+                  </h4>
+                  <div className="inline-flex items-center gap-2.5 font-p95 text-[11px] md:text-[12px] tracking-[0.22em] uppercase text-white/55">
+                    <span className="relative inline-flex items-center justify-center w-3 h-3">
+                      <span className="absolute inset-0 rounded-full bg-[#A6FF00]/30 animate-ping" />
+                      <span className="relative w-2 h-2 rounded-full bg-[#A6FF00] shadow-[0_0_10px_#A6FF00]" />
+                    </span>
+                    Открыт к работе по всему миру
+                  </div>
+                </div>
+                {/* Дотовый глобус — выходит снизу */}
+                <DotGlobe />
+              </div>
+            </motion.div>
           </div>
-
-          {/* Engagement models */}
-          <div className="pt-6 md:pt-8 border-t border-white/[0.06]">
-            <div className="font-p95 text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-white/45 mb-4">
-              Беру на
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {[
-                "Advisory-борды",
-                "Part-time дизайн-директор · 2–4 мес",
-                "Консалтинг-проекты",
-                "Менторинг 1:1",
-              ].map((c) => (
-                <span
-                  key={c}
-                  className="text-[11px] md:text-[12px] tracking-[0.08em] uppercase px-3 py-1.5 rounded border border-white/[0.08] text-white/65"
-                >
-                  {c}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </SplitSection>
+        </motion.div>
+      </section>
     </>
   );
 }
