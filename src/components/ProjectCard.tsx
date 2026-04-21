@@ -8,20 +8,21 @@ import { Project } from "@/data/projects";
 
 interface ProjectCardProps {
   project: Project;
-  index: number;
-  /** Крупная горизонтальная карточка (2-строчная высота в сетке). */
+  /** index больше не отображается — оставлен в пропсах для совместимости с page.tsx */
+  index?: number;
+  /** Крупная карточка (featured). */
   featured?: boolean;
-  /** Широкая 2×1-карточка, разбивающая ритм сетки (colorblind.cc-style). */
+  /** Широкая 2×1-карточка, разбивающая ритм сетки. */
   wide?: boolean;
 }
 
 /**
  * Media — автоматически выбирает видео или картинку.
- * Видео играет автоплеем без звука, картинка затемнена, на hover — просветляется.
+ * Fill-карточки stokt-style: обложка занимает всю карту без сильного оверлея.
  */
 function ProjectMedia({
   project,
-  hoverScale = "group-hover:scale-[1.04]",
+  hoverScale = "group-hover:scale-[1.03]",
 }: {
   project: Project;
   hoverScale?: string;
@@ -36,7 +37,7 @@ function ProjectMedia({
         loop
         playsInline
         preload="metadata"
-        className={`absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-90 transition-all duration-700 ${hoverScale}`}
+        className={`absolute inset-0 w-full h-full object-cover transition-transform duration-700 ${hoverScale}`}
       />
     );
   }
@@ -58,18 +59,91 @@ function ProjectMedia({
       alt=""
       aria-hidden
       fill
-      className={`object-cover opacity-45 group-hover:opacity-70 transition-all duration-700 ${hoverScale}`}
+      className={`object-cover transition-transform duration-700 ${hoverScale}`}
     />
+  );
+}
+
+/** Маленький chip — stokt-style pill под title. */
+function TagChip({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center px-2.5 py-1 rounded-full border border-white/15 bg-white/[0.04] text-[11px] md:text-[12px] tracking-[0.04em] text-white/80 leading-none backdrop-blur-sm">
+      {children}
+    </span>
+  );
+}
+
+/** Metric chip — компактный акцент с цифрой (если есть). */
+function MetricChip({
+  value,
+  label,
+}: {
+  value: string;
+  label?: string;
+}) {
+  return (
+    <span className="inline-flex items-baseline gap-1.5 px-2.5 py-1 rounded-full bg-[#A6FF00]/10 border border-[#A6FF00]/25 text-[#A6FF00] leading-none">
+      <span className="font-p95 text-[13px] md:text-[14px] tracking-tight">{value}</span>
+      {label && (
+        <span className="text-[10px] md:text-[11px] tracking-[0.08em] uppercase text-[#A6FF00]/75">
+          {label}
+        </span>
+      )}
+    </span>
   );
 }
 
 export default function ProjectCard({
   project,
-  index,
   featured = false,
   wide = false,
 }: ProjectCardProps) {
-  // === FEATURED — крупная hero-карточка ===
+  // Hover-arrow в top-right (как у Stokt)
+  const HoverArrow = (
+    <div className="absolute top-4 right-4 md:top-5 md:right-5 w-9 h-9 md:w-10 md:h-10 rounded-full border border-white/20 flex items-center justify-center bg-black/30 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0 z-[2]">
+      <ArrowUpRight className="w-4 h-4 text-white/90" strokeWidth={2} />
+    </div>
+  );
+
+  // Bottom-content: company bracket-label, title, tag-chips + metric
+  const BottomContent = (
+    <div
+      className={`absolute bottom-0 left-0 right-0 flex flex-col gap-3 md:gap-4 z-[2] ${
+        featured ? "p-6 md:p-8 lg:p-10" : wide ? "p-6 md:p-8" : "p-5 md:p-6"
+      }`}
+    >
+      <div className="font-p95 text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-white/55">
+        {project.company}
+      </div>
+      <h3
+        className={`font-p95 uppercase leading-[0.95] text-white ${
+          featured
+            ? "text-[clamp(28px,3.4vw,48px)] max-w-2xl"
+            : wide
+              ? "text-[clamp(24px,2.8vw,40px)] max-w-xl"
+              : "text-[clamp(22px,2.4vw,32px)] max-w-[90%]"
+        }`}
+      >
+        {project.title}
+      </h3>
+
+      <div className="flex flex-wrap items-center gap-1.5 md:gap-2 mt-0.5">
+        {project.metric && (
+          <MetricChip value={project.metric} label={project.metricLabel} />
+        )}
+        {project.tags.slice(0, featured ? 4 : wide ? 3 : 2).map((t) => (
+          <TagChip key={t}>{t}</TagChip>
+        ))}
+      </div>
+    </div>
+  );
+
+  // Subtle bottom floor — достаточный для читаемости без пересвета
+  const GradientFloor = (
+    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent pointer-events-none z-[1]" />
+  );
+
+  // === FEATURED — крупная hero-карточка (2×2 в сетке) ===
   if (featured) {
     return (
       <Link href={`/cases/${project.slug}`} className="no-underline group h-full block">
@@ -83,48 +157,16 @@ export default function ProjectCard({
             style={{ background: project.coverColor }}
           >
             <ProjectMedia project={project} hoverScale="group-hover:scale-[1.03]" />
-
-            {/* Gradient floor для читаемости */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-black/15" />
-
-            {/* Index — top-left */}
-            <div className="absolute top-5 left-5 md:top-6 md:left-6 font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-white/55">
-              {String(index + 1).padStart(2, "0")}
-            </div>
-
-            {/* External arrow — top-right */}
-            <div className="absolute top-5 right-5 md:top-6 md:right-6 w-9 h-9 md:w-10 md:h-10 rounded-full border border-white/15 flex items-center justify-center bg-black/40 backdrop-blur-sm opacity-70 group-hover:opacity-100 group-hover:border-white/40 transition-all duration-300">
-              <ArrowUpRight className="w-4 h-4 text-white/80" strokeWidth={2} />
-            </div>
-
-            {/* Bottom content */}
-            <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 lg:p-10 flex items-end justify-between gap-6">
-              <div>
-                <div className="font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-white/55 mb-2">
-                  {project.company}
-                </div>
-                <h3 className="font-p95 text-[clamp(28px,4vw,56px)] uppercase leading-[0.95] text-white max-w-2xl">
-                  {project.title}
-                </h3>
-              </div>
-              {project.metric && (
-                <div className="text-right shrink-0 hidden sm:block">
-                  <div className="font-p95 text-[clamp(32px,4.5vw,64px)] leading-none text-white/95">
-                    {project.metric}
-                  </div>
-                  <div className="text-[11px] md:text-[12px] tracking-[0.15em] uppercase text-white/45 mt-1.5">
-                    {project.metricLabel}
-                  </div>
-                </div>
-              )}
-            </div>
+            {GradientFloor}
+            {HoverArrow}
+            {BottomContent}
           </div>
         </motion.article>
       </Link>
     );
   }
 
-  // === WIDE — 2×1 акцент-карта (разбивает ритм grid'а) ===
+  // === WIDE — 2×1 акцент-карта ===
   if (wide) {
     return (
       <Link href={`/cases/${project.slug}`} className="no-underline group h-full block">
@@ -134,43 +176,13 @@ export default function ProjectCard({
           className="relative rounded-2xl overflow-hidden bg-[#0a0a0a] border border-white/[0.06] group-hover:border-white/20 transition-colors duration-300 h-full"
         >
           <div
-            className="relative h-full min-h-[280px] md:min-h-[340px] overflow-hidden"
+            className="relative h-full min-h-[280px] md:min-h-[360px] overflow-hidden"
             style={{ background: project.coverColor }}
           >
             <ProjectMedia project={project} hoverScale="group-hover:scale-[1.04]" />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/45 to-transparent md:via-black/30" />
-
-            {/* Index */}
-            <div className="absolute top-5 left-5 md:top-6 md:left-6 font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-white/55">
-              {String(index + 1).padStart(2, "0")}
-            </div>
-
-            {/* Arrow */}
-            <div className="absolute top-5 right-5 md:top-6 md:right-6 w-9 h-9 md:w-10 md:h-10 rounded-full border border-white/15 flex items-center justify-center bg-black/40 backdrop-blur-sm opacity-70 group-hover:opacity-100 group-hover:border-white/40 transition-all duration-300">
-              <ArrowUpRight className="w-4 h-4 text-white/80" strokeWidth={2} />
-            </div>
-
-            {/* Content — слева (как colorblind wide card) */}
-            <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 lg:p-10 flex flex-col md:flex-row md:items-end md:justify-between gap-4 md:gap-6">
-              <div className="max-w-xl">
-                <div className="font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-white/55 mb-2">
-                  {project.company}
-                </div>
-                <h3 className="font-p95 text-[clamp(24px,3.2vw,44px)] uppercase leading-[0.95] text-white">
-                  {project.title}
-                </h3>
-              </div>
-              {project.metric && (
-                <div className="text-right shrink-0">
-                  <div className="font-p95 text-[clamp(24px,3.2vw,44px)] leading-none text-white/90">
-                    {project.metric}
-                  </div>
-                  <div className="text-[11px] md:text-[12px] tracking-[0.15em] uppercase text-white/45 mt-1.5">
-                    {project.metricLabel}
-                  </div>
-                </div>
-              )}
-            </div>
+            {GradientFloor}
+            {HoverArrow}
+            {BottomContent}
           </div>
         </motion.article>
       </Link>
@@ -186,40 +198,13 @@ export default function ProjectCard({
         className="relative rounded-2xl overflow-hidden bg-[#0a0a0a] border border-white/[0.06] group-hover:border-white/20 h-full transition-colors duration-300"
       >
         <div
-          className="relative h-full min-h-[240px] md:min-h-[300px] overflow-hidden"
+          className="relative h-full min-h-[240px] md:min-h-[320px] overflow-hidden"
           style={{ background: project.coverColor }}
         >
           <ProjectMedia project={project} />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/55 to-black/20" />
-
-          {/* Index */}
-          <div className="absolute top-4 left-4 font-p95 text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-white/50">
-            {String(index + 1).padStart(2, "0")}
-          </div>
-
-          {/* Metric — top-right, minimal */}
-          {project.metric && (
-            <div className="absolute top-4 right-4 text-right max-w-[130px]">
-              <div className="font-p95 text-base md:text-lg text-white/55 leading-none">
-                {project.metric}
-              </div>
-              {project.metricLabel && (
-                <div className="text-[9px] md:text-[10px] tracking-[0.1em] uppercase text-white/35 mt-1 leading-tight">
-                  {project.metricLabel}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Bottom — company + title */}
-          <div className="absolute bottom-0 left-0 right-0 p-5 md:p-6">
-            <div className="font-p95 text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-white/50 mb-2">
-              {project.company}
-            </div>
-            <h3 className="font-p95 text-[clamp(22px,2.4vw,32px)] uppercase leading-[0.95] text-white max-w-[85%]">
-              {project.title}
-            </h3>
-          </div>
+          {GradientFloor}
+          {HoverArrow}
+          {BottomContent}
         </div>
       </motion.article>
     </Link>

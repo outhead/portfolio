@@ -392,69 +392,120 @@ function SplitSection({
 export default function Home() {
   return (
     <>
-      {/* ═══════ HERO — компакт 60vh ═══════ */}
-      <section className="relative min-h-[60vh] md:min-h-[62vh] flex flex-col justify-end overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <Image
-            src="/images/photos/photo-4.jpg"
-            alt="Егор Шугаев выступает на конференции"
-            fill
-            className="object-cover opacity-40"
-            priority
-          />
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/55 to-black z-[1]" />
-
+      {/* ═══════ HERO — stokt-style asymmetric 2-col ═══════ */}
+      <section className="relative min-h-[88vh] md:min-h-[92vh] overflow-hidden bg-black">
         <motion.div
           initial="hidden"
           animate="show"
           variants={stagger}
-          className="relative z-[5] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] w-full pt-24 md:pt-28 pb-10 md:pb-14"
+          className="relative z-[2] grid grid-cols-1 md:grid-cols-12 min-h-[88vh] md:min-h-[92vh] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pt-24 md:pt-28 pb-10 md:pb-12"
         >
-          <motion.h1
-            variants={fadeUp}
-            className="font-p95 text-[clamp(56px,10vw,140px)] leading-[0.92] uppercase tracking-tight"
-          >
-            <span className="text-white">ЕГОР</span>
-            <br />
-            <span className="text-white">ШУГАЕВ</span>
-            <span className="text-[#A6FF00]">.</span>
-          </motion.h1>
+          {/* === LEFT COLUMN — content === */}
+          <div className="md:col-span-5 flex flex-col justify-between gap-10 md:gap-12">
+            <div className="flex flex-col gap-7 md:gap-9">
+              {/* bracket-label with arrow */}
+              <motion.div
+                variants={fadeUp}
+                className="inline-flex items-center gap-2 font-p95 text-[12px] md:text-[13px] tracking-[0.22em] uppercase text-white/70"
+              >
+                <span className="text-[#A6FF00]/80">[</span>
+                <span>Дизайн-директор · ментор</span>
+                <span className="text-[#A6FF00]/80">]</span>
+                <ArrowRight className="w-3.5 h-3.5 text-[#A6FF00]/80" strokeWidth={2} />
+              </motion.div>
 
-          <motion.p
-            variants={fadeUp}
-            className="mt-5 md:mt-6 max-w-2xl text-base md:text-xl leading-snug text-white/80 font-light"
-          >
-            В МТС и Газпром Нефти строил дизайн-функции, в Ozon — дизайн-комьюнити, в&nbsp;MWS AI — AI-направление. Сейчас — менторинг, консалтинг и независимые проекты.
-          </motion.p>
+              {/* compact headline — 2 lines */}
+              <motion.h1
+                variants={fadeUp}
+                className="font-p95 text-[clamp(44px,6.4vw,92px)] leading-[0.92] uppercase tracking-tight"
+              >
+                <span className="text-white">ЕГОР</span>
+                <br />
+                <span className="text-white">ШУГАЕВ</span>
+                <span className="text-[#A6FF00]">.</span>
+              </motion.h1>
 
-          {/* Статус — одной строкой */}
+              {/* subtitle */}
+              <motion.p
+                variants={fadeUp}
+                className="max-w-[520px] text-base md:text-[17px] leading-snug text-white/75 font-light"
+              >
+                В МТС и Газпром Нефти строил дизайн-функции, в Ozon — дизайн-комьюнити,
+                в&nbsp;MWS&nbsp;AI — AI-направление. Сейчас — менторинг, консалтинг
+                и независимые проекты.
+              </motion.p>
+
+              {/* 2 CTAs — primary green, secondary outline */}
+              <motion.div
+                variants={fadeUp}
+                className="flex flex-wrap items-center gap-3 mt-1"
+              >
+                <Link
+                  href="https://t.me/egoradi"
+                  target="_blank"
+                  className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-[#A6FF00] text-black font-p95 text-[12px] md:text-[13px] tracking-[0.12em] uppercase hover:bg-white transition-colors no-underline"
+                >
+                  <Send className="w-4 h-4" strokeWidth={2.2} />
+                  Написать в Telegram
+                </Link>
+                <Link
+                  href="#portfolio"
+                  className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-white/20 text-white/85 font-p95 text-[12px] md:text-[13px] tracking-[0.12em] uppercase hover:border-white/50 hover:text-white transition-colors no-underline"
+                >
+                  Смотреть проекты
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" strokeWidth={2} />
+                </Link>
+              </motion.div>
+            </div>
+
+            {/* status-line at bottom */}
+            <motion.div
+              variants={fadeUp}
+              className="flex flex-wrap items-center gap-x-3 gap-y-2 pt-6 md:pt-0 border-t md:border-t-0 border-white/[0.08]"
+            >
+              <span className="inline-flex items-center gap-2 font-p95 text-[11px] md:text-[12px] tracking-[0.22em] uppercase text-white/65">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#A6FF00]" />
+                </span>
+                Сейчас
+              </span>
+              <span className="text-[13px] md:text-sm text-white/80 font-medium leading-tight">
+                Свободный график · Консультирую · Менторю
+              </span>
+              <span className="hidden md:inline-block h-3 w-px bg-white/15" />
+              <span className="text-[11px] md:text-[12px] tracking-[0.14em] uppercase text-white/45">
+                МСК · гибрид / удалёнка
+              </span>
+            </motion.div>
+          </div>
+
+          {/* === RIGHT COLUMN — full-bleed photo === */}
           <motion.div
             variants={fadeUp}
-            className="mt-6 md:mt-8 flex flex-wrap items-center gap-x-4 gap-y-2"
+            className="md:col-span-7 relative mt-8 md:mt-0 md:ml-6 lg:ml-10 rounded-2xl overflow-hidden border border-white/[0.06] min-h-[320px] md:min-h-0"
           >
-            <span className="inline-flex items-center gap-2 font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-white/65">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#A6FF00]" />
+            <Image
+              src="/images/photos/photo-4.jpg"
+              alt="Егор Шугаев"
+              fill
+              className="object-cover"
+              priority
+            />
+            {/* subtle vignette — помогает оторвать от фона и даёт глубину */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-black/40 via-transparent to-transparent pointer-events-none" />
+            {/* corner meta — stokt-like */}
+            <div className="absolute top-4 left-4 md:top-5 md:left-5 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/45 backdrop-blur-sm border border-white/12">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#A6FF00]" />
+              <span className="font-p95 text-[10px] md:text-[11px] tracking-[0.2em] uppercase text-white/75">
+                Портфолио · 2017–2026
               </span>
-              Сейчас
-            </span>
-            <span className="text-sm md:text-lg text-white/80 font-medium leading-tight">
-              Свободный график · Консультирую · Менторю
-            </span>
-            <span className="hidden md:inline-block h-4 w-px bg-white/15" />
-            <span className="text-[11px] md:text-[12px] tracking-[0.12em] uppercase text-white/45">
-              МСК · гибрид / удалёнка
-            </span>
-            <Link
-              href="https://t.me/egoradi"
-              target="_blank"
-              className="inline-flex items-center gap-1.5 text-[11px] md:text-[12px] tracking-[0.1em] uppercase text-[#A6FF00]/90 hover:text-[#A6FF00] transition-colors no-underline"
-            >
-              <Send className="w-3.5 h-3.5" strokeWidth={2} />
-              Telegram
-            </Link>
+            </div>
+            <div className="absolute bottom-4 right-4 md:bottom-5 md:right-5 text-right">
+              <div className="font-p95 text-[10px] md:text-[11px] tracking-[0.22em] uppercase text-white/55">
+                ↓ Скролл
+              </div>
+            </div>
           </motion.div>
         </motion.div>
       </section>
