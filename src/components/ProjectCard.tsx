@@ -112,8 +112,15 @@ export default function ProjectCard({ project, index, featured = false }: Projec
 
           {/* Metric — top-right, minimal */}
           {project.metric && (
-            <div className="absolute top-4 right-4 font-p95 text-xl md:text-2xl text-white/80 leading-none">
-              {project.metric}
+            <div className="absolute top-4 right-4 text-right max-w-[150px]">
+              <div className="font-p95 text-xl md:text-2xl text-white/85 leading-none">
+                {project.metric}
+              </div>
+              {project.metricLabel && (
+                <div className="text-[9px] md:text-[10px] tracking-[0.1em] uppercase text-white/45 mt-1.5 leading-tight">
+                  {project.metricLabel}
+                </div>
+              )}
             </div>
           )}
 

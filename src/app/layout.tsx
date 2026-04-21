@@ -5,9 +5,9 @@ import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://portfolio-egors-projects-baaaa1ca.vercel.app"),
-  title: "Егор Шугаев — Дизайн-директор · Fractional CDO · Ментор",
+  title: "Егор Шугаев — Дизайн-директор · Консультант · Ментор",
   description:
-    "11 лет в дизайне, 9 — в Big Tech России: МТС (Art Director B2C и Design Director), Ozon (Community Lead), Газпром Нефть (Head of Design), MWS AI (AI Visioner). 11М+ пользователей, 100+ дизайнеров, CX Award 2024. Сейчас — Fractional CDO, advisory, менторинг.",
+    "11 лет в дизайне, 9 — в бигтехе России: МТС (Art Director B2C и Design Director), Ozon (Community Lead), Газпром Нефть (Head of Design), MWS AI (AI Visioner). 11М+ пользователей, 100+ дизайнеров, CX Award 2024. Сейчас — консультирую, advisory, менторинг.",
   keywords: [
     "дизайн-директор",
     "head of design",
@@ -29,9 +29,9 @@ export const metadata: Metadata = {
   authors: [{ name: "Егор Шугаев", url: "https://portfolio-egors-projects-baaaa1ca.vercel.app" }],
   robots: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
   openGraph: {
-    title: "Егор Шугаев — Дизайн-директор · Fractional CDO · Ментор",
+    title: "Егор Шугаев — Дизайн-директор · Консультант · Ментор",
     description:
-      "11 лет в дизайне, 9 — в Big Tech: МТС, Ozon, Газпром Нефть, MWS AI. 11М+ пользователей, 100+ дизайнеров, CX Award 2024.",
+      "11 лет в дизайне, 9 — в бигтехе: МТС, Ozon, Газпром Нефть, MWS AI. 11М+ пользователей, 100+ дизайнеров, CX Award 2024.",
     type: "website",
     locale: "ru_RU",
     url: "https://portfolio-egors-projects-baaaa1ca.vercel.app",
@@ -47,8 +47,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Егор Шугаев — Дизайн-директор · Fractional CDO · Ментор",
-    description: "11 лет в дизайне, 9 — в Big Tech. Сейчас — Fractional CDO, advisory, менторинг.",
+    title: "Егор Шугаев — Дизайн-директор · Консультант · Ментор",
+    description: "11 лет в дизайне, 9 — в бигтехе. Сейчас — консультирую, advisory, менторинг.",
     images: ["/og-image.png"],
   },
 };

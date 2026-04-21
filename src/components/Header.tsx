@@ -127,12 +127,12 @@ export default function Header() {
             <FileDown className="w-3 h-3" strokeWidth={2} />
             CV
           </Link>
-          <span className="inline-flex items-center gap-1.5 text-[9px] tracking-[0.12em] uppercase text-[#A6FF00]/80">
+          <span className="inline-flex items-center gap-1.5 text-[9px] tracking-[0.12em] uppercase text-white/55">
             <span className="relative flex h-1.5 w-1.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#A6FF00]" />
             </span>
-            Open to work
+            Открыт к офферам
           </span>
         </div>
 

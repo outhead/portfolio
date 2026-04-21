@@ -259,7 +259,8 @@ export default function Home() {
           >
             <span className="text-white">ЕГОР</span>
             <br />
-            <span className="gradient-text">ШУГАЕВ</span>
+            <span className="text-white">ШУГАЕВ</span>
+            <span className="text-[#A6FF00]">.</span>
           </motion.h1>
 
           <motion.p
@@ -274,15 +275,15 @@ export default function Home() {
             variants={fadeUp}
             className="mt-7 md:mt-9 inline-flex flex-wrap items-center gap-x-3 gap-y-2"
           >
-            <span className="inline-flex items-center gap-2 font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-[#A6FF00]/90">
+            <span className="inline-flex items-center gap-2 font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/65">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[#A6FF00]" />
               </span>
-              NOW
+              Сейчас
             </span>
             <span className="text-base md:text-xl text-white/85 font-medium leading-tight">
-              Свободный график · Fractional CDO · Ментор
+              Свободный график · Консультирую · Менторю
             </span>
           </motion.div>
 
@@ -305,21 +306,7 @@ export default function Home() {
           </motion.div>
         </motion.div>
 
-        {/* Scroll indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.5, duration: 1 }}
-          className="relative z-[5] flex justify-center pb-10 md:pb-14 pt-10 md:pt-16"
-        >
-          <motion.div
-            animate={{ y: [0, 6, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            className="w-5 h-8 rounded-full border border-white/15 flex justify-center pt-1.5"
-          >
-            <div className="w-0.5 h-2 rounded-full bg-white/30" />
-          </motion.div>
-        </motion.div>
+        <div className="pb-10 md:pb-14" />
       </section>
 
       {/* ===== METRICS — отдельная крупная секция с гигантскими числами ===== */}
@@ -338,7 +325,7 @@ export default function Home() {
               <span className="text-[#A6FF00]/80">]</span>
             </div>
             <h2 className="font-p95 text-[clamp(32px,5vw,64px)] uppercase mt-3 leading-[0.95] max-w-3xl">
-              11 лет в дизайне, 9 — в крупнейших Big&nbsp;Tech России<span className="text-[#A6FF00]">.</span>
+              9 лет опыта в крупнейших бигтех-компаниях России<span className="text-[#A6FF00]">.</span>
             </h2>
           </motion.div>
 
@@ -515,31 +502,27 @@ export default function Home() {
                 <div className="font-p95 text-[10px] tracking-[0.22em] uppercase text-white/70">
                   <span className="text-[#A6FF00]/70">[</span> FOUNDER <span className="text-[#A6FF00]/70">]</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-[9px] tracking-[0.2em] uppercase text-[#A6FF00]/80">
+                <div className="flex items-center gap-1.5 text-[9px] tracking-[0.2em] uppercase text-white/60">
                   <span className="relative flex h-1.5 w-1.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
                     <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#A6FF00]" />
                   </span>
-                  NOW · МСК
+                  Сейчас · МСК
                 </div>
               </div>
             </div>
 
             {/* Right column — name, bio, stats */}
             <div className="pt-2">
-              <h3 className="font-p95 text-[clamp(32px,5vw,72px)] leading-[0.92] uppercase tracking-tight text-white mb-5 md:mb-7">
-                Егор<br />Шугаев<span className="text-[#A6FF00]">.</span>
-              </h3>
-
               <div className="space-y-4 md:space-y-5 text-white/75 leading-relaxed text-base md:text-lg mb-6 md:mb-8">
                 <p>
-                  11 лет в дизайне, 9 — в Big Tech. В МТС — Art Director B2C-экосистемы: 16 команд, 60+ дизайнеров, 11М+ пользователей. В Ozon — Community Lead: канал с 0 до 17К подписчиков, −60% к оттоку на найме.
+                  11 лет в дизайне, 9 — в бигтехе. В МТС — Art Director B2C-экосистемы: 16 команд, 60+ дизайнеров, 11М+ пользователей. В Ozon — Community Lead: канал с 0 до 17К подписчиков, −60% к оттоку на найме.
                 </p>
                 <p>
                   В Газпром Нефти — Head of Design: 76 команд, 42 лида, 100+ дизайнеров, CX Award&rsquo;24. В MWS AI — AI Visioner: задавал AI-направление двум продуктам дивизиона.
                 </p>
                 <p>
-                  Сейчас на свободном графике: менторю, консультирую, преподаю прикладной ИИ в ВШЭ. Пишу код — React, Python, WebGL.
+                  Сейчас на свободном графике: менторю, консультирую, преподаю прикладной ИИ в ВШЭ. Код пишу с ИИ — React, Python, WebGL.
                 </p>
               </div>
             </div>
@@ -547,35 +530,25 @@ export default function Home() {
 
           {/* Stats row + credentials — full width under founder grid */}
           <div className="mb-14 md:mb-20">
-            <div className="grid grid-cols-3 gap-x-6 md:gap-x-10 border-t border-white/[0.08] pt-6 mb-6">
-              {[
-                { v: "11+", l: "лет в дизайне" },
-                { v: "5", l: "лидерских ролей" },
-                { v: "8+", l: "лет в управлении" },
-              ].map((s) => (
-                <div key={s.l} className="min-w-0">
-                  <div className="font-p95 text-3xl md:text-4xl text-white leading-none">{s.v}</div>
-                  <div className="text-[11px] md:text-[12px] tracking-[0.08em] uppercase text-white/50 mt-3 leading-snug">
-                    {s.l}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              {[
-                "ВШЭ — преподаватель ИИ",
-                "CX Awards'24",
-                "English fluent",
-                "40+ менторинг-сессий",
-              ].map((c) => (
-                <span
-                  key={c}
-                  className="text-[11px] md:text-[12px] tracking-[0.08em] uppercase px-3 py-1.5 rounded border border-white/[0.08] text-white/55"
-                >
-                  {c}
-                </span>
-              ))}
+            <div className="border-t border-white/[0.08] pt-6">
+              <div className="font-p95 text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-white/45 mb-4">
+                Помимо основного
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  "ВШЭ — преподаватель ИИ",
+                  "CX Awards'24",
+                  "English fluent",
+                  "40+ менторинг-сессий",
+                ].map((c) => (
+                  <span
+                    key={c}
+                    className="text-[11px] md:text-[12px] tracking-[0.08em] uppercase px-3 py-1.5 rounded border border-white/[0.12] text-white/70"
+                  >
+                    {c}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -956,7 +929,7 @@ export default function Home() {
             <div className="flex flex-wrap gap-2">
               {[
                 "Advisory-борды",
-                "Fractional CDO · 2–4 мес",
+                "Part-time дизайн-директор · 2–4 мес",
                 "Консалтинг-проекты",
                 "Менторинг 1:1",
               ].map((c) => (
