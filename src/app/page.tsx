@@ -481,7 +481,7 @@ export default function Home() {
       <SplitSection id="about" label="ОБО МНЕ" heading="ПРИВЕТ!">
         <div>
           {/* ===== FOUNDER CARD — фото + крупный манифест (stokt-style) ===== */}
-          <div className="relative mb-14 md:mb-20 grid md:grid-cols-[minmax(260px,360px)_1fr] gap-6 md:gap-10 items-start">
+          <div className="relative mb-14 md:mb-20 grid md:grid-cols-[minmax(220px,300px)_1fr] gap-6 md:gap-10 items-start">
             {/* Photo — вертикальный кроп с зелёным дуотоном-тинтом */}
             <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border border-white/[0.06]">
               <Image
@@ -511,10 +511,10 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Right column — name, bio, stats */}
+            {/* Right column — bio split into 2 columns on wide screens to shorten vertical */}
             <div className="pt-2">
-              <div className="space-y-4 md:space-y-5 text-white/75 leading-relaxed text-base md:text-lg mb-6 md:mb-8">
-                <p>
+              <div className="grid lg:grid-cols-2 gap-x-10 gap-y-4 md:gap-y-5 text-white/75 leading-relaxed text-base md:text-lg mb-6 md:mb-8">
+                <p className="lg:col-span-2 max-w-[68ch]">
                   11 лет в дизайне, 9 — в бигтехе. В МТС — Art Director B2C-экосистемы: 16 команд, 60+ дизайнеров, 11М+ пользователей. В Ozon — Community Lead: канал с 0 до 17К подписчиков, −60% к оттоку на найме.
                 </p>
                 <p>
