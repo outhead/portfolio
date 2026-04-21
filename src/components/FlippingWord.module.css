@@ -82,12 +82,15 @@
   opacity: 0;
 }
 
+/* Обе половинки переворачиваются ОДНОВРЕМЕННО, одной длительностью
+   и одинаковым ease-in-out. Верх с уходящим словом падает вперёд,
+   низ с приходящим поднимается снизу — синхронно. */
 .flip .backTop {
-  animation: fwFlipTop 0.3s cubic-bezier(0.37, 0.01, 0.94, 0.35) both;
+  animation: fwFlipTop 0.5s cubic-bezier(0.5, 0, 0.5, 1) both;
 }
 
 .flip .backBottom {
-  animation: fwFlipBottom 0.6s cubic-bezier(0.15, 0.45, 0.28, 1) both;
+  animation: fwFlipBottom 0.5s cubic-bezier(0.5, 0, 0.5, 1) both;
 }
 
 @keyframes fwFlipTop {
@@ -105,12 +108,11 @@
 }
 
 @keyframes fwFlipBottom {
-  0%,
-  50% {
+  0% {
     transform: rotateX(90deg);
     opacity: 0;
   }
-  51% {
+  1% {
     opacity: 1;
   }
   100% {

@@ -63,13 +63,14 @@ export default function FlippingWord({
         {longest}
       </span>
       <span ref={cardRef} className={styles.card} aria-live="polite">
-        {/* Статика — показывает целевое (новое) слово целиком.
-           Во время флипа видна только нижняя половина (верх закрыт .backTop),
-           после флипа — обе, как единое слово. */}
+        {/* Статика: верх показывает ЦЕЛЕВОЕ (новое) слово — вскрывается,
+           когда .backTop откидывается. Низ показывает УХОДЯЩЕЕ (старое)
+           слово — до тех пор, пока .backBottom с новым не перекроет.
+           Такое распределение даёт одновременный флип верха и низа. */}
         <span className={styles.top} data-value={current} />
-        <span className={styles.bottom} data-value={current} />
+        <span className={styles.bottom} data-value={previous} />
         {/* Перекидные слои: верх с «уходящим» словом падает вперёд,
-           низ с «приходящим» словом поднимается снизу. */}
+           низ с «приходящим» словом поднимается снизу — параллельно. */}
         <span className={styles.backTop} data-value={previous} />
         <span className={styles.backBottom} data-value={current} />
       </span>
