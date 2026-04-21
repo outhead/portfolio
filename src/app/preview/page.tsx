@@ -2,6 +2,7 @@
 
 import ProjectCard from "@/components/ProjectCard";
 import ParticleSphere from "@/components/ParticleSphere";
+import FlippingWord from "@/components/FlippingWord";
 import { workProjects } from "@/data/projects";
 import Link from "next/link";
 import Image from "next/image";
@@ -844,9 +845,15 @@ export default function PreviewHome() {
                 {/* Центральный контент */}
                 <div className="flex flex-col gap-6 md:gap-8">
                   <h1 className="font-p95 text-[clamp(44px,7.2vw,112px)] leading-[0.92] uppercase tracking-tight text-white">
-                    <span className="block text-white">СТРОЮ ДИЗАЙН-КОМАНДЫ,</span>
-                    <span className="block text-white/55">
-                      КОТОРЫЕ ДВИГАЮТ ПРОДУКТ<span className="text-[#A6FF00]">.</span>
+                    <span className="block text-white">РАЗВИВАЮ</span>
+                    <span className="block">
+                      <span className="text-white/35">(</span>
+                      <FlippingWord
+                        words={["ЛЮДЕЙ", "КОМАНДЫ", "ВИЗУАЛ", "СЕРВИСЫ", "ИНТЕРЕС"]}
+                        className="text-white"
+                      />
+                      <span className="text-white/35">)</span>
+                      <span className="text-[#A6FF00]">.</span>
                     </span>
                   </h1>
 
