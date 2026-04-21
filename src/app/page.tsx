@@ -363,14 +363,13 @@ export default function Home() {
       {/* ===== COMPANY MARQUEE — бесконечная бегущая лента как у Stokt ===== */}
       <section
         aria-label="Компании, в которых я работал"
-        className="relative z-[1] bg-black border-t border-white/[0.06] py-6 md:py-8 overflow-hidden"
+        className="relative z-[1] bg-black border-t border-b border-white/[0.06] py-10 md:py-14 overflow-hidden"
       >
-        <div className="flex items-center gap-3 md:gap-4">
-          <div className="flex-shrink-0 pl-5 md:pl-[6%] lg:pl-[10%] xl:pl-[14%] pr-3 md:pr-5">
-            <div className="inline-flex items-center gap-1.5 font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/55 whitespace-nowrap">
-              <span className="text-[#A6FF00]/80">[</span>
-              <span>РАБОТАЛ В</span>
-              <span className="text-[#A6FF00]/80">]</span>
+        <div className="flex items-center gap-4 md:gap-6">
+          <div className="flex-shrink-0 pl-5 md:pl-[6%] lg:pl-[10%] xl:pl-[14%] pr-4 md:pr-6">
+            <div className="inline-flex items-center gap-2 font-p95 text-[11px] md:text-[12px] tracking-[0.24em] uppercase text-white/45 whitespace-nowrap">
+              <span className="inline-block w-6 md:w-10 h-px bg-white/25" />
+              <span>Работал в</span>
             </div>
           </div>
           <div className="relative flex-1 overflow-hidden">
@@ -401,10 +400,10 @@ export default function Home() {
                     "ВШЭ",
                   ].map((name) => (
                     <span key={name + loopIdx} className="flex items-center">
-                      <span className="text-lg md:text-2xl tracking-[0.08em] uppercase text-white/35 font-medium px-8 md:px-12">
+                      <span className="font-p95 text-[28px] md:text-[40px] lg:text-[48px] tracking-[0.04em] uppercase text-white/80 leading-none px-8 md:px-12">
                         {name}
                       </span>
-                      <span className="text-[#A6FF00]/40 select-none">*</span>
+                      <span aria-hidden className="text-white/20 text-2xl md:text-3xl select-none leading-none">·</span>
                     </span>
                   ))}
                 </div>
