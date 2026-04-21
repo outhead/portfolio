@@ -6,7 +6,10 @@
   position: relative;
   display: inline-block;
   vertical-align: baseline;
-  line-height: 0.92;
+  /* line-height 1 внутри флип-обёртки — чтобы разрез 50/50 попадал
+     в визуальный центр буквы (cap-центрирован в em-square).
+     Заголовок снаружи живёт с leading-0.92 и это не ломает. */
+  line-height: 1;
   perspective: 900px;
 }
 
@@ -14,7 +17,7 @@
   visibility: hidden;
   display: inline-block;
   white-space: nowrap;
-  line-height: 0.92;
+  line-height: 1;
 }
 
 .card {
@@ -35,7 +38,7 @@
   overflow: hidden;
   white-space: nowrap;
   backface-visibility: hidden;
-  line-height: 0.92;
+  line-height: 1;
 }
 
 .top,
@@ -52,21 +55,24 @@
 .backTop::after {
   content: attr(data-value);
   display: block;
-  line-height: 0.92;
+  line-height: 1;
 }
 
 .bottom::after,
 .backBottom::after {
   content: attr(data-value);
   display: block;
-  margin-top: -0.46em;
-  line-height: 0.92;
+  margin-top: -0.5em;
+  line-height: 1;
 }
 
 .backTop {
   z-index: 3;
   transform: rotateX(0deg);
   transform-origin: 50% 100%;
+  /* До первой анимации верхний «back»-слой лежит поверх статики
+     и совпадает с ней по тексту, поэтому шов не видно. После
+     первого флипа fill-mode: both держит его в -90°/opacity 0. */
 }
 
 .backBottom {
