@@ -4,7 +4,7 @@ import ProjectCard from "@/components/ProjectCard";
 import { workProjects } from "@/data/projects";
 import Link from "next/link";
 import Image from "next/image";
-import { motion, type Variants } from "framer-motion";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { useState } from "react";
 import {
   Code2,
@@ -16,6 +16,7 @@ import {
   ArrowRight,
   Users,
   Sparkles,
+  ChevronDown,
 } from "lucide-react";
 
 const LinkedinIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -226,6 +227,170 @@ function SplitSection({
         </motion.div>
       </motion.div>
     </section>
+  );
+}
+
+const careerJobs: Array<{
+  year: string;
+  company: string;
+  role: string;
+  scope: string;
+  details?: string[];
+  current?: boolean;
+}> = [
+  {
+    year: "Сейчас",
+    company: "Свободный график",
+    role: "Ментор · Консультант · AI Visioner",
+    scope: "Менторинг, консалтинг, эксперименты в AI",
+    details: [
+      "40+ менторинг-сессий с дизайнерами и лидами",
+      "Консалтинг: аудит дизайн-функций, найм, постановка процессов",
+      "Преподаю прикладной ИИ в ВШЭ",
+    ],
+    current: true,
+  },
+  {
+    year: "2025–2026",
+    company: "MWS AI",
+    role: "AI Visioner",
+    scope: "AI-дивизион МТС Web Services, 2 продукта",
+    details: [
+      "Задавал AI-направление двум флагманским продуктам дивизиона",
+      "Определял UX-принципы для AI-агентов и чат-интерфейсов",
+      "Собрал UI Kit для внутренних AI-продуктов",
+    ],
+  },
+  {
+    year: "2024–2025",
+    company: "МТС",
+    role: "Design Director",
+    scope: "Экосистемные продукты и спецпроекты",
+    details: [
+      "Руководство дизайном экосистемных B2C-продуктов",
+      "Спецпроекты на стыке AI и B2C",
+    ],
+  },
+  {
+    year: "2022–2024",
+    company: "Газпром Нефть",
+    role: "Head of Design",
+    scope: "76 команд, 42 лида, 100+ дизайнеров, CX Award'24",
+    details: [
+      "Собрал единую дизайн-функцию из разрозненных команд",
+      "Запустил дизайн-систему для 76 продуктов",
+      "CX Awards'24 за Unified Service Portal (ESO)",
+    ],
+  },
+  {
+    year: "2021–2022",
+    company: "Ozon",
+    role: "Community Lead",
+    scope: "Канал с 0 до 17К подписчиков, −60% к оттоку на найме",
+    details: [
+      "Построил дизайн-комьюнити с нуля",
+      "Вырастил канал с 0 до 17К подписчиков",
+      "Сократил отток на найме дизайнеров на 60%",
+    ],
+  },
+  {
+    year: "2017–2021",
+    company: "МТС",
+    role: "Art Director B2C",
+    scope: "16 команд, 60+ дизайнеров, 11М+ пользователей",
+    details: [
+      "Арт-дирекшн B2C-экосистемы МТС",
+      "×10 рост транзакций в МТС Cashback",
+      "Унификация визуального языка по 16 командам",
+    ],
+  },
+];
+
+function CareerAccordion() {
+  const [openIdx, setOpenIdx] = useState(0);
+  return (
+    <div className="rounded-2xl border border-white/[0.06] overflow-hidden bg-white/[0.015]">
+      {careerJobs.map((job, i) => {
+        const isOpen = openIdx === i;
+        return (
+          <div
+            key={job.year + job.company}
+            className={i > 0 ? "border-t border-white/[0.06]" : ""}
+          >
+            <button
+              type="button"
+              onClick={() => setOpenIdx(isOpen ? -1 : i)}
+              aria-expanded={isOpen}
+              className="group w-full flex items-center gap-4 md:gap-6 px-5 md:px-7 py-4 md:py-5 text-left hover:bg-white/[0.02] transition-colors"
+            >
+              {/* Dot */}
+              <span
+                className={`shrink-0 w-2 h-2 rounded-full ${
+                  job.current ? "bg-[#A6FF00]" : "bg-white/25"
+                }`}
+                aria-hidden
+              />
+              {/* Year */}
+              <span className="shrink-0 font-p95 text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-white/50 w-[90px] md:w-[110px]">
+                {job.year}
+              </span>
+              {/* Company + role */}
+              <span className="flex-1 min-w-0 flex flex-col md:flex-row md:items-baseline md:gap-3">
+                <span className="font-p95 text-[15px] md:text-[17px] text-white uppercase leading-tight truncate">
+                  {job.company}
+                  {job.current && (
+                    <span className="ml-2 text-[10px] tracking-[0.12em] uppercase text-[#A6FF00]/85">
+                      now
+                    </span>
+                  )}
+                </span>
+                <span className="text-[12px] md:text-[13px] text-white/55 leading-tight truncate">
+                  {job.role}
+                </span>
+              </span>
+              {/* Chevron */}
+              <ChevronDown
+                className={`shrink-0 w-4 h-4 text-white/40 transition-transform duration-300 ${
+                  isOpen ? "rotate-180 text-white/80" : "group-hover:text-white/70"
+                }`}
+                strokeWidth={2}
+              />
+            </button>
+            <AnimatePresence initial={false}>
+              {isOpen && (
+                <motion.div
+                  key="content"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                  className="overflow-hidden"
+                >
+                  <div className="px-5 md:px-7 pb-5 md:pb-7 pl-[calc(20px+8px+16px+90px)] md:pl-[calc(28px+8px+24px+110px)]">
+                    <p className="text-[13px] md:text-[14px] text-white/65 leading-relaxed mb-3">
+                      {job.scope}
+                    </p>
+                    {job.details && (
+                      <ul className="space-y-1.5">
+                        {job.details.map((d) => (
+                          <li
+                            key={d}
+                            className="flex items-start gap-2 text-[12px] md:text-[13px] text-white/55 leading-snug"
+                          >
+                            <span className="mt-[7px] h-px w-2 shrink-0 bg-white/30" />
+                            <span>{d}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
@@ -478,7 +643,7 @@ export default function Home() {
       </div>
 
       {/* ===== ABOUT ===== */}
-      <SplitSection id="about" label="ОБО МНЕ" heading="ПРИВЕТ!">
+      <SplitSection id="about" label="ОБО МНЕ" heading="ПРИВЕТ!" wideRight>
         <div>
           {/* ===== FOUNDER CARD — фото + крупный манифест (stokt-style) ===== */}
           <div className="relative mb-14 md:mb-20 grid md:grid-cols-[minmax(220px,300px)_1fr] gap-6 md:gap-10 items-start">
@@ -684,39 +849,12 @@ export default function Home() {
             />
           </div>
 
-          {/* Career — horizontal timeline */}
+          {/* Career — vertical accordion timeline */}
           <div className="mt-14 md:mt-20">
             <div className="font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/75 mb-5">
-              <span className="text-[#A6FF00]/80">[</span> КАРЬЕРА <span className="text-[#A6FF00]/80">]</span>
+              Карьера
             </div>
-            <div className="relative">
-              {/* Connecting line */}
-              <div className="hidden md:block absolute top-[22px] left-[3%] right-[3%] h-px bg-white/[0.06]" />
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5 md:gap-6">
-                {[
-                  { year: "2017–2021", company: "МТС", role: "Art Director B2C", scope: "16 команд, 60+ дизайнеров, 11М+ пользователей" },
-                  { year: "2021–2022", company: "Ozon", role: "Community Lead", scope: "Канал с 0 до 17К, −60% отток найма" },
-                  { year: "2022–2024", company: "Газпром Нефть", role: "Head of Design", scope: "76 команд, 42 лида, 100+ дизайнеров, CX Award" },
-                  { year: "2024–2025", company: "МТС", role: "Design Director", scope: "Экосистемные продукты и спецпроекты" },
-                  { year: "2025–2026", company: "MWS AI", role: "AI Visioner", scope: "AI-дивизион, 2 продукта" },
-                  { year: "Сейчас", company: "Свободный график", role: "Ментор · Консультант", scope: "Менторинг, консалтинг, эксперименты", current: true },
-                ].map((job) => (
-                  <div key={job.year + job.company} className="relative">
-                    {/* Timeline dot */}
-                    <div className={`w-2.5 h-2.5 rounded-full mb-3 ${job.current ? 'bg-[#A6FF00]' : 'bg-white/25'} relative z-[1]`} />
-                    <div className="text-[11px] md:text-[12px] text-white/35 font-mono mb-1">{job.year}</div>
-                    <div className="text-sm md:text-[15px] text-white/85 font-medium leading-tight">
-                      {job.company}
-                      {job.current && (
-                        <span className="ml-1.5 text-[10px] tracking-[0.12em] uppercase text-[#A6FF00]/85">now</span>
-                      )}
-                    </div>
-                    <div className="text-[12px] md:text-[13px] text-white/50 mt-1">{job.role}</div>
-                    <div className="text-[11px] md:text-[12px] text-white/30 mt-0.5 leading-snug">{job.scope}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <CareerAccordion />
           </div>
         </div>
       </SplitSection>
