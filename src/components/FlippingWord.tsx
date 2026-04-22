@@ -1,28 +1,30 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
-// FlippingWord — «перекидное табло»: циклически переворачивает одно слово
-// на другое с 3D-флипом вокруг оси X. Ширина слота фиксируется самым
-// длинным словом, чтобы соседние элементы на строке не прыгали.
+// FlippingWord — вертикальный ticker / split-roller. Слова стэкаются
+// одним столбцом, при смене индекса столбец translateY-ится на нужное
+// слово. Пружинный spring даёт лёгкий overshoot как у реальных
+// roller-табло. Маска по вертикали смягчает вход и выход слов за
+// границы окна — на концах они растворяются, а не обрезаются ножом.
 //
-// Реализация — одним цельным слоем (не split-flap): уходящее слово
-// вращается в rotateX 90° и плавно исчезает, приходящее приходит
-// с rotateX -90° в 0°. Нет шва между половинками и проблемы «резкого
-// пропадания», характерной для двухпанельного варианта.
+// Ширина слота фиксируется невидимым sizer-ом по самому длинному
+// слову, чтобы соседние элементы в строке не дёргались.
+//
+// line-height: 1 — критично для чёткого позиционирования:
+// одно слово = ровно 1em высоты → translateY(-i * 100%) попадает ноль
+// в ноль.
 
 interface FlippingWordProps {
   words: readonly string[];
   intervalMs?: number;
-  durationMs?: number;
   className?: string;
 }
 
 export default function FlippingWord({
   words,
   intervalMs = 2400,
-  durationMs = 420,
   className = "",
 }: FlippingWordProps) {
   const [i, setI] = useState(0);
@@ -36,40 +38,52 @@ export default function FlippingWord({
     return () => clearInterval(id);
   }, [words.length, intervalMs]);
 
-  const current = words[i] ?? "";
-  // Самое длинное по количеству символов — приблизительная оценка ширины.
+  // Самое длинное по количеству символов — приблизительная оценка ширины
+  // слота.
   const longest = words.reduce(
     (a, b) => (b.length > a.length ? b : a),
     "",
   );
 
-  const dur = durationMs / 1000;
-
   return (
     <span
       className={`relative inline-block align-baseline ${className}`}
-      style={{ perspective: 1200 }}
+      style={{ lineHeight: 1 }}
     >
-      {/* Невидимый sizer — держит ширину слота стабильной */}
-      <span aria-hidden className="invisible">
+      {/* Невидимый sizer — держит ширину и baseline слота */}
+      <span aria-hidden className="invisible whitespace-nowrap">
         {longest}
       </span>
-      <AnimatePresence mode="wait" initial={false}>
+      {/* Окно ticker-а с вертикальной маской — мягкий fade у верхней
+          и нижней границ, чтобы уходящее/приходящее слово не резалось
+          ровной линией, а растворялось. */}
+      <span
+        aria-live="polite"
+        className="absolute inset-0 overflow-hidden"
+        style={{
+          WebkitMaskImage:
+            "linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%)",
+          maskImage:
+            "linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%)",
+        }}
+      >
         <motion.span
-          key={current}
-          className="absolute left-0 top-0 inline-block whitespace-nowrap"
-          style={{
-            transformOrigin: "50% 50%",
-            backfaceVisibility: "hidden",
+          className="block whitespace-nowrap"
+          animate={{ y: `${-i * 100}%` }}
+          transition={{
+            type: "spring",
+            stiffness: 160,
+            damping: 22,
+            mass: 0.9,
           }}
-          initial={{ rotateX: -90, opacity: 0 }}
-          animate={{ rotateX: 0, opacity: 1 }}
-          exit={{ rotateX: 90, opacity: 0 }}
-          transition={{ duration: dur, ease: [0.2, 0.8, 0.2, 1] }}
         >
-          {current}
+          {words.map((w, idx) => (
+            <span key={idx} className="block whitespace-nowrap">
+              {w}
+            </span>
+          ))}
         </motion.span>
-      </AnimatePresence>
+      </span>
     </span>
   );
 }
