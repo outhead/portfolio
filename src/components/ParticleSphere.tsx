@@ -7,13 +7,16 @@ import { useEffect, useRef, type RefObject } from "react";
 // Физика: инвертированная версия алгоритма rectangleworld.com.
 //
 // Интерактив:
-//   • drag  — крутит фигуру (yaw/pitch), при отпускании — инерция
-//   • click — переносит центр фигуры в точку клика
-//   • hover — в простое фигура плавно «поворачивается в сторону курсора»
-//             (lerp к углам, рассчитанным из позиции курсора)
-// События слушаются либо на самом canvas, либо на элементе `trackingRef`,
-// чтобы курсор можно было отслеживать в более широкой области (например,
-// на весь hero-bento, а не только в плитке).
+//   • auto-rotate — фигура крутится по yaw со скоростью autoYawSpeed
+//   • hover — при входе курсора фигура плавно «поворачивается в сторону
+//             курсора» по кратчайшему пути (важно: без «раскрутки» через
+//             накопленные в idle обороты)
+// События курсора слушаются либо на самом canvas, либо на элементе
+// `trackingRef`, чтобы курсор можно было отслеживать в более широкой
+// области (например, на весь hero-bento, а не только в плитке).
+// Drag и click-teleport сняты намеренно: плитка воспринималась как
+// ловушка для случайных кликов по ссылкам, а дёргать шар вручную —
+// лишняя функция, которая ничего не добавляла.
 
 export type ParticleShape = "sphere" | "heart";
 
@@ -112,17 +115,27 @@ export default function ParticleSphere({
     const zeroAlphaDepth = -750;
     const randAccelInFlight = 0.18;
     const autoYawSpeed = (2 * Math.PI) / 24; // рад/сек
-    const dragSens = 0.006;
     const pitchLimit = 1.1;
-    const inertiaDecayPerSec = 0.12;
-    const idleAfterDragMs = 1500;
-    const maxRelVel = 4;
-    const dragPxThreshold = 6; // после чего жест считаем драгом
     // Cursor-follow: насколько сильно фигура «смотрит» на курсор и как быстро.
     const cursorYawMax = 0.7;
     const cursorPitchMax = 0.55;
     const cursorLerpPerSec = 3.2; // быстрее → резче follow
-    const centerLerpPerSec = 4.6; // скорость переезда центра после клика
+    const centerLerpPerSec = 4.6; // скорость плавного центрирования при resize
+
+    // ── Углы: утилита для «кратчайшего угла» ──────────────────────
+    // В auto-rotate yaw растёт монотонно и может накопить несколько
+    // оборотов. Когда курсор заходит, cursor-follow должен идти к
+    // цели КРАТЧАЙШИМ путём (|dYaw| ≤ π), иначе шар «раскручивается»
+    // через все накопленные обороты. Нормализацию по модулю 2π
+    // применяем сразу к накопленному yaw в auto-rotate; а lerp в
+    // cursor-follow считает дельту через ту же функцию.
+    const TAU = Math.PI * 2;
+    const normalizeAngle = (a: number) => {
+      const x = a % TAU;
+      if (x > Math.PI) return x - TAU;
+      if (x < -Math.PI) return x + TAU;
+      return x;
+    };
     const rgbPrefix = `rgba(${r},${g},${b},`;
 
     type P = {
@@ -255,16 +268,6 @@ export default function ParticleSphere({
     // ── Интерактив ─────────────────────────────────────────────────
     let yaw = 0;
     let pitch = 0;
-    let velYaw = 0;
-    let velPitch = 0;
-    let dragging = false;
-    let dragCandidate = false;
-    let downStartX = 0;
-    let downStartY = 0;
-    let lastPX = 0;
-    let lastPY = 0;
-    let lastPT = 0;
-    let idleResumeAt = 0;
     let lastFrameT = performance.now();
 
     let cursorInside = false;
@@ -283,87 +286,14 @@ export default function ParticleSphere({
       };
     };
 
-    const onPointerDown = (e: PointerEvent) => {
-      if (!interactive) return;
-      // Не перехватываем клики на интерактивных элементах (ссылки, кнопки).
-      const el = e.target as HTMLElement | null;
-      if (el && el.closest("a,button,input,textarea,select,[role='button']")) {
-        return;
-      }
-      dragCandidate = true;
-      dragging = false;
-      downStartX = e.clientX;
-      downStartY = e.clientY;
-      lastPX = e.clientX;
-      lastPY = e.clientY;
-      lastPT = performance.now();
-      velYaw = 0;
-      velPitch = 0;
-    };
-
+    // Только tracking курсора — ни drag, ни click-teleport. При входе
+    // помечаем cursorInside=true, в step() cursor-follow возьмёт
+    // актуальные координаты.
     const onPointerMove = (e: PointerEvent) => {
-      // Обновляем позицию курсора (для cursor-follow и для возможного teleport)
       const c = cursorToCanvas(e.clientX, e.clientY);
       cursorCanvasX = c.x;
       cursorCanvasY = c.y;
       cursorInside = true;
-
-      if (!dragCandidate) return;
-
-      if (!dragging) {
-        const dxs = e.clientX - downStartX;
-        const dys = e.clientY - downStartY;
-        if (Math.hypot(dxs, dys) > dragPxThreshold) {
-          dragging = true;
-          // Чтобы драг был гладким, вешаем capture
-          try {
-            (eventTarget as Element).setPointerCapture?.(e.pointerId);
-          } catch { /* noop */ }
-          eventTarget.style.cursor = "grabbing";
-        }
-      }
-
-      if (!dragging) return;
-
-      const now = performance.now();
-      const dx = e.clientX - lastPX;
-      const dy = e.clientY - lastPY;
-      const mdt = Math.max(0.008, (now - lastPT) / 1000);
-      const dYaw = dx * dragSens;
-      const dPitch = dy * dragSens;
-      yaw += dYaw;
-      pitch = Math.max(-pitchLimit, Math.min(pitchLimit, pitch + dPitch));
-      const vyNow = dYaw / mdt;
-      const vpNow = dPitch / mdt;
-      velYaw = velYaw * 0.5 + vyNow * 0.5;
-      velPitch = velPitch * 0.5 + vpNow * 0.5;
-      lastPX = e.clientX;
-      lastPY = e.clientY;
-      lastPT = now;
-    };
-
-    const onPointerUp = (e: PointerEvent) => {
-      if (!dragCandidate) return;
-      if (dragging) {
-        // Release после драга → инерция
-        try {
-          (eventTarget as Element).releasePointerCapture?.(e.pointerId);
-        } catch { /* noop */ }
-        const s = Math.hypot(velYaw, velPitch);
-        if (s > maxRelVel) {
-          velYaw = (velYaw / s) * maxRelVel;
-          velPitch = (velPitch / s) * maxRelVel;
-        }
-        idleResumeAt = performance.now() + idleAfterDragMs;
-      } else {
-        // Клик без драга → teleport центра
-        const c = cursorToCanvas(e.clientX, e.clientY);
-        targetCX = c.x;
-        targetCY = c.y;
-      }
-      eventTarget.style.cursor = interactive ? "grab" : "default";
-      dragging = false;
-      dragCandidate = false;
     };
 
     const onPointerLeave = () => {
@@ -375,13 +305,7 @@ export default function ParticleSphere({
     };
 
     if (interactive) {
-      eventTarget.style.cursor = "grab";
-      // touchAction none — чтобы жесты не конфликтовали со скроллом на мобильном
-      (eventTarget as HTMLElement).style.touchAction = "none";
-      eventTarget.addEventListener("pointerdown", onPointerDown);
       eventTarget.addEventListener("pointermove", onPointerMove);
-      eventTarget.addEventListener("pointerup", onPointerUp);
-      eventTarget.addEventListener("pointercancel", onPointerUp);
       eventTarget.addEventListener("pointerleave", onPointerLeave);
       eventTarget.addEventListener("pointerenter", onPointerEnter);
     }
@@ -399,41 +323,34 @@ export default function ParticleSphere({
       currentCX += (targetCX - currentCX) * cLerp;
       currentCY += (targetCY - currentCY) * cLerp;
 
-      // Углы поворота
-      if (dragging) {
-        // драг обновил yaw/pitch в onPointerMove; здесь ничего
+      // Углы поворота — или cursor-follow, или auto-rotate.
+      if (cursorInside) {
+        // Cursor-follow: фигура «смотрит» в сторону курсора. Горизонталь
+        // инвертирована — шар поворачивается В ту же сторону, куда ведёт
+        // курсор, а не вслед за ним.
+        const dxC = cursorCanvasX - currentCX;
+        const dyC = cursorCanvasY - currentCY;
+        const nx = Math.max(-1, Math.min(1, dxC / (cssW * 0.5)));
+        const ny = Math.max(-1, Math.min(1, dyC / (cssH * 0.5)));
+        const desiredYaw = -nx * cursorYawMax;
+        const desiredPitch = ny * cursorPitchMax;
+        const k = 1 - Math.exp(-cursorLerpPerSec * dt);
+        // КРАТЧАЙШИЙ путь к целевому yaw — иначе при заходе из auto-rotate
+        // lerp бы проехал через все накопленные в idle обороты (шар
+        // «раскручивается» и пропорционально длительности простоя).
+        const dYaw = normalizeAngle(desiredYaw - yaw);
+        yaw += dYaw * k;
+        pitch += (desiredPitch - pitch) * k;
       } else {
-        const spd = Math.hypot(velYaw, velPitch);
-        if (spd > 0.02) {
-          // Инерция после драга
-          yaw += velYaw * dt;
-          pitch = Math.max(-pitchLimit, Math.min(pitchLimit, pitch + velPitch * dt));
-          const decayFactor = Math.pow(inertiaDecayPerSec, dt);
-          velYaw *= decayFactor;
-          velPitch *= decayFactor;
-        } else if (cursorInside && now > idleResumeAt) {
-          // Cursor-follow: фигура «смотрит» на курсор
-          const dxC = cursorCanvasX - currentCX;
-          const dyC = cursorCanvasY - currentCY;
-          // нормируем относительно половины размеров canvas
-          const nx = Math.max(-1, Math.min(1, dxC / (cssW * 0.5)));
-          const ny = Math.max(-1, Math.min(1, dyC / (cssH * 0.5)));
-          // Горизонталь инвертирована только для cursor-follow: фигура
-          // смотрит «в ту же сторону», куда ведёт курсор, а не вслед за ним.
-          // В драге остаётся обычное поведение.
-          const desiredYaw = -nx * cursorYawMax;
-          const desiredPitch = ny * cursorPitchMax;
-          const k = 1 - Math.exp(-cursorLerpPerSec * dt);
-          yaw += (desiredYaw - yaw) * k;
-          pitch += (desiredPitch - pitch) * k;
-        } else if (now > idleResumeAt) {
-          // Простой auto-rotate, если курсора нет в области и драг остыл
-          velYaw = 0;
-          velPitch = 0;
-          yaw += autoYawSpeed * dt;
-          pitch *= Math.pow(0.6, dt);
-        }
+        // Auto-rotate. Нормализуем yaw в [-π, π], чтобы он не накапливал
+        // обороты — так вход cursor-follow всегда идёт коротким путём.
+        yaw = normalizeAngle(yaw + autoYawSpeed * dt);
+        pitch *= Math.pow(0.6, dt);
       }
+      // Safety: удерживаем pitch в пределах, на случай любых крайних
+      // значений (обычно не нужно).
+      if (pitch > pitchLimit) pitch = pitchLimit;
+      else if (pitch < -pitchLimit) pitch = -pitchLimit;
 
       for (let i = 0; i < numPerFrame; i++) spawn();
 
@@ -523,10 +440,7 @@ export default function ParticleSphere({
       cancelAnimationFrame(raf);
       ro.disconnect();
       if (interactive) {
-        eventTarget.removeEventListener("pointerdown", onPointerDown);
         eventTarget.removeEventListener("pointermove", onPointerMove);
-        eventTarget.removeEventListener("pointerup", onPointerUp);
-        eventTarget.removeEventListener("pointercancel", onPointerUp);
         eventTarget.removeEventListener("pointerleave", onPointerLeave);
         eventTarget.removeEventListener("pointerenter", onPointerEnter);
       }
