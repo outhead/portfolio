@@ -67,9 +67,14 @@ export default function FlippingWord({
             "linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%)",
         }}
       >
+        {/* ВАЖНО: y указываем в em, а НЕ в %. translateY(%) считается
+            от высоты самого анимируемого элемента, а в нём лежат ВСЕ
+            слова — высота столбца = N em, и «-i * 100%» уезжает в
+            «-i * N em», т.е. в самый низ. В em расчёт детерминирован:
+            одно слово = 1em, шаг = 1em. */}
         <motion.span
           className="block whitespace-nowrap"
-          animate={{ y: `${-i * 100}%` }}
+          animate={{ y: `${-i}em` }}
           transition={{
             type: "spring",
             stiffness: 160,
