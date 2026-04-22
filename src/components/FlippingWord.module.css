@@ -82,48 +82,73 @@
   opacity: 0;
 }
 
-/* Обе половинки переворачиваются ОДНОВРЕМЕННО, одной длительностью
-   и ease-in-out. Верх с уходящим словом падает вперёд и плавно тает
-   по мере ухода за перпендикуляр. Низ с приходящим словом поднимается
-   снизу с зеркальным fade-in. */
+/* Анимация разнесена на две: поворот (ease-out-ish, даёт физику) и
+   прозрачность (LINEAR, даёт предсказуемое равномерное таяние без рывка
+   в финале). Если склеить их в один keyframe с нелинейным easing,
+   последние 10–15% времени отыгрывается очень быстро — и любой скачок
+   opacity в этот момент воспринимается как «хлоп, пропало». Отдельный
+   linear fade со стартом сильно раньше конца решает это. */
 .flip .backTop {
-  animation: fwFlipTop 0.65s cubic-bezier(0.45, 0, 0.25, 1) both;
+  animation:
+    fwFlipTopRotate 0.7s cubic-bezier(0.45, 0, 0.25, 1) both,
+    fwFlipTopFade 0.7s linear both;
 }
 
 .flip .backBottom {
-  animation: fwFlipBottom 0.65s cubic-bezier(0.45, 0, 0.25, 1) both;
+  animation:
+    fwFlipBottomRotate 0.7s cubic-bezier(0.45, 0, 0.25, 1) both,
+    fwFlipBottomFade 0.7s linear both;
 }
 
-@keyframes fwFlipTop {
-  0% {
+@keyframes fwFlipTopRotate {
+  from {
     transform: rotateX(0deg);
+  }
+  to {
+    transform: rotateX(-90deg);
+  }
+}
+
+@keyframes fwFlipBottomRotate {
+  from {
+    transform: rotateX(90deg);
+  }
+  to {
+    transform: rotateX(0deg);
+  }
+}
+
+/* Fade-out: держим на 1 до 30%, линейно уходим в 0 к 85%. Последние
+   15% слово уже невидимо и плитка спокойно доворачивается за
+   перпендикуляр — нет момента «был видимым, стал невидимым за миг». */
+@keyframes fwFlipTopFade {
+  0% {
     opacity: 1;
   }
-  55% {
+  30% {
     opacity: 1;
   }
   85% {
-    opacity: 0.2;
+    opacity: 0;
   }
   100% {
-    transform: rotateX(-90deg);
     opacity: 0;
   }
 }
 
-@keyframes fwFlipBottom {
+/* Зеркально для приходящего снизу: сидит в нуле первые 15%,
+   равномерно появляется к 70% и держится до конца. */
+@keyframes fwFlipBottomFade {
   0% {
-    transform: rotateX(90deg);
     opacity: 0;
   }
   15% {
-    opacity: 0.2;
+    opacity: 0;
   }
-  45% {
+  70% {
     opacity: 1;
   }
   100% {
-    transform: rotateX(0deg);
     opacity: 1;
   }
 }
