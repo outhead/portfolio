@@ -177,28 +177,69 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
             </div>
           )}
 
-          {/* External Links */}
-          {project.links && project.links.length > 0 && (
-            <div className="mt-12 mb-8">
-              <div className="text-[10px] tracking-[0.12em] uppercase text-white/30 mb-4">Ссылки</div>
-              <div className="flex flex-col gap-3">
-                {project.links.map((link) => (
-                  <a
-                    key={link.url}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group inline-flex items-center gap-2 text-sm text-white/40 hover:text-[#A6FF00] transition-colors no-underline"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" strokeWidth={2} />
-                    <span className="border-b border-white/[0.08] group-hover:border-[#A6FF00]/30 transition-colors pb-0.5">
-                      {link.label}
-                    </span>
-                  </a>
-                ))}
+          {/* External Links — grouped by category, rendered as card grid */}
+          {project.links && project.links.length > 0 && (() => {
+            const groups = project.links.reduce<Record<string, NonNullable<typeof project.links>>>((acc, link) => {
+              const cat = link.category || "Ссылки";
+              if (!acc[cat]) acc[cat] = [];
+              acc[cat].push(link);
+              return acc;
+            }, {});
+            const order = [
+              "Награда",
+              "Дизайн-система Consta",
+              "Пресса и интервью",
+              "Партнёрства и артефакты",
+              "Ссылки",
+            ];
+            const sortedGroups = Object.entries(groups).sort((a, b) => {
+              const ai = order.indexOf(a[0]);
+              const bi = order.indexOf(b[0]);
+              return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+            });
+            return (
+              <div className="mt-16 mb-8">
+                <div className="text-[10px] tracking-[0.12em] uppercase text-white/30 mb-6">Пруфы и ссылки</div>
+                <div className="flex flex-col gap-8">
+                  {sortedGroups.map(([cat, items]) => (
+                    <div key={cat}>
+                      <div className="text-[9px] tracking-[0.12em] uppercase text-white/40 mb-3">{cat}</div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {items.map((link) => {
+                          let domain = "";
+                          try {
+                            domain = new URL(link.url).hostname.replace(/^www\./, "");
+                          } catch {}
+                          return (
+                            <a
+                              key={link.url}
+                              href={link.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="group flex items-start gap-3 p-4 rounded-md border border-white/[0.08] hover:border-[#A6FF00]/40 hover:bg-white/[0.02] transition-colors no-underline"
+                            >
+                              <div className="flex-1 min-w-0">
+                                <div className="text-[9px] tracking-[0.05em] text-white/30 mb-1.5 truncate uppercase">
+                                  {domain}
+                                </div>
+                                <div className="text-sm text-white/70 group-hover:text-white transition-colors leading-snug">
+                                  {link.label}
+                                </div>
+                              </div>
+                              <ExternalLink
+                                className="w-3.5 h-3.5 flex-shrink-0 text-white/25 group-hover:text-[#A6FF00] transition-colors mt-0.5"
+                                strokeWidth={2}
+                              />
+                            </a>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
         </div>
       </section>
 
