@@ -138,19 +138,116 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
             {project.longDescription}
           </p>
 
-          {/* Sections with inline screenshots */}
+          {/* Sections — структурный формат (context/approach/result) с fallback на старый content */}
           {project.sections?.map((section, i) => {
             const hasSectionScreenshots = section.screenshots && section.screenshots.length > 0;
+            const hasStructured =
+              section.context || section.approach || section.helped || section.result;
+            const labelClass =
+              "text-[9px] tracking-[0.14em] uppercase text-white/40 mb-2";
+            const proseClass =
+              "text-white/65 leading-relaxed text-sm md:text-base";
             return (
-              <div key={i} className="mb-14 md:mb-20">
-                <div className="text-[10px] tracking-[0.12em] uppercase text-white/30 mb-3">
-                  {String(i + 1).padStart(2, "0")} — {section.title}
+              <div key={i} className="mb-16 md:mb-24">
+                {/* Section header: large number + title */}
+                <div className="flex items-baseline gap-4 mb-6">
+                  <span className="text-[11px] tracking-[0.14em] uppercase text-white/25 font-mono">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <h3 className="text-xl md:text-2xl text-white/95 font-semibold leading-tight">
+                    {section.title}
+                  </h3>
                 </div>
-                <p className="text-white/50 leading-relaxed text-sm md:text-base">
-                  {section.content}
-                </p>
+
+                {/* Structured blocks */}
+                {hasStructured ? (
+                  <div className="space-y-6 max-w-3xl">
+                    {section.context && (
+                      <div>
+                        <div className={labelClass}>Задача</div>
+                        <p className={proseClass}>{section.context}</p>
+                      </div>
+                    )}
+                    {section.approach && (
+                      <div>
+                        <div className={labelClass}>Подход</div>
+                        <p className={proseClass}>{section.approach}</p>
+                      </div>
+                    )}
+                    {section.helped && (
+                      <div className="border-l-2 border-[#A6FF00]/30 pl-4">
+                        <div className={labelClass}>Что способствовало</div>
+                        <p className={proseClass}>{section.helped}</p>
+                      </div>
+                    )}
+                    {section.result && (
+                      <div>
+                        <div className={labelClass}>Результат</div>
+                        <p className={proseClass}>{section.result}</p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* Legacy fallback */
+                  section.content && (
+                    <p className={`${proseClass} max-w-3xl`}>{section.content}</p>
+                  )
+                )}
+
+                {/* Callouts — мини-сетка цифр */}
+                {section.callouts && section.callouts.length > 0 && (
+                  <div className="mt-7 grid grid-cols-2 md:grid-cols-4 gap-px bg-white/[0.04] rounded-md overflow-hidden">
+                    {section.callouts.map((c) => (
+                      <div
+                        key={c.label}
+                        className="bg-black p-4 md:p-5 text-center"
+                      >
+                        <div className="text-base md:text-xl font-semibold text-white leading-none mb-1">
+                          {c.value}
+                        </div>
+                        <div className="text-[8px] md:text-[9px] tracking-[0.12em] uppercase text-white/35 leading-tight">
+                          {c.label}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Inline links — пруфы рядом с релевантным текстом */}
+                {section.links && section.links.length > 0 && (
+                  <div className="mt-6 flex flex-wrap gap-2">
+                    {section.links.map((link) => {
+                      let domain = "";
+                      try {
+                        domain = new URL(link.url).hostname.replace(/^www\./, "");
+                      } catch {}
+                      return (
+                        <a
+                          key={link.url}
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="group inline-flex items-center gap-2 px-3 py-2 rounded-md border border-white/[0.08] hover:border-[#A6FF00]/40 hover:bg-white/[0.02] transition-colors no-underline max-w-full"
+                        >
+                          <ExternalLink
+                            className="w-3 h-3 flex-shrink-0 text-white/30 group-hover:text-[#A6FF00] transition-colors"
+                            strokeWidth={2}
+                          />
+                          <span className="text-[9px] tracking-[0.1em] uppercase text-white/40 group-hover:text-white/60 transition-colors">
+                            {domain}
+                          </span>
+                          <span className="text-[12px] text-white/55 group-hover:text-white/85 transition-colors truncate">
+                            {link.label}
+                          </span>
+                        </a>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Screenshots */}
                 {hasSectionScreenshots && (
-                  <div className="mt-6">
+                  <div className="mt-7">
                     <ImageLightbox
                       images={section.screenshots!.map((src, n) => ({
                         src,
