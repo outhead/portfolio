@@ -668,8 +668,13 @@ const tools: Array<{ name: string; icon: React.ReactNode }> = [
   {
     name: "Figma",
     icon: (
-      <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
-        <path d="M8.25 24a4.5 4.5 0 0 0 4.5-4.5V15H8.25a4.5 4.5 0 1 0 0 9zm-4.5-13.5A4.5 4.5 0 0 1 8.25 6h4.5v9h-4.5a4.5 4.5 0 0 1-4.5-4.5zm0-9A4.5 4.5 0 0 1 8.25 0h4.5v6h-4.5a4.5 4.5 0 0 1-4.5-4.5zM12.75 0h4.5a4.5 4.5 0 1 1 0 9h-4.5V0zm0 10.5a4.5 4.5 0 1 1 4.5 4.5 4.5 4.5 0 0 1-4.5-4.5z" />
+      // Полноцветное официальное лого Figma — 5 «капель» в фирменных цветах
+      <svg viewBox="0 0 38 57" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+        <path d="M19 28.5a9.5 9.5 0 1 1 19 0 9.5 9.5 0 0 1-19 0z" fill="#1ABCFE" />
+        <path d="M0 47.5A9.5 9.5 0 0 1 9.5 38H19v9.5a9.5 9.5 0 1 1-19 0z" fill="#0ACF83" />
+        <path d="M19 0v19h9.5a9.5 9.5 0 1 0 0-19H19z" fill="#FF7262" />
+        <path d="M0 9.5A9.5 9.5 0 0 0 9.5 19H19V0H9.5A9.5 9.5 0 0 0 0 9.5z" fill="#F24E1E" />
+        <path d="M0 28.5A9.5 9.5 0 0 0 9.5 38H19V19H9.5A9.5 9.5 0 0 0 0 28.5z" fill="#A259FF" />
       </svg>
     ),
   },
