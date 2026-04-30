@@ -116,27 +116,66 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
       {/* Results bar */}
       {project.results && project.results.length > 0 && (
         <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] bg-black border-t border-white/[0.06]">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/[0.04] rounded-lg overflow-hidden my-0">
-            {project.results.map((r) => (
-              <div key={r.label} className="bg-black p-5 md:p-6 text-center">
-                <div className="text-xl md:text-2xl font-semibold text-white leading-none mb-1">
-                  {r.value}
-                </div>
-                <div className="text-[9px] md:text-[10px] tracking-[0.1em] uppercase text-white/35">
-                  {r.label}
-                </div>
+          {(() => {
+            const len = project.results.length;
+            // 3 → 1 row of 3, 4 → 1 row of 4, 6 → 2 rows of 3, иначе → 4 в ряд
+            const colsClass =
+              len === 3
+                ? "md:grid-cols-3"
+                : len === 6
+                ? "md:grid-cols-3"
+                : "md:grid-cols-4";
+            return (
+              <div className={`grid grid-cols-2 ${colsClass} gap-px bg-white/[0.04] rounded-lg overflow-hidden my-0`}>
+                {project.results!.map((r) => (
+                  <div key={r.label} className="bg-black p-5 md:p-6 text-center">
+                    <div className="text-xl md:text-2xl font-semibold text-white leading-none mb-1">
+                      {r.value}
+                    </div>
+                    <div className="text-[9px] md:text-[10px] tracking-[0.1em] uppercase text-white/35">
+                      {r.label}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            );
+          })()}
         </section>
       )}
 
       {/* Content */}
       <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-16 md:py-24 bg-black border-t border-white/[0.06]">
         <div className="max-w-4xl">
-          <p className="text-white/60 leading-relaxed text-base md:text-lg mb-12 max-w-3xl">
-            {project.longDescription}
-          </p>
+          {(() => {
+            const longProseClass =
+              "text-white/60 leading-relaxed text-base md:text-lg max-w-3xl";
+            const renderInlineLong = (text: string) => {
+              const parts = text.split(/(\*\*[^*]+\*\*)/g);
+              return parts.map((part, idx) => {
+                if (part.startsWith("**") && part.endsWith("**")) {
+                  return (
+                    <strong key={idx} className="text-white/85 font-semibold">
+                      {part.slice(2, -2)}
+                    </strong>
+                  );
+                }
+                return <span key={idx}>{part}</span>;
+              });
+            };
+            const paragraphs = project.longDescription
+              .split(/\n\n+/)
+              .map((p) => p.trim())
+              .filter(Boolean);
+            return (
+              <div className="mb-12 space-y-4">
+                {paragraphs.map((para, idx) => (
+                  <p key={idx} className={longProseClass}>
+                    {renderInlineLong(para)}
+                  </p>
+                ))}
+              </div>
+            );
+          })()}
 
           {/* Sections — структурный формат (context/approach/result) с fallback на старый content */}
           {project.sections?.map((section, i) => {
