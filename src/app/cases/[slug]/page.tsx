@@ -147,6 +147,39 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
               "text-[9px] tracking-[0.14em] uppercase text-white/40 mb-2";
             const proseClass =
               "text-white/65 leading-relaxed text-sm md:text-base";
+
+            /** Inline-форматирование: **жирное** превращается в <strong>. */
+            const renderInline = (text: string) => {
+              const parts = text.split(/(\*\*[^*]+\*\*)/g);
+              return parts.map((part, idx) => {
+                if (part.startsWith("**") && part.endsWith("**")) {
+                  return (
+                    <strong key={idx} className="text-white/90 font-semibold">
+                      {part.slice(2, -2)}
+                    </strong>
+                  );
+                }
+                return <span key={idx}>{part}</span>;
+              });
+            };
+
+            /** Поддержка многоабзацного текста: '\n\n' → отдельные <p>. */
+            const renderProse = (text: string) => {
+              const paragraphs = text.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
+              if (paragraphs.length <= 1) {
+                return <p className={proseClass}>{renderInline(paragraphs[0] ?? text)}</p>;
+              }
+              return (
+                <div className="space-y-3">
+                  {paragraphs.map((para, idx) => (
+                    <p key={idx} className={proseClass}>
+                      {renderInline(para)}
+                    </p>
+                  ))}
+                </div>
+              );
+            };
+
             return (
               <div key={i} className="mb-16 md:mb-24">
                 {/* Section header: large number + title */}
@@ -165,32 +198,32 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                     {section.context && (
                       <div>
                         <div className={labelClass}>Задача</div>
-                        <p className={proseClass}>{section.context}</p>
+                        {renderProse(section.context)}
                       </div>
                     )}
                     {section.approach && (
                       <div>
                         <div className={labelClass}>Подход</div>
-                        <p className={proseClass}>{section.approach}</p>
+                        {renderProse(section.approach)}
                       </div>
                     )}
                     {section.helped && (
                       <div className="border-l-2 border-[#A6FF00]/30 pl-4">
                         <div className={labelClass}>Что способствовало</div>
-                        <p className={proseClass}>{section.helped}</p>
+                        {renderProse(section.helped)}
                       </div>
                     )}
                     {section.result && (
                       <div>
                         <div className={labelClass}>Результат</div>
-                        <p className={proseClass}>{section.result}</p>
+                        {renderProse(section.result)}
                       </div>
                     )}
                   </div>
                 ) : (
                   /* Legacy fallback */
                   section.content && (
-                    <p className={`${proseClass} max-w-3xl`}>{section.content}</p>
+                    <div className="max-w-3xl">{renderProse(section.content)}</div>
                   )
                 )}
 
