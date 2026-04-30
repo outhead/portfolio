@@ -1,9 +1,41 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { Project } from "@/data/projects";
+
+/** Фон карточки: видео-обложка > картинка-обложка > просто coverColor. */
+function CoverMedia({ project }: { project: Project }) {
+  if (project.coverVideo) {
+    return (
+      <video
+        src={project.coverVideo}
+        poster={project.coverImage}
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        className="absolute inset-0 w-full h-full object-cover opacity-60 z-0"
+        aria-hidden="true"
+      />
+    );
+  }
+  if (project.coverImage) {
+    return (
+      <Image
+        src={project.coverImage}
+        alt=""
+        fill
+        sizes="(max-width: 768px) 100vw, 50vw"
+        className="object-cover opacity-50 z-0"
+      />
+    );
+  }
+  return null;
+}
 
 interface ProjectCardProps {
   project: Project;
@@ -107,7 +139,7 @@ export default function ProjectCard({
             className="relative h-full min-h-[340px] md:min-h-[480px] overflow-hidden"
             style={{ background: project.coverColor }}
           >
-            {/* картинки-заглушки убраны — осталась чистая типографика поверх coverColor */}
+            <CoverMedia project={project} />
             {GradientFloor}
             {HoverArrow}
             {BottomContent}
@@ -130,6 +162,7 @@ export default function ProjectCard({
             className="relative h-full min-h-[280px] md:min-h-[360px] overflow-hidden"
             style={{ background: project.coverColor }}
           >
+            <CoverMedia project={project} />
             {GradientFloor}
             {HoverArrow}
             {BottomContent}
@@ -151,6 +184,7 @@ export default function ProjectCard({
           className="relative h-full min-h-[240px] md:min-h-[320px] overflow-hidden"
           style={{ background: project.coverColor }}
         >
+          <CoverMedia project={project} />
           {GradientFloor}
           {HoverArrow}
           {BottomContent}

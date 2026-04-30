@@ -149,9 +149,11 @@ export const projects: Project[] = [
     // Акцентная карточка — «CX Award 2024», бронза-золото как медаль
     coverColor: "#C9A66B",
     coverImage: "/images/covers/gpn-cover.jpg",
+    coverVideo: "/videos/gpn-cover.mp4",
     screenshots: [
-      "/images/figma/gpn-main.jpg",
-      "/images/figma/gpn-eso.jpg",
+      "/images/gpn/eso/eso-home.png",
+      "/images/gpn/consta/consta-dashboard-dark.png",
+      "/images/gpn/hr/badges-closeup.jpg",
     ],
     sections: [
       {
@@ -167,6 +169,10 @@ export const projects: Project[] = [
           { value: "57", label: "проектов в год" },
           { value: "19–20", label: "ревью проектов" },
           { value: "3-й", label: "уровень зрелости ЦК" },
+        ],
+        screenshots: [
+          "/images/gpn/team/team-demo.jpg",
+          "/images/gpn/team/process-talk.jpg",
         ],
       },
       {
@@ -188,7 +194,11 @@ export const projects: Project[] = [
         links: [
           { label: "Карточка ЕСО на CX Awards 2024 (РБК)", url: "https://cxa-spb.rbc.ru/proposals/147/" },
         ],
-        screenshots: ["/images/figma/gpn-main.jpg"],
+        screenshots: [
+          "/images/gpn/eso/eso-home.png",
+          "/images/gpn/eso/eso-form.png",
+          "/images/gpn/eso/eso-detail.png",
+        ],
       },
       {
         title: "Consta — open-source DS первой промышленной компании",
@@ -209,7 +219,12 @@ export const projects: Project[] = [
           { label: "Consta на GitHub", url: "https://github.com/consta-design-system" },
           { label: "Статья vc.ru от ГПН", url: "https://vc.ru/gazpromneft/676527" },
         ],
-        screenshots: ["/images/figma/gpn-eso.jpg"],
+        screenshots: [
+          "/images/gpn/consta/consta-quick-start.png",
+          "/images/gpn/consta/consta-buttons.png",
+          "/images/gpn/consta/consta-dashboard-dark.png",
+          "/images/gpn/consta/jupiter-main.png",
+        ],
       },
       {
         title: "HR-бренд через комьюнити",
@@ -231,6 +246,12 @@ export const projects: Project[] = [
           { label: "Young Design × ГПН — номинация «Интерфейс»", url: "https://youngdesignspb.ru/nominations/interface" },
           { label: "Бейдж-генератор Вики (open-source)", url: "https://github.com/design-kudry/badge-generator" },
         ],
+        screenshots: [
+          "/images/gpn/hr/badges-closeup.jpg",
+          "/images/gpn/hr/badges-vika.jpg",
+          "/images/gpn/hr/badges-presentation.jpg",
+          "/images/gpn/hr/speaking-panel.jpg",
+        ],
       },
       {
         title: "Нейросети раньше рынка",
@@ -250,6 +271,10 @@ export const projects: Project[] = [
           "В год команда вела 36 продуктовых проектов внутри компании. Четыре из них показывают разные грани работы: командный формат, сервисный дизайн, стандартизация и промышленная адаптивность.",
         result:
           "**Дроны — стендап как хакатон.** Привезли коллег из Уфы и Логистики Переработки и Сбыта; за 2–3 недели стажёры с дизайнерами сделали кликабельный прототип сервиса беспилотной съёмки. Двойной выхлоп: реальный прототип + площадка, где стажёры выросли в наших дизайнеров.\n\n**Маркетплейс роботизации промышленности.** Продукт с нуля. Дизайнера подключили на этапе сценария, а не интерфейса — сервисный дизайн повлиял на саму конфигурацию продукта.\n\n**Переговорки.** В каждом офисе ГПН — свой UI мультимедии и климата. Сотрудник в новом офисе теряется: как поменять температуру, как вывести презентацию. Сценарный анализ → исследование → итерации → единый интерфейс на все офисы.\n\n**ЭРА Бурения.** Экономическая Расчётная Аналитическая модель для планирования ствола скважины. Один продукт — три радикально разных контекста использования: промысел, НТЦ, центр управления. Адаптивность под все экраны — последняя задача Алексея Титяева перед моим уходом.",
+        screenshots: [
+          "/images/gpn/drilling/era-burenie-stack.png",
+          "/images/gpn/drones/d-outcrop.png",
+        ],
       },
     ],
     links: [
