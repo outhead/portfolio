@@ -172,6 +172,7 @@ export const projects: Project[] = [
         ],
         screenshots: [
           "/images/gpn/team/team-demo.jpg",
+          "/images/gpn/team/team-noses.jpg",
           "/images/gpn/team/process-talk.jpg",
         ],
       },
@@ -250,7 +251,9 @@ export const projects: Project[] = [
           "/images/gpn/hr/badges-closeup.jpg",
           "/images/gpn/hr/badges-vika.jpg",
           "/images/gpn/hr/badges-presentation.jpg",
+          "/images/gpn/hr/speaking-barcamp.jpg",
           "/images/gpn/hr/speaking-panel.jpg",
+          "/images/gpn/hr/speaking-covid.jpg",
         ],
       },
       {
