@@ -129,17 +129,19 @@ export default function PulseAnimation({ variant, reverse = false, className }: 
 
     const drawSpiral = (t: number) => {
       // Спираль через ту же сетку из 5 концентрических колец.
-      // Точки остаются на месте — включается «волна» по принципу спирали:
-      // для каждого радиуса есть свой угол-«гребень», по нему точки активируются.
+      // Точки остаются на месте — активируются по «спиральному гребню»:
+      // для каждого радиуса есть свой угол-front, на больших радиусах он сдвинут,
+      // что и даёт спиральную форму. Используем 2 рукава — узор читается как спираль, не как сектор.
       ctx.clearRect(0, 0, W, H);
       ctx.beginPath();
       ctx.arc(cx, cy, 2, 0, Math.PI * 2);
       ctx.fillStyle = fill(0.5);
       ctx.fill();
 
-      const spiralRotationSpeed = 1.6; // рад/с — скорость вращения гребня
-      const twistFactor = 0.05; // насколько закручена спираль (рад на px радиуса)
-      const armWidth = Math.PI / 2.2; // угловая ширина «активной» зоны
+      const spiralRotationSpeed = 1.4; // рад/с — скорость вращения
+      const twistFactor = 0.022; // ~1.5 рад на максимум радиусе → ¼ оборота между min и max ring
+      const armWidth = Math.PI / 3; // 60° угловая ширина гребня
+      const numArms = 2; // двухрукавная спираль
       const dir = reverse ? -1 : 1;
 
       dotRings.forEach((ring) => {
@@ -148,22 +150,30 @@ export default function PulseAnimation({ variant, reverse = false, className }: 
           const x = cx + Math.cos(baseAngle) * ring.radius;
           const y = cy + Math.sin(baseAngle) * ring.radius;
 
-          // Угол гребня спирали для этого радиуса в момент t
-          const frontAngle =
-            dir * t * spiralRotationSpeed + ring.radius * twistFactor;
+          // Берём максимум активации по всем рукавам спирали
+          let bestPf = 0;
+          for (let arm = 0; arm < numArms; arm++) {
+            const armOffset = (arm / numArms) * Math.PI * 2;
+            const frontAngle =
+              dir * t * spiralRotationSpeed +
+              ring.radius * twistFactor +
+              armOffset;
 
-          // Кратчайшее угловое расстояние, обёрнутое в [-π, π]
-          let delta = baseAngle - frontAngle;
-          delta = ((delta % (Math.PI * 2)) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
+            // Кратчайшее угловое расстояние, обёрнутое в [-π, π]
+            let delta = baseAngle - frontAngle;
+            delta = ((delta % (Math.PI * 2)) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
 
-          let pf = 0;
-          if (Math.abs(delta) < armWidth / 2) {
-            pf = Math.cos((delta / (armWidth / 2)) * (Math.PI / 2));
-            pf = Math.max(0, pf);
+            if (Math.abs(delta) < armWidth / 2) {
+              const pf = Math.max(
+                0,
+                Math.cos((delta / (armWidth / 2)) * (Math.PI / 2))
+              );
+              if (pf > bestPf) bestPf = pf;
+            }
           }
 
-          const dotSize = 2 + pf * 2;
-          const op = 0.25 + pf * 0.75;
+          const dotSize = 2 + bestPf * 2;
+          const op = 0.25 + bestPf * 0.75;
           ctx.beginPath();
           ctx.arc(x, y, dotSize, 0, Math.PI * 2);
           ctx.fillStyle = fill(op);
