@@ -166,7 +166,7 @@ export default function ImageLightbox({ images, mode = "web" }: ImageLightboxPro
               key={n}
               className={
                 mode === "phone"
-                  ? "flex flex-col gap-3 items-center flex-shrink-0 w-[260px] sm:w-[280px] md:w-[300px] lg:w-[340px] xl:w-[380px] snap-start"
+                  ? "flex flex-col gap-3 items-center flex-shrink-0 w-[200px] sm:w-[220px] md:w-[230px] lg:w-[250px] xl:w-[270px] snap-start"
                   : "flex flex-col gap-3 items-center flex-shrink-0 w-[85%] sm:w-[70%] md:w-auto snap-center"
               }
             >
