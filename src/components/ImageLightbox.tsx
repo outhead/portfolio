@@ -180,7 +180,7 @@ export default function ImageLightbox({ images, mode = "web" }: ImageLightboxPro
                 }}
                 className={`relative overflow-hidden group bg-black p-0 w-full ${
                   mode === "phone"
-                    ? "aspect-[1290/2796] rounded-[2rem] md:rounded-[1.75rem] ring-1 ring-white/[0.06]"
+                    ? "aspect-[1290/2796] rounded-2xl ring-1 ring-white/[0.06]"
                     : "aspect-video rounded-lg"
                 } ${isLocked ? "cursor-pointer" : "cursor-zoom-in"}`}
               >
