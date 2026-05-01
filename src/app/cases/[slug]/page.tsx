@@ -469,6 +469,32 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
         </div>
       </section>
 
+      {/* CTA — связаться */}
+      <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-12 md:py-16 bg-black border-t border-white/[0.06]">
+        <div className="max-w-3xl">
+          <div className="text-[10px] tracking-[0.12em] uppercase text-white/30 mb-4">Открыт к офферам</div>
+          <h3 className="font-p95 text-[clamp(24px,3vw,40px)] uppercase leading-[1] mb-6 text-white/90">
+            Хочется поговорить про эту роль или просто познакомиться?
+          </h3>
+          <div className="flex flex-wrap gap-3">
+            <a
+              href="https://t.me/egoradi"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-md bg-[#A6FF00] text-black font-medium text-sm hover:bg-[#A6FF00]/85 transition-colors no-underline"
+            >
+              Написать в Telegram
+            </a>
+            <a
+              href="mailto:egor.outhead@gmail.com"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-md border border-white/15 text-white/80 text-sm hover:border-white/40 hover:text-white transition-colors no-underline"
+            >
+              egor.outhead@gmail.com
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* Next / Prev navigation */}
       <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] bg-black border-t border-white/[0.06]">
         <div className="grid grid-cols-2 gap-px">
