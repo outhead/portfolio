@@ -835,10 +835,10 @@ export default function PreviewHome() {
         >
           {/* Bento: 12-колоночный грид с разными размерами */}
           <div className="grid grid-cols-12 gap-3 md:gap-4">
-            {/* === TILE 1: Главная content-плитка (col-span-8, row-span-2) === */}
+            {/* === TILE 1: Главная content-плитка (col-span-8, row-span-2). На мобилке идёт после шара. === */}
             <motion.div
               variants={fadeUp}
-              className="col-span-12 md:col-span-8 md:row-span-2"
+              className="col-span-12 md:col-span-8 md:row-span-2 order-2 md:order-none"
             >
               <div className="relative h-full rounded-3xl border border-white/[0.1] bg-gradient-to-br from-white/[0.025] via-white/[0.01] to-transparent p-7 md:p-10 lg:p-12 flex flex-col justify-between gap-10 md:gap-14 min-h-[420px] md:min-h-[560px] overflow-hidden">
                 {/* Верхний ряд якорей */}
@@ -855,7 +855,7 @@ export default function PreviewHome() {
 
                 {/* Центральный контент */}
                 <div className="flex flex-col gap-6 md:gap-8">
-                  <h1 className="font-p95 text-[clamp(44px,7.2vw,112px)] leading-[0.92] uppercase tracking-tight text-white">
+                  <h1 className="font-p95 text-[clamp(64px,9vw,128px)] leading-[0.92] uppercase tracking-tight text-white">
                     <span className="block text-white">РАЗВИВАЮ</span>
                     <span className="block">
                       <FlippingWord
@@ -904,13 +904,13 @@ export default function PreviewHome() {
               </div>
             </motion.div>
 
-            {/* === TILE 2: Photo-плитка (col-span-4, row-span-2) === */}
+            {/* === TILE 2: Photo-плитка (col-span-4, row-span-2). На мобилке идёт первой — шар сверху, по центру. === */}
             <motion.div
               variants={fadeUp}
-              className="col-span-12 md:col-span-4 md:row-span-2"
+              className="col-span-12 md:col-span-4 md:row-span-2 order-1 md:order-none"
             >
-              <div className="relative h-full min-h-[360px] md:min-h-[560px] rounded-3xl overflow-hidden border border-white/[0.1] bg-black">
-                {/* Particle sphere — замена фото */}
+              <div className="relative h-full min-h-[480px] md:min-h-[560px] rounded-3xl overflow-hidden border border-white/[0.1] bg-black flex items-center justify-center">
+                {/* Particle sphere — замена фото. Центрируется flex-обёрткой выше. */}
                 <ParticleSphere className="absolute inset-0 w-full h-full" />
 
                 {/* Мягкий радиальный виньет поверх, чтобы плитка не сливалась с фоном */}
@@ -1527,12 +1527,13 @@ export default function PreviewHome() {
 
             <motion.h2
               variants={fadeUp}
-              className="relative font-p95 text-[clamp(56px,13vw,200px)] leading-[0.85] uppercase tracking-tight max-w-[1400px]"
+              className="relative font-p95 text-[clamp(36px,7.5vw,108px)] leading-[0.95] uppercase tracking-tight max-w-[1400px]"
             >
-              <span className="block text-white">ДАВАЙ</span>
+              <span className="block text-white">Если вы дочитали</span>
+              <span className="block text-white">до этого места —</span>
+              <span className="block text-white">мне самому интересно</span>
               <span className="block text-white">
-                ПО ДЕЛУ<span className="text-[#A6FF00]">.</span>{" "}
-                <span className="inline-block align-middle">🫡</span>
+                с вами пообщаться<span className="text-[#A6FF00]">.</span>
               </span>
             </motion.h2>
 
@@ -1640,24 +1641,26 @@ export default function PreviewHome() {
               </motion.div>
             ))}
 
-            {/* 6. Location — широкая плитка с полусферическим глобусом */}
+            {/* 6. Location — узкая плитка-полоса с компактным глобусом справа (по высоте ~ как CV) */}
             <motion.div variants={fadeUp} className="col-span-2 md:col-span-4">
-              <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0a0a0a] min-h-[360px] md:min-h-[480px]">
-                {/* Текст — по центру сверху */}
-                <div className="relative z-[2] flex flex-col items-center gap-3 pt-10 md:pt-14 px-6 text-center">
-                  <h4 className="font-p95 text-[clamp(22px,2.8vw,36px)] uppercase tracking-[0.02em] text-white">
+              <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0a0a0a] min-h-[120px] md:min-h-[130px] flex items-center justify-between gap-4 pl-5 md:pl-7 pr-2 md:pr-4 py-3 md:py-4">
+                {/* Левая часть — компактный текст */}
+                <div className="flex flex-col gap-1.5 z-[2]">
+                  <h4 className="font-p95 text-[clamp(18px,2vw,26px)] uppercase tracking-[0.02em] text-white leading-none">
                     Москва, Россия
                   </h4>
-                  <div className="inline-flex items-center gap-2.5 font-p95 text-[11px] md:text-[12px] tracking-[0.22em] uppercase text-white/55">
-                    <span className="relative inline-flex items-center justify-center w-3 h-3">
+                  <div className="inline-flex items-center gap-2 font-p95 text-[10px] md:text-[11px] tracking-[0.22em] uppercase text-white/55">
+                    <span className="relative inline-flex items-center justify-center w-2.5 h-2.5">
                       <span className="absolute inset-0 rounded-full bg-[#A6FF00]/30 animate-ping" />
-                      <span className="relative w-2 h-2 rounded-full bg-[#A6FF00] shadow-[0_0_10px_#A6FF00]" />
+                      <span className="relative w-1.5 h-1.5 rounded-full bg-[#A6FF00] shadow-[0_0_8px_#A6FF00]" />
                     </span>
                     Открыт к работе по всему миру
                   </div>
                 </div>
-                {/* Дотовый глобус — выходит снизу */}
-                <DotGlobe />
+                {/* Правая часть — небольшой круглый глобус */}
+                <div className="relative w-24 h-24 md:w-28 md:h-28 flex-shrink-0">
+                  <DotGlobe />
+                </div>
               </div>
             </motion.div>
           </div>
