@@ -1154,7 +1154,7 @@ export default function PreviewHome() {
                 title: "Строю и масштабирую дизайн-функции",
                 Icon: Users,
                 accent: "#A6FF00",
-                animation: "wave" as PulseVariant,
+                animation: "shockwave" as PulseVariant,
                 body:
                   "Собираю команды под задачу, выстраиваю процессы, культуру и дизайн-систему. Нанимаю на рост, развиваю лидов, защищаю бюджет. Уходя — оставляю функцию, которая продолжает расти без меня.",
                 items: [
@@ -1191,7 +1191,7 @@ export default function PreviewHome() {
                 title: "Дизайн + код",
                 Icon: Code2,
                 accent: "#4FC3F7",
-                animation: "shockwave" as PulseVariant,
+                animation: "wave" as PulseVariant,
                 body:
                   "Остаюсь в макетах и в IDE. React/TS/Python, WebGL, AI-инструменты. Поэтому понимаю, что реально сделать руками и сколько это стоит в человеко-неделях.",
                 items: [
