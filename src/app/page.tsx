@@ -1172,7 +1172,8 @@ export default function PreviewHome() {
                 title: "AI и B2C с фокусом на метрики",
                 Icon: Sparkles,
                 accent: "#C9A66B",
-                animation: "shockwave" as PulseVariant,
+                animation: "spiral" as PulseVariant,
+                animationReverse: true,
                 body:
                   "Работаю на число. Discovery, гипотезы, CJM, A/B, research внутри процесса. Умею считать дизайн и доказывать его ценность продакт-менеджеру и C-левелу.",
                 items: [
@@ -1190,7 +1191,7 @@ export default function PreviewHome() {
                 title: "Дизайн + код",
                 Icon: Code2,
                 accent: "#4FC3F7",
-                animation: "spiral" as PulseVariant,
+                animation: "shockwave" as PulseVariant,
                 body:
                   "Остаюсь в макетах и в IDE. React/TS/Python, WebGL, AI-инструменты. Поэтому понимаю, что реально сделать руками и сколько это стоит в человеко-неделях.",
                 items: [
@@ -1201,7 +1202,7 @@ export default function PreviewHome() {
                   "Three.js · WebGL · Shaders",
                 ],
               },
-            ].map(({ key, index, label, title, Icon, accent, animation, body, items }) => (
+            ].map(({ key, index, label, title, Icon, accent, animation, animationReverse, body, items }) => (
               <motion.div
                 key={key}
                 variants={fadeUp}
@@ -1235,7 +1236,7 @@ export default function PreviewHome() {
                 {/* Pulse-анимация в круглой рамке. Default — статика серая, hover плитки — анимация зелёная. */}
                 <div className="flex-1 min-h-[180px] flex items-center justify-center">
                   <div className="relative w-[180px] h-[180px] rounded-full border border-white/[0.06] overflow-hidden">
-                    <PulseAnimation variant={animation} className="absolute inset-0" />
+                    <PulseAnimation variant={animation} reverse={animationReverse} className="absolute inset-0" />
                   </div>
                 </div>
 

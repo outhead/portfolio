@@ -6,6 +6,8 @@ export type PulseVariant = "wave" | "shockwave" | "spiral";
 
 interface PulseAnimationProps {
   variant: PulseVariant;
+  /** Реверс направления анимации. Для spiral — пульс идёт от края к центру. */
+  reverse?: boolean;
   className?: string;
 }
 
@@ -24,7 +26,7 @@ const dotRings = [
 /** Pulse-анимации для плиток «Услуги & экспертиза»:
  *  - default: статичный кадр (t=0), точки серые
  *  - hover ближайшего .group-родителя: запускается RAF-анимация, точки зелёные #A6FF00 */
-export default function PulseAnimation({ variant, className }: PulseAnimationProps) {
+export default function PulseAnimation({ variant, reverse = false, className }: PulseAnimationProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hover, setHover] = useState(false);
 
@@ -143,8 +145,9 @@ export default function PulseAnimation({ variant, className }: PulseAnimationPro
       ctx.fill();
 
       const armRot = t * armRotSpeed;
-      const peakPos =
-        ((t * pulseSpeed) % (maxRadius + pulseLen)) - pulseLen / 2;
+      const peakPos = reverse
+        ? maxRadius + pulseLen / 2 - ((t * pulseSpeed) % (maxRadius + pulseLen))
+        : ((t * pulseSpeed) % (maxRadius + pulseLen)) - pulseLen / 2;
 
       for (let aI = 0; aI < numArms; aI++) {
         const base = (aI / numArms) * Math.PI * 2;
@@ -200,7 +203,7 @@ export default function PulseAnimation({ variant, className }: PulseAnimationPro
       stopped = true;
       cancelAnimationFrame(rafId);
     };
-  }, [hover, variant]);
+  }, [hover, variant, reverse]);
 
   return (
     <canvas
