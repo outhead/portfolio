@@ -251,12 +251,12 @@ export const projects: Project[] = [
           { label: "Статья vc.ru от ГПН", url: "https://vc.ru/gazpromneft/676527" },
         ],
         screenshots: [
-          { src: "/images/gpn/consta/consta-quick-start.png", caption: "Consta Quick Start — что такое дизайн-система, лицевая страница доклада" },
-          { src: "/images/gpn/consta/consta-buttons.png", caption: "Широкая вариативность компонентов — на примере кнопок" },
-          { src: "/images/gpn/consta/consta-userselect.png", caption: "UserSelect — компонент с порталом, обновляется автоматически после апдейта на GitHub" },
-          { src: "/images/gpn/consta/consta-dashboard-light.png", caption: "Дашборд бурения — светлая тема" },
-          { src: "/images/gpn/consta/consta-dashboard-dark.png", caption: "Тот же дашборд — тёмная тема. Парные темы из коробки" },
-          { src: "/images/gpn/consta/consta-charts.png", caption: "Consta Charts — линейные, столбчатые, пузырчатые графики на палитре DS" },
+          { src: "/images/gpn/consta/consta-quick-start.png", caption: "Consta — open-source дизайн-система ГПН. Бесплатна по MIT, распространяется на любых продуктах: веб, мобильные, видеостены" },
+          { src: "/images/gpn/consta/consta-buttons.png", caption: "Кнопки как пример вариативности: 4 размера, 3 формы, 3 цветовых акцента, состояния — без жёстких ограничений на сочетания" },
+          { src: "/images/gpn/consta/consta-userselect.png", caption: "UserSelect — выпадающий список пользователей с поиском и аватарами. Документация и Storybook авто-обновляются после релиза в GitHub" },
+          { src: "/images/gpn/consta/consta-dashboard-light.png", caption: "Дашборд буровика на Consta — светлая тема: данные по добыче, аналитика, команда" },
+          { src: "/images/gpn/consta/consta-dashboard-dark.png", caption: "Тот же экран — тёмная тема. Переключение из коробки, без правок макетов и кода" },
+          { src: "/images/gpn/consta/consta-charts.png", caption: "Consta Charts — отдельная библиотека графиков (линейные, столбчатые, пузырчатые, графики связи). Совместима с темами Consta" },
         ],
       },
       {
