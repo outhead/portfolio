@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 /* ─────────────────────────────────────────────────────────────────
  * HeroCoverVideo
@@ -79,72 +79,73 @@ export function CardCoverVideo({
   hoverTarget?: React.RefObject<HTMLElement | null>;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
-  const [isHovering, setIsHovering] = useState(false);
+  /** Был ли уже hover-цикл. Нужно чтобы на init НЕ запускать leave-логику. */
+  const hasHoveredRef = useRef(false);
 
-  // Изначальный seek в pauseAt
   useEffect(() => {
     const v = ref.current;
     if (!v || pauseAt === undefined) return;
-    const seek = () => {
+
+    /** Гарантированно поставить на pauseAt и встать. */
+    const seekAndPause = () => {
       try {
         v.currentTime = pauseAt;
       } catch {}
       v.pause();
     };
-    if (v.readyState >= 1) seek();
-    else v.addEventListener("loadedmetadata", seek, { once: true });
-  }, [pauseAt]);
 
-  // Hover-слушатели
-  useEffect(() => {
-    const target = hoverTarget?.current ?? ref.current?.parentElement;
-    if (!target) return;
-    const enter = () => setIsHovering(true);
-    const leave = () => setIsHovering(false);
-    target.addEventListener("mouseenter", enter);
-    target.addEventListener("mouseleave", leave);
-    return () => {
-      target.removeEventListener("mouseenter", enter);
-      target.removeEventListener("mouseleave", leave);
-    };
-  }, [hoverTarget]);
-
-  // Реакция на смену hover-состояния
-  useEffect(() => {
-    const v = ref.current;
-    if (!v || pauseAt === undefined) return;
-    let cancelled = false;
-
+    /** Воспроизвести от 0 до pauseAt и встать. */
     const onTimeUpdateEnter = () => {
-      if (cancelled) return;
       if (v.currentTime >= pauseAt) {
         v.pause();
         v.removeEventListener("timeupdate", onTimeUpdateEnter);
       }
     };
 
-    if (isHovering) {
-      // Hover enter: play from 0 to pauseAt
+    const onEnter = () => {
+      hasHoveredRef.current = true;
+      v.removeEventListener("timeupdate", onTimeUpdateEnter);
       try {
         v.currentTime = 0;
       } catch {}
-      v.removeEventListener("timeupdate", onTimeUpdateEnter);
       v.addEventListener("timeupdate", onTimeUpdateEnter);
       v.play().catch(() => {});
-    } else {
-      // Mouse leave: play from pauseAt → end
+    };
+
+    const onLeave = () => {
+      // Не запускать play-out пока пользователь не hover-нул хотя бы один раз.
+      // Иначе ловим mouseleave при первом рендере и видео уходит в play-out.
+      if (!hasHoveredRef.current) return;
+      v.removeEventListener("timeupdate", onTimeUpdateEnter);
       try {
         v.currentTime = pauseAt;
       } catch {}
-      v.removeEventListener("timeupdate", onTimeUpdateEnter);
       v.play().catch(() => {});
+    };
+
+    // Initial: дождаться метаданных, поставить на pauseAt, встать.
+    if (v.readyState >= 1) {
+      seekAndPause();
+    } else {
+      v.addEventListener("loadedmetadata", seekAndPause, { once: true });
+    }
+
+    // Hover-listener'ы вешаем на parentElement видео (это div-контейнер карточки внутри Link)
+    const target = hoverTarget?.current ?? v.parentElement;
+    if (target) {
+      target.addEventListener("mouseenter", onEnter);
+      target.addEventListener("mouseleave", onLeave);
     }
 
     return () => {
-      cancelled = true;
+      v.removeEventListener("loadedmetadata", seekAndPause);
       v.removeEventListener("timeupdate", onTimeUpdateEnter);
+      if (target) {
+        target.removeEventListener("mouseenter", onEnter);
+        target.removeEventListener("mouseleave", onLeave);
+      }
     };
-  }, [isHovering, pauseAt]);
+  }, [pauseAt, hoverTarget]);
 
   const usePauseMode = pauseAt !== undefined;
   return (
