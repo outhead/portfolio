@@ -7,6 +7,9 @@ import { X } from "lucide-react";
 interface ImageLightboxImage {
   src: string;
   alt: string;
+  /** Короткий моно-лейбл под плиткой (a-la Kardio: «SPLASH SCREEN»). */
+  label?: string;
+  /** Полное описание в overlay-просмотре. */
   caption?: string;
 }
 
@@ -42,12 +45,12 @@ export default function ImageLightbox({ images }: ImageLightboxProps) {
 
   return (
     <>
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid md:grid-cols-2 gap-x-6 gap-y-10 md:gap-y-14">
         {images.map((img, n) => (
-          <figure key={n} className="flex flex-col gap-2">
+          <figure key={n} className="flex flex-col gap-3 items-center">
             <button
               onClick={() => setActiveIndex(n)}
-              className="relative aspect-video rounded-lg border border-white/[0.06] overflow-hidden group cursor-zoom-in bg-transparent p-0"
+              className="relative aspect-video rounded-lg overflow-hidden group cursor-zoom-in bg-black p-0 w-full"
             >
               <Image
                 src={img.src}
@@ -57,9 +60,9 @@ export default function ImageLightbox({ images }: ImageLightboxProps) {
                 className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
               />
             </button>
-            {img.caption && (
-              <figcaption className="text-[11px] md:text-[12px] tracking-[0.04em] text-white/45 leading-snug px-1">
-                {img.caption}
+            {(img.label || img.caption) && (
+              <figcaption className="font-mono text-[10px] md:text-[11px] tracking-[0.16em] uppercase text-white/40 text-center px-2">
+                {img.label ?? img.caption}
               </figcaption>
             )}
           </figure>
@@ -99,8 +102,13 @@ export default function ImageLightbox({ images }: ImageLightboxProps) {
             </div>
           </div>
 
-          {/* Bottom bar: caption + counter, pinned to bottom, no overlap with image */}
+          {/* Bottom bar: label (mono) + caption + counter, без перекрытия картинки */}
           <div className="flex-shrink-0 px-4 py-4 md:py-5 flex flex-col items-center gap-2 text-center">
+            {images[activeIndex].label && (
+              <div className="font-mono text-[10px] md:text-[11px] tracking-[0.18em] uppercase text-white/45">
+                {images[activeIndex].label}
+              </div>
+            )}
             {images[activeIndex].caption && (
               <div className="text-sm md:text-base text-white/85 leading-snug max-w-3xl max-h-[20vh] overflow-y-auto">
                 {images[activeIndex].caption}

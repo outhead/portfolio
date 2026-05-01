@@ -1,5 +1,8 @@
-/** Скриншот: либо просто строка-путь, либо объект с подписью. */
-export type Screenshot = string | { src: string; caption?: string; alt?: string };
+/** Скриншот: либо просто строка-путь, либо объект с подписями.
+ * `label` — короткий моно-лейбл под плиткой (a-la Kardio: «SPLASH SCREEN»).
+ * `caption` — полное описание, видимое в overlay-просмотре.
+ */
+export type Screenshot = string | { src: string; label?: string; caption?: string; alt?: string };
 
 export interface Project {
   slug: string;
@@ -200,10 +203,10 @@ export const projects: Project[] = [
           { value: "3-й", label: "уровень зрелости ЦК" },
         ],
         screenshots: [
-          { src: "/images/gpn/team/team-demo.jpg", caption: "Команда продуктового дизайна на демо департамента. Цифергауз, Питер" },
-          { src: "/images/gpn/team/team-noses.jpg", caption: "Тимбилдинг с красными клоунскими носами. Внутренняя традиция, ставшая мемом команды" },
-          { src: "/images/gpn/team/process-talk.jpg", caption: "Внутренний доклад про дизайн-процесс — 7 этапов от анализа требований до реализации" },
-          { src: "/images/gpn/team/concept-talk.jpg", caption: "Соавторский доклад со Светланой Любавской про создание нового концепта продукта" },
+          { src: "/images/gpn/team/team-demo.jpg", label: "Команда на демо", caption: "Команда продуктового дизайна на демо департамента. Цифергауз, Питер" },
+          { src: "/images/gpn/team/team-noses.jpg", label: "Тимбилдинг", caption: "Тимбилдинг с красными клоунскими носами. Внутренняя традиция, ставшая мемом команды" },
+          { src: "/images/gpn/team/process-talk.jpg", label: "Доклад «дизайн-процесс»", caption: "Внутренний доклад про дизайн-процесс — 7 этапов от анализа требований до реализации" },
+          { src: "/images/gpn/team/concept-talk.jpg", label: "Доклад «новый концепт»", caption: "Соавторский доклад со Светланой Любавской про создание нового концепта продукта" },
         ],
       },
       {
@@ -226,9 +229,9 @@ export const projects: Project[] = [
           { label: "Карточка ЕСО на CX Awards 2024 (РБК)", url: "https://cxa-spb.rbc.ru/proposals/147/" },
         ],
         screenshots: [
-          { src: "/images/gpn/eso/eso-home.png", caption: "ЕСО — главная: список обращений сотрудника с фильтрами по статусам, виджеты «Отпуск скоро» и «Старт» справа" },
-          { src: "/images/gpn/eso/eso-form.png", caption: "ЕСО — создание нового обращения. Контекстная подсказка с правилами оформления справки 2-НДФЛ" },
-          { src: "/images/gpn/eso/eso-detail.png", caption: "ЕСО — карточка обращения SD-4252730: статус, контактное лицо, прогресс обработки" },
+          { src: "/images/gpn/eso/eso-home.png", label: "ЕСО — главная", caption: "ЕСО — главная: список обращений сотрудника с фильтрами по статусам, виджеты «Отпуск скоро» и «Старт» справа" },
+          { src: "/images/gpn/eso/eso-form.png", label: "Новое обращение", caption: "ЕСО — создание нового обращения. Контекстная подсказка с правилами оформления справки 2-НДФЛ" },
+          { src: "/images/gpn/eso/eso-detail.png", label: "Карточка обращения", caption: "ЕСО — карточка обращения SD-4252730: статус, контактное лицо, прогресс обработки" },
         ],
       },
       {
@@ -251,12 +254,12 @@ export const projects: Project[] = [
           { label: "Статья vc.ru от ГПН", url: "https://vc.ru/gazpromneft/676527" },
         ],
         screenshots: [
-          { src: "/images/gpn/consta/consta-quick-start.png", caption: "Consta — open-source дизайн-система ГПН. Бесплатна по MIT, распространяется на любых продуктах: веб, мобильные, видеостены" },
-          { src: "/images/gpn/consta/consta-buttons.png", caption: "Кнопки как пример вариативности: 4 размера, 3 формы, 3 цветовых акцента, состояния — без жёстких ограничений на сочетания" },
-          { src: "/images/gpn/consta/consta-userselect.png", caption: "UserSelect — выпадающий список пользователей с поиском и аватарами. Документация и Storybook авто-обновляются после релиза в GitHub" },
-          { src: "/images/gpn/consta/consta-dashboard-light.png", caption: "Дашборд буровика на Consta — светлая тема: данные по добыче, аналитика, команда" },
-          { src: "/images/gpn/consta/consta-dashboard-dark.png", caption: "Тот же экран — тёмная тема. Переключение из коробки, без правок макетов и кода" },
-          { src: "/images/gpn/consta/consta-charts.png", caption: "Consta Charts — отдельная библиотека графиков (линейные, столбчатые, пузырчатые, графики связи). Совместима с темами Consta" },
+          { src: "/images/gpn/consta/consta-quick-start.png", label: "Quick Start", caption: "Consta — open-source дизайн-система ГПН. Бесплатна по MIT, распространяется на любых продуктах: веб, мобильные, видеостены" },
+          { src: "/images/gpn/consta/consta-buttons.png", label: "Вариативность кнопок", caption: "Кнопки как пример вариативности: 4 размера, 3 формы, 3 цветовых акцента, состояния — без жёстких ограничений на сочетания" },
+          { src: "/images/gpn/consta/consta-userselect.png", label: "UserSelect", caption: "UserSelect — выпадающий список пользователей с поиском и аватарами. Документация и Storybook авто-обновляются после релиза в GitHub" },
+          { src: "/images/gpn/consta/consta-dashboard-light.png", label: "Дашборд · светлая тема", caption: "Дашборд буровика на Consta — светлая тема: данные по добыче, аналитика, команда" },
+          { src: "/images/gpn/consta/consta-dashboard-dark.png", label: "Дашборд · тёмная тема", caption: "Тот же экран — тёмная тема. Переключение из коробки, без правок макетов и кода" },
+          { src: "/images/gpn/consta/consta-charts.png", label: "Charts", caption: "Consta Charts — отдельная библиотека графиков (линейные, столбчатые, пузырчатые, графики связи). Совместима с темами Consta" },
         ],
       },
       {
@@ -272,14 +275,14 @@ export const projects: Project[] = [
           { value: "≠ команды", label: "ЭРА — моя, Юпитер — соседняя" },
         ],
         screenshots: [
-          { src: "/images/gpn/consta/jupiter-main.png", caption: "Юпитер — главная: поиск по внутренним системам ГПН и лента изменений" },
-          { src: "/images/gpn/consta/jupiter-monitoring.png", caption: "Юпитер — лента инцидентов: приоритет, статус, владелец" },
-          { src: "/images/gpn/consta/jupiter-dashboard.png", caption: "Юпитер — инфраструктурная карта SAP-блоков и связанных сервисов" },
-          { src: "/images/gpn/consta/jupiter-search.png", caption: "Юпитер — расширенный поиск с фильтрами по типам систем и метрикам" },
-          { src: "/images/gpn/drilling/era-burenie-empty.png", caption: "ЭРА Бурения — стартовое состояние «компоновка не создана»" },
-          { src: "/images/gpn/drilling/era-burenie-stack.png", caption: "ЭРА Бурения — компоновка КНБК с долотом, мотором, стабилизатором" },
-          { src: "/images/gpn/drilling/era-burenie-projection.png", caption: "ЭРА Бурения — проекция ствола скважины с обсадной колонной" },
-          { src: "/images/gpn/drilling/era-burenie-sections.png", caption: "ЭРА Бурения — модель скважины: направление, кондуктор, хвостовик" },
+          { src: "/images/gpn/consta/jupiter-main.png", label: "Юпитер · главная", caption: "Юпитер — главная: поиск по внутренним системам ГПН и лента изменений" },
+          { src: "/images/gpn/consta/jupiter-monitoring.png", label: "Юпитер · инциденты", caption: "Юпитер — лента инцидентов: приоритет, статус, владелец" },
+          { src: "/images/gpn/consta/jupiter-dashboard.png", label: "Юпитер · карта SAP", caption: "Юпитер — инфраструктурная карта SAP-блоков и связанных сервисов" },
+          { src: "/images/gpn/consta/jupiter-search.png", label: "Юпитер · поиск", caption: "Юпитер — расширенный поиск с фильтрами по типам систем и метрикам" },
+          { src: "/images/gpn/drilling/era-burenie-empty.png", label: "ЭРА · пустое состояние", caption: "ЭРА Бурения — стартовое состояние «компоновка не создана»" },
+          { src: "/images/gpn/drilling/era-burenie-stack.png", label: "ЭРА · компоновка КНБК", caption: "ЭРА Бурения — компоновка КНБК с долотом, мотором, стабилизатором" },
+          { src: "/images/gpn/drilling/era-burenie-projection.png", label: "ЭРА · проекция ствола", caption: "ЭРА Бурения — проекция ствола скважины с обсадной колонной" },
+          { src: "/images/gpn/drilling/era-burenie-sections.png", label: "ЭРА · секции скважины", caption: "ЭРА Бурения — модель скважины: направление, кондуктор, хвостовик" },
         ],
       },
       {
@@ -305,14 +308,14 @@ export const projects: Project[] = [
           { label: "Бейдж-генератор Вики (open-source)", url: "https://github.com/design-kudry/badge-generator" },
         ],
         screenshots: [
-          { src: "/images/gpn/hr/badges-closeup.jpg", caption: "Готовые персональные пропуска: Лепёха, Кудрявцева, Воронин, Шугаев, Кравченко" },
-          { src: "/images/gpn/hr/badges-vika.jpg", caption: "Вика Кудрявцева — соавторка истории с пропусками — со своим пропуском" },
-          { src: "/images/gpn/hr/badges-presentation.jpg", caption: "Внутренняя презентация про шаблон наклеек на пропуска. Зал слушает, на экране сетка пропусков команды" },
-          { src: "/images/gpn/hr/badges-egor.jpg", caption: "Мой пропуск на ленте UMBRELLA CORPORATION — внутренний мем команды" },
-          { src: "/images/gpn/hr/speaking-barcamp.jpg", caption: "Спикер на БАРКЕМП 20.35 — Национальная технологическая революция, Санкт-Петербург, 7–8 ноября" },
-          { src: "/images/gpn/hr/speaking-panel.jpg", caption: "Панельная дискуссия на БАРКЕМП 20.35 — продуктовый дизайн в крупных промышленных компаниях" },
-          { src: "/images/gpn/hr/speaking-covid.jpg", caption: "Внутренний митап в Цифергаузе. Тема: хронология ограничений COVID-19 и ответ продуктовой команды" },
-          { src: "/images/gpn/hr/speaking-bw.jpg", caption: "Подкаст-интервью на сцене перед аудиторией дизайнеров" },
+          { src: "/images/gpn/hr/badges-closeup.jpg", label: "Пропуска · крупный план", caption: "Готовые персональные пропуска: Лепёха, Кудрявцева, Воронин, Шугаев, Кравченко" },
+          { src: "/images/gpn/hr/badges-vika.jpg", label: "Вика и её пропуск", caption: "Вика Кудрявцева — соавторка истории с пропусками — со своим пропуском" },
+          { src: "/images/gpn/hr/badges-presentation.jpg", label: "Презентация шаблона", caption: "Внутренняя презентация про шаблон наклеек на пропуска. Зал слушает, на экране сетка пропусков команды" },
+          { src: "/images/gpn/hr/badges-egor.jpg", label: "UMBRELLA-пропуск", caption: "Мой пропуск на ленте UMBRELLA CORPORATION — внутренний мем команды" },
+          { src: "/images/gpn/hr/speaking-barcamp.jpg", label: "БАРКЕМП · спикер", caption: "Спикер на БАРКЕМП 20.35 — Национальная технологическая революция, Санкт-Петербург, 7–8 ноября" },
+          { src: "/images/gpn/hr/speaking-panel.jpg", label: "БАРКЕМП · панель", caption: "Панельная дискуссия на БАРКЕМП 20.35 — продуктовый дизайн в крупных промышленных компаниях" },
+          { src: "/images/gpn/hr/speaking-covid.jpg", label: "Митап · COVID-доклад", caption: "Внутренний митап в Цифергаузе. Тема: хронология ограничений COVID-19 и ответ продуктовой команды" },
+          { src: "/images/gpn/hr/speaking-bw.jpg", label: "Интервью на сцене", caption: "Подкаст-интервью на сцене перед аудиторией дизайнеров" },
         ],
       },
       {
@@ -349,9 +352,9 @@ export const projects: Project[] = [
           { value: "Единый UI", label: "Переговорки на все офисы" },
         ],
         screenshots: [
-          { src: "/images/gpn/drones/d-outcrop.png", caption: "Дроны / D-Outcrop — прототип сервиса беспилотной геологоразведки. Сделан на хакатоне-стендапе за 2–3 недели стажёрами с коллегами из Уфы и ЛПС" },
-          { src: "/images/gpn/illustrations/marketplace.svg", caption: "Маркетплейс роботизации — концептуальная схема: каталог промышленных решений с фильтрами по операции, отрасли и производителю. Дизайн-вклад на этапе сценария, не интерфейса (NDA-чувствительный продукт показан схемой)" },
-          { src: "/images/gpn/illustrations/meeting-rooms.svg", caption: "Переговорки — единый UI климат-контроля и мультимедии. Один интерфейс для всех офисов ГПН: Москва, Питер, Уфа, Тюмень, Омск (NDA-чувствительный продукт показан схемой)" },
+          { src: "/images/gpn/drones/d-outcrop.png", label: "Дроны · D-Outcrop", caption: "Дроны / D-Outcrop — прототип сервиса беспилотной геологоразведки. Сделан на хакатоне-стендапе за 2–3 недели стажёрами с коллегами из Уфы и ЛПС" },
+          { src: "/images/gpn/illustrations/marketplace.svg", label: "Маркетплейс роботизации", caption: "Маркетплейс роботизации — концептуальная схема: каталог промышленных решений с фильтрами по операции, отрасли и производителю. Дизайн-вклад на этапе сценария, не интерфейса (NDA-чувствительный продукт показан схемой)" },
+          { src: "/images/gpn/illustrations/meeting-rooms.svg", label: "Переговорки · единый UI", caption: "Переговорки — единый UI климат-контроля и мультимедии. Один интерфейс для всех офисов ГПН: Москва, Питер, Уфа, Тюмень, Омск (NDA-чувствительный продукт показан схемой)" },
         ],
       },
     ],

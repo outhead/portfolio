@@ -306,11 +306,12 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                     <ImageLightbox
                       images={section.screenshots!.map((shot, n) => {
                         const src = typeof shot === "string" ? shot : shot.src;
+                        const label = typeof shot === "string" ? undefined : shot.label;
                         const caption = typeof shot === "string" ? undefined : shot.caption;
                         const alt =
                           (typeof shot === "string" ? undefined : shot.alt) ??
                           `${project.title} — ${section.title} — ${n + 1}`;
-                        return { src, alt, caption };
+                        return { src, alt, label, caption };
                       })}
                     />
                   </div>
@@ -327,11 +328,12 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
               <ImageLightbox
                 images={project.screenshots.map((shot, n) => {
                   const src = typeof shot === "string" ? shot : shot.src;
+                  const label = typeof shot === "string" ? undefined : shot.label;
                   const caption = typeof shot === "string" ? undefined : shot.caption;
                   const alt =
                     (typeof shot === "string" ? undefined : shot.alt) ??
                     `${project.title} — скриншот ${n + 1}`;
-                  return { src, alt, caption };
+                  return { src, alt, label, caption };
                 })}
               />
             </div>
