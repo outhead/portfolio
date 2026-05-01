@@ -139,20 +139,25 @@ export default function PulseAnimation({ variant, reverse = false, className }: 
       ctx.fill();
 
       const maxR = 75; // максимальный радиус (внешнее кольцо)
-      const radialSpeed = 80; // px/sec — скорость движения фронта по радиусу
-      const cycleSpan = maxR + 30; // px: max радиус + пауза «вне поля» после центра
+      const radialSpeed = 45; // px/sec — фронт движется медленнее → дольше каждое кольцо горит
+      const cycleSpan = maxR + 60; // px: max радиус + длинная пауза «вне поля»
       const cycleDuration = cycleSpan / radialSpeed; // длительность одного цикла
-      const angularSpeed = 1.6; // рад/с — закручивание во время полёта к центру
+      const angularSpeed = 1.0; // рад/с — закручивание во время полёта к центру
       const twistFactor = 0.025; // дополнительный спиральный сдвиг по радиусу
-      const armWidth = Math.PI / 2.5; // ширина рукава в радианах
+      const armWidth = Math.PI / 1.8; // широкий рукав → плавный угловой переход
       const numArms = 2;
       const dir = reverse ? -1 : 1;
-      const decayRate = 4.0; // экспоненциальный спад вспышки во времени
 
       // Время в текущем цикле
       const tCycle = t % cycleDuration;
 
-      dotRings.forEach((ring, ringIndex) => {
+      // Асимметричный gaussian профиль вспышки во времени:
+      // плавный разгон ДО пересечения фронта (σPre) и длинный хвост ПОСЛЕ (σPost).
+      // Большие σ → переходы значительно мягче.
+      const σPre = 0.55;
+      const σPost = 1.0;
+
+      dotRings.forEach((ring) => {
         for (let i = 0; i < ring.count; i++) {
           const baseAngle = (i / ring.count) * Math.PI * 2;
           const x = cx + Math.cos(baseAngle) * ring.radius;
@@ -162,42 +167,43 @@ export default function PulseAnimation({ variant, reverse = false, className }: 
           const tPass = (maxR - ring.radius) / radialSpeed;
           const timeSincePass = tCycle - tPass;
 
-          // Спиральный flash — точка активируется только при прохождении фронта
+          // Профиль яркости во времени — гауссиан с разными σ до/после пика
+          const σ = timeSincePass < 0 ? σPre : σPost;
+          const timeProfile = Math.exp(
+            -(timeSincePass * timeSincePass) / (2 * σ * σ)
+          );
+
+          // Угловой компонент — плавный cos-bell, без резких границ
           let bestPf = 0;
-          if (timeSincePass >= 0) {
-            for (let arm = 0; arm < numArms; arm++) {
-              const armOffset = (arm / numArms) * Math.PI * 2;
-              const armAngleAtPass =
-                dir * (t - timeSincePass) * angularSpeed +
-                ring.radius * twistFactor +
-                armOffset;
+          for (let arm = 0; arm < numArms; arm++) {
+            const armOffset = (arm / numArms) * Math.PI * 2;
+            const armAngleAtPass =
+              dir * (t - timeSincePass) * angularSpeed +
+              ring.radius * twistFactor +
+              armOffset;
 
-              let da = baseAngle - armAngleAtPass;
-              da = ((da % (Math.PI * 2)) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
+            let da = baseAngle - armAngleAtPass;
+            da = ((da % (Math.PI * 2)) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
 
-              let angularGate = 0;
-              if (Math.abs(da) < armWidth / 2) {
-                angularGate = Math.max(
-                  0,
-                  Math.cos((da / (armWidth / 2)) * (Math.PI / 2))
-                );
-              }
-              const timeDecay = Math.exp(-timeSincePass * decayRate);
-              const pf = angularGate * timeDecay;
-              if (pf > bestPf) bestPf = pf;
-            }
+            // Плавный cos-bell без жёсткого if-обреза
+            let angularGate = Math.cos(
+              Math.min(Math.abs(da), Math.PI / 2) /
+                (armWidth / 2) *
+                (Math.PI / 2)
+            );
+            angularGate = Math.max(0, angularGate);
+
+            const pf = angularGate * timeProfile;
+            if (pf > bestPf) bestPf = pf;
           }
+          // Двойное smoothstep — ещё более мягкая кривая на концах
+          const ss = bestPf * bestPf * (3 - 2 * bestPf);
+          const eased = ss * ss * (3 - 2 * ss);
 
-          // Базовый «спокойный» уровень — все точки одинаково тусклые в покое
           const baseSize = 2;
           const baseOpacity = 0.25;
-
-          // Только активные точки получают плавную sin-пульсацию,
-          // которая модулирует яркость вспышки. Спокойные — статика.
-          const breath =
-            (Math.sin(t * 3 - ringIndex * 0.4 + i * 0.2) + 1) / 2; // 0..1
-          const flashSize = bestPf * (2 + breath * 0.8);
-          const flashOpacity = bestPf * (0.5 + breath * 0.25);
+          const flashSize = eased * 2.6;
+          const flashOpacity = eased * 0.7;
 
           const dotSize = baseSize + flashSize;
           const op = Math.min(1, baseOpacity + flashOpacity);
