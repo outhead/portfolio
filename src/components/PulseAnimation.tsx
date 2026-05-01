@@ -135,11 +135,11 @@ export default function PulseAnimation({ variant, reverse = false, className }: 
 
       const maxR = 75; // максимальный радиус (внешнее кольцо)
       const lead = 28; // запас перед внешним кольцом — плавный fade-in
-      const radialSpeed = 45; // px/sec — скорость фронта
-      const cycleSpan = maxR + lead + 60; // длина цикла + пауза после центра
+      const radialSpeed = 62; // px/sec — чуть быстрее предыдущего 45
+      const cycleSpan = maxR + lead + 50; // длина цикла + пауза после центра
       const cycleDuration = cycleSpan / radialSpeed;
-      const angularSpeed = 1.0; // рад/с — закручивание во время полёта к центру
-      const twistFactor = 0.025; // дополнительный спиральный сдвиг по радиусу
+      const angularSpeed = 1.2; // рад/с — закручивание во время полёта к центру
+      const twistFactor = 0.025;
       const armWidth = Math.PI / 1.8;
       const numArms = 2;
       const dir = reverse ? -1 : 1;
@@ -149,9 +149,9 @@ export default function PulseAnimation({ variant, reverse = false, className }: 
 
       // Асимметричный gaussian профиль вспышки во времени:
       // плавный разгон ДО пересечения фронта (σPre) и длинный хвост ПОСЛЕ (σPost).
-      // Большие σ → переходы значительно мягче.
-      const σPre = 0.55;
-      const σPost = 1.0;
+      // Большие σ → переходы мягче. Подобраны под чуть более быстрый radialSpeed.
+      const σPre = 0.42;
+      const σPost = 0.78;
 
       dotRings.forEach((ring) => {
         for (let i = 0; i < ring.count; i++) {
