@@ -158,7 +158,7 @@ export const projects: Project[] = [
     coverColor: "#0E0E0E",
     coverImage: "/images/covers/gpn-cover.jpg",
     coverVideo: "/videos/gpn-cover.mp4",
-    coverVideoPauseAt: 2.26,
+    coverVideoPauseAt: 2.86,
     screenshots: [
       "/images/gpn/eso/eso-home.png",
       "/images/gpn/consta/consta-dashboard-dark.png",
