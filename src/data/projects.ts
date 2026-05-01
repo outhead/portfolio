@@ -112,7 +112,6 @@ export const projects: Project[] = [
     ],
     type: "work",
     coverColor: "#0E0E0E",
-    coverImage: "/images/covers/mts-2024.jpg",
     coverVideo: "/images/mts/voice/voice-demo-1.mp4",
     coverVideoPauseAt: 1.5,
     screenshotsMode: "phone",
