@@ -128,23 +128,19 @@ export default function PulseAnimation({ variant, reverse = false, className }: 
     };
 
     const drawSpiral = (t: number) => {
-      // Спираль через ту же сетку из 5 концентрических колец.
-      // Эффект: фронт идёт ОТ края К ЦЕНТРУ, по дороге закручиваясь по углу.
-      // Когда фронт пересекает точку — она вспыхивает, потом гаснет.
-      // Получается «спиральная воронка» — точки пробегают от внешнего кольца к центру.
+      // Спираль через ту же сетку из 5 концентрических колец + центральная точка.
+      // Фронт стартует на (maxR + lead) — внешнее кольцо плавно нарастает,
+      // затем идёт к центру; центральная точка — финальный пик цикла.
       ctx.clearRect(0, 0, W, H);
-      ctx.beginPath();
-      ctx.arc(cx, cy, 2, 0, Math.PI * 2);
-      ctx.fillStyle = fill(0.5);
-      ctx.fill();
 
       const maxR = 75; // максимальный радиус (внешнее кольцо)
-      const radialSpeed = 45; // px/sec — фронт движется медленнее → дольше каждое кольцо горит
-      const cycleSpan = maxR + 60; // px: max радиус + длинная пауза «вне поля»
-      const cycleDuration = cycleSpan / radialSpeed; // длительность одного цикла
+      const lead = 28; // запас перед внешним кольцом — плавный fade-in
+      const radialSpeed = 45; // px/sec — скорость фронта
+      const cycleSpan = maxR + lead + 60; // длина цикла + пауза после центра
+      const cycleDuration = cycleSpan / radialSpeed;
       const angularSpeed = 1.0; // рад/с — закручивание во время полёта к центру
       const twistFactor = 0.025; // дополнительный спиральный сдвиг по радиусу
-      const armWidth = Math.PI / 1.8; // широкий рукав → плавный угловой переход
+      const armWidth = Math.PI / 1.8;
       const numArms = 2;
       const dir = reverse ? -1 : 1;
 
@@ -163,8 +159,8 @@ export default function PulseAnimation({ variant, reverse = false, className }: 
           const x = cx + Math.cos(baseAngle) * ring.radius;
           const y = cy + Math.sin(baseAngle) * ring.radius;
 
-          // Когда фронт пересёк это кольцо в текущем цикле
-          const tPass = (maxR - ring.radius) / radialSpeed;
+          // Когда фронт пересёк это кольцо в текущем цикле (с учётом lead)
+          const tPass = (maxR + lead - ring.radius) / radialSpeed;
           const timeSincePass = tCycle - tPass;
 
           // Профиль яркости во времени — гауссиан с разными σ до/после пика
@@ -213,6 +209,21 @@ export default function PulseAnimation({ variant, reverse = false, className }: 
           ctx.fill();
         }
       });
+
+      // Центральная точка — финальный пик цикла. Фронт доходит до неё последней,
+      // когда tCycle = (maxR + lead) / radialSpeed.
+      const tPassCenter = (maxR + lead) / radialSpeed;
+      const tsCenter = tCycle - tPassCenter;
+      const σC = tsCenter < 0 ? σPre : σPost;
+      const centerProfile = Math.exp(-(tsCenter * tsCenter) / (2 * σC * σC));
+      const ssC = centerProfile * centerProfile * (3 - 2 * centerProfile);
+      const easedC = ssC * ssC * (3 - 2 * ssC);
+      const centerSize = 2 + easedC * 4;
+      const centerOp = Math.min(1, 0.35 + easedC * 0.65);
+      ctx.beginPath();
+      ctx.arc(cx, cy, centerSize, 0, Math.PI * 2);
+      ctx.fillStyle = fill(centerOp);
+      ctx.fill();
     };
 
     const drawDefault = () => {
