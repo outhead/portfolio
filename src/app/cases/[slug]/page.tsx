@@ -358,7 +358,9 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
             }, {});
             const order = [
               "Награда",
+              "Выступления и интервью",
               "Дизайн-система Consta",
+              "Пресса",
               "Пресса и интервью",
               "Партнёрства и артефакты",
               "Ссылки",

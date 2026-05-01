@@ -117,8 +117,10 @@ export const projects: Project[] = [
       },
     ],
     links: [
-      { label: "МТС Design — портал дизайна", url: "https://design.mts.ru" },
-      { label: "Дизайн-система GRANAT", url: "https://design.mts.ru/ds" },
+      { category: "Дизайн-система", label: "МТС Design — портал дизайна", url: "https://design.mts.ru" },
+      { category: "Дизайн-система", label: "Дизайн-система GRANAT", url: "https://design.mts.ru/ds" },
+      { category: "Выступления и интервью", label: "Интервью со мной — Art-director МТС", url: "https://youtu.be/opoCmrnQUDI", kind: "video", thumbnail: "/images/mts/links/mts-interview.jpg" },
+      { category: "Выступления и интервью", label: "Раннее выступление — «Чаптеры или как засинкать 150 дизайнеров»", url: "https://youtu.be/2F6TrdrWYKc", kind: "video", thumbnail: "/images/mts/links/mts-first.jpg" },
     ],
   },
   {
@@ -244,6 +246,8 @@ export const projects: Project[] = [
           { value: "3", label: "вуза-партнёра" },
         ],
         links: [
+          { label: "Выступление на World Usability Day", url: "https://www.youtube.com/live/OjdF0lLFGv4?t=5003", kind: "video", thumbnail: "/images/gpn/links/wud-2022.jpg" },
+          { label: "Полное выступление со студией Pinkman", url: "https://youtu.be/lLxhnXgoCTQ", kind: "video", thumbnail: "/images/gpn/links/pinkman.jpg" },
           { label: "Young Design × ГПН — номинация «Интерфейс»", url: "https://youngdesignspb.ru/nominations/interface" },
           { label: "Бейдж-генератор Вики (open-source)", url: "https://github.com/design-kudry/badge-generator" },
         ],
@@ -265,7 +269,10 @@ export const projects: Project[] = [
         result:
           "Команда вышла из периода Figma-блокировок без простоя — план миграции уже был. Тема нейросетей в нашей экспертизе стала повторяющимся пуллом интереса со стороны B2B-компаний после конференций.",
         links: [
-          { label: "Интервью со мной — Дизайн-вечерка ЦЕХ (про роль и нейросети)", url: "https://www.youtube.com/watch?v=Ivb-S7Q8OPQ", kind: "video", thumbnail: "/images/gpn/links/cex-interview.jpg" },
+          { label: "ЦЕХ News #13 — ИИ в дизайне (Webflow Conf 2023)", url: "https://youtu.be/4s7j57G71fg", kind: "video", thumbnail: "/images/gpn/links/ai-edited.jpg" },
+          { label: "«ИИ бесполезен» — подкаст про ИИ", url: "https://youtu.be/iGQzN9T4upA", kind: "video", thumbnail: "/images/gpn/links/ai-fun.jpg" },
+          { label: "AI в дизайне — кафедра Skillbox", url: "https://youtu.be/u1AQGiFpgMI", kind: "video", thumbnail: "/images/gpn/links/ai-skillbox.jpg" },
+          { label: "Раннее интервью на ЦЕХ — нейросети", url: "https://youtu.be/cEw5iTNTfZg", kind: "video", thumbnail: "/images/gpn/links/ai-old.jpg" },
         ],
       },
       {
@@ -285,8 +292,13 @@ export const projects: Project[] = [
       { category: "Дизайн-система Consta", label: "consta.design — официальный сайт", url: "https://consta.design" },
       { category: "Дизайн-система Consta", label: "Consta на GitHub", url: "https://github.com/consta-design-system" },
       { category: "Дизайн-система Consta", label: "Статья vc.ru — корпблог ГПН про Consta", url: "https://vc.ru/gazpromneft/676527" },
-      { category: "Пресса и интервью", label: "Интервью со мной — Дизайн-вечерка на канале ЦЕХ (про роль и нейросети)", url: "https://www.youtube.com/watch?v=Ivb-S7Q8OPQ", kind: "video", thumbnail: "/images/gpn/links/cex-interview.jpg" },
-      { category: "Пресса и интервью", label: "Пресс-релиз Газпром Нефти про запуск Consta", url: "https://www.gazprom-neft.ru/press-center/news/gazprom_neft_sozdala_dizayn_sistemu_dlya_razrabotki_promyshlennykh_i_klientskikh_servisov/" },
+      { category: "Выступления и интервью", label: "Полное выступление со студией Pinkman", url: "https://youtu.be/lLxhnXgoCTQ", kind: "video", thumbnail: "/images/gpn/links/pinkman.jpg" },
+      { category: "Выступления и интервью", label: "Выступление на World Usability Day", url: "https://www.youtube.com/live/OjdF0lLFGv4?t=5003", kind: "video", thumbnail: "/images/gpn/links/wud-2022.jpg" },
+      { category: "Выступления и интервью", label: "ЦЕХ News #13 — ИИ в дизайне (Webflow Conf 2023)", url: "https://youtu.be/4s7j57G71fg", kind: "video", thumbnail: "/images/gpn/links/ai-edited.jpg" },
+      { category: "Выступления и интервью", label: "«ИИ бесполезен» — подкаст про ИИ", url: "https://youtu.be/iGQzN9T4upA", kind: "video", thumbnail: "/images/gpn/links/ai-fun.jpg" },
+      { category: "Выступления и интервью", label: "AI в дизайне — кафедра Skillbox", url: "https://youtu.be/u1AQGiFpgMI", kind: "video", thumbnail: "/images/gpn/links/ai-skillbox.jpg" },
+      { category: "Выступления и интервью", label: "Раннее интервью на ЦЕХ — нейросети", url: "https://youtu.be/cEw5iTNTfZg", kind: "video", thumbnail: "/images/gpn/links/ai-old.jpg" },
+      { category: "Пресса", label: "Пресс-релиз Газпром Нефти про запуск Consta", url: "https://www.gazprom-neft.ru/press-center/news/gazprom_neft_sozdala_dizayn_sistemu_dlya_razrabotki_promyshlennykh_i_klientskikh_servisov/" },
       { category: "Партнёрства и артефакты", label: "Young Design СПб × ГПН — совместная номинация «Интерфейс»", url: "https://youngdesignspb.ru/nominations/interface" },
       { category: "Партнёрства и артефакты", label: "Бейдж-генератор Вики Кудрявцевой (open-source наследие)", url: "https://github.com/design-kudry/badge-generator" },
     ],
