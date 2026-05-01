@@ -44,6 +44,11 @@ export interface Project {
    * — На карточке главной: hover → play 0..pauseAt → pause; mouseLeave → play pauseAt..end → pause на конце.
    */
   coverVideoPauseAt?: number;
+  /**
+   * Опционально: статичная картинка только для hero страницы кейса.
+   * Если задана — перебивает coverVideo на странице кейса (на главной карточка остаётся с видео).
+   */
+  heroImage?: string;
   screenshots?: Screenshot[];
   /**
    * Режим раскладки top-level скринов и default для секций.
@@ -273,6 +278,7 @@ export const projects: Project[] = [
     coverImage: "/images/covers/gpn-cover.jpg",
     coverVideo: "/videos/gpn-cover.mp4",
     coverVideoPauseAt: 2.86,
+    heroImage: "/images/covers/gpn-cubes.png",
     screenshots: [
       "/images/gpn/eso/eso-home.png",
       "/images/gpn/consta/consta-dashboard-dark.png",

@@ -59,9 +59,18 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
         className="relative min-h-[60vh] flex items-end overflow-hidden"
         style={{ background: project.coverColor }}
       >
-        {(project.coverImage || project.coverVideo) && (
+        {(project.heroImage || project.coverImage || project.coverVideo) && (
           <div className="absolute inset-0 z-0">
-            {project.coverVideo ? (
+            {project.heroImage ? (
+              <Image
+                src={project.heroImage}
+                alt={project.title}
+                fill
+                className="object-cover opacity-30"
+                priority
+                sizes="100vw"
+              />
+            ) : project.coverVideo ? (
               <HeroCoverVideo
                 src={project.coverVideo}
                 poster={project.coverImage}
