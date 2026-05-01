@@ -910,7 +910,7 @@ export default function PreviewHome() {
               variants={fadeUp}
               className="col-span-12 md:col-span-4 md:row-span-2 order-1 md:order-none"
             >
-              <div className="relative h-full min-h-[480px] md:min-h-[560px] rounded-3xl overflow-hidden border border-white/[0.1] bg-black flex items-center justify-center">
+              <div className="relative h-full min-h-[270px] md:min-h-[560px] rounded-3xl overflow-hidden border border-white/[0.1] bg-black flex items-center justify-center">
                 {/* Particle sphere — замена фото. Центрируется flex-обёрткой выше. */}
                 <ParticleSphere className="absolute inset-0 w-full h-full" />
 
