@@ -173,6 +173,27 @@ export default function PulseAnimation({ variant, reverse = false, className }: 
       }
     };
 
+    const drawDefault = () => {
+      // Единый статичный кадр для всех вариантов:
+      // 5 концентрических колец точек одного размера и opacity, серые.
+      ctx.clearRect(0, 0, W, H);
+      ctx.beginPath();
+      ctx.arc(cx, cy, 2, 0, Math.PI * 2);
+      ctx.fillStyle = fill(0.5);
+      ctx.fill();
+      dotRings.forEach((ring) => {
+        for (let i = 0; i < ring.count; i++) {
+          const a = (i / ring.count) * Math.PI * 2;
+          const x = cx + Math.cos(a) * ring.radius;
+          const y = cy + Math.sin(a) * ring.radius;
+          ctx.beginPath();
+          ctx.arc(x, y, 2, 0, Math.PI * 2);
+          ctx.fillStyle = fill(0.45);
+          ctx.fill();
+        }
+      });
+    };
+
     const drawAt = (t: number) => {
       if (variant === "wave") drawWave(t);
       else if (variant === "shockwave") drawShockwave(t);
@@ -196,7 +217,8 @@ export default function PulseAnimation({ variant, reverse = false, className }: 
       };
       rafId = requestAnimationFrame(loop);
     } else {
-      drawAt(0);
+      // Статика: единый базовый кадр (одинаковый для всех вариантов)
+      drawDefault();
     }
 
     return () => {

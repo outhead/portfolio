@@ -1233,9 +1233,9 @@ export default function PreviewHome() {
                   {title}
                 </h3>
 
-                {/* Pulse-анимация в круглой рамке. Default — статика серая, hover плитки — анимация зелёная. */}
+                {/* Pulse-анимация. Default — единый статичный кадр серый, hover плитки — анимация зелёная. */}
                 <div className="flex-1 min-h-[180px] flex items-center justify-center">
-                  <div className="relative w-[180px] h-[180px] rounded-full border border-white/[0.06] overflow-hidden">
+                  <div className="relative w-[180px] h-[180px]">
                     <PulseAnimation variant={animation} reverse={animationReverse} className="absolute inset-0" />
                   </div>
                 </div>
