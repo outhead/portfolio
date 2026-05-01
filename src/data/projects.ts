@@ -538,8 +538,7 @@ export const projects: Project[] = [
     ],
     type: "work",
     coverColor: "#0E0E0E",
-    coverImage: "/images/covers/ozon-cover.jpg",
-    heroImage: "/images/covers/ozon-cubes.png",
+    coverImage: "/images/covers/ozon-cubes.png",
     screenshots: [
       "/images/figma/ozon-process.jpg",
       "/images/figma/ozon-hr.jpg",
