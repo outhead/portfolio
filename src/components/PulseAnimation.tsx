@@ -152,55 +152,56 @@ export default function PulseAnimation({ variant, reverse = false, className }: 
       // Время в текущем цикле
       const tCycle = t % cycleDuration;
 
-      dotRings.forEach((ring) => {
+      dotRings.forEach((ring, ringIndex) => {
         for (let i = 0; i < ring.count; i++) {
           const baseAngle = (i / ring.count) * Math.PI * 2;
           const x = cx + Math.cos(baseAngle) * ring.radius;
           const y = cy + Math.sin(baseAngle) * ring.radius;
 
+          // Базовая пульсация точки (как у wave/shockwave) — плавная,
+          // независимая от спирального фронта. opacity и size слегка дышат.
+          const breath =
+            (Math.sin(t * 1.6 - ringIndex * 0.4 + i * 0.2) + 1) / 2; // 0..1
+          const baseOpacity = 0.25 + breath * 0.25;
+          const baseSize = 1.8 + breath * 0.6;
+
           // Когда фронт пересёк это кольцо в текущем цикле
           const tPass = (maxR - ring.radius) / radialSpeed;
           const timeSincePass = tCycle - tPass;
-          // Если фронт ещё не дошёл до этого радиуса — точка спокойна
-          if (timeSincePass < 0) {
-            ctx.beginPath();
-            ctx.arc(x, y, 2, 0, Math.PI * 2);
-            ctx.fillStyle = fill(0.2);
-            ctx.fill();
-            continue;
-          }
 
+          // Спиральный flash — поверх базовой пульсации
           let bestPf = 0;
-          for (let arm = 0; arm < numArms; arm++) {
-            const armOffset = (arm / numArms) * Math.PI * 2;
-            // Угол гребня в момент пересечения этого кольца
-            const armAngleAtPass =
-              dir * (t - timeSincePass) * angularSpeed +
-              ring.radius * twistFactor +
-              armOffset;
+          if (timeSincePass >= 0) {
+            for (let arm = 0; arm < numArms; arm++) {
+              const armOffset = (arm / numArms) * Math.PI * 2;
+              const armAngleAtPass =
+                dir * (t - timeSincePass) * angularSpeed +
+                ring.radius * twistFactor +
+                armOffset;
 
-            // Угловое расстояние, обёрнутое в [-π, π]
-            let da = baseAngle - armAngleAtPass;
-            da = ((da % (Math.PI * 2)) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
+              let da = baseAngle - armAngleAtPass;
+              da = ((da % (Math.PI * 2)) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
 
-            // Угловой гейт + затухание во времени
-            let angularGate = 0;
-            if (Math.abs(da) < armWidth / 2) {
-              angularGate = Math.max(
-                0,
-                Math.cos((da / (armWidth / 2)) * (Math.PI / 2))
-              );
+              let angularGate = 0;
+              if (Math.abs(da) < armWidth / 2) {
+                angularGate = Math.max(
+                  0,
+                  Math.cos((da / (armWidth / 2)) * (Math.PI / 2))
+                );
+              }
+              const timeDecay = Math.exp(-timeSincePass * decayRate);
+              const pf = angularGate * timeDecay;
+              if (pf > bestPf) bestPf = pf;
             }
-            const timeDecay = Math.exp(-timeSincePass * decayRate);
-            const pf = angularGate * timeDecay;
-            if (pf > bestPf) bestPf = pf;
           }
 
-          const dotSize = 2 + bestPf * 2.5;
-          const op = 0.2 + bestPf * 0.8;
+          // Композиция: базовая пульсация + flash. Берём максимум, чтобы
+          // вспышка не "обнулила" базовое состояние.
+          const dotSize = Math.max(baseSize, baseSize + bestPf * 2.2);
+          const op = Math.max(baseOpacity, baseOpacity + bestPf * 0.65);
           ctx.beginPath();
           ctx.arc(x, y, dotSize, 0, Math.PI * 2);
-          ctx.fillStyle = fill(op);
+          ctx.fillStyle = fill(Math.min(1, op));
           ctx.fill();
         }
       });
