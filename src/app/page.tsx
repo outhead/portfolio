@@ -2,6 +2,7 @@
 
 import ProjectCard from "@/components/ProjectCard";
 import ParticleSphere from "@/components/ParticleSphere";
+import PulseAnimation, { type PulseVariant } from "@/components/PulseAnimation";
 import FlippingWord from "@/components/FlippingWord";
 import { workProjects } from "@/data/projects";
 import Link from "next/link";
@@ -1153,6 +1154,7 @@ export default function PreviewHome() {
                 title: "Строю и масштабирую дизайн-функции",
                 Icon: Users,
                 accent: "#A6FF00",
+                animation: "wave" as PulseVariant,
                 body:
                   "Собираю команды под задачу, выстраиваю процессы, культуру и дизайн-систему. Нанимаю на рост, развиваю лидов, защищаю бюджет. Уходя — оставляю функцию, которая продолжает расти без меня.",
                 items: [
@@ -1170,6 +1172,7 @@ export default function PreviewHome() {
                 title: "AI и B2C с фокусом на метрики",
                 Icon: Sparkles,
                 accent: "#C9A66B",
+                animation: "shockwave" as PulseVariant,
                 body:
                   "Работаю на число. Discovery, гипотезы, CJM, A/B, research внутри процесса. Умею считать дизайн и доказывать его ценность продакт-менеджеру и C-левелу.",
                 items: [
@@ -1187,6 +1190,7 @@ export default function PreviewHome() {
                 title: "Дизайн + код",
                 Icon: Code2,
                 accent: "#4FC3F7",
+                animation: "spiral" as PulseVariant,
                 body:
                   "Остаюсь в макетах и в IDE. React/TS/Python, WebGL, AI-инструменты. Поэтому понимаю, что реально сделать руками и сколько это стоит в человеко-неделях.",
                 items: [
@@ -1197,7 +1201,7 @@ export default function PreviewHome() {
                   "Three.js · WebGL · Shaders",
                 ],
               },
-            ].map(({ key, index, label, title, Icon, accent, body, items }) => (
+            ].map(({ key, index, label, title, Icon, accent, animation, body, items }) => (
               <motion.div
                 key={key}
                 variants={fadeUp}
@@ -1228,8 +1232,12 @@ export default function PreviewHome() {
                   {title}
                 </h3>
 
-                {/* Слот под будущую анимацию — flex-1, пустое центральное пространство */}
-                <div className="flex-1 min-h-[80px] md:min-h-[120px]" aria-hidden />
+                {/* Pulse-анимация в круглой рамке. Default — статика серая, hover плитки — анимация зелёная. */}
+                <div className="flex-1 min-h-[180px] flex items-center justify-center">
+                  <div className="relative w-[180px] h-[180px] rounded-full border border-white/[0.06] overflow-hidden">
+                    <PulseAnimation variant={animation} className="absolute inset-0" />
+                  </div>
+                </div>
 
                 {/* Описание */}
                 <p className="text-[13px] md:text-[14px] leading-relaxed text-white/60">
