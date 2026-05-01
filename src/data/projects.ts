@@ -119,7 +119,7 @@ export const projects: Project[] = [
   },
   {
     slug: "gazprom-neft",
-    title: "Разморозить флагман и построить ЦК дизайна",
+    title: "Построить ЦК дизайна и разморозить флагман",
     company: "Газпром Нефть",
     role: "Head of Design",
     period: "2022 — 2024",
