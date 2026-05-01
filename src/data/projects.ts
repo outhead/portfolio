@@ -135,12 +135,8 @@ export const projects: Project[] = [
       "Open Source",
       "Design Management",
     ],
-    metric: "50K",
-    metricLabel: "пользователей ЕСО",
     results: [
       { value: "CX 2024", label: "награда за ЕСО" },
-      { value: "до 500 млн ₽", label: "экономии времени в год" },
-      { value: "7 → 2 мин", label: "оформить заявку в ЕСО" },
       { value: "180+", label: "продуктов на Consta" },
       { value: "57", label: "проектов в год" },
       { value: "27+", label: "внешних выступлений" },
@@ -190,7 +186,7 @@ export const projects: Project[] = [
           { value: "7 → 2 мин", label: "оформить заявку" },
           { value: "50K", label: "пользователей" },
           { value: "CSI 75%", label: "удовлетворённость" },
-          { value: "CX 2024", label: "награда" },
+          { value: "до 500 млн ₽", label: "экономии в год" },
         ],
         links: [
           { label: "Карточка ЕСО на CX Awards 2024 (РБК)", url: "https://cxa-spb.rbc.ru/proposals/147/" },
