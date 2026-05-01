@@ -1193,7 +1193,7 @@ export default function PreviewHome() {
                 accent: "#4FC3F7",
                 animation: "wave" as PulseVariant,
                 body:
-                  "Остаюсь в макетах и в IDE. React/TS/Python, WebGL, AI-инструменты. Поэтому понимаю, что реально сделать руками и сколько это стоит в человеко-неделях.",
+                  "Остаюсь в макетах и в IDE. React/TS/Python, WebGL, AI-инструменты. Понимаю, что реально сделать руками и сколько это стоит в человеко-часах. Знаю, когда применять AI, а когда — позвать эксперта под задачу.",
                 items: [
                   "Figma · Design Systems",
                   "Art Direction",
