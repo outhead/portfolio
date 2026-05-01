@@ -66,42 +66,48 @@ export default function ImageLightbox({ images }: ImageLightboxProps) {
         ))}
       </div>
 
-      {/* Lightbox overlay */}
+      {/* Lightbox overlay — flex column: top close-bar, flex-1 image, bottom caption+counter */}
       {activeIndex !== null && (
         <div
-          className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-sm flex items-center justify-center p-4 md:p-8"
+          className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-sm flex flex-col"
           onClick={close}
         >
-          <button
-            onClick={close}
-            className="absolute top-4 right-4 w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:border-white/30 transition-colors bg-black/50 cursor-pointer z-[201]"
-            aria-label="Закрыть"
-          >
-            <X className="w-5 h-5" strokeWidth={1.5} />
-          </button>
-
-          <div
-            className="relative max-w-[90vw] max-h-[85vh] w-full h-full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Image
-              src={images[activeIndex].src}
-              alt={images[activeIndex].alt}
-              fill
-              className="object-contain"
-              sizes="90vw"
-            />
+          {/* Top bar: close button */}
+          <div className="flex justify-end p-4 flex-shrink-0">
+            <button
+              onClick={close}
+              className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:border-white/30 transition-colors bg-black/50 cursor-pointer"
+              aria-label="Закрыть"
+            >
+              <X className="w-5 h-5" strokeWidth={1.5} />
+            </button>
           </div>
 
-          {/* Caption + navigation hints в footer overlay */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 max-w-[90vw] flex flex-col items-center gap-1.5 text-center px-4">
+          {/* Image area — flex-1, centered, padding to avoid touching edges */}
+          <div
+            className="flex-1 min-h-0 flex items-center justify-center px-4 md:px-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="relative w-full h-full max-w-[1400px]">
+              <Image
+                src={images[activeIndex].src}
+                alt={images[activeIndex].alt}
+                fill
+                className="object-contain"
+                sizes="(max-width: 1400px) 100vw, 1400px"
+              />
+            </div>
+          </div>
+
+          {/* Bottom bar: caption + counter, pinned to bottom, no overlap with image */}
+          <div className="flex-shrink-0 px-4 py-4 md:py-5 flex flex-col items-center gap-2 text-center">
             {images[activeIndex].caption && (
-              <div className="text-sm md:text-base text-white/85 leading-snug max-w-2xl">
+              <div className="text-sm md:text-base text-white/85 leading-snug max-w-3xl max-h-[20vh] overflow-y-auto">
                 {images[activeIndex].caption}
               </div>
             )}
-            <div className="text-[10px] tracking-[0.12em] uppercase text-white/25">
-              {activeIndex + 1} / {images.length} · ESC для выхода
+            <div className="text-[10px] tracking-[0.12em] uppercase text-white/30">
+              {activeIndex + 1} / {images.length} · ESC для выхода · ← →
             </div>
           </div>
         </div>
