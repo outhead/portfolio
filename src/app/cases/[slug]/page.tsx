@@ -430,7 +430,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
         {/* Sticky TOC — навигация по секциям. Видна только на lg+. */}
         {project.sections && project.sections.length > 1 && (
           <aside className="hidden lg:block w-44 xl:w-48 flex-shrink-0">
-            <div className="sticky top-8">
+            <div className="sticky top-24">
               <div className="text-[9px] tracking-[0.14em] uppercase text-white/30 mb-3">Содержание</div>
               <ul className="space-y-2.5">
                 {project.sections.map((s, i) => (
