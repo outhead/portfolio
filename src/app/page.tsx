@@ -1201,7 +1201,7 @@ export default function PreviewHome() {
               <motion.div
                 key={key}
                 variants={fadeUp}
-                className="group relative rounded-2xl border border-white/[0.08] bg-white/[0.015] hover:border-white/[0.2] transition-colors p-6 md:p-8 flex flex-col gap-6 min-h-[420px] md:min-h-[520px] overflow-hidden"
+                className="group relative rounded-2xl border border-white/[0.08] bg-white/[0.015] hover:border-white/[0.2] transition-colors p-6 md:p-8 flex flex-col gap-5 md:gap-6 min-h-[420px] md:min-h-[520px] overflow-hidden"
               >
                 {/* Верх: index / icon / label */}
                 <div className="flex items-start justify-between gap-3">
@@ -1223,15 +1223,18 @@ export default function PreviewHome() {
                   </span>
                 </div>
 
-                {/* Центр: title + body */}
-                <div className="flex-1 flex flex-col justify-end">
-                  <h3 className="font-p95 text-[clamp(22px,2.4vw,32px)] uppercase leading-[1.02] text-white">
-                    {title}
-                  </h3>
-                  <p className="mt-3 md:mt-4 text-[13px] md:text-[14px] leading-relaxed text-white/60">
-                    {body}
-                  </p>
-                </div>
+                {/* Заголовок — сразу под чипом, наверху плитки */}
+                <h3 className="font-p95 text-[clamp(22px,2.4vw,32px)] uppercase leading-[1.02] text-white">
+                  {title}
+                </h3>
+
+                {/* Слот под будущую анимацию — flex-1, пустое центральное пространство */}
+                <div className="flex-1 min-h-[80px] md:min-h-[120px]" aria-hidden />
+
+                {/* Описание */}
+                <p className="text-[13px] md:text-[14px] leading-relaxed text-white/60">
+                  {body}
+                </p>
 
                 {/* Низ: items — горизонтальный список через · */}
                 <div className="pt-4 md:pt-5 border-t border-white/[0.06] text-[11px] md:text-[12px] tracking-[0.04em] text-white/45 leading-relaxed">
@@ -1641,24 +1644,28 @@ export default function PreviewHome() {
               </motion.div>
             ))}
 
-            {/* 6. Location — узкая плитка-полоса с компактным глобусом справа (по высоте ~ как CV) */}
+            {/* 6. Location — компактная плитка, глобус в исходном размере (видна только верхняя часть, нижняя обрезается overflow-hidden) */}
             <motion.div variants={fadeUp} className="col-span-2 md:col-span-4">
-              <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0a0a0a] min-h-[120px] md:min-h-[130px] flex items-center justify-between gap-4 pl-5 md:pl-7 pr-2 md:pr-4 py-3 md:py-4">
-                {/* Левая часть — компактный текст */}
-                <div className="flex flex-col gap-1.5 z-[2]">
-                  <h4 className="font-p95 text-[clamp(18px,2vw,26px)] uppercase tracking-[0.02em] text-white leading-none">
+              <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0a0a0a] min-h-[200px] md:min-h-[220px]">
+                {/* Текст — по центру сверху, поверх глобуса */}
+                <div className="relative z-[2] flex flex-col items-center gap-2.5 pt-7 md:pt-9 px-5 text-center">
+                  <h4 className="font-p95 text-[clamp(20px,2.4vw,30px)] uppercase tracking-[0.02em] text-white">
                     Москва, Россия
                   </h4>
-                  <div className="inline-flex items-center gap-2 font-p95 text-[10px] md:text-[11px] tracking-[0.22em] uppercase text-white/55">
-                    <span className="relative inline-flex items-center justify-center w-2.5 h-2.5">
+                  <div className="inline-flex items-center gap-2.5 font-p95 text-[10px] md:text-[11px] tracking-[0.22em] uppercase text-white/55">
+                    <span className="relative inline-flex items-center justify-center w-3 h-3">
                       <span className="absolute inset-0 rounded-full bg-[#A6FF00]/30 animate-ping" />
-                      <span className="relative w-1.5 h-1.5 rounded-full bg-[#A6FF00] shadow-[0_0_8px_#A6FF00]" />
+                      <span className="relative w-2 h-2 rounded-full bg-[#A6FF00] shadow-[0_0_10px_#A6FF00]" />
                     </span>
                     Открыт к работе по всему миру
                   </div>
                 </div>
-                {/* Правая часть — небольшой круглый глобус */}
-                <div className="relative w-24 h-24 md:w-28 md:h-28 flex-shrink-0">
+                {/* Глобус большого размера — выходит за нижний край плитки, видна только верхняя часть.
+                    Квадратный контейнер width=ширина плитки, top=110px → верхушка диска вписана под текст. */}
+                <div
+                  className="absolute left-1/2 -translate-x-1/2 top-[110px] md:top-[120px] aspect-square pointer-events-auto"
+                  style={{ width: "min(560px, 92%)" }}
+                >
                   <DotGlobe />
                 </div>
               </div>
