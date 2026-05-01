@@ -158,18 +158,11 @@ export default function PulseAnimation({ variant, reverse = false, className }: 
           const x = cx + Math.cos(baseAngle) * ring.radius;
           const y = cy + Math.sin(baseAngle) * ring.radius;
 
-          // Базовая пульсация точки (как у wave/shockwave) — плавная,
-          // независимая от спирального фронта. opacity и size слегка дышат.
-          const breath =
-            (Math.sin(t * 1.6 - ringIndex * 0.4 + i * 0.2) + 1) / 2; // 0..1
-          const baseOpacity = 0.25 + breath * 0.25;
-          const baseSize = 1.8 + breath * 0.6;
-
           // Когда фронт пересёк это кольцо в текущем цикле
           const tPass = (maxR - ring.radius) / radialSpeed;
           const timeSincePass = tCycle - tPass;
 
-          // Спиральный flash — поверх базовой пульсации
+          // Спиральный flash — точка активируется только при прохождении фронта
           let bestPf = 0;
           if (timeSincePass >= 0) {
             for (let arm = 0; arm < numArms; arm++) {
@@ -195,13 +188,22 @@ export default function PulseAnimation({ variant, reverse = false, className }: 
             }
           }
 
-          // Композиция: базовая пульсация + flash. Берём максимум, чтобы
-          // вспышка не "обнулила" базовое состояние.
-          const dotSize = Math.max(baseSize, baseSize + bestPf * 2.2);
-          const op = Math.max(baseOpacity, baseOpacity + bestPf * 0.65);
+          // Базовый «спокойный» уровень — все точки одинаково тусклые в покое
+          const baseSize = 2;
+          const baseOpacity = 0.25;
+
+          // Только активные точки получают плавную sin-пульсацию,
+          // которая модулирует яркость вспышки. Спокойные — статика.
+          const breath =
+            (Math.sin(t * 3 - ringIndex * 0.4 + i * 0.2) + 1) / 2; // 0..1
+          const flashSize = bestPf * (2 + breath * 0.8);
+          const flashOpacity = bestPf * (0.5 + breath * 0.25);
+
+          const dotSize = baseSize + flashSize;
+          const op = Math.min(1, baseOpacity + flashOpacity);
           ctx.beginPath();
           ctx.arc(x, y, dotSize, 0, Math.PI * 2);
-          ctx.fillStyle = fill(Math.min(1, op));
+          ctx.fillStyle = fill(op);
           ctx.fill();
         }
       });
