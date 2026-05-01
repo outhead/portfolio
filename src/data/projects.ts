@@ -86,7 +86,7 @@ export interface Project {
 export const projects: Project[] = [
   {
     slug: "mts-2024",
-    title: "Из операторского приложения в цифровую экосистему",
+    title: "Дать МТС голос и собрать Мой МТС в платформу",
     company: "МТС",
     role: "Руководитель направления дизайна — Digital Storefronts (B2C ecosystem)",
     period: "май 2024 — июль 2025",
