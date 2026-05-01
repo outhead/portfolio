@@ -112,8 +112,7 @@ export const projects: Project[] = [
     ],
     type: "work",
     coverColor: "#0E0E0E",
-    coverVideo: "/images/mts/voice/voice-demo-1.mp4",
-    coverVideoPauseAt: 1.5,
+    coverImage: "/images/covers/mts-2024-cover.png",
     screenshotsMode: "phone",
     screenshots: [
       { src: "/images/mts/voice/voice-demo-1.mp4", kind: "video", label: "AI СЕКРЕТАРЬ", poster: "/images/mts/voice/voice-secretary-spam-spa.png" },
