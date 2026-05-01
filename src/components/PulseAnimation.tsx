@@ -129,20 +129,21 @@ export default function PulseAnimation({ variant, reverse = false, className }: 
 
     const drawSpiral = (t: number) => {
       // Спираль через ту же сетку из 5 концентрических колец.
-      // Точки остаются на месте — активируются по «спиральному гребню»:
-      // для каждого радиуса есть свой угол-front, на больших радиусах он сдвинут,
-      // что и даёт спиральную форму. Используем 2 рукава — узор читается как спираль, не как сектор.
+      // Эффект: точка вспыхивает когда гребень спирали её пересекает,
+      // затем экспоненциально гаснет до следующего прохода («хвост»/шлейф).
+      // Получается эффект бегущего огня по спирали.
       ctx.clearRect(0, 0, W, H);
       ctx.beginPath();
       ctx.arc(cx, cy, 2, 0, Math.PI * 2);
       ctx.fillStyle = fill(0.5);
       ctx.fill();
 
-      const spiralRotationSpeed = 1.4; // рад/с — скорость вращения
-      const twistFactor = 0.022; // ~1.5 рад на максимум радиусе → ¼ оборота между min и max ring
-      const armWidth = Math.PI / 3; // 60° угловая ширина гребня
+      const spiralRotationSpeed = 1.4; // рад/с — скорость вращения гребня
+      const twistFactor = 0.022; // насколько сильно закручен гребень
       const numArms = 2; // двухрукавная спираль
       const dir = reverse ? -1 : 1;
+      // Длина хвоста в радианах (для экспоненциального затухания)
+      const tail = Math.PI / 1.4;
 
       dotRings.forEach((ring) => {
         for (let i = 0; i < ring.count; i++) {
@@ -150,30 +151,28 @@ export default function PulseAnimation({ variant, reverse = false, className }: 
           const x = cx + Math.cos(baseAngle) * ring.radius;
           const y = cy + Math.sin(baseAngle) * ring.radius;
 
-          // Берём максимум активации по всем рукавам спирали
           let bestPf = 0;
           for (let arm = 0; arm < numArms; arm++) {
             const armOffset = (arm / numArms) * Math.PI * 2;
+            // Угол гребня для этого радиуса в момент t
             const frontAngle =
               dir * t * spiralRotationSpeed +
               ring.radius * twistFactor +
               armOffset;
 
-            // Кратчайшее угловое расстояние, обёрнутое в [-π, π]
-            let delta = baseAngle - frontAngle;
-            delta = ((delta % (Math.PI * 2)) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
+            // Сколько радианов прошло с момента, когда гребень пересёк точку
+            // (учитывая направление вращения)
+            let timeSince = (frontAngle - baseAngle) * dir;
+            // обернуть в [0, 2π)
+            timeSince = ((timeSince % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
 
-            if (Math.abs(delta) < armWidth / 2) {
-              const pf = Math.max(
-                0,
-                Math.cos((delta / (armWidth / 2)) * (Math.PI / 2))
-              );
-              if (pf > bestPf) bestPf = pf;
-            }
+            // Экспоненциальное затухание: на гребне = 1, через хвост ~0.05
+            const pf = Math.exp((-timeSince * 3) / tail);
+            if (pf > bestPf) bestPf = pf;
           }
 
-          const dotSize = 2 + bestPf * 2;
-          const op = 0.25 + bestPf * 0.75;
+          const dotSize = 2 + bestPf * 2.5;
+          const op = 0.2 + bestPf * 0.8;
           ctx.beginPath();
           ctx.arc(x, y, dotSize, 0, Math.PI * 2);
           ctx.fillStyle = fill(op);
