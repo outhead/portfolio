@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import Image from "next/image";
-import { X } from "lucide-react";
+import { X, Lock } from "lucide-react";
 
 interface ImageLightboxImage {
   src: string;
@@ -11,14 +11,46 @@ interface ImageLightboxImage {
   label?: string;
   /** Полное описание в overlay-просмотре. */
   caption?: string;
+  /** NDA-защищённый кадр: рендерится в блюре до ввода пароля. */
+  protected?: boolean;
 }
 
 interface ImageLightboxProps {
   images: ImageLightboxImage[];
 }
 
+const PROTECT_PASSWORD = "4444";
+const PROTECT_STORAGE_KEY = "portfolio-protected-unlocked";
+
 export default function ImageLightbox({ images }: ImageLightboxProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [unlocked, setUnlocked] = useState(false);
+  const [passwordInput, setPasswordInput] = useState("");
+  const [passwordError, setPasswordError] = useState(false);
+
+  const hasProtected = images.some((img) => img.protected);
+
+  // Initial unlock check from localStorage
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.localStorage.getItem(PROTECT_STORAGE_KEY) === "true") {
+      setUnlocked(true);
+    }
+  }, []);
+
+  const tryUnlock = useCallback(() => {
+    if (passwordInput.trim() === PROTECT_PASSWORD) {
+      setUnlocked(true);
+      setPasswordError(false);
+      try {
+        window.localStorage.setItem(PROTECT_STORAGE_KEY, "true");
+      } catch {
+        /* ignore */
+      }
+    } else {
+      setPasswordError(true);
+    }
+  }, [passwordInput]);
 
   const close = useCallback(() => setActiveIndex(null), []);
 
@@ -45,37 +77,101 @@ export default function ImageLightbox({ images }: ImageLightboxProps) {
 
   return (
     <>
-      <div className="grid md:grid-cols-2 gap-x-6 gap-y-10 md:gap-y-14">
-        {images.map((img, n) => (
-          <figure key={n} className="flex flex-col gap-3 items-center">
+      {/* NDA prompt поверх группы скринов, если есть protected и не unlocked */}
+      {hasProtected && !unlocked && (
+        <div className="mb-6 p-5 md:p-6 rounded-lg border border-white/[0.08] bg-white/[0.02] flex flex-col md:flex-row items-start md:items-center gap-4">
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <div className="w-10 h-10 rounded-full bg-[#A6FF00]/10 border border-[#A6FF00]/30 flex items-center justify-center flex-shrink-0">
+              <Lock className="w-4 h-4 text-[#A6FF00]" strokeWidth={2} />
+            </div>
+            <div className="md:max-w-xs">
+              <div className="text-sm md:text-[15px] text-white/85 font-medium leading-snug">Закрыто по NDA</div>
+              <div className="text-[11px] text-white/45 mt-0.5">Скрины внутренних продуктов. Введите пароль доступа.</div>
+            </div>
+          </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              tryUnlock();
+            }}
+            className="flex items-stretch gap-2 flex-1 md:max-w-md w-full"
+          >
+            <input
+              type="password"
+              value={passwordInput}
+              onChange={(e) => {
+                setPasswordInput(e.target.value);
+                setPasswordError(false);
+              }}
+              placeholder="Пароль"
+              autoComplete="off"
+              className={`flex-1 px-3 py-2 rounded-md bg-black border text-sm text-white placeholder:text-white/30 outline-none transition-colors ${
+                passwordError
+                  ? "border-red-500/60"
+                  : "border-white/10 focus:border-[#A6FF00]/60"
+              }`}
+              aria-label="Пароль доступа"
+            />
             <button
-              onClick={() => setActiveIndex(n)}
-              className="relative aspect-video rounded-lg overflow-hidden group cursor-zoom-in bg-black p-0 w-full"
+              type="submit"
+              className="px-4 py-2 rounded-md bg-[#A6FF00] text-black text-sm font-medium hover:bg-[#A6FF00]/85 transition-colors"
             >
-              <Image
-                src={img.src}
-                alt={img.alt}
-                fill
-                sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
-              />
+              Открыть
             </button>
-            {(img.label || img.caption) && (
-              <figcaption className="font-mono text-[10px] md:text-[11px] tracking-[0.16em] uppercase text-white/40 text-center px-2">
-                {img.label ?? img.caption}
-              </figcaption>
-            )}
-          </figure>
-        ))}
+          </form>
+          {passwordError && (
+            <div className="text-[11px] text-red-400/85">Неверный пароль</div>
+          )}
+        </div>
+      )}
+
+      <div className="grid md:grid-cols-2 gap-x-6 gap-y-10 md:gap-y-14">
+        {images.map((img, n) => {
+          const isLocked = !!img.protected && !unlocked;
+          return (
+            <figure key={n} className="flex flex-col gap-3 items-center">
+              <button
+                onClick={() => {
+                  if (isLocked) return;
+                  setActiveIndex(n);
+                }}
+                disabled={isLocked}
+                className={`relative aspect-video rounded-lg overflow-hidden group bg-black p-0 w-full ${
+                  isLocked ? "cursor-not-allowed" : "cursor-zoom-in"
+                }`}
+              >
+                <Image
+                  src={img.src}
+                  alt={img.alt}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  className={`object-cover object-center transition-transform duration-500 ${
+                    isLocked ? "blur-2xl scale-110" : "group-hover:scale-105"
+                  }`}
+                />
+                {isLocked && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 gap-2">
+                    <Lock className="w-5 h-5 text-white/60" strokeWidth={2} />
+                    <div className="font-mono text-[10px] tracking-[0.16em] uppercase text-white/55">NDA · пароль выше</div>
+                  </div>
+                )}
+              </button>
+              {(img.label || img.caption) && (
+                <figcaption className="font-mono text-[10px] md:text-[11px] tracking-[0.16em] uppercase text-white/40 text-center px-2">
+                  {img.label ?? img.caption}
+                </figcaption>
+              )}
+            </figure>
+          );
+        })}
       </div>
 
-      {/* Lightbox overlay — flex column: top close-bar, flex-1 image, bottom caption+counter */}
+      {/* Lightbox overlay */}
       {activeIndex !== null && (
         <div
           className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-sm flex flex-col"
           onClick={close}
         >
-          {/* Top bar: close button */}
           <div className="flex justify-end p-4 flex-shrink-0">
             <button
               onClick={close}
@@ -86,7 +182,6 @@ export default function ImageLightbox({ images }: ImageLightboxProps) {
             </button>
           </div>
 
-          {/* Image area — flex-1, centered, padding to avoid touching edges */}
           <div
             className="flex-1 min-h-0 flex items-center justify-center px-4 md:px-8"
             onClick={(e) => e.stopPropagation()}
@@ -102,7 +197,6 @@ export default function ImageLightbox({ images }: ImageLightboxProps) {
             </div>
           </div>
 
-          {/* Bottom bar: label (mono) + caption + counter, без перекрытия картинки */}
           <div className="flex-shrink-0 px-4 py-4 md:py-5 flex flex-col items-center gap-2 text-center">
             {images[activeIndex].label && (
               <div className="font-mono text-[10px] md:text-[11px] tracking-[0.18em] uppercase text-white/45">

@@ -308,10 +308,11 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                         const src = typeof shot === "string" ? shot : shot.src;
                         const label = typeof shot === "string" ? undefined : shot.label;
                         const caption = typeof shot === "string" ? undefined : shot.caption;
+                        const isProtected = typeof shot === "string" ? false : !!shot.protected;
                         const alt =
                           (typeof shot === "string" ? undefined : shot.alt) ??
                           `${project.title} — ${section.title} — ${n + 1}`;
-                        return { src, alt, label, caption };
+                        return { src, alt, label, caption, protected: isProtected };
                       })}
                     />
                   </div>
@@ -330,10 +331,11 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                   const src = typeof shot === "string" ? shot : shot.src;
                   const label = typeof shot === "string" ? undefined : shot.label;
                   const caption = typeof shot === "string" ? undefined : shot.caption;
+                  const isProtected = typeof shot === "string" ? false : !!shot.protected;
                   const alt =
                     (typeof shot === "string" ? undefined : shot.alt) ??
                     `${project.title} — скриншот ${n + 1}`;
-                  return { src, alt, label, caption };
+                  return { src, alt, label, caption, protected: isProtected };
                 })}
               />
             </div>

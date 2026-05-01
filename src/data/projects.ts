@@ -1,8 +1,11 @@
 /** Скриншот: либо просто строка-путь, либо объект с подписями.
  * `label` — короткий моно-лейбл под плиткой (a-la Kardio: «SPLASH SCREEN»).
  * `caption` — полное описание, видимое в overlay-просмотре.
+ * `protected` — закрытый по NDA скрин: рендерится в блюре до ввода пароля.
  */
-export type Screenshot = string | { src: string; label?: string; caption?: string; alt?: string };
+export type Screenshot =
+  | string
+  | { src: string; label?: string; caption?: string; alt?: string; protected?: boolean };
 
 export interface Project {
   slug: string;
@@ -229,9 +232,9 @@ export const projects: Project[] = [
           { label: "Карточка ЕСО на CX Awards 2024 (РБК)", url: "https://cxa-spb.rbc.ru/proposals/147/" },
         ],
         screenshots: [
-          { src: "/images/gpn/eso/eso-home.png", label: "ЕСО — главная", caption: "ЕСО — главная: список обращений сотрудника с фильтрами по статусам, виджеты «Отпуск скоро» и «Старт» справа" },
-          { src: "/images/gpn/eso/eso-form.png", label: "Новое обращение", caption: "ЕСО — создание нового обращения. Контекстная подсказка с правилами оформления справки 2-НДФЛ" },
-          { src: "/images/gpn/eso/eso-detail.png", label: "Карточка обращения", caption: "ЕСО — карточка обращения SD-4252730: статус, контактное лицо, прогресс обработки" },
+          { src: "/images/gpn/eso/eso-home.png", label: "ЕСО — главная", caption: "ЕСО — главная: список обращений сотрудника с фильтрами по статусам, виджеты «Отпуск скоро» и «Старт» справа", protected: true },
+          { src: "/images/gpn/eso/eso-form.png", label: "Новое обращение", caption: "ЕСО — создание нового обращения. Контекстная подсказка с правилами оформления справки 2-НДФЛ", protected: true },
+          { src: "/images/gpn/eso/eso-detail.png", label: "Карточка обращения", caption: "ЕСО — карточка обращения SD-4252730: статус, контактное лицо, прогресс обработки", protected: true },
         ],
       },
       {
@@ -275,14 +278,14 @@ export const projects: Project[] = [
           { value: "≠ команды", label: "ЭРА — моя, Юпитер — соседняя" },
         ],
         screenshots: [
-          { src: "/images/gpn/consta/jupiter-main.png", label: "Юпитер · главная", caption: "Юпитер — главная: поиск по внутренним системам ГПН и лента изменений" },
-          { src: "/images/gpn/consta/jupiter-monitoring.png", label: "Юпитер · инциденты", caption: "Юпитер — лента инцидентов: приоритет, статус, владелец" },
-          { src: "/images/gpn/consta/jupiter-dashboard.png", label: "Юпитер · карта SAP", caption: "Юпитер — инфраструктурная карта SAP-блоков и связанных сервисов" },
-          { src: "/images/gpn/consta/jupiter-search.png", label: "Юпитер · поиск", caption: "Юпитер — расширенный поиск с фильтрами по типам систем и метрикам" },
-          { src: "/images/gpn/drilling/era-burenie-empty.png", label: "ЭРА · пустое состояние", caption: "ЭРА Бурения — стартовое состояние «компоновка не создана»" },
-          { src: "/images/gpn/drilling/era-burenie-stack.png", label: "ЭРА · компоновка КНБК", caption: "ЭРА Бурения — компоновка КНБК с долотом, мотором, стабилизатором" },
-          { src: "/images/gpn/drilling/era-burenie-projection.png", label: "ЭРА · проекция ствола", caption: "ЭРА Бурения — проекция ствола скважины с обсадной колонной" },
-          { src: "/images/gpn/drilling/era-burenie-sections.png", label: "ЭРА · секции скважины", caption: "ЭРА Бурения — модель скважины: направление, кондуктор, хвостовик" },
+          { src: "/images/gpn/consta/jupiter-main.png", label: "Юпитер · главная", caption: "Юпитер — главная: поиск по внутренним системам ГПН и лента изменений", protected: true },
+          { src: "/images/gpn/consta/jupiter-monitoring.png", label: "Юпитер · инциденты", caption: "Юпитер — лента инцидентов: приоритет, статус, владелец", protected: true },
+          { src: "/images/gpn/consta/jupiter-dashboard.png", label: "Юпитер · карта SAP", caption: "Юпитер — инфраструктурная карта SAP-блоков и связанных сервисов", protected: true },
+          { src: "/images/gpn/consta/jupiter-search.png", label: "Юпитер · поиск", caption: "Юпитер — расширенный поиск с фильтрами по типам систем и метрикам", protected: true },
+          { src: "/images/gpn/drilling/era-burenie-empty.png", label: "ЭРА · пустое состояние", caption: "ЭРА Бурения — стартовое состояние «компоновка не создана»", protected: true },
+          { src: "/images/gpn/drilling/era-burenie-stack.png", label: "ЭРА · компоновка КНБК", caption: "ЭРА Бурения — компоновка КНБК с долотом, мотором, стабилизатором", protected: true },
+          { src: "/images/gpn/drilling/era-burenie-projection.png", label: "ЭРА · проекция ствола", caption: "ЭРА Бурения — проекция ствола скважины с обсадной колонной", protected: true },
+          { src: "/images/gpn/drilling/era-burenie-sections.png", label: "ЭРА · секции скважины", caption: "ЭРА Бурения — модель скважины: направление, кондуктор, хвостовик", protected: true },
         ],
       },
       {
