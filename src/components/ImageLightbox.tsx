@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import Image from "next/image";
 import { X, Lock } from "lucide-react";
 
@@ -28,9 +28,11 @@ export default function ImageLightbox({ images }: ImageLightboxProps) {
   const [passwordInput, setPasswordInput] = useState("");
   const [passwordError, setPasswordError] = useState(false);
 
+  const promptRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
   const hasProtected = images.some((img) => img.protected);
 
-  // Initial unlock check from localStorage
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (window.localStorage.getItem(PROTECT_STORAGE_KEY) === "true") {
@@ -51,6 +53,14 @@ export default function ImageLightbox({ images }: ImageLightboxProps) {
       setPasswordError(true);
     }
   }, [passwordInput]);
+
+  /** Клик по locked-плитке → плавный скролл к prompt + фокус на input. */
+  const focusPasswordInput = useCallback(() => {
+    promptRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 250);
+  }, []);
 
   const close = useCallback(() => setActiveIndex(null), []);
 
@@ -79,7 +89,10 @@ export default function ImageLightbox({ images }: ImageLightboxProps) {
     <>
       {/* NDA prompt поверх группы скринов, если есть protected и не unlocked */}
       {hasProtected && !unlocked && (
-        <div className="mb-6 p-5 md:p-6 rounded-lg border border-white/[0.08] bg-white/[0.02] flex flex-col md:flex-row items-start md:items-center gap-4">
+        <div
+          ref={promptRef}
+          className="mb-6 p-5 md:p-6 rounded-lg border border-white/[0.08] bg-white/[0.02] flex flex-col md:flex-row items-start md:items-center gap-4"
+        >
           <div className="flex items-center gap-3 flex-shrink-0">
             <div className="w-10 h-10 rounded-full bg-[#A6FF00]/10 border border-[#A6FF00]/30 flex items-center justify-center flex-shrink-0">
               <Lock className="w-4 h-4 text-[#A6FF00]" strokeWidth={2} />
@@ -97,6 +110,7 @@ export default function ImageLightbox({ images }: ImageLightboxProps) {
             className="flex items-stretch gap-2 flex-1 md:max-w-md w-full"
           >
             <input
+              ref={inputRef}
               type="password"
               value={passwordInput}
               onChange={(e) => {
@@ -125,34 +139,39 @@ export default function ImageLightbox({ images }: ImageLightboxProps) {
         </div>
       )}
 
-      <div className="grid md:grid-cols-2 gap-x-6 gap-y-10 md:gap-y-14">
+      {/* Сетка/слайдер плиток. На мобилке horizontal-snap-scroll, на md+ — обычный grid. */}
+      <div className="-mx-5 md:mx-0 px-5 md:px-0 flex md:grid md:grid-cols-2 gap-x-4 md:gap-x-6 gap-y-10 md:gap-y-14 overflow-x-auto md:overflow-visible snap-x snap-mandatory md:snap-none scroll-px-5 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
         {images.map((img, n) => {
           const isLocked = !!img.protected && !unlocked;
           return (
-            <figure key={n} className="flex flex-col gap-3 items-center">
+            <figure
+              key={n}
+              className="flex flex-col gap-3 items-center flex-shrink-0 w-[85%] sm:w-[70%] md:w-auto snap-center"
+            >
               <button
                 onClick={() => {
-                  if (isLocked) return;
+                  if (isLocked) {
+                    focusPasswordInput();
+                    return;
+                  }
                   setActiveIndex(n);
                 }}
-                disabled={isLocked}
                 className={`relative aspect-video rounded-lg overflow-hidden group bg-black p-0 w-full ${
-                  isLocked ? "cursor-not-allowed" : "cursor-zoom-in"
+                  isLocked ? "cursor-pointer" : "cursor-zoom-in"
                 }`}
               >
                 <Image
                   src={img.src}
                   alt={img.alt}
                   fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
+                  sizes="(max-width: 768px) 85vw, 50vw"
                   className={`object-cover object-center transition-transform duration-500 ${
                     isLocked ? "blur-2xl scale-110" : "group-hover:scale-105"
                   }`}
                 />
                 {isLocked && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 gap-2">
-                    <Lock className="w-5 h-5 text-white/60" strokeWidth={2} />
-                    <div className="font-mono text-[10px] tracking-[0.16em] uppercase text-white/55">NDA · пароль выше</div>
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                    <Lock className="w-5 h-5 text-white/70" strokeWidth={2} />
                   </div>
                 )}
               </button>
