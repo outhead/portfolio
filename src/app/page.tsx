@@ -928,7 +928,7 @@ export default function PreviewHome() {
             {/* === TILE 3: CX'24 ЯКОРЬ (col-span-6) — расширенная плитка-награда === */}
             <motion.div
               variants={fadeUp}
-              className="col-span-12 md:col-span-6"
+              className="col-span-12 md:col-span-6 order-3 md:order-none"
             >
               <div className="relative h-full min-h-[200px] md:min-h-[240px] rounded-2xl border border-[#C9A66B]/30 bg-gradient-to-br from-[#C9A66B]/[0.08] via-[#C9A66B]/[0.03] to-transparent p-5 md:p-7 flex flex-col justify-between overflow-hidden group hover:border-[#C9A66B]/55 transition-colors">
                 {/* Верхняя мета-строка */}
@@ -959,7 +959,7 @@ export default function PreviewHome() {
             {/* === TILE 4: 100+ designers (col-span-3) === */}
             <motion.div
               variants={fadeUp}
-              className="col-span-6 md:col-span-3"
+              className="col-span-6 md:col-span-3 order-4 md:order-none"
             >
               <div className="relative h-full min-h-[200px] md:min-h-[240px] rounded-2xl border border-white/[0.1] bg-white/[0.02] p-5 md:p-6 flex flex-col justify-between overflow-hidden">
                 <Users className="w-5 h-5 text-white/55" strokeWidth={1.75} />
@@ -977,7 +977,7 @@ export default function PreviewHome() {
             {/* === TILE 5: 11М+ пользователей (col-span-3) === */}
             <motion.div
               variants={fadeUp}
-              className="col-span-6 md:col-span-3"
+              className="col-span-6 md:col-span-3 order-5 md:order-none"
             >
               <div className="relative h-full min-h-[200px] md:min-h-[240px] rounded-2xl border border-[#A6FF00]/25 bg-[#A6FF00]/[0.06] p-5 md:p-6 flex flex-col justify-between overflow-hidden">
                 <Globe className="w-5 h-5 text-[#A6FF00]" strokeWidth={1.75} />
