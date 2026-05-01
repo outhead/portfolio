@@ -150,12 +150,12 @@ export default function ImageLightbox({ images, mode = "web" }: ImageLightboxPro
       )}
 
       {/* Сетка/слайдер плиток.
-          В режиме phone — ОДИН ДЛИННЫЙ ГОРИЗОНТАЛЬНЫЙ РЯД на всех экранах. Плитки крупные (фиксированной ширины), скролл свайпом/мышью.
+          В режиме phone — на мобиле horizontal-scroll, на md+ — grid 3/4/5 в ряд (без обрезки по правому краю viewport).
           В режиме web — на мобиле horizontal-snap-scroll, на md+ — grid 2 столбца (по умолчанию). */}
       <div
         className={
           mode === "phone"
-            ? "-mx-5 lg:-mx-12 px-5 lg:px-12 flex gap-x-4 md:gap-x-5 lg:gap-x-6 overflow-x-auto snap-x snap-mandatory scroll-px-5 lg:scroll-px-12 pb-2 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
+            ? "-mx-5 md:mx-0 px-5 md:px-0 flex md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-3 md:gap-x-4 lg:gap-x-5 gap-y-8 md:gap-y-10 overflow-x-auto md:overflow-visible snap-x snap-mandatory md:snap-none scroll-px-5 pb-2 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
             : "-mx-5 md:mx-0 px-5 md:px-0 flex md:grid md:grid-cols-2 gap-x-4 md:gap-x-6 gap-y-10 md:gap-y-14 overflow-x-auto md:overflow-visible snap-x snap-mandatory md:snap-none scroll-px-5 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
         }
       >
@@ -166,7 +166,7 @@ export default function ImageLightbox({ images, mode = "web" }: ImageLightboxPro
               key={n}
               className={
                 mode === "phone"
-                  ? "flex flex-col gap-3 items-center flex-shrink-0 w-[200px] sm:w-[220px] md:w-[230px] lg:w-[250px] xl:w-[270px] snap-start"
+                  ? "flex flex-col gap-3 items-center flex-shrink-0 w-[60%] sm:w-[42%] md:w-auto snap-center"
                   : "flex flex-col gap-3 items-center flex-shrink-0 w-[85%] sm:w-[70%] md:w-auto snap-center"
               }
             >
