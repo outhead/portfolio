@@ -491,8 +491,9 @@ export const projects: Project[] = [
       { value: "17K", label: "подписчиков канала" },
     ],
     type: "work",
-    coverColor: "#1a1a3e",
+    coverColor: "#0E0E0E",
     coverImage: "/images/covers/ozon-cover.jpg",
+    heroImage: "/images/covers/ozon-cubes.png",
     screenshots: [
       "/images/figma/ozon-process.jpg",
       "/images/figma/ozon-hr.jpg",
