@@ -304,15 +304,18 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                 {hasSectionScreenshots && (
                   <div className="mt-7">
                     <ImageLightbox
+                      mode={section.screenshotsMode ?? project.screenshotsMode ?? "web"}
                       images={section.screenshots!.map((shot, n) => {
                         const src = typeof shot === "string" ? shot : shot.src;
                         const label = typeof shot === "string" ? undefined : shot.label;
                         const caption = typeof shot === "string" ? undefined : shot.caption;
                         const isProtected = typeof shot === "string" ? false : !!shot.protected;
+                        const kind = typeof shot === "string" ? undefined : shot.kind;
+                        const poster = typeof shot === "string" ? undefined : shot.poster;
                         const alt =
                           (typeof shot === "string" ? undefined : shot.alt) ??
                           `${project.title} — ${section.title} — ${n + 1}`;
-                        return { src, alt, label, caption, protected: isProtected };
+                        return { src, alt, label, caption, protected: isProtected, kind, poster };
                       })}
                     />
                   </div>
@@ -327,15 +330,18 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
             <div className="mt-16 mb-12">
               <div className="text-[10px] tracking-[0.12em] uppercase text-white/30 mb-6">Скриншоты</div>
               <ImageLightbox
+                mode={project.screenshotsMode ?? "web"}
                 images={project.screenshots.map((shot, n) => {
                   const src = typeof shot === "string" ? shot : shot.src;
                   const label = typeof shot === "string" ? undefined : shot.label;
                   const caption = typeof shot === "string" ? undefined : shot.caption;
                   const isProtected = typeof shot === "string" ? false : !!shot.protected;
+                  const kind = typeof shot === "string" ? undefined : shot.kind;
+                  const poster = typeof shot === "string" ? undefined : shot.poster;
                   const alt =
                     (typeof shot === "string" ? undefined : shot.alt) ??
                     `${project.title} — скриншот ${n + 1}`;
-                  return { src, alt, label, caption, protected: isProtected };
+                  return { src, alt, label, caption, protected: isProtected, kind, poster };
                 })}
               />
             </div>

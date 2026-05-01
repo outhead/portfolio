@@ -2,10 +2,21 @@
  * `label` — короткий моно-лейбл под плиткой (a-la Kardio: «SPLASH SCREEN»).
  * `caption` — полное описание, видимое в overlay-просмотре.
  * `protected` — закрытый по NDA скрин: рендерится в блюре до ввода пароля.
+ * `kind` — `"video"` для MP4-демок (autoplay/muted/loop в плитке, controls в overlay).
+ *           Default — `"image"`.
+ * `poster` — постер-картинка для видео (отображается до загрузки/при паузе).
  */
 export type Screenshot =
   | string
-  | { src: string; label?: string; caption?: string; alt?: string; protected?: boolean };
+  | {
+      src: string;
+      label?: string;
+      caption?: string;
+      alt?: string;
+      protected?: boolean;
+      kind?: "image" | "video";
+      poster?: string;
+    };
 
 export interface Project {
   slug: string;
@@ -34,6 +45,12 @@ export interface Project {
    */
   coverVideoPauseAt?: number;
   screenshots?: Screenshot[];
+  /**
+   * Режим раскладки top-level скринов и default для секций.
+   * - `"web"` (default) — 2 столбца, 16:9, под десктопные веб-интерфейсы.
+   * - `"phone"` — до 5 столбцов, портретный iPhone-aspect, под мобильные скрины (Kardio-style).
+   */
+  screenshotsMode?: "web" | "phone";
   sections?: {
     title: string;
     /** Старый формат — single paragraph. Используется в кейсах, где ещё не разнесли на структурные блоки. */
@@ -48,6 +65,8 @@ export interface Project {
     /** Inline-пруфы: ссылки рядом с релевантным контентом, а не только в нижнем блоке. */
     links?: { label: string; url: string; thumbnail?: string; kind?: "video" | "article" | "site" | "github" }[];
     screenshots?: Screenshot[];
+    /** Override `screenshotsMode` проекта для этой секции. */
+    screenshotsMode?: "web" | "phone";
   }[];
   results?: {
     value: string;
@@ -94,13 +113,14 @@ export const projects: Project[] = [
     type: "work",
     coverColor: "#1a1a2e",
     coverImage: "/images/covers/mts-2024.jpg",
+    screenshotsMode: "phone",
     screenshots: [
-      "/images/mts/voice/voice-secretary-spam-spa.png",
-      "/images/mts/games/home-widgets-and-games.png",
-      "/images/mts/voice/voice-recording-landing.png",
-      "/images/mts/games/games-catalog-top.png",
-      "/images/mts/savings/savings-dashboard.png",
-      "/images/mts/voice/voice-marvin-landing.png",
+      { src: "/images/mts/voice/voice-secretary-spam-spa.png", label: "AI СЕКРЕТАРЬ" },
+      { src: "/images/mts/games/home-widgets-and-games.png", label: "ГЛАВНАЯ МОЙ МТС" },
+      { src: "/images/mts/voice/voice-recording-landing.png", label: "ЗАПИСЬ РАЗГОВОРОВ" },
+      { src: "/images/mts/games/games-catalog-top.png", label: "ИГРЫ — БАННЕРЫ" },
+      { src: "/images/mts/savings/savings-dashboard.png", label: "МТС НАКОПЛЕНИЯ" },
+      { src: "/images/mts/voice/voice-marvin-landing.png", label: "АССИСТЕНТ В ЗВОНКЕ" },
     ],
     sections: [
       {
@@ -131,12 +151,14 @@ export const projects: Project[] = [
           { value: "Yandex × MTS", label: "звонки через Алису" },
         ],
         screenshots: [
-          "/images/mts/voice/voice-secretary-spam-spa.png",
-          "/images/mts/voice/voice-secretary-spam-vocal.png",
-          "/images/mts/voice/voice-recording-landing.png",
-          "/images/mts/voice/voice-recording-active.png",
-          "/images/mts/voice/voice-marvin-landing.png",
-          "/images/mts/voice/voice-secretary-landing.png",
+          { src: "/images/mts/voice/voice-demo-1.mp4", kind: "video", label: "ДЕМО — СЦЕНАРИЙ В ЗВОНКЕ", poster: "/images/mts/voice/voice-secretary-spam-spa.png" },
+          { src: "/images/mts/voice/voice-demo-2.mp4", kind: "video", label: "ДЕМО — ВТОРОЙ СЦЕНАРИЙ", poster: "/images/mts/voice/voice-secretary-spam-vocal.png" },
+          { src: "/images/mts/voice/voice-secretary-spam-spa.png", label: "AI СЕКРЕТАРЬ — ОТВЕТ НА СПАМ" },
+          { src: "/images/mts/voice/voice-secretary-spam-vocal.png", label: "AI СЕКРЕТАРЬ — ВТОРОЙ СЦЕНАРИЙ" },
+          { src: "/images/mts/voice/voice-recording-landing.png", label: "ЗАПИСЬ РАЗГОВОРОВ — ЛЕНДИНГ" },
+          { src: "/images/mts/voice/voice-recording-active.png", label: "ЗАПИСЬ — ПОДКЛЮЧЕНО" },
+          { src: "/images/mts/voice/voice-marvin-landing.png", label: "АССИСТЕНТ В ЗВОНКЕ" },
+          { src: "/images/mts/voice/voice-secretary-landing.png", label: "МТС СЕКРЕТАРЬ — ЛЕНДИНГ" },
         ],
         links: [
           { label: "AI-шумоподавление — впервые на рынке моб. связи (24.10.2025)", url: "https://golicino.mts.ru/about/media-centr/soobshheniya-kompanii/novosti-mts-v-rossii-i-mire/2025-10-24/mts-pervoj-na-rynke-zapuskaet-funkciyu-ai-shumopodavleniya-v-golosovyh-vyzovah" },
@@ -174,15 +196,15 @@ export const projects: Project[] = [
           { value: "100 ₽", label: "минимум на счёт МТС Накоплений" },
         ],
         screenshots: [
-          "/images/mts/games/home-widgets-and-games.png",
-          "/images/mts/games/games-catalog-top.png",
-          "/images/mts/games/games-catalog-full.png",
-          "/images/mts/family/family-profile-setup.png",
-          "/images/mts/family/family-geozones-empty.png",
-          "/images/mts/savings/savings-dashboard.png",
-          "/images/mts/savings/savings-income-calculator.png",
-          "/images/mts/savings/savings-rate-info.png",
-          "/images/mts/savings/savings-payment-method.png",
+          { src: "/images/mts/games/home-widgets-and-games.png", label: "ГЛАВНАЯ МОЙ МТС — ВИДЖЕТЫ" },
+          { src: "/images/mts/games/games-catalog-top.png", label: "КАТАЛОГ ИГР — ВЕРХ" },
+          { src: "/images/mts/games/games-catalog-full.png", label: "КАТАЛОГ ИГР — ПОЛНЫЙ" },
+          { src: "/images/mts/family/family-profile-setup.png", label: "СЕМЕЙНАЯ ГРУППА — ПРОФИЛЬ" },
+          { src: "/images/mts/family/family-geozones-empty.png", label: "ГЕОЗОНЫ — ПУСТОЙ СТЕЙТ" },
+          { src: "/images/mts/savings/savings-dashboard.png", label: "НАКОПЛЕНИЯ — ГЛАВНАЯ" },
+          { src: "/images/mts/savings/savings-income-calculator.png", label: "НАКОПЛЕНИЯ — КАЛЬКУЛЯТОР" },
+          { src: "/images/mts/savings/savings-rate-info.png", label: "НАКОПЛЕНИЯ — СТАВКА 16,5%" },
+          { src: "/images/mts/savings/savings-payment-method.png", label: "НАКОПЛЕНИЯ — ПОПОЛНЕНИЕ" },
         ],
         links: [
           { label: "МТС.ГеоПоиск × ЛизаАлерт — запуск 02.06.2025 (Хабр)", url: "https://habr.com/ru/news/915160/" },

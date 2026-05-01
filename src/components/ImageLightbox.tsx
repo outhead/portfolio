@@ -13,16 +13,26 @@ interface ImageLightboxImage {
   caption?: string;
   /** NDA-защищённый кадр: рендерится в блюре до ввода пароля. */
   protected?: boolean;
+  /** `"video"` — рендерит `<video>` с autoplay-muted-loop в плитке и controls в overlay. */
+  kind?: "image" | "video";
+  /** Постер для video. */
+  poster?: string;
 }
 
 interface ImageLightboxProps {
   images: ImageLightboxImage[];
+  /**
+   * Режим раскладки сетки.
+   * - `"web"` (default) — 2 столбца, 16:9, под десктопные веб-интерфейсы.
+   * - `"phone"` — до 5 столбцов, портретный iPhone-aspect 1290:2796, под мобильные скрины (Kardio-style).
+   */
+  mode?: "web" | "phone";
 }
 
 const PROTECT_PASSWORD = "4444";
 const PROTECT_STORAGE_KEY = "portfolio-protected-unlocked";
 
-export default function ImageLightbox({ images }: ImageLightboxProps) {
+export default function ImageLightbox({ images, mode = "web" }: ImageLightboxProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [unlocked, setUnlocked] = useState(false);
   const [passwordInput, setPasswordInput] = useState("");
@@ -139,14 +149,26 @@ export default function ImageLightbox({ images }: ImageLightboxProps) {
         </div>
       )}
 
-      {/* Сетка/слайдер плиток. На мобилке horizontal-snap-scroll, на md+ — обычный grid. */}
-      <div className="-mx-5 md:mx-0 px-5 md:px-0 flex md:grid md:grid-cols-2 gap-x-4 md:gap-x-6 gap-y-10 md:gap-y-14 overflow-x-auto md:overflow-visible snap-x snap-mandatory md:snap-none scroll-px-5 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+      {/* Сетка/слайдер плиток. На мобилке horizontal-snap-scroll, на md+ — grid.
+          В режиме phone — до 5 в ряд, портретный iPhone-aspect, скруглённые углы под экран iPhone.
+          В режиме web — 2 столбца, 16:9 (по умолчанию). */}
+      <div
+        className={
+          mode === "phone"
+            ? "-mx-5 md:mx-0 px-5 md:px-0 flex md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-3 md:gap-x-4 gap-y-8 md:gap-y-10 overflow-x-auto md:overflow-visible snap-x snap-mandatory md:snap-none scroll-px-5 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
+            : "-mx-5 md:mx-0 px-5 md:px-0 flex md:grid md:grid-cols-2 gap-x-4 md:gap-x-6 gap-y-10 md:gap-y-14 overflow-x-auto md:overflow-visible snap-x snap-mandatory md:snap-none scroll-px-5 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
+        }
+      >
         {images.map((img, n) => {
           const isLocked = !!img.protected && !unlocked;
           return (
             <figure
               key={n}
-              className="flex flex-col gap-3 items-center flex-shrink-0 w-[85%] sm:w-[70%] md:w-auto snap-center"
+              className={
+                mode === "phone"
+                  ? "flex flex-col gap-3 items-center flex-shrink-0 w-[60%] sm:w-[45%] md:w-auto snap-center"
+                  : "flex flex-col gap-3 items-center flex-shrink-0 w-[85%] sm:w-[70%] md:w-auto snap-center"
+              }
             >
               <button
                 onClick={() => {
@@ -156,19 +178,44 @@ export default function ImageLightbox({ images }: ImageLightboxProps) {
                   }
                   setActiveIndex(n);
                 }}
-                className={`relative aspect-video rounded-lg overflow-hidden group bg-black p-0 w-full ${
-                  isLocked ? "cursor-pointer" : "cursor-zoom-in"
-                }`}
+                className={`relative overflow-hidden group bg-black p-0 w-full ${
+                  mode === "phone"
+                    ? "aspect-[1290/2796] rounded-[2rem] md:rounded-[1.75rem] ring-1 ring-white/[0.06]"
+                    : "aspect-video rounded-lg"
+                } ${isLocked ? "cursor-pointer" : "cursor-zoom-in"}`}
               >
-                <Image
-                  src={img.src}
-                  alt={img.alt}
-                  fill
-                  sizes="(max-width: 768px) 85vw, 50vw"
-                  className={`object-cover object-center transition-transform duration-500 ${
-                    isLocked ? "blur-2xl scale-110" : "group-hover:scale-105"
-                  }`}
-                />
+                {img.kind === "video" ? (
+                  <video
+                    src={img.src}
+                    poster={img.poster}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                    className={`absolute inset-0 w-full h-full ${
+                      mode === "phone" ? "object-cover object-top" : "object-cover object-center"
+                    } transition-transform duration-500 ${
+                      isLocked ? "blur-2xl scale-110" : "group-hover:scale-105"
+                    }`}
+                  />
+                ) : (
+                  <Image
+                    src={img.src}
+                    alt={img.alt}
+                    fill
+                    sizes={
+                      mode === "phone"
+                        ? "(max-width: 768px) 60vw, (max-width: 1280px) 25vw, 18vw"
+                        : "(max-width: 768px) 85vw, 50vw"
+                    }
+                    className={`${
+                      mode === "phone" ? "object-cover object-top" : "object-cover object-center"
+                    } transition-transform duration-500 ${
+                      isLocked ? "blur-2xl scale-110" : "group-hover:scale-105"
+                    }`}
+                  />
+                )}
                 {isLocked && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/40">
                     <Lock className="w-5 h-5 text-white/70" strokeWidth={2} />
@@ -206,13 +253,25 @@ export default function ImageLightbox({ images }: ImageLightboxProps) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="relative w-full h-full max-w-[1400px]">
-              <Image
-                src={images[activeIndex].src}
-                alt={images[activeIndex].alt}
-                fill
-                className="object-contain"
-                sizes="(max-width: 1400px) 100vw, 1400px"
-              />
+              {images[activeIndex].kind === "video" ? (
+                <video
+                  src={images[activeIndex].src}
+                  poster={images[activeIndex].poster}
+                  controls
+                  autoPlay
+                  loop
+                  playsInline
+                  className="absolute inset-0 w-full h-full object-contain"
+                />
+              ) : (
+                <Image
+                  src={images[activeIndex].src}
+                  alt={images[activeIndex].alt}
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 1400px) 100vw, 1400px"
+                />
+              )}
             </div>
           </div>
 
