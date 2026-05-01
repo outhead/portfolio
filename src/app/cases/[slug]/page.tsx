@@ -97,20 +97,9 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
           <h1 className="font-p95 text-[clamp(32px,6vw,72px)] uppercase leading-[0.95] mb-4">
             {project.title}
           </h1>
-          <p className="text-[11px] tracking-[0.05em] text-white/40 uppercase mb-6">
+          <p className="text-[11px] tracking-[0.05em] text-white/40 uppercase">
             {project.role} · {project.period}
           </p>
-
-          <div className="flex flex-wrap gap-2">
-            {project.tags.map((tag) => (
-              <span
-                key={tag}
-                className="text-[9px] tracking-[0.08em] uppercase px-2.5 py-1 rounded border border-white/[0.08] text-white/30"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
 
           {/* Metric */}
           {project.metric && (

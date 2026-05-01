@@ -142,8 +142,8 @@ export const projects: Project[] = [
       { value: "27+", label: "внешних выступлений" },
     ],
     type: "work",
-    // Акцентная карточка — «CX Award 2024», бронза-золото как медаль
-    coverColor: "#C9A66B",
+    // Чистый тёмный фон под видео-обложку (раньше была бронза #C9A66B — давала бежевую подсветку)
+    coverColor: "#0E0E0E",
     coverImage: "/images/covers/gpn-cover.jpg",
     coverVideo: "/videos/gpn-cover.mp4",
     screenshots: [
