@@ -1,3 +1,6 @@
+/** Скриншот: либо просто строка-путь, либо объект с подписью. */
+export type Screenshot = string | { src: string; caption?: string; alt?: string };
+
 export interface Project {
   slug: string;
   title: string;
@@ -24,7 +27,7 @@ export interface Project {
    * — На карточке главной: hover → play 0..pauseAt → pause; mouseLeave → play pauseAt..end → pause на конце.
    */
   coverVideoPauseAt?: number;
-  screenshots?: string[];
+  screenshots?: Screenshot[];
   sections?: {
     title: string;
     /** Старый формат — single paragraph. Используется в кейсах, где ещё не разнесли на структурные блоки. */
@@ -38,7 +41,7 @@ export interface Project {
     callouts?: { value: string; label: string }[];
     /** Inline-пруфы: ссылки рядом с релевантным контентом, а не только в нижнем блоке. */
     links?: { label: string; url: string; thumbnail?: string; kind?: "video" | "article" | "site" | "github" }[];
-    screenshots?: string[];
+    screenshots?: Screenshot[];
   }[];
   results?: {
     value: string;
@@ -197,9 +200,10 @@ export const projects: Project[] = [
           { value: "3-й", label: "уровень зрелости ЦК" },
         ],
         screenshots: [
-          "/images/gpn/team/team-demo.jpg",
-          "/images/gpn/team/team-noses.jpg",
-          "/images/gpn/team/process-talk.jpg",
+          { src: "/images/gpn/team/team-demo.jpg", caption: "Команда продуктового дизайна на демо департамента. Цифергауз, Питер" },
+          { src: "/images/gpn/team/team-noses.jpg", caption: "Тимбилдинг с красными клоунскими носами. Внутренняя традиция, ставшая мемом команды" },
+          { src: "/images/gpn/team/process-talk.jpg", caption: "Внутренний доклад про дизайн-процесс — 7 этапов от анализа требований до реализации" },
+          { src: "/images/gpn/team/concept-talk.jpg", caption: "Соавторский доклад со Светланой Любавской про создание нового концепта продукта" },
         ],
       },
       {
@@ -222,9 +226,9 @@ export const projects: Project[] = [
           { label: "Карточка ЕСО на CX Awards 2024 (РБК)", url: "https://cxa-spb.rbc.ru/proposals/147/" },
         ],
         screenshots: [
-          "/images/gpn/eso/eso-home.png",
-          "/images/gpn/eso/eso-form.png",
-          "/images/gpn/eso/eso-detail.png",
+          { src: "/images/gpn/eso/eso-home.png", caption: "ЕСО — главная: список обращений сотрудника с фильтрами по статусам, виджеты «Отпуск скоро» и «Старт» справа" },
+          { src: "/images/gpn/eso/eso-form.png", caption: "ЕСО — создание нового обращения. Контекстная подсказка с правилами оформления справки 2-НДФЛ" },
+          { src: "/images/gpn/eso/eso-detail.png", caption: "ЕСО — карточка обращения SD-4252730: статус, контактное лицо, прогресс обработки" },
         ],
       },
       {
@@ -247,10 +251,35 @@ export const projects: Project[] = [
           { label: "Статья vc.ru от ГПН", url: "https://vc.ru/gazpromneft/676527" },
         ],
         screenshots: [
-          "/images/gpn/consta/consta-quick-start.png",
-          "/images/gpn/consta/consta-buttons.png",
-          "/images/gpn/consta/consta-dashboard-dark.png",
-          "/images/gpn/consta/jupiter-main.png",
+          { src: "/images/gpn/consta/consta-quick-start.png", caption: "Consta Quick Start — что такое дизайн-система, лицевая страница доклада" },
+          { src: "/images/gpn/consta/consta-buttons.png", caption: "Широкая вариативность компонентов — на примере кнопок" },
+          { src: "/images/gpn/consta/consta-userselect.png", caption: "UserSelect — компонент с порталом, обновляется автоматически после апдейта на GitHub" },
+          { src: "/images/gpn/consta/consta-dashboard-light.png", caption: "Дашборд бурения — светлая тема" },
+          { src: "/images/gpn/consta/consta-dashboard-dark.png", caption: "Тот же дашборд — тёмная тема. Парные темы из коробки" },
+          { src: "/images/gpn/consta/consta-charts.png", caption: "Consta Charts — линейные, столбчатые, пузырчатые графики на палитре DS" },
+        ],
+      },
+      {
+        title: "Продукты на Consta — Юпитер и ЭРА Бурения",
+        context:
+          "Consta — не теория, а production-DS. Десятки внутренних продуктов ГПН построены на ней. Два показательных — Юпитер и ЭРА Бурения: разные домены, один язык интерфейса.",
+        result:
+          "**Юпитер.** Корпоративный поиск и мониторинг IT-инфраструктуры ГПН. Поиск по объектам компании (BLPS, БРД, ДРП, RCL, Linux), лента событий, инфраструктурные карты SAP-блоков. Плотная информационная сетка — типичный enterprise-инструмент на Consta.\n\n**ЭРА Бурения.** Экономическая Расчётная Аналитическая модель ствола скважины. Один продукт — три радикально разных контекста использования: промысел (полевые условия), НТЦ, центр управления. Адаптивность под все экраны — последняя задача Алексея Титяева перед моим уходом.",
+        callouts: [
+          { value: "Юпитер", label: "поиск + мониторинг" },
+          { value: "ЭРА Бурения", label: "промысел · НТЦ · центр управления" },
+          { value: "3", label: "контекста использования у ЭРА" },
+          { value: "1", label: "DS на оба продукта" },
+        ],
+        screenshots: [
+          { src: "/images/gpn/consta/jupiter-main.png", caption: "Юпитер — главная: поиск по объектам ГПН и список изменений" },
+          { src: "/images/gpn/consta/jupiter-monitoring.png", caption: "Юпитер — лента инцидентов с приоритетами и владельцами" },
+          { src: "/images/gpn/consta/jupiter-dashboard.png", caption: "Юпитер — инфраструктурная карта SAP-блоков" },
+          { src: "/images/gpn/consta/jupiter-search.png", caption: "Юпитер — расширенный поиск с фильтрами по типам объектов" },
+          { src: "/images/gpn/drilling/era-burenie-empty.png", caption: "ЭРА Бурения — стартовое состояние «компоновка не создана»" },
+          { src: "/images/gpn/drilling/era-burenie-stack.png", caption: "ЭРА Бурения — компоновка КНБК с долотом, мотором, стабилизатором" },
+          { src: "/images/gpn/drilling/era-burenie-projection.png", caption: "ЭРА Бурения — проекция ствола скважины с обсадной колонной" },
+          { src: "/images/gpn/drilling/era-burenie-sections.png", caption: "ЭРА Бурения — модель скважины: направление, кондуктор, хвостовик" },
         ],
       },
       {
@@ -276,12 +305,14 @@ export const projects: Project[] = [
           { label: "Бейдж-генератор Вики (open-source)", url: "https://github.com/design-kudry/badge-generator" },
         ],
         screenshots: [
-          "/images/gpn/hr/badges-closeup.jpg",
-          "/images/gpn/hr/badges-vika.jpg",
-          "/images/gpn/hr/badges-presentation.jpg",
-          "/images/gpn/hr/speaking-barcamp.jpg",
-          "/images/gpn/hr/speaking-panel.jpg",
-          "/images/gpn/hr/speaking-covid.jpg",
+          { src: "/images/gpn/hr/badges-closeup.jpg", caption: "Готовые персональные пропуска: Лепёха, Кудрявцева, Воронин, Шугаев, Кравченко" },
+          { src: "/images/gpn/hr/badges-vika.jpg", caption: "Вика Кудрявцева — соавторка истории с пропусками — со своим пропуском" },
+          { src: "/images/gpn/hr/badges-presentation.jpg", caption: "Внутренняя презентация про шаблон наклеек на пропуска. Зал слушает, на экране сетка пропусков команды" },
+          { src: "/images/gpn/hr/badges-egor.jpg", caption: "Мой пропуск на ленте UMBRELLA CORPORATION — внутренний мем команды" },
+          { src: "/images/gpn/hr/speaking-barcamp.jpg", caption: "Спикер на БАРКЕМП 20.35 — Национальная технологическая революция, Санкт-Петербург, 7–8 ноября" },
+          { src: "/images/gpn/hr/speaking-panel.jpg", caption: "Панельная дискуссия на БАРКЕМП 20.35 — продуктовый дизайн в крупных промышленных компаниях" },
+          { src: "/images/gpn/hr/speaking-covid.jpg", caption: "Внутренний митап в Цифергаузе. Тема: хронология ограничений COVID-19 и ответ продуктовой команды" },
+          { src: "/images/gpn/hr/speaking-bw.jpg", caption: "Подкаст-интервью на сцене — ч/б, чёткий контраст" },
         ],
       },
       {
@@ -306,20 +337,19 @@ export const projects: Project[] = [
         ],
       },
       {
-        title: "Витринные кейсы — четыре грани из 36 in-house проектов",
+        title: "Витринные кейсы — три грани из 36 in-house проектов",
         context:
-          "В год команда вела 36 продуктовых проектов внутри компании. Четыре из них показывают разные грани работы: командный формат, сервисный дизайн, стандартизация и промышленная адаптивность.",
+          "В год команда вела 36 продуктовых проектов внутри компании. Три из них показывают разные грани работы: командный формат, сервисный дизайн и стандартизация.",
         result:
-          "**Дроны — стендап как хакатон.** Привезли коллег из Уфы и Логистики Переработки и Сбыта; за 2–3 недели стажёры с дизайнерами сделали кликабельный прототип сервиса беспилотной съёмки. Двойной выхлоп: реальный прототип + площадка, где стажёры выросли в наших дизайнеров.\n\n**Маркетплейс роботизации промышленности.** Продукт с нуля. Дизайнера подключили на этапе сценария, а не интерфейса — сервисный дизайн повлиял на саму конфигурацию продукта.\n\n**Переговорки.** В каждом офисе ГПН — свой UI мультимедии и климата. Сотрудник в новом офисе теряется: как поменять температуру, как вывести презентацию. Сценарный анализ → исследование → итерации → единый интерфейс на все офисы.\n\n**ЭРА Бурения.** Экономическая Расчётная Аналитическая модель для планирования ствола скважины. Один продукт — три радикально разных контекста использования: промысел, НТЦ, центр управления. Адаптивность под все экраны — последняя задача Алексея Титяева перед моим уходом.",
+          "**Дроны — стендап как хакатон.** Привезли коллег из Уфы и Логистики Переработки и Сбыта; за 2–3 недели стажёры с дизайнерами сделали кликабельный прототип сервиса беспилотной съёмки. Двойной выхлоп: реальный прототип + площадка, где стажёры выросли в наших дизайнеров.\n\n**Маркетплейс роботизации промышленности.** Продукт с нуля. Дизайнера подключили на этапе сценария, а не интерфейса — сервисный дизайн повлиял на саму конфигурацию продукта.\n\n**Переговорки.** В каждом офисе ГПН — свой UI мультимедии и климата. Сотрудник в новом офисе теряется: как поменять температуру, как вывести презентацию. Сценарный анализ → исследование → итерации → единый интерфейс на все офисы.",
         callouts: [
           { value: "36", label: "in-house проектов" },
           { value: "21", label: "через подрядчиков" },
-          { value: "2–3 нед", label: "от стендапа до прототипа" },
-          { value: "3", label: "контекста ЭРА Бурения" },
+          { value: "2–3 нед", label: "Дроны от стендапа до прототипа" },
+          { value: "1 UI", label: "Переговорки на все офисы" },
         ],
         screenshots: [
-          "/images/gpn/drilling/era-burenie-stack.png",
-          "/images/gpn/drones/d-outcrop.png",
+          { src: "/images/gpn/drones/d-outcrop.png", caption: "D-Outcrop — прототип сервиса беспилотной геологоразведки. Сделан на хакатоне-стендапе за 2–3 недели стажёрами с коллегами из Уфы и ЛПС" },
         ],
       },
     ],

@@ -286,30 +286,56 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
 
                 {/* Inline links — пруфы рядом с релевантным текстом */}
                 {section.links && section.links.length > 0 && (
-                  <div className="mt-6 flex flex-wrap gap-2">
+                  <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {section.links.map((link) => {
                       let domain = "";
                       try {
                         domain = new URL(link.url).hostname.replace(/^www\./, "");
                       } catch {}
+                      const hasThumb = !!link.thumbnail;
+                      const isVideo = link.kind === "video";
                       return (
                         <a
                           key={link.url}
                           href={link.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="group inline-flex items-center gap-2 px-3 py-2 rounded-md border border-white/[0.08] hover:border-[#A6FF00]/40 hover:bg-white/[0.02] transition-colors no-underline max-w-full"
+                          className="group flex items-stretch gap-0 rounded-md border border-white/[0.08] hover:border-[#A6FF00]/40 hover:bg-white/[0.02] transition-colors no-underline overflow-hidden"
                         >
-                          <ExternalLink
-                            className="w-3 h-3 flex-shrink-0 text-white/30 group-hover:text-[#A6FF00] transition-colors"
-                            strokeWidth={2}
-                          />
-                          <span className="text-[9px] tracking-[0.1em] uppercase text-white/40 group-hover:text-white/60 transition-colors">
-                            {domain}
-                          </span>
-                          <span className="text-[12px] text-white/55 group-hover:text-white/85 transition-colors truncate">
-                            {link.label}
-                          </span>
+                          {hasThumb && (
+                            <div className="relative w-28 md:w-32 flex-shrink-0 bg-black overflow-hidden">
+                              <Image
+                                src={link.thumbnail!}
+                                alt={link.label}
+                                fill
+                                sizes="128px"
+                                className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                              />
+                              {isVideo && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/15 transition-colors">
+                                  <div className="w-7 h-7 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center group-hover:bg-[#A6FF00] transition-colors">
+                                    <Play className="w-3 h-3 text-white group-hover:text-black transition-colors fill-current ml-0.5" strokeWidth={2} />
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          <div className="flex items-start gap-2 p-3 flex-1 min-w-0">
+                            {!hasThumb && (
+                              <ExternalLink
+                                className="w-3 h-3 flex-shrink-0 mt-1 text-white/30 group-hover:text-[#A6FF00] transition-colors"
+                                strokeWidth={2}
+                              />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <div className="text-[9px] tracking-[0.08em] uppercase text-white/40 mb-1 truncate">
+                                {domain}
+                              </div>
+                              <div className="text-[13px] text-white/65 group-hover:text-white/95 transition-colors leading-snug">
+                                {link.label}
+                              </div>
+                            </div>
+                          </div>
                         </a>
                       );
                     })}
@@ -320,10 +346,14 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                 {hasSectionScreenshots && (
                   <div className="mt-7">
                     <ImageLightbox
-                      images={section.screenshots!.map((src, n) => ({
-                        src,
-                        alt: `${project.title} — ${section.title} — ${n + 1}`,
-                      }))}
+                      images={section.screenshots!.map((shot, n) => {
+                        const src = typeof shot === "string" ? shot : shot.src;
+                        const caption = typeof shot === "string" ? undefined : shot.caption;
+                        const alt =
+                          (typeof shot === "string" ? undefined : shot.alt) ??
+                          `${project.title} — ${section.title} — ${n + 1}`;
+                        return { src, alt, caption };
+                      })}
                     />
                   </div>
                 )}
@@ -337,10 +367,14 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
             <div className="mt-16 mb-12">
               <div className="text-[10px] tracking-[0.12em] uppercase text-white/30 mb-6">Скриншоты</div>
               <ImageLightbox
-                images={project.screenshots.map((src, n) => ({
-                  src,
-                  alt: `${project.title} — скриншот ${n + 1}`,
-                }))}
+                images={project.screenshots.map((shot, n) => {
+                  const src = typeof shot === "string" ? shot : shot.src;
+                  const caption = typeof shot === "string" ? undefined : shot.caption;
+                  const alt =
+                    (typeof shot === "string" ? undefined : shot.alt) ??
+                    `${project.title} — скриншот ${n + 1}`;
+                  return { src, alt, caption };
+                })}
               />
             </div>
           )}

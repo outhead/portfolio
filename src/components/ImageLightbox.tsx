@@ -4,8 +4,14 @@ import { useState, useCallback, useEffect } from "react";
 import Image from "next/image";
 import { X } from "lucide-react";
 
+interface ImageLightboxImage {
+  src: string;
+  alt: string;
+  caption?: string;
+}
+
 interface ImageLightboxProps {
-  images: { src: string; alt: string }[];
+  images: ImageLightboxImage[];
 }
 
 export default function ImageLightbox({ images }: ImageLightboxProps) {
@@ -38,19 +44,25 @@ export default function ImageLightbox({ images }: ImageLightboxProps) {
     <>
       <div className="grid md:grid-cols-2 gap-4">
         {images.map((img, n) => (
-          <button
-            key={n}
-            onClick={() => setActiveIndex(n)}
-            className="relative aspect-video rounded-lg border border-white/[0.06] overflow-hidden group cursor-zoom-in bg-transparent p-0"
-          >
-            <Image
-              src={img.src}
-              alt={img.alt}
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-              className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
-            />
-          </button>
+          <figure key={n} className="flex flex-col gap-2">
+            <button
+              onClick={() => setActiveIndex(n)}
+              className="relative aspect-video rounded-lg border border-white/[0.06] overflow-hidden group cursor-zoom-in bg-transparent p-0"
+            >
+              <Image
+                src={img.src}
+                alt={img.alt}
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+              />
+            </button>
+            {img.caption && (
+              <figcaption className="text-[11px] md:text-[12px] tracking-[0.04em] text-white/45 leading-snug px-1">
+                {img.caption}
+              </figcaption>
+            )}
+          </figure>
         ))}
       </div>
 
@@ -81,9 +93,16 @@ export default function ImageLightbox({ images }: ImageLightboxProps) {
             />
           </div>
 
-          {/* Navigation hints */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[10px] tracking-[0.12em] uppercase text-white/25">
-            {activeIndex + 1} / {images.length} · ESC для выхода
+          {/* Caption + navigation hints в footer overlay */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 max-w-[90vw] flex flex-col items-center gap-1.5 text-center px-4">
+            {images[activeIndex].caption && (
+              <div className="text-sm md:text-base text-white/85 leading-snug max-w-2xl">
+                {images[activeIndex].caption}
+              </div>
+            )}
+            <div className="text-[10px] tracking-[0.12em] uppercase text-white/25">
+              {activeIndex + 1} / {images.length} · ESC для выхода
+            </div>
           </div>
         </div>
       )}
