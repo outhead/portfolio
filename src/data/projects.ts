@@ -18,6 +18,12 @@ export interface Project {
    * вместо статичного coverImage. coverImage при этом служит постером для <video>.
    */
   coverVideo?: string;
+  /**
+   * Опционально: timestamp в секундах, на котором держится «холодный» кадр.
+   * — На hero страницы кейса видео ставится на эту секунду и стоит на паузе.
+   * — На карточке главной: hover → play 0..pauseAt → pause; mouseLeave → play pauseAt..end → pause на конце.
+   */
+  coverVideoPauseAt?: number;
   screenshots?: string[];
   sections?: {
     title: string;
@@ -152,6 +158,7 @@ export const projects: Project[] = [
     coverColor: "#0E0E0E",
     coverImage: "/images/covers/gpn-cover.jpg",
     coverVideo: "/videos/gpn-cover.mp4",
+    coverVideoPauseAt: 2.26,
     screenshots: [
       "/images/gpn/eso/eso-home.png",
       "/images/gpn/consta/consta-dashboard-dark.png",

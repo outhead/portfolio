@@ -5,21 +5,25 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { Project } from "@/data/projects";
+import { CardCoverVideo } from "@/components/CoverVideo";
+import type { RefObject } from "react";
 
 /** Фон карточки: видео-обложка > картинка-обложка > просто coverColor. */
-function CoverMedia({ project }: { project: Project }) {
+function CoverMedia({
+  project,
+  hoverTarget,
+}: {
+  project: Project;
+  hoverTarget?: RefObject<HTMLElement | null>;
+}) {
   if (project.coverVideo) {
     return (
-      <video
+      <CardCoverVideo
         src={project.coverVideo}
         poster={project.coverImage}
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="metadata"
+        pauseAt={project.coverVideoPauseAt}
+        hoverTarget={hoverTarget}
         className="absolute inset-0 w-full h-full object-cover opacity-60 z-0"
-        aria-hidden="true"
       />
     );
   }

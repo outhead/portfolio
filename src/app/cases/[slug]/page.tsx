@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { ArrowLeft, ArrowRight, ExternalLink, Play } from "lucide-react";
 import ImageLightbox from "@/components/ImageLightbox";
+import { HeroCoverVideo } from "@/components/CoverVideo";
 
 export function generateStaticParams() {
   return projects.map((project) => ({
@@ -60,14 +61,10 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
         {(project.coverImage || project.coverVideo) && (
           <div className="absolute inset-0 z-0">
             {project.coverVideo ? (
-              <video
+              <HeroCoverVideo
                 src={project.coverVideo}
                 poster={project.coverImage}
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
+                pauseAt={project.coverVideoPauseAt}
                 className="absolute inset-0 w-full h-full object-cover opacity-30"
               />
             ) : (
