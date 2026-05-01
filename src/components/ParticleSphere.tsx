@@ -182,9 +182,15 @@ export default function ParticleSphere({
       sphereRad = Math.min(cssW, cssH) * sphereRadFactor;
       sphereCenterZ = -3 - sphereRad;
       targetFn = getTargetFn(shape, sphereRad);
+      // Центр всегда подтягивается к середине плитки при ресайзе.
+      // Целевой — точная середина; текущий — только при первой инициализации
+      // (чтобы не было резкого скачка во время движения, но если ресайз
+      // существенный — лёгкое смещение допустимо, lerp подтянет).
+      targetCX = cssW / 2;
+      targetCY = cssH / 2;
       if (!centerInitialized) {
-        targetCX = currentCX = cssW / 2;
-        targetCY = currentCY = cssH / 2;
+        currentCX = targetCX;
+        currentCY = targetCY;
         centerInitialized = true;
       }
     };
