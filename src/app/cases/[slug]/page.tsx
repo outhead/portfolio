@@ -160,30 +160,8 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
 
       {/* Content */}
       <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-16 md:py-24 bg-black border-t border-white/[0.06]">
-        {/* Sticky TOC — навигация по секциям. Видна только на lg+ (есть колонка справа). */}
-        {project.sections && project.sections.length > 1 && (
-          <aside className="hidden lg:block absolute top-24 right-5 md:right-[6%] lg:right-[10%] xl:right-[14%] w-44 z-[2]">
-            <div className="sticky top-24">
-              <div className="text-[9px] tracking-[0.14em] uppercase text-white/30 mb-3">Содержание</div>
-              <ul className="space-y-2">
-                {project.sections.map((s, i) => (
-                  <li key={i}>
-                    <a
-                      href={`#section-${i + 1}`}
-                      className="group flex items-baseline gap-2 text-[11px] text-white/40 hover:text-white/85 transition-colors no-underline"
-                    >
-                      <span className="font-mono text-[10px] text-white/25 group-hover:text-white/60">
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <span className="leading-snug">{s.title}</span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </aside>
-        )}
-        <div className="max-w-4xl">
+        <div className="lg:flex lg:gap-x-12 xl:gap-x-16">
+        <div className="max-w-4xl flex-1 min-w-0">
           {(() => {
             const longProseClass =
               "text-white/60 leading-relaxed text-base md:text-lg max-w-3xl";
@@ -447,6 +425,31 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
               </div>
             );
           })()}
+        </div>
+
+        {/* Sticky TOC — навигация по секциям. Видна только на lg+. */}
+        {project.sections && project.sections.length > 1 && (
+          <aside className="hidden lg:block w-44 xl:w-48 flex-shrink-0">
+            <div className="sticky top-8">
+              <div className="text-[9px] tracking-[0.14em] uppercase text-white/30 mb-3">Содержание</div>
+              <ul className="space-y-2.5">
+                {project.sections.map((s, i) => (
+                  <li key={i}>
+                    <a
+                      href={`#section-${i + 1}`}
+                      className="group flex items-baseline gap-2 text-[11px] text-white/40 hover:text-white/85 transition-colors no-underline"
+                    >
+                      <span className="font-mono text-[10px] text-white/25 group-hover:text-white/60 flex-shrink-0">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span className="leading-snug">{s.title}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </aside>
+        )}
         </div>
       </section>
 
