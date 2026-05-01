@@ -545,72 +545,248 @@ const careerJobs: Array<{
 ];
 
 function CareerHoverList() {
+  const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
+
   return (
     <div className="rounded-2xl border border-white/[0.06] overflow-hidden bg-white/[0.015]">
-      {careerJobs.map((job, i) => (
-        <div
-          key={job.year + job.company}
-          className={`group relative ${i > 0 ? "border-t border-white/[0.06]" : ""} hover:bg-white/[0.025] transition-colors`}
-        >
-          <div className="flex items-center gap-4 md:gap-6 px-5 md:px-7 py-4 md:py-5">
-            <span
-              className={`shrink-0 w-2 h-2 rounded-full ${
-                job.current ? "bg-[#A6FF00]" : "bg-white/25"
-              }`}
-              aria-hidden
-            />
-            <span className="shrink-0 font-p95 text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-white/50 w-[88px] md:w-[110px]">
-              {job.year}
-            </span>
-            <span className="flex-1 min-w-0 flex flex-col md:flex-row md:items-baseline md:gap-3">
-              <span className="font-p95 text-[15px] md:text-[17px] text-white uppercase leading-tight truncate">
-                {job.company}
-                {job.current && (
-                  <span className="ml-2 text-[10px] tracking-[0.12em] uppercase text-[#A6FF00]/85">
-                    now
-                  </span>
-                )}
-              </span>
-              <span className="text-[12px] md:text-[13px] text-white/55 leading-tight truncate">
-                {job.role}
-              </span>
-            </span>
-          </div>
+      {careerJobs.map((job, i) => {
+        const isExpanded = expandedIdx === i;
+        const toggle = () =>
+          setExpandedIdx((prev) => (prev === i ? null : i));
 
-          {job.details && (
-            <div
-              className="hidden md:grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-[420ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
-              aria-hidden="true"
+        return (
+          <div
+            key={job.year + job.company}
+            className={`group relative ${i > 0 ? "border-t border-white/[0.06]" : ""} hover:bg-white/[0.025] transition-colors`}
+          >
+            {/* Mobile: вся строка — кнопка toggle */}
+            <button
+              type="button"
+              onClick={toggle}
+              aria-expanded={isExpanded}
+              className="md:hidden w-full flex items-center gap-4 px-5 py-4 text-left"
             >
-              <div className="overflow-hidden">
-                <div className="px-5 md:px-7 pb-5 md:pb-6 pl-[calc(28px+8px+24px+110px)]">
-                  <p className="text-[13px] md:text-[14px] text-white/65 leading-relaxed mb-3">
-                    {job.scope}
-                  </p>
-                  <ul className="space-y-1.5">
-                    {job.details.map((d) => (
-                      <li
-                        key={d}
-                        className="flex items-start gap-2 text-[12px] md:text-[13px] text-white/55 leading-snug"
-                      >
-                        <span className="mt-[7px] h-px w-2 shrink-0 bg-white/30" />
-                        <span>{d}</span>
-                      </li>
-                    ))}
-                  </ul>
+              <span
+                className={`shrink-0 w-2 h-2 rounded-full ${
+                  job.current ? "bg-[#A6FF00]" : "bg-white/25"
+                }`}
+                aria-hidden
+              />
+              <span className="shrink-0 font-p95 text-[11px] tracking-[0.2em] uppercase text-white/50 w-[88px]">
+                {job.year}
+              </span>
+              <span className="flex-1 min-w-0 flex flex-col">
+                <span className="font-p95 text-[15px] text-white uppercase leading-tight">
+                  {job.company}
+                  {job.current && (
+                    <span className="ml-2 text-[10px] tracking-[0.12em] uppercase text-[#A6FF00]/85">
+                      now
+                    </span>
+                  )}
+                </span>
+                <span className="text-[12px] text-white/55 leading-tight">
+                  {job.role}
+                </span>
+              </span>
+              <ArrowRight
+                className={`w-4 h-4 text-white/40 transition-transform shrink-0 ${
+                  isExpanded ? "rotate-90" : ""
+                }`}
+                strokeWidth={1.75}
+              />
+            </button>
+
+            {/* Desktop: статичная строка (hover-раскрытие ниже через group-hover) */}
+            <div className="hidden md:flex items-center gap-6 px-7 py-5">
+              <span
+                className={`shrink-0 w-2 h-2 rounded-full ${
+                  job.current ? "bg-[#A6FF00]" : "bg-white/25"
+                }`}
+                aria-hidden
+              />
+              <span className="shrink-0 font-p95 text-[12px] tracking-[0.2em] uppercase text-white/50 w-[110px]">
+                {job.year}
+              </span>
+              <span className="flex-1 min-w-0 flex flex-row items-baseline gap-3">
+                <span className="font-p95 text-[17px] text-white uppercase leading-tight truncate">
+                  {job.company}
+                  {job.current && (
+                    <span className="ml-2 text-[10px] tracking-[0.12em] uppercase text-[#A6FF00]/85">
+                      now
+                    </span>
+                  )}
+                </span>
+                <span className="text-[13px] text-white/55 leading-tight truncate">
+                  {job.role}
+                </span>
+              </span>
+            </div>
+
+            {/* Desktop: hover-раскрытие */}
+            {job.details && (
+              <div
+                className="hidden md:grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-[420ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+                aria-hidden="true"
+              >
+                <div className="overflow-hidden">
+                  <div className="px-7 pb-6 pl-[calc(28px+8px+24px+110px)]">
+                    <p className="text-[14px] text-white/65 leading-relaxed mb-3">
+                      {job.scope}
+                    </p>
+                    <ul className="space-y-1.5">
+                      {job.details.map((d) => (
+                        <li
+                          key={d}
+                          className="flex items-start gap-2 text-[13px] text-white/55 leading-snug"
+                        >
+                          <span className="mt-[7px] h-px w-2 shrink-0 bg-white/30" />
+                          <span>{d}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {job.details && (
-            <div className="md:hidden px-5 pb-4 pl-[calc(20px+8px+16px+88px)]">
-              <p className="text-[12px] text-white/55 leading-snug">{job.scope}</p>
-            </div>
-          )}
-        </div>
-      ))}
+            {/* Mobile: click-раскрытие */}
+            <AnimatePresence initial={false}>
+              {isExpanded && job.details && (
+                <motion.div
+                  key="career-mobile-expand"
+                  className="md:hidden overflow-hidden"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <div className="px-5 pb-4 pl-[calc(20px+8px+16px+88px)]">
+                    <p className="text-[12px] text-white/65 leading-relaxed mb-3">
+                      {job.scope}
+                    </p>
+                    <ul className="space-y-1.5">
+                      {job.details.map((d) => (
+                        <li
+                          key={d}
+                          className="flex items-start gap-2 text-[12px] text-white/55 leading-snug"
+                        >
+                          <span className="mt-[7px] h-px w-2 shrink-0 bg-white/30" />
+                          <span>{d}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        );
+      })}
     </div>
+  );
+}
+
+// ───────────────────────────────────────────────────────────────────
+// ServiceTile — плитка «Услуги & экспертиза» с pulse-анимацией.
+// Hover активирует анимацию на десктопе. На мобиле — IntersectionObserver:
+// когда плитка попадает в центр viewport, анимация активируется (по очереди при скролле).
+// ───────────────────────────────────────────────────────────────────
+type ServiceTileData = {
+  key: string;
+  index: string;
+  label: string;
+  title: string;
+  Icon: React.ComponentType<{ className?: string; style?: React.CSSProperties; strokeWidth?: number }>;
+  accent: string;
+  animation: PulseVariant;
+  animationReverse?: boolean;
+  body: string;
+  items: string[];
+};
+
+function ServiceTile({ tile }: { tile: ServiceTileData }) {
+  const { index, label, title, Icon, accent, animation, animationReverse, body, items } = tile;
+  const tileRef = useRef<HTMLDivElement>(null);
+  const [mobileActive, setMobileActive] = useState(false);
+
+  // IntersectionObserver: активирует pulse на мобиле когда плитка в центре экрана.
+  // На md+ pulse работает через hover, и mobileActive остаётся false.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const isMobile = window.matchMedia("(max-width: 767px)").matches;
+    if (!isMobile) return;
+    const el = tileRef.current;
+    if (!el) return;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          // Активна, если центр плитки в верхней половине viewport (то есть к ней прилистали)
+          setMobileActive(entry.intersectionRatio >= 0.5);
+        }
+      },
+      {
+        threshold: [0, 0.25, 0.5, 0.75, 1],
+        rootMargin: "0px 0px -20% 0px",
+      }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  return (
+    <motion.div
+      ref={tileRef}
+      variants={fadeUp}
+      className="group relative rounded-2xl border border-white/[0.08] bg-white/[0.015] hover:border-white/[0.2] transition-colors p-6 md:p-8 flex flex-col gap-5 md:gap-6 min-h-[420px] md:min-h-[520px] overflow-hidden"
+    >
+      {/* Верх: index / icon / label */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <Icon
+            className="w-5 h-5 md:w-6 md:h-6"
+            style={{ color: accent }}
+            strokeWidth={1.75}
+          />
+          <span
+            className="font-p95 text-[10px] md:text-[11px] tracking-[0.22em] uppercase"
+            style={{ color: `${accent}CC` }}
+          >
+            ( {label} )
+          </span>
+        </div>
+        <span className="font-p95 text-[10px] md:text-[11px] tracking-[0.22em] uppercase text-white/30">
+          {index} /
+        </span>
+      </div>
+
+      {/* Заголовок — фиксируем под 2 строки на md+, чтобы круги ниже выровнялись по горизонтали даже при разной длине заголовка. */}
+      <h3 className="font-p95 text-[clamp(22px,2.4vw,32px)] uppercase leading-[1.05] text-white md:min-h-[2.4em]">
+        {title}
+      </h3>
+
+      {/* Pulse-анимация. Default — статичный серый кадр; hover (десктоп) или scroll-into-view (мобила) — зелёная анимация. */}
+      <div className="flex-1 min-h-[180px] flex items-center justify-center">
+        <div className="relative w-[180px] h-[180px]">
+          <PulseAnimation
+            variant={animation}
+            reverse={animationReverse}
+            active={mobileActive}
+            className="absolute inset-0"
+          />
+        </div>
+      </div>
+
+      {/* Описание */}
+      <p className="text-[13px] md:text-[14px] leading-relaxed text-white/60">
+        {body}
+      </p>
+
+      {/* Низ: items — горизонтальный список через · */}
+      <div className="pt-4 md:pt-5 border-t border-white/[0.06] text-[11px] md:text-[12px] tracking-[0.04em] text-white/45 leading-relaxed">
+        {items.join(" · ")}
+      </div>
+    </motion.div>
   );
 }
 
@@ -1202,54 +1378,8 @@ export default function PreviewHome() {
                   "Three.js · WebGL · Shaders",
                 ],
               },
-            ].map(({ key, index, label, title, Icon, accent, animation, animationReverse, body, items }) => (
-              <motion.div
-                key={key}
-                variants={fadeUp}
-                className="group relative rounded-2xl border border-white/[0.08] bg-white/[0.015] hover:border-white/[0.2] transition-colors p-6 md:p-8 flex flex-col gap-5 md:gap-6 min-h-[420px] md:min-h-[520px] overflow-hidden"
-              >
-                {/* Верх: index / icon / label */}
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <Icon
-                      className="w-5 h-5 md:w-6 md:h-6"
-                      style={{ color: accent }}
-                      strokeWidth={1.75}
-                    />
-                    <span
-                      className="font-p95 text-[10px] md:text-[11px] tracking-[0.22em] uppercase"
-                      style={{ color: `${accent}CC` }}
-                    >
-                      ( {label} )
-                    </span>
-                  </div>
-                  <span className="font-p95 text-[10px] md:text-[11px] tracking-[0.22em] uppercase text-white/30">
-                    {index} /
-                  </span>
-                </div>
-
-                {/* Заголовок — сразу под чипом, наверху плитки */}
-                <h3 className="font-p95 text-[clamp(22px,2.4vw,32px)] uppercase leading-[1.02] text-white">
-                  {title}
-                </h3>
-
-                {/* Pulse-анимация. Default — единый статичный кадр серый, hover плитки — анимация зелёная. */}
-                <div className="flex-1 min-h-[180px] flex items-center justify-center">
-                  <div className="relative w-[180px] h-[180px]">
-                    <PulseAnimation variant={animation} reverse={animationReverse} className="absolute inset-0" />
-                  </div>
-                </div>
-
-                {/* Описание */}
-                <p className="text-[13px] md:text-[14px] leading-relaxed text-white/60">
-                  {body}
-                </p>
-
-                {/* Низ: items — горизонтальный список через · */}
-                <div className="pt-4 md:pt-5 border-t border-white/[0.06] text-[11px] md:text-[12px] tracking-[0.04em] text-white/45 leading-relaxed">
-                  {items.join(" · ")}
-                </div>
-              </motion.div>
+            ].map((tile) => (
+              <ServiceTile key={tile.key} tile={tile} />
             ))}
           </div>
         </motion.div>

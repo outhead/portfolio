@@ -9,6 +9,8 @@ interface PulseAnimationProps {
   /** Реверс направления анимации. Для spiral — пульс идёт от края к центру. */
   reverse?: boolean;
   className?: string;
+  /** Принудительная активация анимации (вместе с hover). Используется для мобильного scroll-trigger. */
+  active?: boolean;
 }
 
 const W = 180;
@@ -26,9 +28,10 @@ const dotRings = [
 /** Pulse-анимации для плиток «Услуги & экспертиза»:
  *  - default: статичный кадр (t=0), точки серые
  *  - hover ближайшего .group-родителя: запускается RAF-анимация, точки зелёные #A6FF00 */
-export default function PulseAnimation({ variant, reverse = false, className }: PulseAnimationProps) {
+export default function PulseAnimation({ variant, reverse = false, className, active = false }: PulseAnimationProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hover, setHover] = useState(false);
+  const isPlaying = hover || active;
 
   // hover-listener на ближайшем .group-родителе
   useEffect(() => {
@@ -50,7 +53,7 @@ export default function PulseAnimation({ variant, reverse = false, className }: 
     };
   }, []);
 
-  // RAF-loop при hover; статичный кадр t=0 без hover
+  // RAF-loop при hover/active; статичный кадр t=0 без них
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -60,7 +63,7 @@ export default function PulseAnimation({ variant, reverse = false, className }: 
     canvas.height = H;
 
     const fill = (a: number) =>
-      hover
+      isPlaying
         ? `rgba(166, 255, 0, ${Math.max(0, Math.min(1, a))})`
         : `rgba(255, 255, 255, ${Math.max(0, Math.min(1, a * 0.55))})`;
 
@@ -258,7 +261,7 @@ export default function PulseAnimation({ variant, reverse = false, className }: 
     let rafId = 0;
     let stopped = false;
 
-    if (hover) {
+    if (isPlaying) {
       const loop = (now: number) => {
         if (stopped) return;
         if (lastTime == null) lastTime = now;
@@ -278,7 +281,7 @@ export default function PulseAnimation({ variant, reverse = false, className }: 
       stopped = true;
       cancelAnimationFrame(rafId);
     };
-  }, [hover, variant, reverse]);
+  }, [isPlaying, variant, reverse]);
 
   return (
     <canvas
