@@ -128,49 +128,48 @@ export default function PulseAnimation({ variant, reverse = false, className }: 
     };
 
     const drawSpiral = (t: number) => {
+      // Спираль через ту же сетку из 5 концентрических колец.
+      // Точки остаются на месте — включается «волна» по принципу спирали:
+      // для каждого радиуса есть свой угол-«гребень», по нему точки активируются.
       ctx.clearRect(0, 0, W, H);
-      const numArms = 8;
-      const dotsPerArm = 15;
-      const minRadius = 10;
-      const maxRadius = (W / 2) * 0.85;
-      const radiusStep = (maxRadius - minRadius) / (dotsPerArm - 1);
-      const twistFactor = 0.025;
-      const armRotSpeed = 0.03;
-      const pulseSpeed = 25;
-      const pulseLen = maxRadius / 2;
-
       ctx.beginPath();
-      ctx.arc(cx, cy, 1.5, 0, Math.PI * 2);
-      ctx.fillStyle = fill(0.7);
+      ctx.arc(cx, cy, 2, 0, Math.PI * 2);
+      ctx.fillStyle = fill(0.5);
       ctx.fill();
 
-      const armRot = t * armRotSpeed;
-      const peakPos = reverse
-        ? maxRadius + pulseLen / 2 - ((t * pulseSpeed) % (maxRadius + pulseLen))
-        : ((t * pulseSpeed) % (maxRadius + pulseLen)) - pulseLen / 2;
+      const spiralRotationSpeed = 1.6; // рад/с — скорость вращения гребня
+      const twistFactor = 0.05; // насколько закручена спираль (рад на px радиуса)
+      const armWidth = Math.PI / 2.2; // угловая ширина «активной» зоны
+      const dir = reverse ? -1 : 1;
 
-      for (let aI = 0; aI < numArms; aI++) {
-        const base = (aI / numArms) * Math.PI * 2;
-        for (let dI = 0; dI < dotsPerArm; dI++) {
-          const r = minRadius + dI * radiusStep;
-          const armBase = base + armRot;
-          const finalAngle = armBase + r * twistFactor;
-          const x = cx + Math.cos(finalAngle) * r;
-          const y = cy + Math.sin(finalAngle) * r;
+      dotRings.forEach((ring) => {
+        for (let i = 0; i < ring.count; i++) {
+          const baseAngle = (i / ring.count) * Math.PI * 2;
+          const x = cx + Math.cos(baseAngle) * ring.radius;
+          const y = cy + Math.sin(baseAngle) * ring.radius;
+
+          // Угол гребня спирали для этого радиуса в момент t
+          const frontAngle =
+            dir * t * spiralRotationSpeed + ring.radius * twistFactor;
+
+          // Кратчайшее угловое расстояние, обёрнутое в [-π, π]
+          let delta = baseAngle - frontAngle;
+          delta = ((delta % (Math.PI * 2)) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
+
           let pf = 0;
-          const dist = Math.abs(r - peakPos);
-          if (dist < pulseLen / 2) {
-            pf = Math.cos((dist / (pulseLen / 2)) * (Math.PI / 2));
+          if (Math.abs(delta) < armWidth / 2) {
+            pf = Math.cos((delta / (armWidth / 2)) * (Math.PI / 2));
             pf = Math.max(0, pf);
           }
-          const fs = 1.0 + pf * 1.2;
-          const fo = 0.15 + pf * 0.6;
+
+          const dotSize = 2 + pf * 2;
+          const op = 0.25 + pf * 0.75;
           ctx.beginPath();
-          ctx.arc(x, y, fs, 0, Math.PI * 2);
-          ctx.fillStyle = fill(fo);
+          ctx.arc(x, y, dotSize, 0, Math.PI * 2);
+          ctx.fillStyle = fill(op);
           ctx.fill();
         }
-      }
+      });
     };
 
     const drawDefault = () => {
