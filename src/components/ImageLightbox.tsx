@@ -149,13 +149,13 @@ export default function ImageLightbox({ images, mode = "web" }: ImageLightboxPro
         </div>
       )}
 
-      {/* Сетка/слайдер плиток. На мобилке horizontal-snap-scroll, на md+ — grid.
-          В режиме phone — до 5 в ряд, портретный iPhone-aspect, скруглённые углы под экран iPhone.
-          В режиме web — 2 столбца, 16:9 (по умолчанию). */}
+      {/* Сетка/слайдер плиток.
+          В режиме phone — ОДИН ДЛИННЫЙ ГОРИЗОНТАЛЬНЫЙ РЯД на всех экранах. Плитки крупные (фиксированной ширины), скролл свайпом/мышью.
+          В режиме web — на мобиле horizontal-snap-scroll, на md+ — grid 2 столбца (по умолчанию). */}
       <div
         className={
           mode === "phone"
-            ? "-mx-5 md:mx-0 px-5 md:px-0 flex md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-3 md:gap-x-4 gap-y-8 md:gap-y-10 overflow-x-auto md:overflow-visible snap-x snap-mandatory md:snap-none scroll-px-5 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
+            ? "-mx-5 lg:-mx-12 px-5 lg:px-12 flex gap-x-4 md:gap-x-5 lg:gap-x-6 overflow-x-auto snap-x snap-mandatory scroll-px-5 lg:scroll-px-12 pb-2 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
             : "-mx-5 md:mx-0 px-5 md:px-0 flex md:grid md:grid-cols-2 gap-x-4 md:gap-x-6 gap-y-10 md:gap-y-14 overflow-x-auto md:overflow-visible snap-x snap-mandatory md:snap-none scroll-px-5 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
         }
       >
@@ -166,7 +166,7 @@ export default function ImageLightbox({ images, mode = "web" }: ImageLightboxPro
               key={n}
               className={
                 mode === "phone"
-                  ? "flex flex-col gap-3 items-center flex-shrink-0 w-[60%] sm:w-[45%] md:w-auto snap-center"
+                  ? "flex flex-col gap-3 items-center flex-shrink-0 w-[260px] sm:w-[280px] md:w-[300px] lg:w-[340px] xl:w-[380px] snap-start"
                   : "flex flex-col gap-3 items-center flex-shrink-0 w-[85%] sm:w-[70%] md:w-auto snap-center"
               }
             >
@@ -206,7 +206,7 @@ export default function ImageLightbox({ images, mode = "web" }: ImageLightboxPro
                     fill
                     sizes={
                       mode === "phone"
-                        ? "(max-width: 768px) 60vw, (max-width: 1280px) 25vw, 18vw"
+                        ? "(max-width: 640px) 260px, (max-width: 768px) 280px, (max-width: 1024px) 300px, (max-width: 1280px) 340px, 380px"
                         : "(max-width: 768px) 85vw, 50vw"
                     }
                     className={`${
