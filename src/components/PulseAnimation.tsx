@@ -129,21 +129,28 @@ export default function PulseAnimation({ variant, reverse = false, className }: 
 
     const drawSpiral = (t: number) => {
       // Спираль через ту же сетку из 5 концентрических колец.
-      // Эффект: точка вспыхивает когда гребень спирали её пересекает,
-      // затем экспоненциально гаснет до следующего прохода («хвост»/шлейф).
-      // Получается эффект бегущего огня по спирали.
+      // Эффект: фронт идёт ОТ края К ЦЕНТРУ, по дороге закручиваясь по углу.
+      // Когда фронт пересекает точку — она вспыхивает, потом гаснет.
+      // Получается «спиральная воронка» — точки пробегают от внешнего кольца к центру.
       ctx.clearRect(0, 0, W, H);
       ctx.beginPath();
       ctx.arc(cx, cy, 2, 0, Math.PI * 2);
       ctx.fillStyle = fill(0.5);
       ctx.fill();
 
-      const spiralRotationSpeed = 1.4; // рад/с — скорость вращения гребня
-      const twistFactor = 0.022; // насколько сильно закручен гребень
-      const numArms = 2; // двухрукавная спираль
+      const maxR = 75; // максимальный радиус (внешнее кольцо)
+      const radialSpeed = 80; // px/sec — скорость движения фронта по радиусу
+      const cycleSpan = maxR + 30; // px: max радиус + пауза «вне поля» после центра
+      const cycleDuration = cycleSpan / radialSpeed; // длительность одного цикла
+      const angularSpeed = 1.6; // рад/с — закручивание во время полёта к центру
+      const twistFactor = 0.025; // дополнительный спиральный сдвиг по радиусу
+      const armWidth = Math.PI / 2.5; // ширина рукава в радианах
+      const numArms = 2;
       const dir = reverse ? -1 : 1;
-      // Длина хвоста в радианах (для экспоненциального затухания)
-      const tail = Math.PI / 1.4;
+      const decayRate = 4.0; // экспоненциальный спад вспышки во времени
+
+      // Время в текущем цикле
+      const tCycle = t % cycleDuration;
 
       dotRings.forEach((ring) => {
         for (let i = 0; i < ring.count; i++) {
@@ -151,23 +158,41 @@ export default function PulseAnimation({ variant, reverse = false, className }: 
           const x = cx + Math.cos(baseAngle) * ring.radius;
           const y = cy + Math.sin(baseAngle) * ring.radius;
 
+          // Когда фронт пересёк это кольцо в текущем цикле
+          const tPass = (maxR - ring.radius) / radialSpeed;
+          const timeSincePass = tCycle - tPass;
+          // Если фронт ещё не дошёл до этого радиуса — точка спокойна
+          if (timeSincePass < 0) {
+            ctx.beginPath();
+            ctx.arc(x, y, 2, 0, Math.PI * 2);
+            ctx.fillStyle = fill(0.2);
+            ctx.fill();
+            continue;
+          }
+
           let bestPf = 0;
           for (let arm = 0; arm < numArms; arm++) {
             const armOffset = (arm / numArms) * Math.PI * 2;
-            // Угол гребня для этого радиуса в момент t
-            const frontAngle =
-              dir * t * spiralRotationSpeed +
+            // Угол гребня в момент пересечения этого кольца
+            const armAngleAtPass =
+              dir * (t - timeSincePass) * angularSpeed +
               ring.radius * twistFactor +
               armOffset;
 
-            // Сколько радианов прошло с момента, когда гребень пересёк точку
-            // (учитывая направление вращения)
-            let timeSince = (frontAngle - baseAngle) * dir;
-            // обернуть в [0, 2π)
-            timeSince = ((timeSince % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+            // Угловое расстояние, обёрнутое в [-π, π]
+            let da = baseAngle - armAngleAtPass;
+            da = ((da % (Math.PI * 2)) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
 
-            // Экспоненциальное затухание: на гребне = 1, через хвост ~0.05
-            const pf = Math.exp((-timeSince * 3) / tail);
+            // Угловой гейт + затухание во времени
+            let angularGate = 0;
+            if (Math.abs(da) < armWidth / 2) {
+              angularGate = Math.max(
+                0,
+                Math.cos((da / (armWidth / 2)) * (Math.PI / 2))
+              );
+            }
+            const timeDecay = Math.exp(-timeSincePass * decayRate);
+            const pf = angularGate * timeDecay;
             if (pf > bestPf) bestPf = pf;
           }
 
