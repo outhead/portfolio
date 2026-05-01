@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { ArrowLeft, ArrowRight, ExternalLink } from "lucide-react";
+import { ArrowLeft, ArrowRight, ExternalLink, Play } from "lucide-react";
 import ImageLightbox from "@/components/ImageLightbox";
 
 export function generateStaticParams() {
@@ -381,26 +381,48 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                           try {
                             domain = new URL(link.url).hostname.replace(/^www\./, "");
                           } catch {}
+                          const hasThumb = !!link.thumbnail;
+                          const isVideo = link.kind === "video";
                           return (
                             <a
                               key={link.url}
                               href={link.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="group flex items-start gap-3 p-4 rounded-md border border-white/[0.08] hover:border-[#A6FF00]/40 hover:bg-white/[0.02] transition-colors no-underline"
+                              className="group flex items-stretch gap-0 rounded-md border border-white/[0.08] hover:border-[#A6FF00]/40 hover:bg-white/[0.02] transition-colors no-underline overflow-hidden"
                             >
-                              <div className="flex-1 min-w-0">
-                                <div className="text-[9px] tracking-[0.05em] text-white/30 mb-1.5 truncate uppercase">
-                                  {domain}
+                              {hasThumb && (
+                                <div className="relative w-32 md:w-40 flex-shrink-0 bg-black overflow-hidden">
+                                  <Image
+                                    src={link.thumbnail!}
+                                    alt={link.label}
+                                    fill
+                                    sizes="160px"
+                                    className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                                  />
+                                  {isVideo && (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/15 transition-colors">
+                                      <div className="w-9 h-9 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center group-hover:bg-[#A6FF00] transition-colors">
+                                        <Play className="w-3.5 h-3.5 text-white group-hover:text-black transition-colors fill-current ml-0.5" strokeWidth={2} />
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
-                                <div className="text-sm text-white/70 group-hover:text-white transition-colors leading-snug">
-                                  {link.label}
+                              )}
+                              <div className="flex items-start gap-3 p-4 flex-1 min-w-0">
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-[9px] tracking-[0.05em] text-white/30 mb-1.5 truncate uppercase">
+                                    {domain}
+                                  </div>
+                                  <div className="text-sm text-white/70 group-hover:text-white transition-colors leading-snug">
+                                    {link.label}
+                                  </div>
                                 </div>
+                                <ExternalLink
+                                  className="w-3.5 h-3.5 flex-shrink-0 text-white/25 group-hover:text-[#A6FF00] transition-colors mt-0.5"
+                                  strokeWidth={2}
+                                />
                               </div>
-                              <ExternalLink
-                                className="w-3.5 h-3.5 flex-shrink-0 text-white/25 group-hover:text-[#A6FF00] transition-colors mt-0.5"
-                                strokeWidth={2}
-                              />
                             </a>
                           );
                         })}

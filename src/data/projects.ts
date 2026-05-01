@@ -31,7 +31,7 @@ export interface Project {
     /** Мини-цифры внутри секции — рендерятся сеткой 2×N. */
     callouts?: { value: string; label: string }[];
     /** Inline-пруфы: ссылки рядом с релевантным контентом, а не только в нижнем блоке. */
-    links?: { label: string; url: string }[];
+    links?: { label: string; url: string; thumbnail?: string; kind?: "video" | "article" | "site" | "github" }[];
     screenshots?: string[];
   }[];
   results?: {
@@ -42,6 +42,10 @@ export interface Project {
     label: string;
     url: string;
     category?: string;
+    /** Опционально: путь к JPG-превью (1280x720). Для видео-ссылок будет нарисован play-иконкой поверх. */
+    thumbnail?: string;
+    /** Опционально: тип ссылки. Если "video" — рендерится с play-иконкой. */
+    kind?: "video" | "article" | "site" | "github";
   }[];
 }
 
@@ -261,7 +265,7 @@ export const projects: Project[] = [
         result:
           "Команда вышла из периода Figma-блокировок без простоя — план миграции уже был. Тема нейросетей в нашей экспертизе стала повторяющимся пуллом интереса со стороны B2B-компаний после конференций.",
         links: [
-          { label: "Интервью со мной — Дизайн-вечерка ЦЕХ (про роль и нейросети)", url: "https://www.youtube.com/watch?v=Ivb-S7Q8OPQ" },
+          { label: "Интервью со мной — Дизайн-вечерка ЦЕХ (про роль и нейросети)", url: "https://www.youtube.com/watch?v=Ivb-S7Q8OPQ", kind: "video", thumbnail: "/images/gpn/links/cex-interview.jpg" },
         ],
       },
       {
@@ -281,7 +285,7 @@ export const projects: Project[] = [
       { category: "Дизайн-система Consta", label: "consta.design — официальный сайт", url: "https://consta.design" },
       { category: "Дизайн-система Consta", label: "Consta на GitHub", url: "https://github.com/consta-design-system" },
       { category: "Дизайн-система Consta", label: "Статья vc.ru — корпблог ГПН про Consta", url: "https://vc.ru/gazpromneft/676527" },
-      { category: "Пресса и интервью", label: "Интервью со мной — Дизайн-вечерка на канале ЦЕХ (про роль и нейросети)", url: "https://www.youtube.com/watch?v=Ivb-S7Q8OPQ" },
+      { category: "Пресса и интервью", label: "Интервью со мной — Дизайн-вечерка на канале ЦЕХ (про роль и нейросети)", url: "https://www.youtube.com/watch?v=Ivb-S7Q8OPQ", kind: "video", thumbnail: "/images/gpn/links/cex-interview.jpg" },
       { category: "Пресса и интервью", label: "Пресс-релиз Газпром Нефти про запуск Consta", url: "https://www.gazprom-neft.ru/press-center/news/gazprom_neft_sozdala_dizayn_sistemu_dlya_razrabotki_promyshlennykh_i_klientskikh_servisov/" },
       { category: "Партнёрства и артефакты", label: "Young Design СПб × ГПН — совместная номинация «Интерфейс»", url: "https://youngdesignspb.ru/nominations/interface" },
       { category: "Партнёрства и артефакты", label: "Бейдж-генератор Вики Кудрявцевой (open-source наследие)", url: "https://github.com/design-kudry/badge-generator" },
