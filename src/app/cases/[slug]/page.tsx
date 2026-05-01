@@ -160,6 +160,29 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
 
       {/* Content */}
       <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-16 md:py-24 bg-black border-t border-white/[0.06]">
+        {/* Sticky TOC — навигация по секциям. Видна только на lg+ (есть колонка справа). */}
+        {project.sections && project.sections.length > 1 && (
+          <aside className="hidden lg:block absolute top-24 right-5 md:right-[6%] lg:right-[10%] xl:right-[14%] w-44 z-[2]">
+            <div className="sticky top-24">
+              <div className="text-[9px] tracking-[0.14em] uppercase text-white/30 mb-3">Содержание</div>
+              <ul className="space-y-2">
+                {project.sections.map((s, i) => (
+                  <li key={i}>
+                    <a
+                      href={`#section-${i + 1}`}
+                      className="group flex items-baseline gap-2 text-[11px] text-white/40 hover:text-white/85 transition-colors no-underline"
+                    >
+                      <span className="font-mono text-[10px] text-white/25 group-hover:text-white/60">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span className="leading-snug">{s.title}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </aside>
+        )}
         <div className="max-w-4xl">
           {(() => {
             const longProseClass =
@@ -235,7 +258,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
             };
 
             return (
-              <div key={i} className="mb-16 md:mb-24">
+              <div key={i} id={`section-${i + 1}`} className="mb-16 md:mb-24 scroll-mt-24">
                 {/* Section header: large number + title */}
                 <div className="flex items-baseline gap-4 mb-6">
                   <span className="text-[11px] tracking-[0.14em] uppercase text-white/25 font-mono">
@@ -279,6 +302,34 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                   section.content && (
                     <div className="max-w-3xl">{renderProse(section.content)}</div>
                   )
+                )}
+
+                {/* Timeline — горизонтальная шкала событий */}
+                {section.timeline && section.timeline.length > 0 && (
+                  <div className="mt-7 -mx-5 md:mx-0 px-5 md:px-0 overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+                    <ol className="relative flex gap-0 min-w-max md:min-w-0 md:grid" style={{ gridTemplateColumns: `repeat(${section.timeline.length}, minmax(0, 1fr))` }}>
+                      {/* Линия */}
+                      <div className="absolute left-0 right-0 top-[18px] h-px bg-white/[0.08]" aria-hidden />
+                      {section.timeline.map((t, idx) => (
+                        <li key={idx} className="relative flex flex-col gap-2 pr-6 md:pr-4 w-[260px] md:w-auto">
+                          {/* Точка */}
+                          <div className="relative z-[1] w-[9px] h-[9px] rounded-full bg-[#A6FF00] ring-4 ring-black mt-[14px]" />
+                          {/* Дата */}
+                          <div className="font-mono text-[10px] tracking-[0.1em] uppercase text-white/45 mt-1">
+                            {t.date}
+                          </div>
+                          {/* Заголовок */}
+                          <div className="text-sm md:text-[15px] text-white/90 font-medium leading-snug">
+                            {t.title}
+                          </div>
+                          {/* Заметка */}
+                          {t.note && (
+                            <div className="text-[12px] text-white/50 leading-snug">{t.note}</div>
+                          )}
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
                 )}
 
                 {/* Callouts — мини-сетка цифр */}

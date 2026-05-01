@@ -72,6 +72,11 @@ export interface Project {
     screenshots?: Screenshot[];
     /** Override `screenshotsMode` проекта для этой секции. */
     screenshotsMode?: "web" | "phone";
+    /**
+     * Опционально: горизонтальный таймлайн событий внутри секции.
+     * Рендерится между текстом и скриншотами как графическая шкала с датами.
+     */
+    timeline?: { date: string; title: string; note?: string }[];
   }[];
   results?: {
     value: string;
@@ -153,6 +158,12 @@ export const projects: Project[] = [
           { value: "впервые", label: "AI-шумоподавление на рынке" },
           { value: "AI Секретарь", label: "+ шумоподавление + транскрибация" },
           { value: "Yandex × MTS", label: "звонки через Алису" },
+        ],
+        timeline: [
+          { date: "05.09.2024", title: "Голос через Яндекс Станцию", note: "Совместный пилот с экосистемой Яндекса" },
+          { date: "16.07.2025", title: "Запись разговоров", note: "Автоматическая запись и расшифровка звонков (бета)" },
+          { date: "08.10.2025", title: "МТС AI Секретарь", note: "Голосовой автоответчик: принимает, расшифровывает, предлагает действия" },
+          { date: "24.10.2025", title: "AI-шумоподавление", note: "Заявлено как первое на рынке мобильной связи" },
         ],
         screenshots: [
           { src: "/images/mts/voice/voice-demo-1.mp4", kind: "video", label: "ДЕМО — AI СЕКРЕТАРЬ В ЗВОНКЕ", poster: "/images/mts/voice/voice-secretary-spam-spa.png" },
