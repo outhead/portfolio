@@ -777,7 +777,12 @@ export const projects: Project[] = [
   },
 ];
 
-export const workProjects = projects.filter((p) => p.type === "work");
+// `mts-b2c` пока скрыт с главной — раннее МТС-направление дублирует mts-2024 по бренду.
+// Данные оставлены, чтобы можно было быстро вернуть карточку (убрать фильтр по slug).
+const HIDDEN_FROM_HOME: ReadonlySet<string> = new Set(["mts-b2c"]);
+export const workProjects = projects.filter(
+  (p) => p.type === "work" && !HIDDEN_FROM_HOME.has(p.slug),
+);
 export const experimentProjects = projects.filter(
   (p) => p.type === "experiment"
 );
