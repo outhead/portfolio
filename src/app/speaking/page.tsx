@@ -46,7 +46,7 @@ export default function SpeakingPage() {
             variants={fadeUp}
             className="text-base md:text-lg text-white/60 leading-relaxed max-w-2xl"
           >
-            Выступаю на отраслевых конференциях, преподаю в ВШЭ, веду Telegram-канал
+            Выступаю на отраслевых конференциях, менторю дизайнеров и лидов, веду Telegram-канал
             Vigrom про AI-инструменты для дизайнеров. Не считаю себя профессиональным
             спикером: к большим залам каждый раз готовлюсь долго и нервно.
           </motion.p>
@@ -82,23 +82,24 @@ export default function SpeakingPage() {
             </Link>
           </motion.div>
 
-          {/* Teaching */}
+          {/* Teaching / mentorship */}
           <motion.div variants={fadeUp}>
             <div className="flex items-center gap-2 mb-4">
               <GraduationCap className="w-4 h-4 text-white/30" strokeWidth={1.5} />
               <div className="text-[10px] tracking-[0.18em] uppercase text-white/40 font-medium">
-                Преподавание
+                Менторство и&nbsp;курсы
               </div>
             </div>
             <ul className="space-y-3 text-sm text-white/55 leading-relaxed mb-4">
-              <li>ВШЭ — прикладное использование ИИ</li>
+              <li>30+ менти за&nbsp;карьеру (включая АД-период)</li>
+              <li>ВШЭ — читал курс по прикладному ИИ</li>
               <li>Воркшопы для продуктовых команд</li>
             </ul>
             <Link
-              href="mailto:egor.outhead@gmail.com?subject=Преподавание"
+              href="mailto:egor.outhead@gmail.com?subject=Менторство"
               className="inline-flex items-center gap-2 text-xs text-white/30 hover:text-[#A6FF00] transition-colors no-underline"
             >
-              Пригласить <ArrowUpRight className="w-3 h-3" strokeWidth={2} />
+              Записаться <ArrowUpRight className="w-3 h-3" strokeWidth={2} />
             </Link>
           </motion.div>
 
