@@ -45,9 +45,10 @@ export default function ExperimentsPage() {
             variants={fadeUp}
             className="text-base md:text-lg text-white/60 leading-relaxed max-w-2xl"
           >
-            Пет-проекты на стыке дизайна, кода и AI. Здесь пробую идеи, которые
-            не укладываются в рабочий контекст — WebGL-шейдеры, AI-агенты,
-            creative coding.
+            Пет-проекты на стыке дизайна, кода и AI. Здесь я пробую идеи, которые
+            не укладываются в рабочий контекст: WebGL-шейдеры, AI-агенты,
+            creative coding. Часть из них так и не вышла за пределы наброска, и
+            это тоже окей.
           </motion.p>
         </motion.div>
       </section>

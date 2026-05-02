@@ -46,8 +46,9 @@ export default function SpeakingPage() {
             variants={fadeUp}
             className="text-base md:text-lg text-white/60 leading-relaxed max-w-2xl"
           >
-            Выступаю на отраслевых конференциях, преподаю в ВШЭ и веду Telegram-канал
-            Vigrom про AI-инструменты для дизайнеров.
+            Выступаю на отраслевых конференциях, преподаю в ВШЭ, веду Telegram-канал
+            Vigrom про AI-инструменты для дизайнеров. Не считаю себя профессиональным
+            спикером: к большим залам каждый раз готовлюсь долго и нервно.
           </motion.p>
         </motion.div>
       </section>
