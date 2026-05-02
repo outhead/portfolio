@@ -71,11 +71,15 @@ export default function FlippingWord({
         <motion.span
           className="block whitespace-nowrap"
           animate={{ y: `${-i}em` }}
+          // Tween без overshoot: при spring следующее/предыдущее слово
+          // выглядывало над/под видимой строкой при пружинном перепрыге,
+          // и приходилось маскировать gradient'ом — что и читалось как
+          // «затемнение второй строки». Tween ровно встаёт на 1em, без
+          // вылетов, и mask больше не нужен.
           transition={{
-            type: "spring",
-            stiffness: 160,
-            damping: 22,
-            mass: 0.9,
+            type: "tween",
+            duration: 0.45,
+            ease: [0.22, 1, 0.36, 1],
           }}
         >
           {words.map((w, idx) => (
