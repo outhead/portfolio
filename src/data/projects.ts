@@ -123,6 +123,8 @@ export const projects: Project[] = [
     type: "work",
     coverColor: "#0E0E0E",
     coverImage: "/images/covers/mts-2024-cover.png",
+    coverVideo: "/videos/mts-cover.mp4",
+    coverVideoPauseAt: 2.86,
     screenshotsMode: "phone",
     screenshots: [
       { src: "/images/mts/voice/voice-demo-1.mp4", kind: "video", label: "AI СЕКРЕТАРЬ", poster: "/images/mts/voice/voice-secretary-spam-spa.png" },
@@ -539,6 +541,8 @@ export const projects: Project[] = [
     type: "work",
     coverColor: "#0E0E0E",
     coverImage: "/images/covers/ozon-cubes.png",
+    coverVideo: "/videos/ozon-cover.mp4",
+    coverVideoPauseAt: 2.86,
     screenshots: [
       "/images/figma/ozon-process.jpg",
       "/images/figma/ozon-hr.jpg",
