@@ -326,7 +326,8 @@ export const projects: Project[] = [
     coverImage: "/images/covers/gpn-cover.jpg",
     coverVideo: "/videos/gpn-cover.mp4",
     coverVideoPauseAt: 2.86,
-    heroImage: "/images/covers/gpn-cubes.png",
+    // heroImage намеренно НЕ задан: gpn-cubes.png — тёмная композиция, под opacity почти не видна.
+    // Без heroImage hero рендерит coverVideo с постером (поведение как в МТС-кейсе).
     screenshots: [
       "/images/gpn/eso/eso-home.png",
       "/images/gpn/consta/consta-dashboard-dark.png",
