@@ -54,18 +54,14 @@ export default function FlippingWord({
       <span aria-hidden className="invisible whitespace-nowrap">
         {longest}
       </span>
-      {/* Окно ticker-а с вертикальной маской — мягкий fade у верхней
-          и нижней границ, чтобы уходящее/приходящее слово не резалось
-          ровной линией, а растворялось. */}
+      {/* Окно ticker-а — без vertical mask: gradient-fade на верх/низ
+          смотрелся как «полупогружённое» слово (буквы кажутся затемнёнными,
+          особенно на больших кеглях типа РАЗВИВАЮ). Оставляем чистый
+          overflow-hidden, слово появляется и уходит резко — это и есть
+          сплит-роллер по дизайну. */}
       <span
         aria-live="polite"
         className="absolute inset-0 overflow-hidden"
-        style={{
-          WebkitMaskImage:
-            "linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%)",
-          maskImage:
-            "linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%)",
-        }}
       >
         {/* ВАЖНО: y указываем в em, а НЕ в %. translateY(%) считается
             от высоты самого анимируемого элемента, а в нём лежат ВСЕ
