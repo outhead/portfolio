@@ -116,10 +116,10 @@ export function CardCoverVideo({
       // Не запускать play-out пока пользователь не hover-нул хотя бы один раз.
       // Иначе ловим mouseleave при первом рендере и видео уходит в play-out.
       if (!hasHoveredRef.current) return;
+      // Снимаем pauseAt-ограничитель и продолжаем играть с текущего места до конца.
+      // Если пользователь увёл курсор до pauseAt — видео доиграется естественно от
+      // текущей позиции, а не телепортнётся в pauseAt и проиграет только концовку.
       v.removeEventListener("timeupdate", onTimeUpdateEnter);
-      try {
-        v.currentTime = pauseAt;
-      } catch {}
       v.play().catch(() => {});
     };
 
