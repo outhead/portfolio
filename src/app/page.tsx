@@ -21,6 +21,8 @@ import {
   Sparkles,
   Trophy,
   Globe,
+  Layers,
+  ArrowUpRight,
 } from "lucide-react";
 
 const LinkedinIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -1106,66 +1108,100 @@ export default function PreviewHome() {
               variants={fadeUp}
               className="col-span-12 md:col-span-6 order-3 md:order-none"
             >
-              <div className="relative h-full min-h-[200px] md:min-h-[240px] rounded-2xl border border-[#C9A66B]/30 bg-gradient-to-br from-[#C9A66B]/[0.08] via-[#C9A66B]/[0.03] to-transparent p-5 md:p-7 flex flex-col justify-between overflow-hidden group hover:border-[#C9A66B]/55 transition-colors">
-                {/* Верхняя мета-строка */}
-                <div className="flex items-start">
-                  <span className="inline-flex items-center gap-2.5 pl-3 pr-3.5 py-1.5 rounded-full border border-[#C9A66B]/30 bg-[#C9A66B]/[0.06]">
-                    <Trophy className="w-3.5 h-3.5 shrink-0 text-[#C9A66B]" strokeWidth={1.75} />
-                    <span className="font-p95 text-[10px] md:text-[11px] tracking-[0.2em] uppercase text-[#C9A66B]/90 leading-none">
-                      Награда · 2024
+              <Link
+                href="/cases/gazprom-neft"
+                aria-label="Открыть кейс Газпром Нефть — CX Awards 2024"
+                className="block h-full no-underline group"
+              >
+                <div className="relative h-full min-h-[200px] md:min-h-[240px] rounded-2xl border border-[#C9A66B]/30 bg-gradient-to-br from-[#C9A66B]/[0.08] via-[#C9A66B]/[0.03] to-transparent p-5 md:p-7 flex flex-col justify-between overflow-hidden transition-all duration-300 group-hover:border-[#C9A66B]/60 group-hover:from-[#C9A66B]/[0.12] group-hover:via-[#C9A66B]/[0.05] group-hover:shadow-[0_0_40px_-8px_rgba(201,166,107,0.25)]">
+                  {/* Верхняя мета-строка */}
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="inline-flex items-center gap-2.5 pl-3 pr-3.5 py-1.5 rounded-full border border-[#C9A66B]/30 bg-[#C9A66B]/[0.06]">
+                      <Trophy className="w-3.5 h-3.5 shrink-0 text-[#C9A66B]" strokeWidth={1.75} />
+                      <span className="font-p95 text-[10px] md:text-[11px] tracking-[0.2em] uppercase text-[#C9A66B]/90 leading-none">
+                        Награда · 2024
+                      </span>
                     </span>
-                  </span>
-                </div>
+                    <ArrowUpRight
+                      className="w-5 h-5 shrink-0 text-[#C9A66B]/50 opacity-0 -translate-x-1 translate-y-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 group-hover:text-[#C9A66B] transition-all duration-300"
+                      strokeWidth={1.75}
+                    />
+                  </div>
 
-                {/* Блок титула */}
-                <div>
-                  <div className="font-p95 text-[clamp(36px,4.8vw,64px)] uppercase tracking-tight text-white leading-[0.92]">
-                    CX&apos;24
-                  </div>
-                  <div className="text-[11px] md:text-[13px] tracking-[0.14em] uppercase text-white/75 mt-2">
-                    Customer Experience Awards · Winner
-                  </div>
-                  <div className="text-[11px] md:text-[12.5px] text-white/50 mt-1.5 leading-relaxed max-w-md">
-                    «Единое сервисное окно» — корпоративные Госуслуги для сотрудников Газпром&nbsp;Нефти.
+                  {/* Блок титула */}
+                  <div>
+                    <div className="font-p95 text-[clamp(36px,4.8vw,64px)] uppercase tracking-tight text-white leading-[0.92]">
+                      CX&apos;24
+                    </div>
+                    <div className="text-[11px] md:text-[13px] tracking-[0.14em] uppercase text-white/75 mt-2">
+                      Customer Experience Awards · Winner
+                    </div>
+                    <div className="text-[11px] md:text-[12.5px] text-white/50 mt-1.5 leading-relaxed max-w-md">
+                      «Единое сервисное окно» — корпоративные Госуслуги для сотрудников Газпром&nbsp;Нефти.
+                    </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             </motion.div>
 
-            {/* === TILE 4: 100+ designers (col-span-3) === */}
+            {/* === TILE 4: 100+ designers (col-span-3) → Ozon (комьюнити-лид) === */}
             <motion.div
               variants={fadeUp}
               className="col-span-6 md:col-span-3 order-4 md:order-none"
             >
-              <div className="relative h-full min-h-[200px] md:min-h-[240px] rounded-2xl border border-white/[0.1] bg-white/[0.02] p-5 md:p-6 flex flex-col justify-between overflow-hidden">
-                <Users className="w-5 h-5 text-white/55" strokeWidth={1.75} />
-                <div>
-                  <div className="font-p95 text-[clamp(28px,3vw,40px)] uppercase tracking-tight text-white leading-none">
-                    100+
+              <Link
+                href="/cases/ozon"
+                aria-label="Открыть кейс Ozon — комьюнити дизайнеров"
+                className="block h-full no-underline group"
+              >
+                <div className="relative h-full min-h-[200px] md:min-h-[240px] rounded-2xl border border-white/[0.1] bg-white/[0.02] p-5 md:p-6 flex flex-col justify-between overflow-hidden transition-all duration-300 group-hover:border-white/30 group-hover:bg-white/[0.04]">
+                  <div className="flex items-start justify-between gap-3">
+                    <Users className="w-5 h-5 text-white/55 group-hover:text-white/80 transition-colors duration-300" strokeWidth={1.75} />
+                    <ArrowUpRight
+                      className="w-5 h-5 shrink-0 text-white/30 opacity-0 -translate-x-1 translate-y-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 group-hover:text-white/80 transition-all duration-300"
+                      strokeWidth={1.75}
+                    />
                   </div>
-                  <div className="text-[10px] md:text-[11px] tracking-[0.14em] uppercase text-white/45 mt-1.5">
-                    дизайнеров под рукой
+                  <div>
+                    <div className="font-p95 text-[clamp(28px,3vw,40px)] uppercase tracking-tight text-white leading-none">
+                      100+
+                    </div>
+                    <div className="text-[10px] md:text-[11px] tracking-[0.14em] uppercase text-white/45 mt-1.5">
+                      дизайнеров · комьюнити
+                    </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             </motion.div>
 
-            {/* === TILE 5: 11М+ пользователей (col-span-3) === */}
+            {/* === TILE 5: 30+ продуктов · Мой МТС платформа (col-span-3) → mts-2024 === */}
             <motion.div
               variants={fadeUp}
               className="col-span-6 md:col-span-3 order-5 md:order-none"
             >
-              <div className="relative h-full min-h-[200px] md:min-h-[240px] rounded-2xl border border-[#A6FF00]/25 bg-[#A6FF00]/[0.06] p-5 md:p-6 flex flex-col justify-between overflow-hidden">
-                <Globe className="w-5 h-5 text-[#A6FF00]" strokeWidth={1.75} />
-                <div>
-                  <div className="font-p95 text-[clamp(28px,3vw,40px)] uppercase tracking-tight text-white leading-none">
-                    11М+
+              <Link
+                href="/cases/mts-2024"
+                aria-label="Открыть кейс МТС — Мой МТС как платформа"
+                className="block h-full no-underline group"
+              >
+                <div className="relative h-full min-h-[200px] md:min-h-[240px] rounded-2xl border border-[#A6FF00]/25 bg-[#A6FF00]/[0.06] p-5 md:p-6 flex flex-col justify-between overflow-hidden transition-all duration-300 group-hover:border-[#A6FF00]/55 group-hover:bg-[#A6FF00]/[0.10] group-hover:shadow-[0_0_40px_-8px_rgba(166,255,0,0.25)]">
+                  <div className="flex items-start justify-between gap-3">
+                    <Layers className="w-5 h-5 text-[#A6FF00] transition-transform duration-300 group-hover:scale-110" strokeWidth={1.75} />
+                    <ArrowUpRight
+                      className="w-5 h-5 shrink-0 text-[#A6FF00]/50 opacity-0 -translate-x-1 translate-y-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 group-hover:text-[#A6FF00] transition-all duration-300"
+                      strokeWidth={1.75}
+                    />
                   </div>
-                  <div className="text-[10px] md:text-[11px] tracking-[0.14em] uppercase text-[#A6FF00]/80 mt-1.5">
-                    Пользователей · МТС B2C
+                  <div>
+                    <div className="font-p95 text-[clamp(28px,3vw,40px)] uppercase tracking-tight text-white leading-none">
+                      30+
+                    </div>
+                    <div className="text-[10px] md:text-[11px] tracking-[0.14em] uppercase text-[#A6FF00]/80 mt-1.5">
+                      Продуктов · Мой МТС
+                    </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             </motion.div>
           </div>
         </motion.div>
