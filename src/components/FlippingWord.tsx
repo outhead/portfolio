@@ -61,12 +61,13 @@ export default function FlippingWord({
           стека (без неё overflow-hidden их пропускал из-за inline-сайзера). */}
       <span
         aria-live="polite"
-        className="absolute inset-0 overflow-hidden"
+        className="absolute left-0 top-0 right-0 overflow-hidden"
+        // Жёстко закрепляем высоту окна на 1em — без этого браузер давал
+        // окну высоту с учётом ascenders/descenders шрифта, и стек слов
+        // вылезал за пределы. Сейчас стек обрезан ровно по строке.
         style={{
-          WebkitMaskImage:
-            "linear-gradient(to bottom, transparent 0%, black 4%, black 96%, transparent 100%)",
-          maskImage:
-            "linear-gradient(to bottom, transparent 0%, black 4%, black 96%, transparent 100%)",
+          height: "1em",
+          lineHeight: 1,
         }}
       >
         {/* ВАЖНО: y указываем в em, а НЕ в %. translateY(%) считается
