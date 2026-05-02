@@ -4,6 +4,7 @@ import ProjectCard from "@/components/ProjectCard";
 import ParticleSphere from "@/components/ParticleSphere";
 import PulseAnimation, { type PulseVariant } from "@/components/PulseAnimation";
 import FlippingWord from "@/components/FlippingWord";
+import { TypographyFix } from "@/components/TypographyFix";
 import { workProjects } from "@/data/projects";
 import Link from "next/link";
 import Image from "next/image";
@@ -994,6 +995,7 @@ function Toolbox() {
 export default function PreviewHome() {
   return (
     <>
+      <TypographyFix />
       {/* ═══════ HERO — bento-грид: 1 большая content-плитка + 1 photo-плитка + 3 метрики ═══════ */}
       <section className="relative min-h-[100vh] overflow-hidden bg-black">
         {/* Фоновая радиальная подсветка — вне карточек, как amber-lighting студии */}
