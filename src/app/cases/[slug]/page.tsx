@@ -66,7 +66,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                 src={project.heroImage}
                 alt={project.title}
                 fill
-                className="object-cover opacity-30"
+                className="object-cover opacity-55"
                 priority
                 sizes="100vw"
               />
@@ -75,20 +75,21 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                 src={project.coverVideo}
                 poster={project.coverImage}
                 pauseAt={project.coverVideoPauseAt}
-                className="absolute inset-0 w-full h-full object-cover opacity-30"
+                className="absolute inset-0 w-full h-full object-cover opacity-50"
               />
             ) : (
               <Image
                 src={project.coverImage!}
                 alt={project.title}
                 fill
-                className="object-cover opacity-30"
+                className="object-cover opacity-50"
                 priority
               />
             )}
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+        {/* Градиент уравновешивает контраст под текст hero, но не должен забивать обложку */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-transparent" />
 
         <div className="relative z-[5] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pb-10 md:pb-16 w-full animate-fade-in-up">
           {/* Breadcrumb */}

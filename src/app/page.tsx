@@ -947,40 +947,36 @@ const tools: Array<{ name: string; icon: React.ReactNode }> = [
 ];
 
 function Toolbox() {
+  // Сжатая строка инструментов вместо 8-плиточного bento — для head-of-design
+  // отдельный «шкаф с иконками» читается как чек-лист джуна. Оставляю компактный
+  // одноряд с разделителями.
   return (
     <section className="relative z-[1] bg-black border-t border-white/[0.06]">
-      <div className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-20">
+      <div className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-12 md:py-14">
         <motion.div
           initial="hidden"
           whileInView="show"
           viewport={viewport}
           variants={stagger}
+          className="flex flex-col md:flex-row md:items-baseline md:justify-between gap-4 md:gap-8"
         >
-          <motion.div variants={fadeUp} className="mb-8 md:mb-10 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+          <motion.div variants={fadeUp} className="flex items-baseline gap-3 shrink-0">
             <SectionLabel>В РАБОТЕ</SectionLabel>
-            <p className="text-[12px] md:text-[13px] text-white/50 tracking-[0.08em] uppercase max-w-sm">
-              Провожу с ними большую часть дня.
-            </p>
+            <span className="text-[11px] md:text-[12px] text-white/40 tracking-[0.06em]">
+              без ритуалов и ярлыков
+            </span>
           </motion.div>
-          {/* Bento-grid плиток: 4 кол., каждая — квадратная мини-карточка */}
           <motion.div
-            variants={stagger}
-            className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4"
+            variants={fadeUp}
+            className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[12px] md:text-[13px] text-white/55 tracking-[0.04em]"
           >
-            {tools.map((t) => (
-              <motion.div
-                key={t.name}
-                variants={fadeUp}
-                title={t.name}
-                className="group relative rounded-xl border border-white/[0.06] bg-white/[0.02] hover:border-[#A6FF00]/30 hover:bg-white/[0.035] transition-colors p-5 md:p-6 flex flex-col items-start justify-between min-h-[130px] md:min-h-[150px] overflow-hidden"
-              >
-                <div className="w-7 h-7 md:w-8 md:h-8 text-white/55 group-hover:text-white transition-colors">
-                  {t.icon}
-                </div>
-                <span className="font-p95 text-[12px] md:text-[13px] tracking-[0.18em] uppercase text-white/70 group-hover:text-white transition-colors">
-                  {t.name}
-                </span>
-              </motion.div>
+            {tools.map((t, i) => (
+              <span key={t.name} className="inline-flex items-center gap-3">
+                <span className="text-white/75">{t.name}</span>
+                {i < tools.length - 1 && (
+                  <span aria-hidden className="text-white/20">·</span>
+                )}
+              </span>
             ))}
           </motion.div>
         </motion.div>
@@ -1091,6 +1087,16 @@ export default function PreviewHome() {
               className="col-span-12 md:col-span-4 md:row-span-2 order-1 md:order-none"
             >
               <div className="relative h-full min-h-[270px] md:min-h-[560px] rounded-3xl overflow-hidden border border-white/[0.1] bg-black flex items-center justify-center">
+                {/* Fallback-фон, чтобы плитка не была пустой пока ParticleSphere монтируется */}
+                <div
+                  aria-hidden
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background:
+                      "radial-gradient(ellipse 60% 55% at 50% 50%, rgba(166,255,0,0.10) 0%, rgba(201,166,107,0.07) 35%, rgba(0,0,0,0) 70%), radial-gradient(circle at 50% 50%, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 1px, transparent 1.2px) 0 0/22px 22px",
+                  }}
+                />
+
                 {/* Particle sphere — замена фото. Центрируется flex-обёрткой выше. */}
                 <ParticleSphere className="absolute inset-0 w-full h-full" />
 
