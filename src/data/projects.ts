@@ -691,20 +691,21 @@ export const projects: Project[] = [
     metricLabel: "быстрее поиск",
     type: "experiment",
     coverColor: "#1e1a2e",
-    coverImage: "/images/covers/legal-copilot-cover.jpg",
+    // coverImage намеренно НЕ задан: на старой картинке legal-copilot-cover.jpg
+    // уже были крупные надписи «Legal Copilot · ×5 · RAG · LLM · React · MWS AI UI Kit» —
+    // она дублировала заголовок hero и читалась как двойной layered typography.
+    // Hero теперь показывает чистый тёмно-фиолетовый фон (#1e1a2e), а тэги/×5 даёт сама страница.
     screenshots: [
       "/images/legal-copilot/review.png",
       "/images/legal-copilot/library.jpg",
       "/images/legal-copilot/quality.jpg",
       "/images/legal-copilot/how-it-works.jpg",
-      "/images/legal-copilot/user-stories.jpg",
     ],
     sections: [
       {
         title: "Проблема",
         content:
           "Юристы тратят часы на поиск прецедентов и составление типовых заключений. Документы разбросаны по разным системам, единой точки поиска нет, и каждый юрист по-своему собирает свои закладки и шорткаты.",
-        screenshots: ["/images/legal-copilot/user-stories.jpg"],
       },
       {
         title: "Решение",

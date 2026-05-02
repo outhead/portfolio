@@ -311,9 +311,21 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                   </div>
                 )}
 
-                {/* Callouts — мини-сетка цифр */}
+                {/* Callouts — мини-сетка цифр.
+                    Колонки подстраиваются под количество элементов, чтобы не было «пустой» 4-й плитки.
+                    На мобилке всегда 2 колонки, на десктопе — ровно по числу callouts (max 4). */}
                 {section.callouts && section.callouts.length > 0 && (
-                  <div className="mt-7 grid grid-cols-2 md:grid-cols-4 gap-px bg-white/[0.04] rounded-md overflow-hidden">
+                  <div
+                    className={`mt-7 grid grid-cols-2 gap-px bg-white/[0.04] rounded-md overflow-hidden ${
+                      section.callouts.length === 1
+                        ? "md:grid-cols-1"
+                        : section.callouts.length === 2
+                        ? "md:grid-cols-2"
+                        : section.callouts.length === 3
+                        ? "md:grid-cols-3"
+                        : "md:grid-cols-4"
+                    }`}
+                  >
                     {section.callouts.map((c) => (
                       <div
                         key={c.label}
