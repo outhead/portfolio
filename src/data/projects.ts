@@ -618,8 +618,10 @@ export const projects: Project[] = [
       { value: "16", label: "продуктовых команд" },
     ],
     type: "work",
-    coverColor: "#2e1a1a",
+    coverColor: "#0E0E0E",
     coverImage: "/images/covers/mts-b2c-cover.jpg",
+    coverVideo: "/videos/mts-b2c-cover.mp4",
+    coverVideoPauseAt: 2.86,
     screenshots: [
       "/images/figma/mts-b2c.jpg",
       "/images/figma/mts-cashback.jpg",
@@ -735,7 +737,7 @@ export const projects: Project[] = [
   },
   {
     slug: "mentorship-agent",
-    title: "Как я менторю — и как агент менторит за меня",
+    title: "Как я менторю — и как агент менторит меня",
     company: "Independent · Practice",
     role: "Mentor · Process Designer",
     period: "2024 — настоящее время",
@@ -755,6 +757,12 @@ export const projects: Project[] = [
     ],
     type: "work",
     coverColor: "#0a0a0a",
+    coverImage: "/images/mentorship/01-mentee-overview.png",
+    screenshots: [
+      { src: "/images/mentorship/01-mentee-overview.png", label: "Страница менти", caption: "Главная страница менти в темплейте: фокус-цели, следующая сессия, навигация. Все имена в публичном темплейте заменены на собирательные." },
+      { src: "/images/mentorship/02-sessions-list.png", label: "Сессии и план", caption: "Прогресс по линиям роста, лента сессий, артефакты «Договорённости» и «Что получается». Заполняет агент после каждой сессии." },
+      { src: "/images/mentorship/03-artifacts-bottom.png", label: "Артефакты и контакты", caption: "Низ страницы: артефакты, форма «Накидывай мысли и вопросы» с быстрыми тегами и кнопкой в Telegram, блок «Менторское пространство» с автором." },
+    ],
     sections: [
       {
         title: "Менторство как практика",
