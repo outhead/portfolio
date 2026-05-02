@@ -1326,6 +1326,9 @@ export default function PreviewHome() {
                 <ProjectCard project={workProjects[4]} index={4} wide />
               </motion.div>
             )}
+            {/* mentorship-agent (workProjects[5]) — кейс про менторскую практику и AI-агентов.
+                Кладём его в широкий блок ниже experiments-link, чтобы свежий work-кейс
+                закрывал блок проектов на главной. */}
             <motion.div variants={fadeUp}>
               <Link href="/experiments" className="no-underline group block h-full">
                 <div className="relative h-full min-h-[280px] md:min-h-[340px] rounded-2xl overflow-hidden border border-white/[0.06] group-hover:border-[#A6FF00]/40 bg-[#0a0a0a] transition-colors duration-300 p-6 md:p-7 flex flex-col justify-between">
@@ -1344,6 +1347,13 @@ export default function PreviewHome() {
                 </div>
               </Link>
             </motion.div>
+
+            {/* workProjects[5] — широкий блок снизу (mentorship-agent) */}
+            {workProjects[5] && (
+              <motion.div variants={fadeUp} className="md:col-span-3">
+                <ProjectCard project={workProjects[5]} index={5} wide />
+              </motion.div>
+            )}
           </div>
         </motion.div>
       </section>
