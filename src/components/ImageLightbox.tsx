@@ -42,6 +42,7 @@ export default function ImageLightbox({ images, mode = "web" }: ImageLightboxPro
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const hasProtected = images.some((img) => img.protected);
+  const protectedCount = images.filter((img) => img.protected).length;
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -108,8 +109,10 @@ export default function ImageLightbox({ images, mode = "web" }: ImageLightboxPro
               <Lock className="w-4 h-4 text-[#A6FF00]" strokeWidth={2} />
             </div>
             <div className="md:max-w-xs">
-              <div className="text-sm md:text-[15px] text-white/85 font-medium leading-snug">Закрыто по NDA</div>
-              <div className="text-[11px] text-white/45 mt-0.5">Скрины внутренних продуктов. Введите пароль доступа.</div>
+              <div className="text-sm md:text-[15px] text-white/85 font-medium leading-snug">
+                Закрыто по NDA{protectedCount > 0 ? ` · ${protectedCount}` : ""}
+              </div>
+              <div className="text-[11px] text-white/45 mt-0.5">Скрины внутренних продуктов. Введите пароль, чтобы раскрыть.</div>
             </div>
           </div>
           <form
@@ -161,6 +164,9 @@ export default function ImageLightbox({ images, mode = "web" }: ImageLightboxPro
       >
         {images.map((img, n) => {
           const isLocked = !!img.protected && !unlocked;
+          // Скрытые NDA-плитки вообще не показываем — оставляем только prompt сверху,
+          // где можно ввести пароль и раскрыть всю группу разом.
+          if (isLocked) return null;
           return (
             <figure
               key={n}
