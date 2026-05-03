@@ -59,7 +59,7 @@ const STAGES: Stage[] = [
     id: "46",
     threshold: 46,
     headline: "Я рад, что тебе нравится эта кнопка. Возможно тебе понравится и это",
-    accent: " →",
+    accent: ".",
     bonus: {
       label: "Открыть",
       href: "/secret",
@@ -366,26 +366,8 @@ export default function FinalCTA() {
             <motion.button
               type="button"
               onClick={onClick}
-              animate={
-                reduced
-                  ? undefined
-                  : {
-                      // К 30+ кнопка слегка дрожит, к 46+ — заметно
-                      x:
-                        sessionCount >= 46
-                          ? [0, -1.2, 1, -0.6, 0]
-                          : sessionCount >= 30
-                          ? [0, -0.6, 0.4, 0]
-                          : 0,
-                    }
-              }
-              transition={
-                sessionCount >= 30
-                  ? { duration: 0.35, repeat: Infinity, repeatType: "loop", ease: "linear" }
-                  : { duration: 0 }
-              }
               whileTap={{ scale: 0.92 }}
-              className={`group relative inline-flex items-center justify-center px-9 py-5 md:px-11 md:py-6 rounded-full bg-[#A6FF00] text-black font-p95 text-sm md:text-[15px] tracking-[0.16em] uppercase select-none shadow-[0_0_0_0_rgba(166,255,0,0)] hover:shadow-[0_0_60px_-10px_rgba(166,255,0,0.55)] transition-shadow ${
+              className={`group relative inline-flex items-center justify-center px-8 py-3.5 md:px-10 md:py-4 rounded-full bg-[#A6FF00] text-black font-p95 text-sm md:text-[15px] tracking-[0.16em] uppercase select-none shadow-[0_0_0_0_rgba(166,255,0,0)] hover:shadow-[0_0_60px_-10px_rgba(166,255,0,0.55)] transition-shadow ${
                 pressing ? "scale-[0.94]" : "scale-100"
               }`}
               aria-label="Улыбнуться"
@@ -429,12 +411,6 @@ export default function FinalCTA() {
             </a>
           </motion.div>
 
-          <motion.p
-            variants={fadeUp}
-            className="relative mt-5 md:mt-6 text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-white/40 max-w-md"
-          >
-            Отвечаю быстро. Без питчей и «созвонимся обсудить». Пиши сразу, что нужно.
-          </motion.p>
         </motion.div>
       </div>
     </section>

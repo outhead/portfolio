@@ -156,14 +156,6 @@ export default function SecretPage() {
               </div>
             ) : null}
 
-            {/* Бонус-пасхалка на SECRET_SHIFT — текст с буквами наоборот */}
-            {isSecretFound ? (
-              <div className="mt-8 md:mt-10">
-                <p className="text-sm md:text-[15px] text-[#C9A66B]/85 max-w-lg leading-relaxed">
-                  Дальше — только зеркало. Прочтите большой текст справа налево.
-                </p>
-              </div>
-            ) : null}
           </div>
         </div>
       </section>
