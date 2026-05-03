@@ -109,23 +109,6 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
             {project.role} · {project.period}
           </p>
 
-          {/* Metric */}
-          {project.metric && (
-            <div className="absolute bottom-10 right-5 md:right-[6%] lg:right-[10%] xl:right-[14%] text-right">
-              <div className="text-4xl md:text-6xl font-semibold text-white/80 leading-none">
-                {project.metric}
-              </div>
-              <div className="text-[9px] tracking-[0.1em] uppercase text-white/25 mt-1">
-                {project.metricLabel}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Scroll indicator — мягкий сигнал, что ниже есть контент */}
-        <div className="absolute bottom-3 md:bottom-4 left-1/2 -translate-x-1/2 z-[5] flex flex-col items-center gap-1 pointer-events-none">
-          <div className="text-[9px] tracking-[0.16em] uppercase text-white/35">scroll</div>
-          <ChevronDown className="w-4 h-4 text-white/35 animate-bounce" strokeWidth={1.6} />
         </div>
       </section>
 
