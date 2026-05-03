@@ -970,39 +970,45 @@ const tools: Array<{ name: string; icon: React.ReactNode }> = [
 ];
 
 function Toolbox() {
-  // Сжатая строка инструментов вместо 8-плиточного bento — для head-of-design
-  // отдельный «шкаф с иконками» читается как чек-лист джуна. Оставляю компактный
-  // одноряд с разделителями.
+  // 8-плиточный bento с иконками: каждая карточка — иконка тулзы + name.
+  // Подзаголовок «без ритуалов и ярлыков» — лёгкая ирония к шаблонным «my stack» секциям.
   return (
     <section className="relative z-[1] bg-black border-t border-white/[0.06]">
-      <div className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-12 md:py-14">
+      <div className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-20">
         <motion.div
           initial="hidden"
           whileInView="show"
           viewport={viewport}
           variants={stagger}
-          className="flex flex-col md:flex-row md:items-baseline md:justify-between gap-4 md:gap-8"
         >
-          <motion.div variants={fadeUp} className="flex items-baseline gap-3 shrink-0">
+          <motion.div
+            variants={fadeUp}
+            className="mb-8 md:mb-10 flex items-baseline gap-3"
+          >
             <SectionLabel>В РАБОТЕ</SectionLabel>
             <span className="text-[11px] md:text-[12px] text-white/40 tracking-[0.06em]">
               без ритуалов и ярлыков
             </span>
           </motion.div>
+
           <motion.div
-            variants={fadeUp}
-            className="flex flex-wrap items-center gap-x-3 gap-y-3 text-[12px] md:text-[13px] text-white/55 tracking-[0.04em]"
+            variants={stagger}
+            className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4"
           >
-            {tools.map((t, i) => (
-              <span key={t.name} className="group inline-flex items-center gap-2">
-                <span className="w-[14px] h-[14px] md:w-[15px] md:h-[15px] text-white/40 group-hover:text-white transition-colors shrink-0">
+            {tools.map((t) => (
+              <motion.div
+                key={t.name}
+                variants={fadeUp}
+                title={t.name}
+                className="group relative rounded-xl border border-white/[0.06] bg-white/[0.02] hover:border-[#A6FF00]/30 hover:bg-white/[0.035] transition-colors p-5 md:p-6 flex flex-col items-start justify-between min-h-[130px] md:min-h-[150px] overflow-hidden"
+              >
+                <div className="w-7 h-7 md:w-8 md:h-8 text-white/55 group-hover:text-white transition-colors">
                   {t.icon}
+                </div>
+                <span className="font-p95 text-[12px] md:text-[13px] tracking-[0.18em] uppercase text-white/70 group-hover:text-white transition-colors">
+                  {t.name}
                 </span>
-                <span className="text-white/75 group-hover:text-white transition-colors">{t.name}</span>
-                {i < tools.length - 1 && (
-                  <span aria-hidden className="text-white/20 ml-1">·</span>
-                )}
-              </span>
+              </motion.div>
             ))}
           </motion.div>
         </motion.div>
