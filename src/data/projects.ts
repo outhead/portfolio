@@ -639,12 +639,6 @@ export const projects: Project[] = [
     coverImage: "/images/covers/mts-b2c-cover.jpg",
     coverVideo: "/videos/mts-b2c-cover.mp4",
     coverVideoPauseAt: 2.86,
-    screenshots: [
-      "/images/figma/mts-b2c.jpg",
-      "/images/figma/mts-cashback.jpg",
-      "/images/figma/mts-stroki.jpg",
-      "/images/figma/mts-memory.jpg",
-    ],
     sections: [
       {
         title: "МТС Cashback",
@@ -655,7 +649,6 @@ export const projects: Project[] = [
           { value: "×10", label: "рост транзакций" },
           { value: "1", label: "хаб монетизации экосистемы" },
         ],
-        screenshots: ["/images/figma/mts-cashback.jpg"],
       },
       {
         title: "МТС Premium & Строки",
@@ -667,7 +660,6 @@ export const projects: Project[] = [
           { value: "1.5М", label: "Строки пользователей" },
           { value: "×2.5", label: "рост Строк" },
         ],
-        screenshots: ["/images/figma/mts-stroki.jpg"],
       },
       {
         title: "Smart-продукты и Вторая Память",
@@ -679,7 +671,6 @@ export const projects: Project[] = [
           { value: "1М+", label: "Вторая Память · 70K MAU" },
           { value: "4.7", label: "рейтинг Вторая Память" },
         ],
-        screenshots: ["/images/figma/mts-memory.jpg"],
       },
       {
         title: "Масштаб и рост",
