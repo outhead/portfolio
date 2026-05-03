@@ -7,7 +7,7 @@ import { ArrowLeft, ArrowRight, ChevronDown } from "lucide-react";
 import ImageLightbox from "@/components/ImageLightbox";
 import { HeroCoverVideo } from "@/components/CoverVideo";
 import CaseLinkCard from "@/components/CaseLinkCard";
-import HeroLightbox from "@/components/HeroLightbox";
+import HeroSlider from "@/components/HeroSlider";
 import PressCollapse from "@/components/PressCollapse";
 
 export function generateStaticParams() {
@@ -233,7 +233,18 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                   </h3>
                 </div>
 
-                {/* Structured blocks */}
+                {/* Heroes — слайдер с большим постером сразу под заголовком.
+                    Соотношение сторон рамки совпадает с активным постером, object-contain — ничего не режется. */}
+                {section.heroes && section.heroes.length > 0 && (
+                  <div className="mb-8 md:mb-10">
+                    <HeroSlider
+                      heroes={section.heroes}
+                      label={section.heroes.length > 1 ? `Постеры · ${section.heroes.length}` : undefined}
+                    />
+                  </div>
+                )}
+
+                {/* Текстовые блоки: задача + подход + что способствовало (без result — он переехал в конец) */}
                 {hasStructured ? (
                   <div className="space-y-6 max-w-3xl">
                     {section.context && (
@@ -252,12 +263,6 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                       <div className="border-l-2 border-[#A6FF00]/30 pl-4">
                         <div className={labelClass}>Что способствовало</div>
                         {renderProse(section.helped)}
-                      </div>
-                    )}
-                    {section.result && (
-                      <div>
-                        <div className={labelClass}>Результат</div>
-                        {renderProse(section.result)}
                       </div>
                     )}
                   </div>
@@ -352,26 +357,9 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                   </div>
                 )}
 
-                {/* Heroes — широкие плакаты без рамки телефона. Кликабельные для увеличения. */}
-                {section.heroes && section.heroes.length > 0 && (
-                  <div className="mt-10 md:mt-14">
-                    <HeroLightbox
-                      heroes={section.heroes}
-                      label={`Постеры · ${section.heroes.length}`}
-                    />
-                  </div>
-                )}
-
-                {/* Разделитель между постерами и скриншотами в рамке */}
-                {section.heroes && section.heroes.length > 0 && hasSectionScreenshots && (
-                  <div className="mt-10 md:mt-14 text-[10px] tracking-[0.18em] uppercase text-white/40">
-                    Скриншоты в интерфейсе
-                  </div>
-                )}
-
-                {/* Screenshots */}
+                {/* Screenshots — phone/web сетка интерфейсов после задачи и подхода */}
                 {hasSectionScreenshots && (
-                  <div className="mt-7">
+                  <div className="mt-10 md:mt-12">
                     <ImageLightbox
                       mode={section.screenshotsMode ?? project.screenshotsMode ?? "web"}
                       images={section.screenshots!.map((shot, n) => {
@@ -387,6 +375,15 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                         return { src, alt, label, caption, protected: isProtected, kind, poster };
                       })}
                     />
+                  </div>
+                )}
+
+                {/* Результат — переехал из верхнего блока СЮДА: после скриншотов, перед прессой.
+                    Идея: сначала задача и подход + визуал, потом — что получилось. */}
+                {section.result && (
+                  <div className="mt-10 md:mt-12 max-w-3xl">
+                    <div className={labelClass}>Результат</div>
+                    {renderProse(section.result)}
                   </div>
                 )}
 
