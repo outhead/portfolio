@@ -248,9 +248,6 @@ export const projects: Project[] = [
           { src: "/images/mts/savings/savings-rate-info.png", label: "СТАВКА 16,5%" },
           { src: "/images/mts/savings/savings-payment-method.png", label: "СПОСОБЫ ПОПОЛНЕНИЯ" },
         ],
-        links: [
-          { label: "МТС Накопления — механика и условия", url: "https://media.mts.ru/technologies/210564-schyot-mts-nakopleniya" },
-        ],
       },
       {
         title: "AI в дизайн-процессе ДЦВ",
@@ -284,7 +281,6 @@ export const projects: Project[] = [
       { category: "MTS Voice Ecosystem", label: "ComNews — как ИИ трансформирует голосовую экосистему МТС", url: "https://www.comnews.ru/digital-economy/content/234699/2024-08-12/2024-w33/1016/kak-ii-transformiruet-golosovuyu-ekosistemu-mts" },
       { category: "Кросс-продуктовая интеграция", label: "МТС.ГеоПоиск × ЛизаАлерт — запуск 02.06.2025 (Хабр)", url: "https://habr.com/ru/news/915160/" },
       { category: "Кросс-продуктовая интеграция", label: "Семейная группа — поддержка МТС", url: "https://support.mts.ru/semeinaya_gruppa" },
-      { category: "Кросс-продуктовая интеграция", label: "МТС Накопления — механика и условия", url: "https://media.mts.ru/technologies/210564-schyot-mts-nakopleniya" },
       { category: "Дизайн-система", label: "МТС Design — портал дизайна (Granat 2.0)", url: "https://design.mts.ru" },
       { category: "Дизайн-система", label: "Публичный UI-Kit GRANAT (с сентября 2024)", url: "https://design.mts.ru/ds/onbording/publichnii-ui-kit-mts-granat" },
       { category: "Выступления и интервью", label: "Интервью со мной — Art-director МТС", url: "https://youtu.be/opoCmrnQUDI", kind: "video", thumbnail: "/images/mts/links/mts-interview.jpg" },
