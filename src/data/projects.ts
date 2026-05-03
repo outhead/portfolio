@@ -708,8 +708,7 @@ export const projects: Project[] = [
     ],
     type: "work",
     coverColor: "#0a0a0a",
-    // coverImage намеренно НЕ задан: скрины темплейта тёмные (чёрный с золотом),
-    // под opacity-50 не читаются. Hero — чистый #0a0a0a фон, скрины ниже в screenshots.
+    coverImage: "/images/mentoring/hero-mentoring.png",
     screenshots: [
       { src: "/images/mentorship/01-mentee-overview.png", label: "Страница менти", caption: "Главная страница менти в темплейте: фокус-цели, следующая сессия, навигация. Все имена в публичном темплейте заменены на собирательные." },
       { src: "/images/mentorship/02-sessions-list.png", label: "Сессии и план", caption: "Прогресс по линиям роста, лента сессий, артефакты «Договорённости» и «Что получается». Заполняет агент после каждой сессии." },
