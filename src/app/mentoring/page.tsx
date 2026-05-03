@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import ScrollReveal from "@/components/ScrollReveal";
+import WIPOverlay from "@/components/WIPOverlay";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -18,6 +19,12 @@ export const metadata: Metadata = {
 export default function MentoringPage() {
   return (
     <>
+      <WIPOverlay
+        title="Раздел дорабатывается"
+        description="Страница про менторинг ещё в работе: дописываю описание форматов, цены и формы записи. Заходите чуть позже или посмотрите кейсы рядом."
+      />
+      <div className="blur-md select-none pointer-events-none" aria-hidden>
+
       {/* ===== HERO ===== */}
       <section className="relative px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-20 md:py-32 border-t border-white/[0.04] bg-black/75">
         <div className="grid md:grid-cols-12 gap-8 md:gap-10 items-center">
@@ -248,6 +255,8 @@ export default function MentoringPage() {
           <span>На главную</span>
         </Link>
       </section>
+
+      </div>
     </>
   );
 }

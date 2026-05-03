@@ -96,6 +96,11 @@ export interface Project {
     /** Опционально: тип ссылки. Если "video" — рендерится с play-иконкой. */
     kind?: "video" | "article" | "site" | "github";
   }[];
+  /**
+   * Если true — на странице кейса рендерится оверлей «Кейс дорабатывается»
+   * поверх содержимого, а сам контент блюрится. Используется для незакрытых черновиков.
+   */
+  wip?: boolean;
 }
 
 export const projects: Project[] = [
@@ -548,6 +553,7 @@ export const projects: Project[] = [
   },
   {
     slug: "ozon",
+    wip: true,
     title: "Дизайн-процессы и HR-бренд",
     company: "Ozon",
     role: "Community Lead",
@@ -611,6 +617,7 @@ export const projects: Project[] = [
   },
   {
     slug: "mts-b2c",
+    wip: true,
     title: "B2C-продукты МТС",
     company: "МТС",
     role: "Art Director B2C",
@@ -780,6 +787,7 @@ export const projects: Project[] = [
   },
   {
     slug: "webgl-experiments",
+    wip: true,
     title: "WebGL Experiments",
     company: "Pet Project",
     role: "Creative Developer",
@@ -813,6 +821,7 @@ export const projects: Project[] = [
   },
   {
     slug: "vigrom-agent",
+    wip: true,
     title: "Vigrom Agent",
     company: "Pet Project",
     role: "Developer",

@@ -9,6 +9,7 @@ import { HeroCoverVideo } from "@/components/CoverVideo";
 import CaseLinkCard from "@/components/CaseLinkCard";
 import HeroSlider from "@/components/HeroSlider";
 import PressCollapse from "@/components/PressCollapse";
+import WIPOverlay from "@/components/WIPOverlay";
 
 export function generateStaticParams() {
   return projects.map((project) => ({
@@ -56,6 +57,12 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
 
   return (
     <>
+      {/* WIP-оверлей: блюрит контент кейса и показывает плашку «дорабатывается» */}
+      {project.wip ? <WIPOverlay /> : null}
+
+      {/* Сам кейс. Если wip — блюрим и блокируем взаимодействие, чтобы оверлей был источник правды. */}
+      <div className={project.wip ? "blur-md select-none pointer-events-none" : undefined} aria-hidden={project.wip ? true : undefined}>
+
       {/* Hero */}
       <section
         className="relative min-h-[60vh] flex items-end overflow-hidden"
@@ -575,6 +582,8 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
           )}
         </div>
       </section>
+
+      </div>
     </>
   );
 }
