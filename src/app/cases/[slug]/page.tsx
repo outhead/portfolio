@@ -8,6 +8,7 @@ import ImageLightbox from "@/components/ImageLightbox";
 import { HeroCoverVideo } from "@/components/CoverVideo";
 import CaseLinkCard from "@/components/CaseLinkCard";
 import HeroLightbox from "@/components/HeroLightbox";
+import PressCollapse from "@/components/PressCollapse";
 
 export function generateStaticParams() {
   return projects.map((project) => ({
@@ -389,19 +390,10 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                   </div>
                 )}
 
-                {/* Inline links — переехали В КОНЕЦ секции, после скриншотов
-                    («пресса/публикации» как естественное завершение блока). */}
+                {/* Inline links — В КОНЦЕ секции, свёрнуты в кликабельный таб
+                    «Пресса и публикации · N» с иконкой газеты. */}
                 {section.links && section.links.length > 0 && (
-                  <div className="mt-8 md:mt-10">
-                    <div className="text-[10px] tracking-[0.14em] uppercase text-white/40 mb-3">
-                      Пресса и публикации
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {section.links.map((link) => (
-                        <CaseLinkCard key={link.url} link={link} size="sm" />
-                      ))}
-                    </div>
-                  </div>
+                  <PressCollapse links={section.links} />
                 )}
               </div>
             );
