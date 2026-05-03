@@ -1040,7 +1040,7 @@ export default function PreviewHome() {
           initial="hidden"
           animate="show"
           variants={stagger}
-          className="relative z-[2] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pt-24 md:pt-28 pb-10 md:pb-14"
+          className="relative z-[2] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pt-16 md:pt-28 pb-10 md:pb-14"
         >
           {/* Bento: 12-колоночный грид с разными размерами */}
           <div className="grid grid-cols-12 gap-3 md:gap-4">
