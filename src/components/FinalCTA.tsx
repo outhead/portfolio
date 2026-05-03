@@ -418,13 +418,15 @@ export default function FinalCTA() {
               <Send className="w-4 h-4 md:w-5 md:h-5" strokeWidth={2.2} />
               Написать в Telegram
             </Link>
-            <Link
+            {/* Используем обычный <a>, не next/link — для якорной прокрутки внутри страницы.
+                Next.js Link иногда обрабатывает hash-ссылки как навигацию на корень. */}
+            <a
               href="#contacts"
               className="inline-flex items-center gap-2 px-7 py-4 md:px-8 md:py-5 rounded-full border border-white/20 text-white/85 font-p95 text-sm md:text-[15px] tracking-[0.14em] uppercase hover:border-white/50 hover:text-white transition-colors no-underline"
             >
               Все каналы
               <ArrowRight className="w-4 h-4" strokeWidth={2} />
-            </Link>
+            </a>
           </motion.div>
 
           <motion.p

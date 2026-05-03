@@ -1181,15 +1181,9 @@ export default function PreviewHome() {
                     </div>
                   </div>
 
-                  {/* Футер: победитель в сегменте + стрелка-индикатор клика */}
-                  <div className="relative z-[1] flex items-center justify-between gap-3 pt-3.5 border-t border-[#C9A66B]/15">
-                    <div className="font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-[#C9A66B]/85 leading-none">
-                      Победитель в сегменте B2E
-                    </div>
-                    <ArrowUpRight
-                      className="w-4 h-4 shrink-0 text-[#C9A66B]/55 group-hover:text-[#C9A66B] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300"
-                      strokeWidth={1.75}
-                    />
+                  {/* Футер: победитель в сегменте, без стрелки */}
+                  <div className="relative z-[1] font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-[#C9A66B]/85 leading-none pt-3.5 border-t border-[#C9A66B]/15">
+                    Победитель в сегменте B2E
                   </div>
                 </div>
               </Link>
