@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import ScrollReveal from "@/components/ScrollReveal";
 import type { Metadata } from "next";
 
@@ -19,17 +20,31 @@ export default function MentoringPage() {
     <>
       {/* ===== HERO ===== */}
       <section className="relative px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-20 md:py-32 border-t border-white/[0.04] bg-black/75">
-        <div className="max-w-5xl">
-          <div className="animate-fade-in-up">
-            <h1 className="font-p95 text-[clamp(48px,10vw,100px)] leading-[0.92] uppercase tracking-tight mb-4 md:mb-6">
-              МЕНТОРИНГ
-            </h1>
+        <div className="grid md:grid-cols-12 gap-8 md:gap-10 items-center">
+          <div className="md:col-span-6 lg:col-span-5">
+            <div className="animate-fade-in-up">
+              <h1 className="font-p95 text-[clamp(48px,10vw,100px)] leading-[0.92] uppercase tracking-tight mb-4 md:mb-6">
+                МЕНТОРИНГ
+              </h1>
+            </div>
+            <p className="animate-fade-in-up animation-delay-200 text-base md:text-lg text-white/60 leading-relaxed max-w-2xl">
+              Помогаю дизайнерам и лидам расти, решать задачи и строить карьеру.
+              За плечами 8+ лет управления в крупных компаниях, делюсь конкретными инструментами,
+              а не общими советами.
+            </p>
           </div>
-          <p className="animate-fade-in-up animation-delay-200 text-base md:text-lg text-white/60 leading-relaxed max-w-2xl">
-            Помогаю дизайнерам и лидам расти, решать задачи и строить карьеру.
-            За плечами 8+ лет управления в крупных компаниях, делюсь конкретными инструментами,
-            а не общими советами.
-          </p>
+          <div className="md:col-span-6 lg:col-span-7 animate-fade-in-up animation-delay-400">
+            <div className="relative w-full aspect-[16/10] rounded-2xl overflow-hidden border border-white/[0.06] bg-black">
+              <Image
+                src="/images/mentoring/hero-mentoring.png"
+                alt="Менторинг — система роста дизайнеров и лидов"
+                fill
+                priority
+                sizes="(min-width: 768px) 60vw, 100vw"
+                className="object-cover"
+              />
+            </div>
+          </div>
         </div>
       </section>
 

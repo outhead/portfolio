@@ -112,7 +112,7 @@ export default function SpeakingPage() {
               </div>
             </div>
             <p className="text-sm text-white/55 leading-relaxed mb-4">
-              «Vigrom» — AI-инструменты для дизайнеров. Разборы Claude, Cursor, v0.
+              «Vigrom» — AI-инструменты для дизайнеров. Разборы Claude, Cursor.
             </p>
             <Link
               href="https://t.me/vigrom"
