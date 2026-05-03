@@ -61,8 +61,8 @@ const STAGES: Stage[] = [
     headline: "Я рад, что тебе нравится эта кнопка. Возможно тебе понравится и это",
     accent: " →",
     bonus: {
-      label: "Открыть подсказку",
-      href: "https://portfolio-egors-projects-baaaa1ca.vercel.app/",
+      label: "Открыть",
+      href: "/secret",
     },
   },
 ];
@@ -346,6 +346,14 @@ export default function FinalCTA() {
                 {stage.accent ? (
                   <span className="text-[#A6FF00]">{stage.accent}</span>
                 ) : null}
+                {stage.bonus ? (
+                  <Link
+                    href={stage.bonus.href}
+                    className="inline-flex align-middle items-center gap-1.5 ml-3 md:ml-5 px-4 py-2 md:px-5 md:py-2.5 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[11px] md:text-[13px] tracking-[0.2em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
+                  >
+                    {stage.bonus.label}
+                  </Link>
+                ) : null}
               </motion.h2>
             </AnimatePresence>
           </div>
@@ -396,30 +404,6 @@ export default function FinalCTA() {
               </span>
             </div>
           </motion.div>
-
-          {/* Бонус-ссылка (появляется только на финальном пороге) */}
-          <AnimatePresence>
-            {stage.bonus ? (
-              <motion.div
-                key="bonus"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4 }}
-                className="relative mt-7 md:mt-8"
-              >
-                <Link
-                  href={stage.bonus.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-6 py-3 md:px-7 md:py-3.5 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/5 text-[#A6FF00] font-p95 text-[11px] md:text-[12px] tracking-[0.2em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
-                >
-                  {stage.bonus.label}
-                  <ArrowRight className="w-3.5 h-3.5" strokeWidth={2.2} />
-                </Link>
-              </motion.div>
-            ) : null}
-          </AnimatePresence>
 
           {/* Telegram + все каналы */}
           <motion.div

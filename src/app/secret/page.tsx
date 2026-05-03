@@ -1,0 +1,169 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+
+// Шифр Цезаря на русском (33 буквы, ё включена).
+const ALPHABET = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя";
+const N = ALPHABET.length;
+
+function caesarShift(text: string, shift: number): string {
+  return [...text]
+    .map((ch) => {
+      const lower = ch.toLowerCase();
+      const idx = ALPHABET.indexOf(lower);
+      if (idx === -1) return ch;
+      const shifted = ALPHABET[(idx + shift + N * 10) % N];
+      // Сохраняем оригинальный регистр
+      return ch === lower ? shifted : shifted.toUpperCase();
+    })
+    .join("");
+}
+
+const ORIGINAL = "эта страница будет позже, но ты молодец";
+const CIPHER_SHIFT = 3; // зашифровали с +3
+const ENCRYPTED = caesarShift(ORIGINAL, CIPHER_SHIFT);
+
+export default function SecretPage() {
+  // Слайдер двигает «дешифрующий» сдвиг от 0 до 32.
+  // При сдвиге = 30 (или эквивалентно -3) текст возвращается к оригиналу.
+  const [decryptShift, setDecryptShift] = useState(0);
+
+  const decoded = useMemo(
+    () => caesarShift(ENCRYPTED, -decryptShift),
+    [decryptShift],
+  );
+
+  const isSolved = decoded.toLowerCase() === ORIGINAL.toLowerCase();
+
+  // Подсказка появляется через 8 секунд, если пользователь не двигал слайдер
+  const [showHint, setShowHint] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setShowHint(true), 8000);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <main className="relative min-h-screen bg-black text-white overflow-hidden">
+      {/* Мягкое свечение */}
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none opacity-70"
+        style={{
+          background:
+            "radial-gradient(ellipse 60% 50% at 50% 30%, rgba(166,255,0,0.08), transparent 60%), radial-gradient(ellipse 40% 40% at 80% 80%, rgba(201,166,107,0.08), transparent 70%)",
+        }}
+      />
+
+      {/* Шапка */}
+      <header className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pt-8 md:pt-10 flex items-center justify-between">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-white/45 hover:text-white transition-colors no-underline"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2} />
+          На главную
+        </Link>
+        <span className="font-p95 text-[10px] md:text-[11px] tracking-[0.25em] uppercase text-[#A6FF00]">
+          [ Загадка ]
+        </span>
+      </header>
+
+      {/* Контент */}
+      <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pt-14 md:pt-24 pb-20">
+        <div className="max-w-[1100px]">
+          <p className="font-p95 text-[11px] md:text-[12px] tracking-[0.25em] uppercase text-white/40 mb-6 md:mb-8">
+            Шифр Цезаря · сдвиньте, чтобы прочитать
+          </p>
+
+          {/* Большой текст — шифр или дешифровка */}
+          <h1
+            className={`font-p95 leading-[1.05] uppercase tracking-tight transition-colors duration-300 break-words ${
+              isSolved ? "text-[#A6FF00]" : "text-white"
+            }`}
+            style={{ fontSize: "clamp(28px, 5.2vw, 76px)" }}
+          >
+            {decoded}
+          </h1>
+
+          {/* Слайдер */}
+          <div className="mt-12 md:mt-16 max-w-2xl">
+            <div className="flex items-baseline justify-between mb-3">
+              <span className="font-p95 text-[10px] md:text-[11px] tracking-[0.25em] uppercase text-white/40">
+                Сдвиг
+              </span>
+              <span className="font-p95 text-[clamp(18px,2vw,28px)] tabular-nums text-white">
+                {decryptShift}
+              </span>
+            </div>
+
+            <input
+              type="range"
+              min={0}
+              max={N - 1}
+              step={1}
+              value={decryptShift}
+              onChange={(e) => setDecryptShift(Number(e.target.value))}
+              aria-label="Сдвиг шифра"
+              className="w-full h-2 appearance-none bg-white/[0.08] rounded-full outline-none cursor-pointer slider-lime"
+            />
+
+            <div className="flex items-center justify-between mt-3 text-[10px] md:text-[11px] tracking-[0.18em] uppercase text-white/30 font-p95 tabular-nums">
+              <span>0</span>
+              <span>{N - 1}</span>
+            </div>
+
+            {/* Подсказка после 8 сек */}
+            <p
+              className={`mt-8 md:mt-10 text-sm md:text-[15px] text-white/55 max-w-md transition-opacity duration-700 ${
+                showHint && !isSolved ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              Подсказка: попробуйте сдвиг около тридцатки.
+            </p>
+
+            {/* Сообщение после разгадки */}
+            {isSolved ? (
+              <div className="mt-8 md:mt-10">
+                <p className="text-sm md:text-[15px] text-white/65 max-w-lg">
+                  Эта страница появится позже. Но вы&nbsp;уже&nbsp;здесь, и&nbsp;это уже что-то.
+                </p>
+                <Link
+                  href="/"
+                  className="mt-6 inline-flex items-center gap-2 px-6 py-3 md:px-7 md:py-3.5 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[11px] md:text-[12px] tracking-[0.2em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2.2} />
+                  Вернуться
+                </Link>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </section>
+
+      <style jsx>{`
+        .slider-lime::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 22px;
+          height: 22px;
+          border-radius: 9999px;
+          background: #a6ff00;
+          border: 2px solid #000;
+          cursor: pointer;
+          box-shadow: 0 0 0 1px rgba(166, 255, 0, 0.4);
+        }
+        .slider-lime::-moz-range-thumb {
+          width: 22px;
+          height: 22px;
+          border-radius: 9999px;
+          background: #a6ff00;
+          border: 2px solid #000;
+          cursor: pointer;
+          box-shadow: 0 0 0 1px rgba(166, 255, 0, 0.4);
+        }
+      `}</style>
+    </main>
+  );
+}

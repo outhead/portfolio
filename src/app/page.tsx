@@ -1660,13 +1660,14 @@ export default function PreviewHome() {
               <motion.div
                 key={t.name}
                 variants={fadeUp}
-                className="relative p-6 md:p-7 rounded-2xl border border-white/[0.06] bg-white/[0.015] hover:border-[#A6FF00]/20 transition-colors duration-300"
+                className="relative h-full p-6 md:p-7 rounded-2xl border border-white/[0.06] bg-white/[0.015] hover:border-[#A6FF00]/20 transition-colors duration-300 flex flex-col"
               >
                 <Quote className="w-5 h-5 text-[#A6FF00]/40 mb-4" strokeWidth={1.5} />
-                <p className="text-white/75 text-base md:text-[17px] leading-relaxed mb-5">
+                <p className="text-white/75 text-base md:text-[17px] leading-relaxed">
                   {t.quote}
                 </p>
-                <div className="pt-4 border-t border-white/[0.06]">
+                {/* mt-auto прижимает подпись к низу карточки — выравнивает подписи в обоих кейсах */}
+                <div className="mt-auto pt-5 md:pt-6 border-t border-white/[0.06]">
                   <div className="text-sm text-white font-medium leading-tight">{t.name}</div>
                   <div className="text-[11px] text-white/40 mt-1 leading-snug">{t.role}</div>
                 </div>
