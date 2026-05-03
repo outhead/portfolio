@@ -707,7 +707,9 @@ export const projects: Project[] = [
     ],
     type: "work",
     coverColor: "#0a0a0a",
-    coverImage: "/images/mentoring/hero-mentoring.png",
+    coverImage: "/images/mentoring/pillsdrop-poster.jpg",
+    coverVideo: "/videos/pillsdrop.mp4",
+    coverVideoPauseAt: 2.86,
     screenshots: [
       { src: "/images/mentorship/01-mentee-overview.png", label: "Страница менти", caption: "Главная страница менти в темплейте: фокус-цели, следующая сессия, навигация. Все имена в публичном темплейте заменены на собирательные." },
       { src: "/images/mentorship/02-sessions-list.png", label: "Сессии и план", caption: "Прогресс по линиям роста, лента сессий, артефакты «Договорённости» и «Что получается». Заполняет агент после каждой сессии." },
