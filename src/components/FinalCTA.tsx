@@ -34,7 +34,13 @@ const STAGES: Stage[] = [
   {
     id: "0",
     threshold: 0,
-    headline: "Уау, спасибо что досюда долистали — вот вам кнопочка",
+    headline: "Спасибо, что долистали, вот вам кнопочка",
+    accent: ".",
+  },
+  {
+    id: "1",
+    threshold: 1,
+    headline: "Вы всё ещё можете написать мне в Telegram",
     accent: ".",
   },
   {
@@ -374,9 +380,9 @@ export default function FinalCTA() {
               className={`group relative inline-flex items-center justify-center px-9 py-5 md:px-11 md:py-6 rounded-full bg-[#A6FF00] text-black font-p95 text-sm md:text-[15px] tracking-[0.16em] uppercase select-none shadow-[0_0_0_0_rgba(166,255,0,0)] hover:shadow-[0_0_60px_-10px_rgba(166,255,0,0.55)] transition-shadow ${
                 pressing ? "scale-[0.94]" : "scale-100"
               }`}
-              aria-label="Нажать"
+              aria-label="Улыбнуться"
             >
-              <span className="relative">Нажать</span>
+              <span className="relative">Улыбнуться</span>
             </motion.button>
 
             <div className="inline-flex items-baseline gap-2 font-p95">
