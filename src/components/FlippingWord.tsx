@@ -45,44 +45,42 @@ export default function FlippingWord({
     "",
   );
 
+  // Окно карусели чуть выше 1em (1.15em), чтобы кириллические буквы
+  // с диакритикой («Й», «Ё») не обрезались overflow-hidden. Но шаг
+  // и line-height ВНЕШНЕГО span'а оставляем как у родителя (наследуем) —
+  // иначе строка FlippingWord растягивает h1's leading.
+  // Окно сдвигаем на -PAD_EM вверх, чтобы baseline слова совпадал с
+  // baseline невидимого sizer'а (то есть с baseline соседней статичной
+  // строки в h1).
+  const STEP_EM = 1.15;
+  const PAD_EM = (STEP_EM - 1) / 2; // 0.075
+
   return (
     <span
       className={`relative inline-block align-baseline ${className}`}
-      style={{ lineHeight: 1 }}
     >
-      {/* Невидимый sizer — держит ширину и baseline слота */}
+      {/* Невидимый sizer — держит ширину и baseline слота. line-height
+          наследуется от родителя (h1 → 0.92), чтобы внешний slot
+          не ломал leading. */}
       <span aria-hidden className="invisible whitespace-nowrap">
         {longest}
       </span>
-      {/* Окно ticker-а с очень узким vertical mask (4% сверху и снизу):
-          раньше mask был широким (12% до 88%) и нижняя часть букв
-          выглядела «затемнённой». Сейчас fade-зона совсем узкая —
-          практически невидимая глазу, но скрывает соседние слова из
-          стека (без неё overflow-hidden их пропускал из-за inline-сайзера). */}
+      {/* Окно ticker-а: внутри — собственный увеличенный line-height,
+          чтобы breve не клиповался. Позиционируем так, чтобы baseline
+          активного слова совпадал с baseline sizer'а: смещаем вверх
+          на PAD_EM = (STEP_EM-1)/2. */}
       <span
         aria-live="polite"
-        className="absolute left-0 top-0 right-0 overflow-hidden"
-        // Жёстко закрепляем высоту окна на 1em — без этого браузер давал
-        // окну высоту с учётом ascenders/descenders шрифта, и стек слов
-        // вылезал за пределы. Сейчас стек обрезан ровно по строке.
+        className="absolute left-0 right-0 overflow-hidden"
         style={{
-          height: "1em",
-          lineHeight: 1,
+          top: `-${PAD_EM}em`,
+          height: `${STEP_EM}em`,
+          lineHeight: STEP_EM,
         }}
       >
-        {/* ВАЖНО: y указываем в em, а НЕ в %. translateY(%) считается
-            от высоты самого анимируемого элемента, а в нём лежат ВСЕ
-            слова — высота столбца = N em, и «-i * 100%» уезжает в
-            «-i * N em», т.е. в самый низ. В em расчёт детерминирован:
-            одно слово = 1em, шаг = 1em. */}
         <motion.span
           className="block whitespace-nowrap"
-          animate={{ y: `${-i}em` }}
-          // Tween без overshoot: при spring следующее/предыдущее слово
-          // выглядывало над/под видимой строкой при пружинном перепрыге,
-          // и приходилось маскировать gradient'ом — что и читалось как
-          // «затемнение второй строки». Tween ровно встаёт на 1em, без
-          // вылетов, и mask больше не нужен.
+          animate={{ y: `${-i * STEP_EM}em` }}
           transition={{
             type: "tween",
             duration: 0.45,
@@ -90,7 +88,11 @@ export default function FlippingWord({
           }}
         >
           {words.map((w, idx) => (
-            <span key={idx} className="block whitespace-nowrap">
+            <span
+              key={idx}
+              className="block whitespace-nowrap"
+              style={{ lineHeight: STEP_EM }}
+            >
               {w}
             </span>
           ))}

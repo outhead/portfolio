@@ -24,6 +24,8 @@ import {
   Globe,
   Layers,
   ArrowUpRight,
+  Compass,
+  BarChart3,
 } from "lucide-react";
 
 const LinkedinIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -712,29 +714,45 @@ function ServiceTile({ tile }: { tile: ServiceTileData }) {
   const tileRef = useRef<HTMLDivElement>(null);
   const [mobileActive, setMobileActive] = useState(false);
 
-  // IntersectionObserver: активирует pulse на мобиле когда плитка в центре экрана.
+  // IntersectionObserver: активирует pulse на мобиле, когда плитка пересекает
+  // тонкую полосу чуть ниже середины viewport (50%—65% от верха).
   // На md+ pulse работает через hover, и mobileActive остаётся false.
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const isMobile = window.matchMedia("(max-width: 767px)").matches;
-    if (!isMobile) return;
+    const mql = window.matchMedia("(max-width: 767px)");
     const el = tileRef.current;
     if (!el) return;
 
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          // Активна, если центр плитки в верхней половине viewport (то есть к ней прилистали)
-          setMobileActive(entry.intersectionRatio >= 0.5);
-        }
-      },
-      {
-        threshold: [0, 0.25, 0.5, 0.75, 1],
-        rootMargin: "0px 0px -20% 0px",
+    let io: IntersectionObserver | null = null;
+
+    const setup = () => {
+      io?.disconnect();
+      if (!mql.matches) {
+        setMobileActive(false);
+        return;
       }
-    );
-    io.observe(el);
-    return () => io.disconnect();
+      io = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            setMobileActive(entry.isIntersecting);
+          }
+        },
+        {
+          // Полоса 50%—65% от верха viewport: top=-50% поднимает верх корня
+          // на середину, bottom=-35% оставляет 15% активной зоны чуть ниже середины.
+          rootMargin: "-50% 0px -35% 0px",
+          threshold: 0,
+        }
+      );
+      io.observe(el);
+    };
+
+    setup();
+    mql.addEventListener("change", setup);
+    return () => {
+      mql.removeEventListener("change", setup);
+      io?.disconnect();
+    };
   }, []);
 
   return (
@@ -768,8 +786,10 @@ function ServiceTile({ tile }: { tile: ServiceTileData }) {
         {title}
       </h3>
 
-      {/* Pulse-анимация. Default — статичный серый кадр; hover (десктоп) или scroll-into-view (мобила) — зелёная анимация. */}
-      <div className="flex-1 min-h-[180px] flex items-center justify-center">
+      {/* Pulse-анимация. Фиксированная высота (не flex-1!), чтобы круг
+          стоял на одной y-координате во всех плитках. Default — статичный
+          серый кадр; hover (десктоп) или scroll-into-view (мобила) — зелёная анимация. */}
+      <div className="h-[200px] md:h-[220px] flex items-center justify-center">
         <div className="relative w-[180px] h-[180px]">
           <PulseAnimation
             variant={animation}
@@ -785,8 +805,10 @@ function ServiceTile({ tile }: { tile: ServiceTileData }) {
         {body}
       </p>
 
-      {/* Низ: items — горизонтальный список через · */}
-      <div className="pt-4 md:pt-5 border-t border-white/[0.06] text-[11px] md:text-[12px] tracking-[0.04em] text-white/45 leading-relaxed">
+      {/* Низ: items — горизонтальный список через ·.
+          mt-auto прижимает блок к низу карточки независимо от длины
+          описания/items, чтобы низ всех 3 карточек выровнялся. */}
+      <div className="mt-auto pt-4 md:pt-5 border-t border-white/[0.06] text-[11px] md:text-[12px] tracking-[0.04em] text-white/45 leading-relaxed">
         {items.join(" · ")}
       </div>
     </motion.div>
@@ -1012,123 +1034,120 @@ export default function PreviewHome() {
         >
           {/* Bento: 12-колоночный грид с разными размерами */}
           <div className="grid grid-cols-12 gap-3 md:gap-4">
-            {/* === TILE 1: Главная content-плитка (col-span-8, row-span-2). На мобилке идёт после шара. === */}
+            {/* === TILE 1+2: ОБЪЕДИНЁННЫЙ ХИРО (col-span-12) — текст слева + сфера справа === */}
             <motion.div
               variants={fadeUp}
-              className="col-span-12 md:col-span-8 md:row-span-2 order-2 md:order-none"
+              className="col-span-12 order-1 md:order-none"
             >
-              <div className="relative h-full rounded-3xl border border-white/[0.1] bg-gradient-to-br from-white/[0.025] via-white/[0.01] to-transparent p-7 md:p-10 lg:p-12 flex flex-col justify-between gap-10 md:gap-14 min-h-[420px] md:min-h-[560px] overflow-hidden">
-                {/* Верхний ряд якорей */}
-                <div className="flex items-start justify-between gap-4">
-                  <div className="font-p95 text-[11px] md:text-[12px] tracking-[0.22em] uppercase text-white/65">
-                    <span className="text-[#A6FF00]/80">[</span>
-                    <span className="mx-2">Егор Шугаев · Дизайн-директор</span>
-                    <span className="text-[#A6FF00]/80">]</span>
-                  </div>
-                  <div className="font-p95 text-[10px] md:text-[11px] tracking-[0.22em] uppercase text-white/30 whitespace-nowrap">
-                    Portfolio · 2026
-                  </div>
-                </div>
-
-                {/* Центральный контент */}
-                <div className="flex flex-col gap-6 md:gap-8">
-                  <h1 className="font-p95 text-[clamp(64px,9vw,128px)] leading-[0.92] uppercase tracking-tight text-white">
-                    <span className="block text-white">РАЗВИВАЮ</span>
-                    <span className="block">
-                      <FlippingWord
-                        words={["ЛЮДЕЙ", "КОМАНДЫ", "ВИЗУАЛ", "СЕРВИСЫ", "ИНТЕРЕС"]}
-                        className="text-white"
-                      />
-                    </span>
-                  </h1>
-
-                  <p className="max-w-[560px] text-lg md:text-[20px] leading-snug text-white/70 font-light">
-                    От процессов и культуры до AI.
-                  </p>
-
-                  <div className="flex flex-wrap items-center gap-3 mt-2">
-                    <Link
-                      href="https://t.me/egoradi"
-                      target="_blank"
-                      className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-[#A6FF00] text-black font-p95 text-[13px] md:text-sm tracking-[0.12em] uppercase hover:bg-white transition-colors no-underline"
-                    >
-                      <Send className="w-4 h-4" strokeWidth={2.2} />
-                      Написать в Telegram
-                    </Link>
-                    <Link
-                      href="#portfolio"
-                      className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 font-p95 text-[13px] md:text-sm tracking-[0.12em] uppercase hover:border-white/50 hover:text-white transition-colors no-underline"
-                    >
-                      Смотреть проекты
-                      <ArrowRight className="w-4 h-4" strokeWidth={2} />
-                    </Link>
-                  </div>
-                </div>
-
-                {/* Нижний ряд якорей */}
-                <div className="flex items-end justify-between gap-4">
-                  <div className="font-p95 text-[10px] md:text-[11px] tracking-[0.22em] uppercase text-white/30 whitespace-nowrap">
-                    Москва
-                  </div>
-                  <div className="inline-flex items-center gap-2 font-p95 text-[10px] md:text-[11px] tracking-[0.22em] uppercase text-white/55 whitespace-nowrap">
-                    <span className="relative flex h-1.5 w-1.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#A6FF00]" />
-                    </span>
-                    Открыт к найму и консалтингу
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* === TILE 2: Photo-плитка (col-span-4, row-span-2). На мобилке идёт первой — шар сверху, по центру. === */}
-            <motion.div
-              variants={fadeUp}
-              className="col-span-12 md:col-span-4 md:row-span-2 order-1 md:order-none"
-            >
-              <div className="relative h-full min-h-[270px] md:min-h-[560px] rounded-3xl overflow-hidden border border-white/[0.1] bg-black flex items-center justify-center">
-                {/* Fallback-фон, чтобы плитка не была пустой пока ParticleSphere монтируется */}
+              <div className="relative rounded-3xl border border-white/[0.1] bg-gradient-to-br from-white/[0.025] via-white/[0.01] to-transparent overflow-hidden min-h-[460px] md:min-h-[600px]">
+                {/* Сфера — на десктопе абсолютно справа, на мобилке банером сверху */}
                 <div
                   aria-hidden
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    background:
-                      "radial-gradient(ellipse 60% 55% at 50% 50%, rgba(166,255,0,0.10) 0%, rgba(201,166,107,0.07) 35%, rgba(0,0,0,0) 70%), radial-gradient(circle at 50% 50%, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 1px, transparent 1.2px) 0 0/22px 22px",
-                  }}
-                />
+                  className="absolute inset-x-0 top-0 h-[260px] md:inset-y-0 md:left-auto md:right-0 md:h-auto md:w-[40%] pointer-events-none"
+                >
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      background:
+                        "radial-gradient(ellipse 60% 55% at 50% 50%, rgba(166,255,0,0.10) 0%, rgba(201,166,107,0.07) 35%, rgba(0,0,0,0) 70%), radial-gradient(circle at 50% 50%, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 1px, transparent 1.2px) 0 0/22px 22px",
+                    }}
+                  />
+                  <ParticleSphere className="absolute inset-0 w-full h-full" />
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      background:
+                        "radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.55) 100%)",
+                    }}
+                  />
+                </div>
 
-                {/* Particle sphere — замена фото. Центрируется flex-обёрткой выше. */}
-                <ParticleSphere className="absolute inset-0 w-full h-full" />
+                {/* Якорь — верхний левый угол всей плитки (над сферой на мобилке) */}
+                <div className="absolute top-6 left-6 md:top-10 md:left-10 lg:top-12 lg:left-12 z-[2] font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/70">
+                  <span className="text-[#A6FF00]/80">[</span>
+                  <span className="mx-2">Портфолио 2026</span>
+                  <span className="text-[#A6FF00]/80">]</span>
+                </div>
 
-                {/* Мягкий радиальный виньет поверх, чтобы плитка не сливалась с фоном */}
-                <div
-                  className="pointer-events-none absolute inset-0"
-                  style={{
-                    background:
-                      "radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.55) 100%)",
-                  }}
-                />
+                {/* Якорь — нижний левый угол */}
+                <div className="absolute bottom-6 left-6 md:bottom-10 md:left-10 lg:bottom-12 lg:left-12 z-[2] font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-white/40 whitespace-nowrap">
+                  Москва
+                </div>
+
+                {/* Якорь — нижний правый угол */}
+                <div className="absolute bottom-6 right-6 md:bottom-10 md:right-10 lg:bottom-12 lg:right-12 z-[2] inline-flex items-center gap-2.5 font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-white/65 whitespace-nowrap">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#A6FF00]" />
+                  </span>
+                  Доступен для проектов
+                </div>
+
+                {/* Центральный контент — ограничен слева, чтобы не наезжать на сферу */}
+                <div className="relative z-[1] flex flex-col justify-center p-7 md:p-10 lg:p-12 pt-[280px] md:pt-24 pb-20 md:pb-24 min-h-[460px] md:min-h-[600px]">
+                  <div className="flex flex-col gap-6 md:gap-8 md:max-w-[58%]">
+                    <h1 className="font-p95 text-[clamp(64px,9vw,128px)] leading-[0.92] uppercase tracking-tight text-white">
+                      <span className="block text-white">РАЗВИВАЮ</span>
+                      <span className="block">
+                        <FlippingWord
+                          words={["ЛЮДЕЙ", "КОМАНДЫ", "ВИЗУАЛ", "СЕРВИСЫ", "ИНТЕРЕС"]}
+                          className="text-white"
+                        />
+                      </span>
+                    </h1>
+
+                    <p className="max-w-[560px] text-lg md:text-[20px] leading-snug text-white/70 font-light">
+                      От стратегии и культуры до AI и цифровых продуктов.
+                    </p>
+
+                    <div className="flex flex-wrap items-center gap-3 mt-2">
+                      <Link
+                        href="https://t.me/egoradi"
+                        target="_blank"
+                        className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-[#A6FF00] text-black font-p95 text-[13px] md:text-sm tracking-[0.12em] uppercase hover:bg-white transition-colors no-underline"
+                      >
+                        Обсудить проект
+                        <ArrowRight className="w-4 h-4" strokeWidth={2.2} />
+                      </Link>
+                      <Link
+                        href="#portfolio"
+                        className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 font-p95 text-[13px] md:text-sm tracking-[0.12em] uppercase hover:border-white/50 hover:text-white transition-colors no-underline"
+                      >
+                        Смотреть кейсы
+                        <ArrowRight className="w-4 h-4" strokeWidth={2} />
+                      </Link>
+                    </div>
+                  </div>
+                </div>
               </div>
             </motion.div>
 
-            {/* === TILE 3: CX'24 ЯКОРЬ (col-span-6) — расширенная плитка-награда === */}
+            {/* === TILE 3: НАГРАДА · CX'24 (col-span-4) — линкуем на кейс Газпром Нефть === */}
             <motion.div
               variants={fadeUp}
-              className="col-span-12 md:col-span-6 order-3 md:order-none"
+              className="col-span-12 md:col-span-4 order-3 md:order-none"
             >
               <Link
                 href="/cases/gazprom-neft"
                 aria-label="Открыть кейс Газпром Нефть — CX Awards 2024"
                 className="block h-full no-underline group"
               >
-                <div className="relative h-full min-h-[200px] md:min-h-[240px] rounded-2xl border border-[#C9A66B]/30 bg-gradient-to-br from-[#C9A66B]/[0.08] via-[#C9A66B]/[0.03] to-transparent p-5 md:p-7 flex flex-col justify-between overflow-hidden transition-all duration-300 group-hover:border-[#C9A66B]/60 group-hover:from-[#C9A66B]/[0.12] group-hover:via-[#C9A66B]/[0.05] group-hover:shadow-[0_0_40px_-8px_rgba(201,166,107,0.25)]">
-                  {/* Верхняя мета-строка */}
-                  <div className="flex items-start justify-between gap-3">
-                    <span className="inline-flex items-center gap-2.5 pl-3 pr-3.5 py-1.5 rounded-full border border-[#C9A66B]/30 bg-[#C9A66B]/[0.06]">
-                      <Trophy className="w-3.5 h-3.5 shrink-0 text-[#C9A66B]" strokeWidth={1.75} />
-                      <span className="font-p95 text-[10px] md:text-[11px] tracking-[0.2em] uppercase text-[#C9A66B]/90 leading-none">
-                        Награда · 2024
-                      </span>
+                <div className="relative h-full min-h-[260px] md:min-h-[280px] rounded-2xl border border-[#C9A66B]/30 bg-gradient-to-br from-[#C9A66B]/[0.10] via-[#C9A66B]/[0.04] to-transparent p-5 md:p-6 flex flex-col justify-between gap-4 overflow-hidden transition-all duration-300 group-hover:border-[#C9A66B]/60 group-hover:from-[#C9A66B]/[0.14] group-hover:shadow-[0_0_40px_-8px_rgba(201,166,107,0.28)]">
+                  {/* мягкое золотое свечение справа — намёк на трофей */}
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute -right-10 top-1/2 -translate-y-1/2 w-[180px] h-[180px] rounded-full opacity-60"
+                    style={{
+                      background:
+                        "radial-gradient(circle, rgba(201,166,107,0.30) 0%, rgba(201,166,107,0.10) 35%, rgba(201,166,107,0) 70%)",
+                    }}
+                  />
+
+                  {/* Топ-метка */}
+                  <div className="flex items-start justify-between gap-3 relative z-[1]">
+                    <span className="inline-flex items-center gap-2 font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-[#C9A66B] leading-none">
+                      <Trophy className="w-4 h-4 shrink-0" strokeWidth={1.75} />
+                      Награда · 2024
                     </span>
                     <ArrowUpRight
                       className="w-5 h-5 shrink-0 text-[#C9A66B]/50 opacity-0 -translate-x-1 translate-y-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 group-hover:text-[#C9A66B] transition-all duration-300"
@@ -1136,80 +1155,130 @@ export default function PreviewHome() {
                     />
                   </div>
 
-                  {/* Блок титула */}
-                  <div>
-                    <div className="font-p95 text-[clamp(36px,4.8vw,64px)] uppercase tracking-tight text-white leading-[0.92]">
+                  {/* Тело */}
+                  <div className="relative z-[1]">
+                    <div className="font-p95 text-[clamp(40px,4.6vw,68px)] uppercase tracking-tight text-[#C9A66B] leading-[0.9]">
                       CX&apos;24
                     </div>
-                    <div className="text-[11px] md:text-[13px] tracking-[0.14em] uppercase text-white/75 mt-2">
+                    <div className="text-[12px] md:text-[13px] tracking-[0.14em] uppercase text-white/75 mt-3 font-light">
                       Customer Experience Awards · Winner
                     </div>
-                    <div className="text-[11px] md:text-[12.5px] text-white/50 mt-1.5 leading-relaxed max-w-md">
+                    <div className="text-[13px] md:text-[14px] text-white/55 mt-2.5 leading-[1.55] font-light">
                       «Единое сервисное окно» — корпоративные Госуслуги для сотрудников Газпром&nbsp;Нефти.
                     </div>
                   </div>
-                </div>
-              </Link>
-            </motion.div>
 
-            {/* === TILE 4: 100+ designers (col-span-3) → Ozon (комьюнити-лид) === */}
-            <motion.div
-              variants={fadeUp}
-              className="col-span-6 md:col-span-3 order-4 md:order-none"
-            >
-              <Link
-                href="/cases/ozon"
-                aria-label="Открыть кейс Ozon — комьюнити дизайнеров"
-                className="block h-full no-underline group"
-              >
-                <div className="relative h-full min-h-[200px] md:min-h-[240px] rounded-2xl border border-white/[0.1] bg-white/[0.02] p-5 md:p-6 flex flex-col justify-between overflow-hidden transition-all duration-300 group-hover:border-white/30 group-hover:bg-white/[0.04]">
-                  <div className="flex items-start justify-between gap-3">
-                    <Users className="w-5 h-5 text-white/55 group-hover:text-white/80 transition-colors duration-300" strokeWidth={1.75} />
-                    <ArrowUpRight
-                      className="w-5 h-5 shrink-0 text-white/30 opacity-0 -translate-x-1 translate-y-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 group-hover:text-white/80 transition-all duration-300"
-                      strokeWidth={1.75}
-                    />
-                  </div>
-                  <div>
-                    <div className="font-p95 text-[clamp(28px,3vw,40px)] uppercase tracking-tight text-white leading-none">
-                      100+
-                    </div>
-                    <div className="text-[10px] md:text-[11px] tracking-[0.14em] uppercase text-white/45 mt-1.5">
-                      дизайнеров · комьюнити
-                    </div>
+                  {/* Футер */}
+                  <div className="font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-[#C9A66B]/85 leading-none pt-3.5 border-t border-[#C9A66B]/15 relative z-[1]">
+                    Проект года в сегменте B2E
                   </div>
                 </div>
               </Link>
             </motion.div>
 
-            {/* === TILE 5: 30+ продуктов · Мой МТС платформа (col-span-3) → mts-2024 === */}
+            {/* === TILE 4: ЭКСПЕРТИЗА (col-span-4) — 3 направления, ссылка на секцию #skills === */}
             <motion.div
               variants={fadeUp}
-              className="col-span-6 md:col-span-3 order-5 md:order-none"
+              className="col-span-12 md:col-span-4 order-4 md:order-none"
             >
               <Link
-                href="/cases/mts-2024"
-                aria-label="Открыть кейс МТС — Мой МТС как платформа"
+                href="#skills"
+                aria-label="Перейти к экспертизе"
                 className="block h-full no-underline group"
               >
-                <div className="relative h-full min-h-[200px] md:min-h-[240px] rounded-2xl border border-[#A6FF00]/25 bg-[#A6FF00]/[0.06] p-5 md:p-6 flex flex-col justify-between overflow-hidden transition-all duration-300 group-hover:border-[#A6FF00]/55 group-hover:bg-[#A6FF00]/[0.10] group-hover:shadow-[0_0_40px_-8px_rgba(166,255,0,0.25)]">
-                  <div className="flex items-start justify-between gap-3">
-                    <Layers className="w-5 h-5 text-[#A6FF00] transition-transform duration-300 group-hover:scale-110" strokeWidth={1.75} />
+                <div className="relative h-full min-h-[260px] md:min-h-[280px] rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5 md:p-6 flex flex-col justify-between gap-5 overflow-hidden transition-all duration-300 group-hover:border-[#A6FF00]/40 group-hover:bg-white/[0.04]">
+                  {/* Радар-кольца справа */}
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute -right-16 top-1/2 -translate-y-1/2 w-[260px] h-[260px] opacity-55"
+                    style={{
+                      background:
+                        "repeating-radial-gradient(circle, rgba(166,255,0,0.18) 0 1px, transparent 1px 22px)",
+                    }}
+                  />
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute right-[14px] top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-[#A6FF00] shadow-[0_0_14px_rgba(166,255,0,0.85)]"
+                  />
+
+                  {/* Топ-метка */}
+                  <div className="flex items-start justify-between gap-3 relative z-[1]">
+                    <span className="inline-flex items-center gap-2 font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-[#A6FF00] leading-none">
+                      <Compass className="w-4 h-4 shrink-0" strokeWidth={1.75} />
+                      Экспертиза
+                    </span>
                     <ArrowUpRight
-                      className="w-5 h-5 shrink-0 text-[#A6FF00]/50 opacity-0 -translate-x-1 translate-y-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 group-hover:text-[#A6FF00] transition-all duration-300"
+                      className="w-5 h-5 shrink-0 text-[#A6FF00]/40 opacity-0 -translate-x-1 translate-y-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 group-hover:text-[#A6FF00] transition-all duration-300"
                       strokeWidth={1.75}
                     />
                   </div>
-                  <div>
-                    <div className="font-p95 text-[clamp(28px,3vw,40px)] uppercase tracking-tight text-white leading-none">
-                      30+
-                    </div>
-                    <div className="text-[10px] md:text-[11px] tracking-[0.14em] uppercase text-[#A6FF00]/80 mt-1.5">
-                      Продуктов · Мой МТС
-                    </div>
-                  </div>
+
+                  {/* 3 направления — синхронно с секцией ниже */}
+                  <ul className="space-y-3 md:space-y-3.5 relative z-[1]">
+                    {[
+                      { num: "01", label: "Управление", note: "дизайн-функции" },
+                      { num: "02", label: "Продукт", note: "B2C, B2E, EdTech" },
+                      { num: "03", label: "Ремесло", note: "AI и код, руками" },
+                    ].map((item) => (
+                      <li
+                        key={item.num}
+                        className="flex items-baseline gap-3"
+                      >
+                        <span className="font-p95 text-[10px] md:text-[11px] tracking-[0.2em] uppercase text-[#A6FF00]/55 leading-none w-6 shrink-0">
+                          {item.num}
+                        </span>
+                        <span className="flex-1 leading-tight">
+                          <span className="font-p95 text-[13px] md:text-[14px] tracking-[0.14em] uppercase text-white">
+                            {item.label}
+                          </span>
+                          <span className="block text-[11px] md:text-[12px] text-white/45 font-light leading-snug mt-0.5">
+                            {item.note}
+                          </span>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </Link>
+            </motion.div>
+
+            {/* === TILE 5: В ЦИФРАХ (col-span-4) — три метрики === */}
+            <motion.div
+              variants={fadeUp}
+              className="col-span-12 md:col-span-4 order-5 md:order-none"
+            >
+              <div className="relative h-full min-h-[260px] md:min-h-[280px] rounded-2xl border border-[#A6FF00]/22 bg-[#A6FF00]/[0.05] p-5 md:p-6 flex flex-col justify-between gap-4 overflow-hidden">
+                {/* Топ-метка */}
+                <div className="flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4 shrink-0 text-[#A6FF00]" strokeWidth={1.75} />
+                  <span className="font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-[#A6FF00] leading-none">
+                    В цифрах
+                  </span>
+                </div>
+
+                {/* Три цифры в ряд */}
+                <div className="grid grid-cols-3 gap-3 md:gap-4">
+                  {[
+                    { value: "30+", label: "продуктов запущено" },
+                    { value: "9+", label: "лет опыта" },
+                    { value: "200+", label: "дизайнеров в нетворке" },
+                  ].map((item, idx) => (
+                    <div
+                      key={item.value}
+                      className={`flex flex-col gap-2 ${
+                        idx > 0 ? "border-l border-white/10 pl-3 md:pl-4" : ""
+                      }`}
+                    >
+                      <div className="font-p95 text-[clamp(28px,3.2vw,44px)] uppercase tracking-tight text-[#A6FF00] leading-none">
+                        {item.value}
+                      </div>
+                      <div className="text-[11px] md:text-[12px] tracking-[0.1em] uppercase text-white/55 leading-[1.35] font-light">
+                        {item.label}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </motion.div>
           </div>
         </motion.div>
@@ -1280,25 +1349,6 @@ export default function PreviewHome() {
           viewport={viewport}
           variants={stagger}
         >
-          <motion.div
-            variants={fadeUp}
-            className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8 md:mb-10"
-          >
-            <div>
-              <SectionLabel>ИЗБРАННЫЕ РАБОТЫ</SectionLabel>
-              <h2 className="font-p95 text-[clamp(32px,5vw,64px)] uppercase mt-2 leading-[0.92]">
-                ПРОЕКТЫ<span className="text-[#A6FF00]">.</span>
-              </h2>
-            </div>
-            <Link
-              href="/experiments"
-              className="inline-flex items-center gap-2 text-[12px] md:text-[13px] tracking-[0.1em] uppercase text-white/55 hover:text-white transition-colors no-underline group self-start md:self-end"
-            >
-              Эксперименты · код · шейдеры
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" strokeWidth={2} />
-            </Link>
-          </motion.div>
-
           <div className="grid md:grid-cols-3 gap-4 md:gap-5">
             <motion.div variants={fadeUp} className="md:col-span-2 md:row-span-2">
               <ProjectCard project={workProjects[0]} index={0} featured />
@@ -1371,7 +1421,7 @@ export default function PreviewHome() {
         >
           {/* Заголовок — meta + мощный слоган */}
           <motion.div variants={fadeUp} className="mb-10 md:mb-14 max-w-4xl">
-            <SectionLabel>УСЛУГИ &amp; ЭКСПЕРТИЗА</SectionLabel>
+            <SectionLabel>ЭКСПЕРТИЗА</SectionLabel>
           </motion.div>
 
           {/* 3 плитки side-by-side — статичный бенто */}

@@ -79,7 +79,7 @@ export default function Header() {
       />
       <header
         role="banner"
-        className={`fixed top-0 left-0 right-0 z-[100] flex justify-between items-center px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-4 md:py-5 backdrop-blur-xl border-b transition-all duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-[100] flex justify-between items-center px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-4 md:py-5 backdrop-blur-xl border-b transition-all duration-300 relative ${
           headerSolid
             ? "bg-black/85 border-white/[0.06]"
             : "bg-black/50 border-transparent"
@@ -88,12 +88,18 @@ export default function Header() {
         <Link
           href="/"
           aria-label="Главная"
-          className="font-p95 text-sm text-white no-underline tracking-wider hover:opacity-70 transition-opacity"
+          className="inline-flex items-center gap-3 md:gap-3.5 no-underline hover:opacity-80 transition-opacity"
         >
-          ЕШ
+          <span className="font-p95 text-[12px] md:text-[13px] uppercase tracking-[0.14em] text-white">
+            Егор Шугаев
+          </span>
+          <span aria-hidden className="hidden md:inline h-6 w-px bg-white/15 shrink-0" />
+          <span className="hidden md:inline font-p95 text-[12px] md:text-[13px] uppercase tracking-[0.14em] text-white/55">
+            Дизайн-директор
+          </span>
         </Link>
 
-        <nav aria-label="Основная навигация" className="hidden md:flex gap-6">
+        <nav aria-label="Основная навигация" className="hidden md:flex gap-6 absolute left-1/2 -translate-x-1/2">
           {navLinks.map((link) => {
             // Определяем активный пункт: для якорей — по активной секции на главной,
             // для внешних страниц (/experiments, /speaking, /mentoring) — по pathname
@@ -127,13 +133,6 @@ export default function Header() {
             <FileDown className="w-3 h-3" strokeWidth={2} />
             CV
           </Link>
-          <span className="inline-flex items-center gap-1.5 text-[9px] tracking-[0.12em] uppercase text-white/55">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#A6FF00]" />
-            </span>
-            Открыт к офферам
-          </span>
         </div>
 
         {/* Mobile burger — 44px touch target */}

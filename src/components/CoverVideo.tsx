@@ -69,6 +69,7 @@ export function CardCoverVideo({
   pauseAt,
   className,
   hoverTarget,
+  onPlayingChange,
 }: {
   src: string;
   poster?: string;
@@ -77,6 +78,9 @@ export function CardCoverVideo({
   className?: string;
   /** Внешний элемент, по hover которого надо реагировать (например, обёртка-Link). Пробрасывается через ref. */
   hoverTarget?: React.RefObject<HTMLElement | null>;
+  /** Колбэк смены состояния play/pause/ended. Нужен родителю чтобы держать
+   *  cover видимым пока видео ещё проигрывается (после ухода ховера). */
+  onPlayingChange?: (isPlaying: boolean) => void;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
   /** Был ли уже hover-цикл. Нужно чтобы на init НЕ запускать leave-логику. */
@@ -84,7 +88,23 @@ export function CardCoverVideo({
 
   useEffect(() => {
     const v = ref.current;
-    if (!v || pauseAt === undefined) return;
+    if (!v) return;
+
+    // Колбэки play/pause/ended — родитель использует их для удержания
+    // прозрачности cover пока видео реально играет.
+    const onPlay = () => onPlayingChange?.(true);
+    const onPauseOrEnded = () => onPlayingChange?.(false);
+    v.addEventListener("play", onPlay);
+    v.addEventListener("pause", onPauseOrEnded);
+    v.addEventListener("ended", onPauseOrEnded);
+
+    if (pauseAt === undefined) {
+      return () => {
+        v.removeEventListener("play", onPlay);
+        v.removeEventListener("pause", onPauseOrEnded);
+        v.removeEventListener("ended", onPauseOrEnded);
+      };
+    }
 
     /** Гарантированно поставить на pauseAt и встать. */
     const seekAndPause = () => {
@@ -140,12 +160,15 @@ export function CardCoverVideo({
     return () => {
       v.removeEventListener("loadedmetadata", seekAndPause);
       v.removeEventListener("timeupdate", onTimeUpdateEnter);
+      v.removeEventListener("play", onPlay);
+      v.removeEventListener("pause", onPauseOrEnded);
+      v.removeEventListener("ended", onPauseOrEnded);
       if (target) {
         target.removeEventListener("mouseenter", onEnter);
         target.removeEventListener("mouseleave", onLeave);
       }
     };
-  }, [pauseAt, hoverTarget]);
+  }, [pauseAt, hoverTarget, onPlayingChange]);
 
   const usePauseMode = pauseAt !== undefined;
   return (

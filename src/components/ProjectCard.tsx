@@ -6,16 +6,29 @@ import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { Project } from "@/data/projects";
 import { CardCoverVideo } from "@/components/CoverVideo";
-import type { RefObject } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 
-/** Фон карточки: видео-обложка > картинка-обложка > просто coverColor. */
+/**
+ * Фон карточки: видео-обложка > картинка-обложка > просто coverColor.
+ * По умолчанию полностью скрыт (opacity-0), плавно появляется когда
+ * `active` = true. `active` управляется родителем и учитывает hover,
+ * мобильный «фокус» и фактическое проигрывание видео.
+ */
 function CoverMedia({
   project,
   hoverTarget,
+  active,
+  onVideoPlayingChange,
 }: {
   project: Project;
   hoverTarget?: RefObject<HTMLElement | null>;
+  /** Показать cover (hover/mobile-focus/идёт play-out). */
+  active: boolean;
+  /** Колбэк play/pause видео — родитель использует, чтобы держать cover
+   *  видимым пока видео ещё доигрывается после ухода курсора. */
+  onVideoPlayingChange?: (isPlaying: boolean) => void;
 }) {
+  const baseTransition = "transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]";
   if (project.coverVideo) {
     return (
       <CardCoverVideo
@@ -23,7 +36,10 @@ function CoverMedia({
         poster={project.coverImage}
         pauseAt={project.coverVideoPauseAt}
         hoverTarget={hoverTarget}
-        className="absolute inset-0 w-full h-full object-cover opacity-60 z-0"
+        onPlayingChange={onVideoPlayingChange}
+        className={`absolute inset-0 w-full h-full object-cover z-0 ${baseTransition} ${
+          active ? "opacity-60" : "opacity-0"
+        }`}
       />
     );
   }
@@ -34,11 +50,61 @@ function CoverMedia({
         alt=""
         fill
         sizes="(max-width: 768px) 100vw, 50vw"
-        className="object-cover opacity-50 z-0"
+        className={`object-cover z-0 ${baseTransition} ${
+          active ? "opacity-50" : "opacity-0"
+        }`}
       />
     );
   }
   return null;
+}
+
+/**
+ * Хук: возвращает true, когда элемент пересекает «полосу фокуса» в центре
+ * viewport на мобильной ширине. На десктопе всегда false (там работает hover).
+ */
+function useMobileFocus(ref: RefObject<HTMLElement | null>): boolean {
+  const [active, setActive] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mql = window.matchMedia("(max-width: 767px)");
+    const el = ref.current;
+    if (!el) return;
+
+    let io: IntersectionObserver | null = null;
+
+    const setup = () => {
+      io?.disconnect();
+      if (!mql.matches) {
+        setActive(false);
+        return;
+      }
+      io = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            setActive(entry.isIntersecting);
+          }
+        },
+        {
+          // Полоса 50%—65% от верха viewport: карточка активна, когда её
+          // bounding-box пересекает эту узкую зону чуть ниже середины.
+          rootMargin: "-50% 0px -35% 0px",
+          threshold: 0,
+        }
+      );
+      io.observe(el);
+    };
+
+    setup();
+    mql.addEventListener("change", setup);
+    return () => {
+      mql.removeEventListener("change", setup);
+      io?.disconnect();
+    };
+  }, [ref]);
+
+  return active;
 }
 
 interface ProjectCardProps {
@@ -125,9 +191,53 @@ export default function ProjectCard({
     </div>
   );
 
-  // Subtle bottom floor — достаточный для читаемости без пересвета
+  // Ref для hover/IO. Hover отслеживаем сами в JS, потому что нужно
+  // удерживать cover видимым пока видео доигрывается после mouseleave.
+  const articleRef = useRef<HTMLElement>(null);
+  const mobileActive = useMobileFocus(articleRef);
+  const [hovering, setHovering] = useState(false);
+  const [videoPlaying, setVideoPlaying] = useState(false);
+
+  // mouseenter/mouseleave на контейнер карточки.
+  useEffect(() => {
+    const el = articleRef.current;
+    if (!el) return;
+    const onEnter = () => setHovering(true);
+    const onLeave = () => setHovering(false);
+    el.addEventListener("mouseenter", onEnter);
+    el.addEventListener("mouseleave", onLeave);
+    return () => {
+      el.removeEventListener("mouseenter", onEnter);
+      el.removeEventListener("mouseleave", onLeave);
+    };
+  }, []);
+
+  // Cover виден когда: 1) курсор над карточкой, 2) карточка в фокусе
+  // мобильного viewport, 3) видео ещё проигрывается (play-out после ухода
+  // курсора, чтобы пользователь увидел концовку до затухания).
+  const coverActive = hovering || mobileActive || videoPlaying;
+
+  /** Тёмная база — карточка по умолчанию чёрная. Бренд-цвет проявляется
+   * вместе с cover. */
+  const CoverTint = (
+    <div
+      aria-hidden
+      className={`absolute inset-0 z-0 transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        coverActive ? "opacity-100" : "opacity-0"
+      }`}
+      style={{ background: project.coverColor }}
+    />
+  );
+
+  // Bottom floor — градиент-поднос для читаемости текста поверх cover.
+  // Появляется вместе с cover. До hover/фокуса карточка остаётся чисто чёрной
+  // без каких-либо переходов снизу вверх.
   const GradientFloor = (
-    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent pointer-events-none z-[1]" />
+    <div
+      className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent pointer-events-none z-[1] transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        coverActive ? "opacity-100" : "opacity-0"
+      }`}
+    />
   );
 
   // === FEATURED — крупная hero-карточка (2×2 в сетке) ===
@@ -135,15 +245,14 @@ export default function ProjectCard({
     return (
       <Link href={`/cases/${project.slug}`} className="no-underline group h-full block">
         <motion.article
+          ref={articleRef}
           whileHover={{ y: -4 }}
           transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          className="relative rounded-2xl overflow-hidden bg-[#0a0a0a] border border-white/[0.06] group-hover:border-white/20 transition-colors duration-300 h-full"
+          className="relative rounded-2xl overflow-hidden bg-[#050506] border border-white/[0.06] group-hover:border-white/20 transition-colors duration-300 h-full"
         >
-          <div
-            className="relative h-full min-h-[340px] md:min-h-[480px] overflow-hidden"
-            style={{ background: project.coverColor }}
-          >
-            <CoverMedia project={project} />
+          <div className="relative h-full min-h-[360px] md:min-h-[480px] overflow-hidden">
+            {CoverTint}
+            <CoverMedia project={project} active={coverActive} onVideoPlayingChange={setVideoPlaying} />
             {GradientFloor}
             {HoverArrow}
             {BottomContent}
@@ -158,15 +267,14 @@ export default function ProjectCard({
     return (
       <Link href={`/cases/${project.slug}`} className="no-underline group h-full block">
         <motion.article
+          ref={articleRef}
           whileHover={{ y: -4 }}
           transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          className="relative rounded-2xl overflow-hidden bg-[#0a0a0a] border border-white/[0.06] group-hover:border-white/20 transition-colors duration-300 h-full"
+          className="relative rounded-2xl overflow-hidden bg-[#050506] border border-white/[0.06] group-hover:border-white/20 transition-colors duration-300 h-full"
         >
-          <div
-            className="relative h-full min-h-[280px] md:min-h-[360px] overflow-hidden"
-            style={{ background: project.coverColor }}
-          >
-            <CoverMedia project={project} />
+          <div className="relative h-full min-h-[360px] md:min-h-[360px] overflow-hidden">
+            {CoverTint}
+            <CoverMedia project={project} active={coverActive} onVideoPlayingChange={setVideoPlaying} />
             {GradientFloor}
             {HoverArrow}
             {BottomContent}
@@ -180,15 +288,14 @@ export default function ProjectCard({
   return (
     <Link href={`/cases/${project.slug}`} className="no-underline group h-full block">
       <motion.article
+        ref={articleRef}
         whileHover={{ y: -4 }}
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        className="relative rounded-2xl overflow-hidden bg-[#0a0a0a] border border-white/[0.06] group-hover:border-white/20 h-full transition-colors duration-300"
+        className="relative rounded-2xl overflow-hidden bg-[#050506] border border-white/[0.06] group-hover:border-white/20 h-full transition-colors duration-300"
       >
-        <div
-          className="relative h-full min-h-[240px] md:min-h-[320px] overflow-hidden"
-          style={{ background: project.coverColor }}
-        >
-          <CoverMedia project={project} />
+        <div className="relative h-full min-h-[360px] md:min-h-[320px] overflow-hidden">
+          {CoverTint}
+          <CoverMedia project={project} active={coverActive} onVideoPlayingChange={setVideoPlaying} />
           {GradientFloor}
           {HoverArrow}
           {BottomContent}
