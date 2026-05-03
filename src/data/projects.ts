@@ -710,11 +710,8 @@ export const projects: Project[] = [
     coverImage: "/images/mentoring/pillsdrop-poster.jpg",
     coverVideo: "/videos/pillsdrop.mp4",
     coverVideoPauseAt: 2.86,
-    screenshots: [
-      { src: "/images/mentorship/01-mentee-overview.png", label: "Страница менти", caption: "Главная страница менти в темплейте: фокус-цели, следующая сессия, навигация. Все имена в публичном темплейте заменены на собирательные." },
-      { src: "/images/mentorship/02-sessions-list.png", label: "Сессии и план", caption: "Прогресс по линиям роста, лента сессий, артефакты «Договорённости» и «Что получается». Заполняет агент после каждой сессии." },
-      { src: "/images/mentorship/03-artifacts-bottom.png", label: "Артефакты и контакты", caption: "Низ страницы: артефакты, форма «Накидывай мысли и вопросы» с быстрыми тегами и кнопкой в Telegram, блок «Менторское пространство» с автором." },
-    ],
+    // Скрины темплейта временно убраны: html-to-image капчура поехала по вёрстке
+    // (формы, теги наезжают). Проще пересобрать вручную, чем чинить.
     sections: [
       {
         title: "Менторство как практика",
