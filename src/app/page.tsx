@@ -1359,28 +1359,19 @@ export default function PreviewHome() {
           viewport={viewport}
           variants={stagger}
         >
-          <div className="grid md:grid-cols-3 gap-4 md:gap-5">
-            <motion.div variants={fadeUp} className="md:col-span-2 md:row-span-2">
-              <ProjectCard project={workProjects[0]} index={0} featured />
-            </motion.div>
-
-            {workProjects[1] && (
-              <motion.div variants={fadeUp}>
-                <ProjectCard project={workProjects[1]} index={1} />
-              </motion.div>
+          {/* Топ-4 кейса — равные плитки 2×2 на десктопе */}
+          <div className="grid md:grid-cols-2 gap-4 md:gap-5">
+            {workProjects.slice(0, 4).map((p, i) =>
+              p ? (
+                <motion.div key={p.slug ?? i} variants={fadeUp}>
+                  <ProjectCard project={p} index={i} />
+                </motion.div>
+              ) : null,
             )}
-            {workProjects[2] && (
-              <motion.div variants={fadeUp}>
-                <ProjectCard project={workProjects[2]} index={2} />
-              </motion.div>
-            )}
+          </div>
 
-            {workProjects[3] && (
-              <motion.div variants={fadeUp} className="md:col-span-3">
-                <ProjectCard project={workProjects[3]} index={3} wide />
-              </motion.div>
-            )}
-
+          {/* Хвост: ещё кейс + ссылка на эксперименты + широкий нижний кейс */}
+          <div className="grid md:grid-cols-3 gap-4 md:gap-5 mt-4 md:mt-5">
             {workProjects[4] && (
               <motion.div variants={fadeUp} className="md:col-span-2">
                 <ProjectCard project={workProjects[4]} index={4} wide />
