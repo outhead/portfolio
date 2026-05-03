@@ -29,7 +29,7 @@ const ENCRYPTED = caesarShift(ORIGINAL, CIPHER_SHIFT);
 const SHIFT_MAX = 70;
 
 // На особой позиции SECRET_SHIFT показываем бонусную фразу с буквами наоборот.
-const SECRET_SHIFT = 46;
+const SECRET_SHIFT = 61;
 const SECRET_TEXT_RAW = "21 мая, здесь будет новая пасхалка";
 const SECRET_TEXT_REVERSED = [...SECRET_TEXT_RAW].reverse().join("");
 
