@@ -302,13 +302,13 @@ export default function FinalCTA() {
 
   return (
     <section className="relative z-[1] bg-black border-t border-white/[0.06]">
-      <div className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-20">
+      <div className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-10 md:py-14">
         <motion.div
           initial="hidden"
           whileInView="show"
           viewport={viewport}
           variants={stagger}
-          className="relative rounded-3xl border border-white/[0.1] bg-gradient-to-br from-[#0c0c0c] via-[#0a0a0a] to-[#080808] overflow-hidden p-8 md:p-14 lg:p-20"
+          className="relative rounded-3xl border border-white/[0.1] bg-gradient-to-br from-[#0c0c0c] via-[#0a0a0a] to-[#080808] overflow-hidden p-7 md:p-10 lg:p-14"
         >
           {/* Мягкое свечение внутри карточки */}
           <div
@@ -320,7 +320,7 @@ export default function FinalCTA() {
             }}
           />
 
-          <motion.div variants={fadeUp} className="relative mb-8 md:mb-10 flex items-center gap-3">
+          <motion.div variants={fadeUp} className="relative mb-5 md:mb-7 flex items-center gap-3">
             <span className="font-p95 text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-[#A6FF00]">
               [ Без церемоний ]
             </span>
@@ -332,7 +332,7 @@ export default function FinalCTA() {
           </motion.div>
 
           {/* Заголовок — меняется по достижении порогов */}
-          <div className="relative min-h-[clamp(180px,30vw,420px)]">
+          <div className="relative min-h-[clamp(120px,16vw,240px)]">
             <AnimatePresence mode="wait">
               <motion.h2
                 key={stage.id}
@@ -361,7 +361,7 @@ export default function FinalCTA() {
           {/* Кнопка-счётчик */}
           <motion.div
             variants={fadeUp}
-            className="relative mt-10 md:mt-14 flex flex-wrap items-center gap-5 md:gap-7"
+            className="relative mt-6 md:mt-8 flex flex-wrap items-center gap-5 md:gap-7"
           >
             <motion.button
               type="button"
@@ -408,7 +408,7 @@ export default function FinalCTA() {
           {/* Telegram + все каналы */}
           <motion.div
             variants={fadeUp}
-            className="relative mt-10 md:mt-12 flex flex-wrap items-center gap-3"
+            className="relative mt-6 md:mt-8 flex flex-wrap items-center gap-3"
           >
             <Link
               href="https://t.me/egoradi"
@@ -431,7 +431,7 @@ export default function FinalCTA() {
 
           <motion.p
             variants={fadeUp}
-            className="relative mt-8 md:mt-10 text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-white/40 max-w-md"
+            className="relative mt-5 md:mt-6 text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-white/40 max-w-md"
           >
             Отвечаю быстро. Без питчей и «созвонимся обсудить». Пиши сразу, что нужно.
           </motion.p>
