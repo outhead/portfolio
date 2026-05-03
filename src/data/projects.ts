@@ -115,7 +115,6 @@ export const projects: Project[] = [
       { value: "4", label: "публичных запуска голосовой за 2025" },
       { value: "впервые", label: "AI-шумоподавление на рынке моб. связи" },
       { value: ">30", label: "продуктов в Мой МТС" },
-      { value: "Markswebb", label: "топ экосистемных приложений РФ" },
     ],
     type: "work",
     coverColor: "#0E0E0E",
@@ -141,7 +140,6 @@ export const projects: Project[] = [
           { value: "~200", label: "человек в команде Мой МТС" },
           { value: ">30", label: "экосистемных продуктов в приложении" },
           { value: "5", label: "бизнесов на одной витрине" },
-          { value: "Markswebb", label: "топ экосистемных приложений РФ" },
         ],
       },
       {
