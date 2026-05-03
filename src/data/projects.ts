@@ -159,7 +159,6 @@ export const projects: Project[] = [
           { date: "24.10.2025", title: "AI-шумоподавление", note: "Заявлено как первое на рынке мобильной связи" },
         ],
         screenshots: [
-          { src: "/images/mts/voice/voice-demo-1.mp4", kind: "video", label: "ДЕМО — AI СЕКРЕТАРЬ В ЗВОНКЕ", poster: "/images/mts/voice/voice-secretary-spam-spa.png" },
           { src: "/images/mts/voice/voice-demo-2.mp4", kind: "video", label: "ДЕМО — ВТОРОЙ СЦЕНАРИЙ", poster: "/images/mts/voice/voice-secretary-spam-vocal.png" },
           { src: "/images/mts/voice/voice-recording-landing.png", label: "ЗАПИСЬ РАЗГОВОРОВ — ЛЕНДИНГ" },
           { src: "/images/mts/voice/voice-recording-active.png", label: "ЗАПИСЬ — ПОДКЛЮЧЕНО" },
