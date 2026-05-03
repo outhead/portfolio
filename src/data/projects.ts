@@ -178,7 +178,6 @@ export const projects: Project[] = [
           { src: "/images/mts/voice-new/screen-recording-3.png", label: "ЗАПИСЬ — СОСТОЯНИЕ 3" },
           { src: "/images/mts/voice-new/screen-summary-1.png", label: "САММАРИ РАЗГОВОРА" },
           { src: "/images/mts/voice-new/screen-summary-2.png", label: "САММАРИ — ВАРИАНТ 2" },
-          { src: "/images/mts/voice-new/screen-summary-3.png", label: "САММАРИ — ВАРИАНТ 3" },
         ],
         links: [
           { label: "AI-шумоподавление — впервые на рынке моб. связи (24.10.2025)", url: "https://golicino.mts.ru/about/media-centr/soobshheniya-kompanii/novosti-mts-v-rossii-i-mire/2025-10-24/mts-pervoj-na-rynke-zapuskaet-funkciyu-ai-shumopodavleniya-v-golosovyh-vyzovah" },
