@@ -1,0 +1,450 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion, type Variants } from "framer-motion";
+import confetti from "canvas-confetti";
+import Link from "next/link";
+import { ArrowRight, Send } from "lucide-react";
+
+// ───────────────────────────────────────────────────────────
+// Глобальный счётчик через abacus.jasoncameron.dev (без своего бэка).
+// На каждый клик — fire-and-forget /hit, локально считаем оптимистично,
+// раз в 3 секунды синхронизируемся с сервером (берём max).
+// ───────────────────────────────────────────────────────────
+const NS = "shugaev-portfolio";
+const KEY = "scroll-thanks";
+const GET_URL = `https://abacus.jasoncameron.dev/get/${NS}/${KEY}`;
+const HIT_URL = `https://abacus.jasoncameron.dev/hit/${NS}/${KEY}`;
+
+// ───────────────────────────────────────────────────────────
+// Easter-egg тексты на разных порогах сессии
+// ───────────────────────────────────────────────────────────
+type Stage = {
+  id: string;
+  threshold: number;
+  // Заголовок может быть строкой (рендерим в одну/несколько строк) либо JSX
+  headline: string;
+  // accent — кусок, который красится в лайм
+  accent?: string;
+  // Дополнительная пасхалка (показываем под кнопкой) — на финале
+  bonus?: { label: string; href: string };
+};
+
+const STAGES: Stage[] = [
+  {
+    id: "0",
+    threshold: 0,
+    headline: "Уау, спасибо что досюда долистали — вот вам кнопочка",
+    accent: ".",
+  },
+  {
+    id: "15",
+    threshold: 15,
+    headline: "Привет, СДВГ. Помни: слабости всегда можно обратить в силу",
+    accent: ".",
+  },
+  {
+    id: "30",
+    threshold: 30,
+    headline: "Можно остановиться. Но зачем",
+    accent: ".",
+  },
+  {
+    id: "46",
+    threshold: 46,
+    headline: "Я рад, что тебе нравится эта кнопка. Возможно тебе понравится и это",
+    accent: " →",
+    bonus: {
+      label: "Открыть подсказку",
+      href: "https://portfolio-egors-projects-baaaa1ca.vercel.app/",
+    },
+  },
+];
+
+function pickStage(n: number): Stage {
+  // Берём максимальный порог, который преодолён
+  let active = STAGES[0];
+  for (const s of STAGES) {
+    if (n >= s.threshold) active = s;
+  }
+  return active;
+}
+
+function pluralize(n: number): string {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return "раз";
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return "раза";
+  return "раз";
+}
+
+// ───────────────────────────────────────────────────────────
+// Фейерверки — несколько случайных паттернов из разных мест экрана
+// ───────────────────────────────────────────────────────────
+const COLORS = ["#A6FF00", "#C9A66B", "#ffffff", "#A6FF00", "#FFD60A"];
+
+function rand(min: number, max: number): number {
+  return Math.random() * (max - min) + min;
+}
+
+function fireRandom() {
+  // Выбираем один из 6 паттернов случайно
+  const pattern = Math.floor(Math.random() * 6);
+  const colors = COLORS;
+
+  switch (pattern) {
+    case 0: {
+      // Снизу слева ↗
+      confetti({
+        particleCount: 50,
+        angle: rand(50, 70),
+        spread: 60,
+        origin: { x: rand(0, 0.2), y: rand(0.85, 1) },
+        colors,
+        startVelocity: 60,
+        scalar: 0.95,
+      });
+      return;
+    }
+    case 1: {
+      // Снизу справа ↖
+      confetti({
+        particleCount: 50,
+        angle: rand(110, 130),
+        spread: 60,
+        origin: { x: rand(0.8, 1), y: rand(0.85, 1) },
+        colors,
+        startVelocity: 60,
+        scalar: 0.95,
+      });
+      return;
+    }
+    case 2: {
+      // Из случайной точки в центральной зоне — широкий взрыв
+      confetti({
+        particleCount: 80,
+        spread: 360,
+        origin: { x: rand(0.25, 0.75), y: rand(0.3, 0.7) },
+        colors,
+        startVelocity: 35,
+        scalar: 1,
+      });
+      return;
+    }
+    case 3: {
+      // Сверху падает дождь — 3 быстрых залпа
+      const xs = [rand(0.1, 0.4), rand(0.4, 0.7), rand(0.6, 0.9)];
+      xs.forEach((x, i) =>
+        setTimeout(
+          () =>
+            confetti({
+              particleCount: 30,
+              angle: 270,
+              spread: 40,
+              origin: { x, y: -0.05 },
+              colors,
+              startVelocity: 25,
+              gravity: 1.2,
+              scalar: 0.9,
+            }),
+          i * 80,
+        ),
+      );
+      return;
+    }
+    case 4: {
+      // Двойной залп с краёв одновременно
+      confetti({
+        particleCount: 35,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0, y: 0.7 },
+        colors,
+        startVelocity: 55,
+      });
+      confetti({
+        particleCount: 35,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1, y: 0.7 },
+        colors,
+        startVelocity: 55,
+      });
+      return;
+    }
+    default: {
+      // Точечный «звёздный» взрыв около курсора (центр экрана как fallback)
+      confetti({
+        particleCount: 60,
+        spread: 100,
+        origin: { x: rand(0.2, 0.8), y: rand(0.2, 0.8) },
+        colors,
+        startVelocity: 30,
+        scalar: 1.1,
+        ticks: 80,
+      });
+    }
+  }
+}
+
+function fireMilestone() {
+  // Особый «вау-залп» при достижении порога — 3 одновременных взрыва
+  const colors = COLORS;
+  confetti({
+    particleCount: 100,
+    angle: 60,
+    spread: 80,
+    origin: { x: 0, y: 0.8 },
+    colors,
+    startVelocity: 70,
+  });
+  confetti({
+    particleCount: 100,
+    angle: 120,
+    spread: 80,
+    origin: { x: 1, y: 0.8 },
+    colors,
+    startVelocity: 70,
+  });
+  confetti({
+    particleCount: 150,
+    spread: 360,
+    origin: { x: 0.5, y: 0.5 },
+    colors,
+    startVelocity: 45,
+    scalar: 1.2,
+  });
+}
+
+// ───────────────────────────────────────────────────────────
+// Variants для motion
+// ───────────────────────────────────────────────────────────
+const fadeUp: Variants = {
+  hidden: { opacity: 0, y: 24 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+};
+
+const stagger: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
+};
+
+const viewport = { once: true, amount: 0.2 };
+
+// ───────────────────────────────────────────────────────────
+
+export default function FinalCTA() {
+  const [globalCount, setGlobalCount] = useState<number | null>(null);
+  const [sessionCount, setSessionCount] = useState(0);
+  const [pressing, setPressing] = useState(false);
+  const lastStageRef = useRef<string>("0");
+  const reduced = useReducedMotion();
+
+  // Подгружаем глобальный счётчик при маунте + ресинк раз в 5 сек
+  useEffect(() => {
+    let cancelled = false;
+    const load = () =>
+      fetch(GET_URL, { cache: "no-store" })
+        .then((r) => r.json())
+        .then((data: { value?: number }) => {
+          if (!cancelled && typeof data.value === "number") {
+            setGlobalCount((prev) =>
+              prev == null ? data.value! : Math.max(prev, data.value!),
+            );
+          }
+        })
+        .catch(() => {
+          if (!cancelled) setGlobalCount((prev) => prev ?? 0);
+        });
+    load();
+    const id = setInterval(load, 5000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, []);
+
+  const stage = useMemo(() => pickStage(sessionCount), [sessionCount]);
+
+  // Спецзалп при переходе на новый stage
+  useEffect(() => {
+    if (stage.id !== lastStageRef.current) {
+      // первая инициализация (id "0") — пропускаем
+      if (lastStageRef.current !== "0" || stage.id !== "0") {
+        if (stage.id !== "0" && !reduced) fireMilestone();
+      }
+      lastStageRef.current = stage.id;
+    }
+  }, [stage.id, reduced]);
+
+  const onClick = useCallback(() => {
+    setPressing(true);
+    setTimeout(() => setPressing(false), 120);
+
+    // Локальные счётчики — мгновенно
+    setSessionCount((c) => c + 1);
+    setGlobalCount((c) => (c == null ? 1 : c + 1));
+
+    // Фейерверк
+    if (!reduced) fireRandom();
+
+    // Серверный hit fire-and-forget
+    fetch(HIT_URL, { cache: "no-store" }).catch(() => {
+      /* ignore network errors — оптимистичный счётчик уже сработал */
+    });
+  }, [reduced]);
+
+  return (
+    <section className="relative z-[1] bg-black border-t border-white/[0.06]">
+      <div className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-20">
+        <motion.div
+          initial="hidden"
+          whileInView="show"
+          viewport={viewport}
+          variants={stagger}
+          className="relative rounded-3xl border border-white/[0.1] bg-gradient-to-br from-[#0c0c0c] via-[#0a0a0a] to-[#080808] overflow-hidden p-8 md:p-14 lg:p-20"
+        >
+          {/* Мягкое свечение внутри карточки */}
+          <div
+            aria-hidden
+            className="absolute inset-0 pointer-events-none opacity-80"
+            style={{
+              background:
+                "radial-gradient(ellipse 60% 40% at 50% 65%, rgba(166,255,0,0.12), transparent 65%), radial-gradient(ellipse 40% 30% at 85% 15%, rgba(201,166,107,0.14), transparent 70%)",
+            }}
+          />
+
+          <motion.div variants={fadeUp} className="relative mb-8 md:mb-10 flex items-center gap-3">
+            <span className="font-p95 text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-[#A6FF00]">
+              [ Без церемоний ]
+            </span>
+            {sessionCount > 0 && (
+              <span className="font-p95 text-[10px] md:text-[11px] tracking-[0.18em] uppercase text-white/30 tabular-nums">
+                · сессия: {sessionCount}
+              </span>
+            )}
+          </motion.div>
+
+          {/* Заголовок — меняется по достижении порогов */}
+          <div className="relative min-h-[clamp(180px,30vw,420px)]">
+            <AnimatePresence mode="wait">
+              <motion.h2
+                key={stage.id}
+                initial={{ opacity: 0, y: 18, filter: "blur(8px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, y: -10, filter: "blur(8px)" }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute inset-0 font-p95 text-[clamp(32px,6.5vw,96px)] leading-[0.98] uppercase tracking-tight max-w-[1400px] text-white"
+              >
+                {stage.headline}
+                {stage.accent ? (
+                  <span className="text-[#A6FF00]">{stage.accent}</span>
+                ) : null}
+              </motion.h2>
+            </AnimatePresence>
+          </div>
+
+          {/* Кнопка-счётчик */}
+          <motion.div
+            variants={fadeUp}
+            className="relative mt-10 md:mt-14 flex flex-wrap items-center gap-5 md:gap-7"
+          >
+            <motion.button
+              type="button"
+              onClick={onClick}
+              animate={
+                reduced
+                  ? undefined
+                  : {
+                      // К 30+ кнопка слегка дрожит, к 46+ — заметно
+                      x:
+                        sessionCount >= 46
+                          ? [0, -1.2, 1, -0.6, 0]
+                          : sessionCount >= 30
+                          ? [0, -0.6, 0.4, 0]
+                          : 0,
+                    }
+              }
+              transition={
+                sessionCount >= 30
+                  ? { duration: 0.35, repeat: Infinity, repeatType: "loop", ease: "linear" }
+                  : { duration: 0 }
+              }
+              whileTap={{ scale: 0.92 }}
+              className={`group relative inline-flex items-center justify-center px-9 py-5 md:px-11 md:py-6 rounded-full bg-[#A6FF00] text-black font-p95 text-sm md:text-[15px] tracking-[0.16em] uppercase select-none shadow-[0_0_0_0_rgba(166,255,0,0)] hover:shadow-[0_0_60px_-10px_rgba(166,255,0,0.55)] transition-shadow ${
+                pressing ? "scale-[0.94]" : "scale-100"
+              }`}
+              aria-label="Нажать"
+            >
+              <span className="relative">Нажать</span>
+            </motion.button>
+
+            <div className="inline-flex items-baseline gap-2 font-p95">
+              <span className="text-[clamp(28px,4.5vw,52px)] leading-none text-white tabular-nums">
+                {globalCount == null ? "—" : globalCount.toLocaleString("ru-RU")}
+              </span>
+              <span className="text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-white/45">
+                {globalCount == null
+                  ? "загружаем"
+                  : `${pluralize(globalCount)} нажали`}
+              </span>
+            </div>
+          </motion.div>
+
+          {/* Бонус-ссылка (появляется только на финальном пороге) */}
+          <AnimatePresence>
+            {stage.bonus ? (
+              <motion.div
+                key="bonus"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4 }}
+                className="relative mt-7 md:mt-8"
+              >
+                <Link
+                  href={stage.bonus.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 md:px-7 md:py-3.5 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/5 text-[#A6FF00] font-p95 text-[11px] md:text-[12px] tracking-[0.2em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
+                >
+                  {stage.bonus.label}
+                  <ArrowRight className="w-3.5 h-3.5" strokeWidth={2.2} />
+                </Link>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
+
+          {/* Telegram + все каналы */}
+          <motion.div
+            variants={fadeUp}
+            className="relative mt-10 md:mt-12 flex flex-wrap items-center gap-3"
+          >
+            <Link
+              href="https://t.me/egoradi"
+              target="_blank"
+              className="inline-flex items-center gap-2 px-7 py-4 md:px-8 md:py-5 rounded-full border border-[#A6FF00]/40 text-[#A6FF00] font-p95 text-sm md:text-[15px] tracking-[0.14em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
+            >
+              <Send className="w-4 h-4 md:w-5 md:h-5" strokeWidth={2.2} />
+              Написать в Telegram
+            </Link>
+            <Link
+              href="#contacts"
+              className="inline-flex items-center gap-2 px-7 py-4 md:px-8 md:py-5 rounded-full border border-white/20 text-white/85 font-p95 text-sm md:text-[15px] tracking-[0.14em] uppercase hover:border-white/50 hover:text-white transition-colors no-underline"
+            >
+              Все каналы
+              <ArrowRight className="w-4 h-4" strokeWidth={2} />
+            </Link>
+          </motion.div>
+
+          <motion.p
+            variants={fadeUp}
+            className="relative mt-8 md:mt-10 text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-white/40 max-w-md"
+          >
+            Отвечаю быстро. Без питчей и «созвонимся обсудить». Пиши сразу, что нужно.
+          </motion.p>
+        </motion.div>
+      </div>
+    </section>
+  );
+}

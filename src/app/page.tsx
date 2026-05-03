@@ -4,7 +4,7 @@ import ProjectCard from "@/components/ProjectCard";
 import ParticleSphere from "@/components/ParticleSphere";
 import PulseAnimation, { type PulseVariant } from "@/components/PulseAnimation";
 import FlippingWord from "@/components/FlippingWord";
-import ThanksCounter from "@/components/ThanksCounter";
+import FinalCTA from "@/components/FinalCTA";
 import { TypographyFix } from "@/components/TypographyFix";
 import { workProjects } from "@/data/projects";
 import Link from "next/link";
@@ -1742,77 +1742,8 @@ export default function PreviewHome() {
       {/* ═══════ TOOLBOX — ряд инструментов ═══════ */}
       <Toolbox />
 
-      {/* ═══════ FINAL CTA — мега-bento-тайл с самоиронией ═══════ */}
-      <section className="relative z-[1] bg-black border-t border-white/[0.06]">
-        <div className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-20">
-          <motion.div
-            initial="hidden"
-            whileInView="show"
-            viewport={viewport}
-            variants={stagger}
-            className="relative rounded-3xl border border-white/[0.1] bg-gradient-to-br from-[#0c0c0c] via-[#0a0a0a] to-[#080808] overflow-hidden p-8 md:p-14 lg:p-20"
-          >
-            {/* Мягкое свечение внутри карточки */}
-            <div
-              aria-hidden
-              className="absolute inset-0 pointer-events-none opacity-80"
-              style={{
-                background:
-                  "radial-gradient(ellipse 60% 40% at 50% 65%, rgba(166,255,0,0.12), transparent 65%), radial-gradient(ellipse 40% 30% at 85% 15%, rgba(201,166,107,0.14), transparent 70%)",
-              }}
-            />
-            <motion.div variants={fadeUp} className="relative mb-8 md:mb-10">
-              <SectionLabel>БЕЗ ЦЕРЕМОНИЙ</SectionLabel>
-            </motion.div>
-
-            <motion.h2
-              variants={fadeUp}
-              className="relative font-p95 text-[clamp(36px,7vw,100px)] leading-[0.95] uppercase tracking-tight max-w-[1400px]"
-            >
-              <span className="block text-white">Уау, спасибо что</span>
-              <span className="block text-white">досюда долистали —</span>
-              <span className="block text-white">
-                вот вам кнопочка<span className="text-[#A6FF00]">.</span>
-              </span>
-            </motion.h2>
-
-            {/* Кнопка-счётчик с фейерверком */}
-            <motion.div variants={fadeUp} className="relative mt-10 md:mt-14">
-              <ThanksCounter />
-            </motion.div>
-
-            {/* Telegram + все каналы — оставляем рядом */}
-            <motion.div
-              variants={fadeUp}
-              className="relative mt-8 md:mt-10 flex flex-wrap items-center gap-3"
-            >
-              <Link
-                href="https://t.me/egoradi"
-                target="_blank"
-                className="inline-flex items-center gap-2 px-7 py-4 md:px-8 md:py-5 rounded-full border border-[#A6FF00]/40 text-[#A6FF00] font-p95 text-sm md:text-[15px] tracking-[0.14em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
-              >
-                <Send className="w-4 h-4 md:w-5 md:h-5" strokeWidth={2.2} />
-                Написать в Telegram
-              </Link>
-              <Link
-                href="#contacts"
-                className="inline-flex items-center gap-2 px-7 py-4 md:px-8 md:py-5 rounded-full border border-white/20 text-white/85 font-p95 text-sm md:text-[15px] tracking-[0.14em] uppercase hover:border-white/50 hover:text-white transition-colors no-underline"
-              >
-                Все каналы
-                <ArrowRight className="w-4 h-4" strokeWidth={2} />
-              </Link>
-            </motion.div>
-
-            <motion.p
-              variants={fadeUp}
-              className="relative mt-8 md:mt-10 text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-white/40 max-w-md"
-            >
-              Отвечаю быстро. Без питчей и «созвонимся обсудить».
-              Пиши сразу, что нужно.
-            </motion.p>
-          </motion.div>
-        </div>
-      </section>
+      {/* ═══════ FINAL CTA — счётчик + фейерверк, easter-egg на 15/30/46 кликах ═══════ */}
+      <FinalCTA />
 
       {/* ═══════ CONTACTS — bento-грид из action-тайлов ═══════ */}
       <section
