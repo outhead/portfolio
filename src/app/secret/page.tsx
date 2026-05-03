@@ -21,21 +21,34 @@ function caesarShift(text: string, shift: number): string {
     .join("");
 }
 
-const ORIGINAL = "эта страница будет позже, но ты молодец";
+const ORIGINAL = "я очень люблю пасхалки. осо61енно когда они ведут еще куда-то";
 const CIPHER_SHIFT = 3; // зашифровали с +3
 const ENCRYPTED = caesarShift(ORIGINAL, CIPHER_SHIFT);
+
+// Слайдер 0..SHIFT_MAX. Цифры в ORIGINAL (61) проходят через caesarShift как есть.
+const SHIFT_MAX = 70;
+
+// На особой позиции SECRET_SHIFT показываем бонусную фразу с буквами наоборот.
+const SECRET_SHIFT = 61;
+const SECRET_TEXT_RAW = "21 мая, здесь будет новая пасхалка";
+const SECRET_TEXT_REVERSED = [...SECRET_TEXT_RAW].reverse().join("");
 
 export default function SecretPage() {
   // Слайдер двигает «дешифрующий» сдвиг от 0 до 32.
   // При сдвиге = 30 (или эквивалентно -3) текст возвращается к оригиналу.
   const [decryptShift, setDecryptShift] = useState(0);
 
-  const decoded = useMemo(
-    () => caesarShift(ENCRYPTED, -decryptShift),
-    [decryptShift],
-  );
+  // На SECRET_SHIFT — отдельная пасхалка (бонусный текст с буквами наоборот),
+  // на остальных позициях — обычная Цезарь-расшифровка.
+  const decoded = useMemo(() => {
+    if (decryptShift === SECRET_SHIFT) return SECRET_TEXT_REVERSED;
+    return caesarShift(ENCRYPTED, -decryptShift);
+  }, [decryptShift]);
 
-  const isSolved = decoded.toLowerCase() === ORIGINAL.toLowerCase();
+  const isSolved =
+    decryptShift !== SECRET_SHIFT &&
+    decoded.toLowerCase() === ORIGINAL.toLowerCase();
+  const isSecretFound = decryptShift === SECRET_SHIFT;
 
   // Подсказка появляется через 8 секунд, если пользователь не двигал слайдер
   const [showHint, setShowHint] = useState(false);
@@ -80,7 +93,11 @@ export default function SecretPage() {
           {/* Большой текст — шифр или дешифровка */}
           <h1
             className={`font-p95 leading-[1.05] uppercase tracking-tight transition-colors duration-300 break-words ${
-              isSolved ? "text-[#A6FF00]" : "text-white"
+              isSolved
+                ? "text-[#A6FF00]"
+                : isSecretFound
+                ? "text-[#C9A66B]"
+                : "text-white"
             }`}
             style={{ fontSize: "clamp(28px, 5.2vw, 76px)" }}
           >
@@ -101,7 +118,7 @@ export default function SecretPage() {
             <input
               type="range"
               min={0}
-              max={N - 1}
+              max={SHIFT_MAX}
               step={1}
               value={decryptShift}
               onChange={(e) => setDecryptShift(Number(e.target.value))}
@@ -111,23 +128,23 @@ export default function SecretPage() {
 
             <div className="flex items-center justify-between mt-3 text-[10px] md:text-[11px] tracking-[0.18em] uppercase text-white/30 font-p95 tabular-nums">
               <span>0</span>
-              <span>{N - 1}</span>
+              <span>{SHIFT_MAX}</span>
             </div>
 
             {/* Подсказка после 8 сек */}
             <p
               className={`mt-8 md:mt-10 text-sm md:text-[15px] text-white/55 max-w-md transition-opacity duration-700 ${
-                showHint && !isSolved ? "opacity-100" : "opacity-0"
+                showHint && !isSolved && !isSecretFound ? "opacity-100" : "opacity-0"
               }`}
             >
-              Подсказка: попробуйте сдвиг около тридцатки.
+              Подсказка: настоящий сдвиг — однозначное число. Но если поедете дальше, может, что-то найдёте.
             </p>
 
             {/* Сообщение после разгадки */}
             {isSolved ? (
               <div className="mt-8 md:mt-10">
                 <p className="text-sm md:text-[15px] text-white/65 max-w-lg">
-                  Эта страница появится позже. Но вы&nbsp;уже&nbsp;здесь, и&nbsp;это уже что-то.
+                  Я очень люблю пасхалки. Особенно когда они ведут ещё куда-то.
                 </p>
                 <Link
                   href="/"
@@ -136,6 +153,15 @@ export default function SecretPage() {
                   <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2.2} />
                   Вернуться
                 </Link>
+              </div>
+            ) : null}
+
+            {/* Бонус-пасхалка на SECRET_SHIFT — текст с буквами наоборот */}
+            {isSecretFound ? (
+              <div className="mt-8 md:mt-10">
+                <p className="text-sm md:text-[15px] text-[#C9A66B]/85 max-w-lg leading-relaxed">
+                  Дальше — только зеркало. Прочтите большой текст справа налево.
+                </p>
               </div>
             ) : null}
           </div>
