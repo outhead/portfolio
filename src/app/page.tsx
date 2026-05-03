@@ -4,6 +4,7 @@ import ProjectCard from "@/components/ProjectCard";
 import ParticleSphere from "@/components/ParticleSphere";
 import PulseAnimation, { type PulseVariant } from "@/components/PulseAnimation";
 import FlippingWord from "@/components/FlippingWord";
+import ThanksCounter from "@/components/ThanksCounter";
 import { TypographyFix } from "@/components/TypographyFix";
 import { workProjects } from "@/data/projects";
 import Link from "next/link";
@@ -990,13 +991,16 @@ function Toolbox() {
           </motion.div>
           <motion.div
             variants={fadeUp}
-            className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[12px] md:text-[13px] text-white/55 tracking-[0.04em]"
+            className="flex flex-wrap items-center gap-x-3 gap-y-3 text-[12px] md:text-[13px] text-white/55 tracking-[0.04em]"
           >
             {tools.map((t, i) => (
-              <span key={t.name} className="inline-flex items-center gap-3">
-                <span className="text-white/75">{t.name}</span>
+              <span key={t.name} className="group inline-flex items-center gap-2">
+                <span className="w-[14px] h-[14px] md:w-[15px] md:h-[15px] text-white/40 group-hover:text-white transition-colors shrink-0">
+                  {t.icon}
+                </span>
+                <span className="text-white/75 group-hover:text-white transition-colors">{t.name}</span>
                 {i < tools.length - 1 && (
-                  <span aria-hidden className="text-white/20">·</span>
+                  <span aria-hidden className="text-white/20 ml-1">·</span>
                 )}
               </span>
             ))}
@@ -1602,20 +1606,10 @@ export default function PreviewHome() {
                   Сейчас мне интересна связка «дизайн и&nbsp;AI». Менторю дизайнеров и&nbsp;лидов, экспериментирую сам, пишу код. Иногда поделки получаются криво, но это часть процесса.
                 </p>
                 <p className="text-sm md:text-[15px] text-white/70 leading-relaxed">
-                  Работаю от задачи и&nbsp;умею строить и&nbsp;автоматизировать процессы. Участвую глубоко: от стратегии до&nbsp;ревью макетов. По моим ощущениям, хороший руководитель должен дать команде всё, чтобы знала, кто что делает, и&nbsp;все были уверены в&nbsp;своих действиях.
+                  Работаю от&nbsp;задачи: строю и&nbsp;автоматизирую процессы, влезаю глубоко — от&nbsp;стратегии до&nbsp;ревью макетов. Задача руководителя, как я&nbsp;её вижу, — дать команде ясность: кто чем занят и&nbsp;зачем. Тогда люди действуют увереннее, а&nbsp;не на&nbsp;ощупь.
                 </p>
               </div>
 
-              {/* CTA — Work with Egor, в стиле Stokt */}
-              <a
-                href="#contact"
-                className="mt-6 md:mt-7 inline-flex items-center gap-2 group self-start text-[13px] md:text-[14px] tracking-[0.14em] uppercase text-white hover:text-[#A6FF00] transition-colors"
-              >
-                <span className="font-p95">Работать вместе</span>
-                <span className="flex items-center justify-center w-7 h-7 rounded-full border border-white/20 group-hover:border-[#A6FF00]/60 group-hover:bg-[#A6FF00]/10 transition-colors">
-                  <ArrowRight className="w-3.5 h-3.5" strokeWidth={1.75} />
-                </span>
-              </a>
             </motion.div>
           </div>
 
@@ -1773,24 +1767,29 @@ export default function PreviewHome() {
 
             <motion.h2
               variants={fadeUp}
-              className="relative font-p95 text-[clamp(36px,7.5vw,108px)] leading-[0.95] uppercase tracking-tight max-w-[1400px]"
+              className="relative font-p95 text-[clamp(36px,7vw,100px)] leading-[0.95] uppercase tracking-tight max-w-[1400px]"
             >
-              <span className="block text-white">Если вы досюда</span>
-              <span className="block text-white">долистали —</span>
-              <span className="block text-white">пишите. Серьёзно,</span>
+              <span className="block text-white">Уау, спасибо что</span>
+              <span className="block text-white">досюда долистали —</span>
               <span className="block text-white">
-                так делает не каждый<span className="text-[#A6FF00]">.</span>
+                вот вам кнопочка<span className="text-[#A6FF00]">.</span>
               </span>
             </motion.h2>
 
+            {/* Кнопка-счётчик с фейерверком */}
+            <motion.div variants={fadeUp} className="relative mt-10 md:mt-14">
+              <ThanksCounter />
+            </motion.div>
+
+            {/* Telegram + все каналы — оставляем рядом */}
             <motion.div
               variants={fadeUp}
-              className="relative mt-10 md:mt-14 flex flex-wrap items-center gap-3"
+              className="relative mt-8 md:mt-10 flex flex-wrap items-center gap-3"
             >
               <Link
                 href="https://t.me/egoradi"
                 target="_blank"
-                className="inline-flex items-center gap-2 px-7 py-4 md:px-8 md:py-5 rounded-full bg-[#A6FF00] text-black font-p95 text-sm md:text-[15px] tracking-[0.14em] uppercase hover:bg-white transition-colors no-underline"
+                className="inline-flex items-center gap-2 px-7 py-4 md:px-8 md:py-5 rounded-full border border-[#A6FF00]/40 text-[#A6FF00] font-p95 text-sm md:text-[15px] tracking-[0.14em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
               >
                 <Send className="w-4 h-4 md:w-5 md:h-5" strokeWidth={2.2} />
                 Написать в Telegram
