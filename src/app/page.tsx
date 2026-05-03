@@ -1142,7 +1142,7 @@ export default function PreviewHome() {
                 aria-label="Открыть кейс Газпром Нефть — CX Awards 2024"
                 className="block h-full no-underline group"
               >
-                <div className="relative h-full min-h-[260px] md:min-h-[280px] rounded-2xl border border-[#C9A66B]/30 bg-gradient-to-br from-[#C9A66B]/[0.10] via-[#C9A66B]/[0.04] to-transparent p-5 md:p-6 flex flex-col justify-between gap-4 overflow-hidden transition-all duration-300 group-hover:border-[#C9A66B]/60 group-hover:from-[#C9A66B]/[0.14] group-hover:shadow-[0_0_40px_-8px_rgba(201,166,107,0.28)]">
+                <div className="relative h-full min-h-[260px] md:min-h-[280px] rounded-2xl border border-[#C9A66B]/30 bg-gradient-to-br from-[#C9A66B]/[0.10] via-[#C9A66B]/[0.04] to-transparent py-5 md:py-6 pl-5 md:pl-6 pr-28 md:pr-32 flex flex-col justify-between gap-4 overflow-hidden transition-all duration-300 group-hover:border-[#C9A66B]/60 group-hover:from-[#C9A66B]/[0.14] group-hover:shadow-[0_0_40px_-8px_rgba(201,166,107,0.28)]">
                   {/* мягкое золотое свечение справа — ambient под трофеем */}
                   <div
                     aria-hidden
@@ -1160,7 +1160,7 @@ export default function PreviewHome() {
                     width={462}
                     height={616}
                     aria-hidden
-                    className="pointer-events-none absolute right-2 md:right-3 top-1/2 -translate-y-1/2 w-[110px] md:w-[140px] h-auto opacity-90 group-hover:opacity-100 group-hover:scale-[1.04] transition-all duration-500 drop-shadow-[0_8px_30px_rgba(201,166,107,0.35)]"
+                    className="pointer-events-none absolute right-3 md:right-4 top-1/2 -translate-y-1/2 w-[90px] md:w-[100px] h-auto opacity-90 group-hover:opacity-100 group-hover:scale-[1.04] transition-all duration-500 drop-shadow-[0_8px_30px_rgba(201,166,107,0.35)]"
                   />
 
                   {/* Топ-метка */}
