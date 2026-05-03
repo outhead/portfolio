@@ -22,7 +22,7 @@ function caesarShift(text: string, shift: number): string {
 }
 
 const ORIGINAL = "я очень люблю пасхалки. осо61енно когда они ведут еще куда-то";
-const CIPHER_SHIFT = 3; // зашифровали с +3
+const CIPHER_SHIFT = 22; // зашифровали с +22 — правильный «дешифрующий» сдвиг тоже 22
 const ENCRYPTED = caesarShift(ORIGINAL, CIPHER_SHIFT);
 
 // Слайдер 0..SHIFT_MAX. Цифры в ORIGINAL (61) проходят через caesarShift как есть.
@@ -32,6 +32,11 @@ const SHIFT_MAX = 70;
 const SECRET_SHIFT = 61;
 const SECRET_TEXT_RAW = "21 мая, здесь будет новая пасхалка";
 const SECRET_TEXT_REVERSED = [...SECRET_TEXT_RAW].reverse().join("");
+
+// Сколько мс пользователь должен «постоять» на правильной позиции, прежде чем
+// мы подтвердим разгадку (зелёный текст + сообщение). Иначе при простом
+// проезде через 22 заголовок мигал бы зелёным.
+const SOLVE_CONFIRM_MS = 3000;
 
 export default function SecretPage() {
   // Слайдер двигает «дешифрующий» сдвиг от 0 до 32.
@@ -45,10 +50,23 @@ export default function SecretPage() {
     return caesarShift(ENCRYPTED, -decryptShift);
   }, [decryptShift]);
 
-  const isSolved =
+  const isAtSolution =
     decryptShift !== SECRET_SHIFT &&
     decoded.toLowerCase() === ORIGINAL.toLowerCase();
   const isSecretFound = decryptShift === SECRET_SHIFT;
+
+  // «Подтверждённая разгадка»: только если пользователь задержался на
+  // правильной позиции SOLVE_CONFIRM_MS. Так заголовок не мигает зелёным
+  // при проезде через 22.
+  const [isSolved, setIsSolved] = useState(false);
+  useEffect(() => {
+    if (!isAtSolution) {
+      setIsSolved(false);
+      return;
+    }
+    const t = setTimeout(() => setIsSolved(true), SOLVE_CONFIRM_MS);
+    return () => clearTimeout(t);
+  }, [isAtSolution]);
 
   // Подсказка появляется через 8 секунд, если пользователь не двигал слайдер
   const [showHint, setShowHint] = useState(false);
@@ -90,19 +108,26 @@ export default function SecretPage() {
             Шифр Цезаря · сдвиньте, чтобы прочитать
           </p>
 
-          {/* Большой текст — шифр или дешифровка */}
-          <h1
-            className={`font-p95 leading-[1.05] uppercase tracking-tight transition-colors duration-300 break-words ${
-              isSolved
-                ? "text-[#A6FF00]"
-                : isSecretFound
-                ? "text-[#C9A66B]"
-                : "text-white"
-            }`}
-            style={{ fontSize: "clamp(28px, 5.2vw, 76px)" }}
+          {/* Большой текст — шифр или дешифровка.
+              Контейнер фиксирован по высоте, чтобы при движении ползунка
+              layout под шифром не «прыгал» вверх-вниз из-за смены числа строк. */}
+          <div
+            className="relative"
+            style={{ minHeight: "clamp(180px, 30vw, 460px)" }}
           >
-            {decoded}
-          </h1>
+            <h1
+              className={`font-p95 leading-[1.05] uppercase tracking-tight transition-colors duration-300 break-words ${
+                isSolved
+                  ? "text-[#A6FF00]"
+                  : isSecretFound
+                  ? "text-[#C9A66B]"
+                  : "text-white"
+              }`}
+              style={{ fontSize: "clamp(28px, 5.2vw, 76px)" }}
+            >
+              {decoded}
+            </h1>
+          </div>
 
           {/* Слайдер */}
           <div className="mt-12 md:mt-16 max-w-2xl">
@@ -137,7 +162,7 @@ export default function SecretPage() {
                 showHint && !isSolved && !isSecretFound ? "opacity-100" : "opacity-0"
               }`}
             >
-              Подсказка: настоящий сдвиг — однозначное число. Но если поедете дальше, может, что-то найдёте.
+              Подсказка: настоящий сдвиг — двузначное число. Но если поедете дальше, может, что-то найдёте.
             </p>
 
             {/* Сообщение после разгадки */}
