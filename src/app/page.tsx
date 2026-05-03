@@ -1142,37 +1142,33 @@ export default function PreviewHome() {
                 aria-label="Открыть кейс Газпром Нефть — CX Awards 2024"
                 className="block h-full no-underline group"
               >
-                <div className="relative h-full min-h-[260px] md:min-h-[280px] rounded-2xl border border-[#C9A66B]/30 bg-gradient-to-br from-[#C9A66B]/[0.10] via-[#C9A66B]/[0.04] to-transparent py-5 md:py-6 pl-5 md:pl-6 pr-28 md:pr-32 flex flex-col justify-between gap-4 overflow-hidden transition-all duration-300 group-hover:border-[#C9A66B]/60 group-hover:from-[#C9A66B]/[0.14] group-hover:shadow-[0_0_40px_-8px_rgba(201,166,107,0.28)]">
+                <div className="relative h-full min-h-[260px] md:min-h-[280px] rounded-2xl border border-[#C9A66B]/30 bg-gradient-to-br from-[#C9A66B]/[0.10] via-[#C9A66B]/[0.04] to-transparent py-5 md:py-6 pl-5 md:pl-6 pr-36 md:pr-44 flex flex-col justify-between gap-4 overflow-hidden transition-all duration-300 group-hover:border-[#C9A66B]/60 group-hover:from-[#C9A66B]/[0.14] group-hover:shadow-[0_0_40px_-8px_rgba(201,166,107,0.28)]">
                   {/* мягкое золотое свечение справа — ambient под трофеем */}
                   <div
                     aria-hidden
-                    className="pointer-events-none absolute -right-10 top-1/2 -translate-y-1/2 w-[200px] h-[200px] rounded-full opacity-60"
+                    className="pointer-events-none absolute -right-12 top-1/2 -translate-y-1/2 w-[260px] h-[260px] rounded-full opacity-65"
                     style={{
                       background:
-                        "radial-gradient(circle, rgba(201,166,107,0.32) 0%, rgba(201,166,107,0.10) 35%, rgba(201,166,107,0) 70%)",
+                        "radial-gradient(circle, rgba(201,166,107,0.36) 0%, rgba(201,166,107,0.12) 35%, rgba(201,166,107,0) 70%)",
                     }}
                   />
 
-                  {/* Иконка приза справа — реальный 3D-объект */}
+                  {/* Иконка приза справа — крупная, главный визуальный акцент */}
                   <Image
                     src="/images/gpn/prize.png"
                     alt="CX Awards 2024 — приз"
                     width={462}
                     height={616}
                     aria-hidden
-                    className="pointer-events-none absolute right-3 md:right-4 top-1/2 -translate-y-1/2 w-[90px] md:w-[100px] h-auto opacity-90 group-hover:opacity-100 group-hover:scale-[1.04] transition-all duration-500 drop-shadow-[0_8px_30px_rgba(201,166,107,0.35)]"
+                    className="pointer-events-none absolute right-3 md:right-4 top-1/2 -translate-y-1/2 w-[130px] md:w-[160px] h-auto opacity-95 group-hover:opacity-100 group-hover:scale-[1.04] transition-all duration-500 drop-shadow-[0_10px_40px_rgba(201,166,107,0.45)]"
                   />
 
                   {/* Топ-метка */}
-                  <div className="flex items-start justify-between gap-3 relative z-[1]">
+                  <div className="relative z-[1]">
                     <span className="inline-flex items-center gap-2 font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-[#C9A66B] leading-none">
                       <Trophy className="w-4 h-4 shrink-0" strokeWidth={1.75} />
                       Награда · 2024
                     </span>
-                    <ArrowUpRight
-                      className="w-5 h-5 shrink-0 text-[#C9A66B]/50 opacity-0 -translate-x-1 translate-y-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 group-hover:text-[#C9A66B] transition-all duration-300"
-                      strokeWidth={1.75}
-                    />
                   </div>
 
                   {/* Тело */}
@@ -1181,16 +1177,19 @@ export default function PreviewHome() {
                       CX&apos;24
                     </div>
                     <div className="text-[12px] md:text-[13px] tracking-[0.14em] uppercase text-white/75 mt-3 font-light">
-                      Customer Experience Awards · Winner
-                    </div>
-                    <div className="text-[13px] md:text-[14px] text-white/55 mt-2.5 leading-[1.55] font-light">
-                      «Единое сервисное окно» — корпоративные Госуслуги для сотрудников Газпром&nbsp;Нефти.
+                      Customer Experience Awards
                     </div>
                   </div>
 
-                  {/* Футер */}
-                  <div className="font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-[#C9A66B]/85 leading-none pt-3.5 border-t border-[#C9A66B]/15 relative z-[1]">
-                    Проект года в сегменте B2E
+                  {/* Футер: победитель в сегменте + стрелка-индикатор клика */}
+                  <div className="relative z-[1] flex items-center justify-between gap-3 pt-3.5 border-t border-[#C9A66B]/15">
+                    <div className="font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-[#C9A66B]/85 leading-none">
+                      Победитель в сегменте B2E
+                    </div>
+                    <ArrowUpRight
+                      className="w-4 h-4 shrink-0 text-[#C9A66B]/55 group-hover:text-[#C9A66B] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300"
+                      strokeWidth={1.75}
+                    />
                   </div>
                 </div>
               </Link>
