@@ -1049,7 +1049,7 @@ export default function PreviewHome() {
               variants={fadeUp}
               className="col-span-12 order-1 md:order-none"
             >
-              <div className="relative rounded-3xl border border-white/[0.1] bg-gradient-to-br from-white/[0.025] via-white/[0.01] to-transparent overflow-hidden min-h-[460px] md:min-h-[600px]">
+              <div className="relative rounded-3xl border border-white/[0.1] bg-gradient-to-br from-white/[0.025] via-white/[0.01] to-transparent overflow-hidden md:min-h-[600px]">
                 {/* Сфера — на десктопе абсолютно справа, на мобилке банером сверху */}
                 <div
                   aria-hidden
@@ -1093,8 +1093,10 @@ export default function PreviewHome() {
                   Доступен для проектов
                 </div>
 
-                {/* Центральный контент — ограничен слева, чтобы не наезжать на сферу */}
-                <div className="relative z-[1] flex flex-col justify-center p-7 md:p-10 lg:p-12 pt-[280px] md:pt-24 pb-20 md:pb-24 min-h-[460px] md:min-h-[600px]">
+                {/* Центральный контент — ограничен слева, чтобы не наезжать на сферу.
+                    На мобиле justify-start — содержимое сидит сразу под сферой, без огромного gap.
+                    На десктопе justify-center — текст ровно центрирован внутри tile. */}
+                <div className="relative z-[1] flex flex-col justify-start md:justify-center p-7 md:p-10 lg:p-12 pt-[280px] md:pt-24 pb-20 md:pb-24 md:min-h-[600px]">
                   <div className="flex flex-col gap-6 md:gap-8 md:max-w-[58%]">
                     <h1 className="font-p95 text-[clamp(64px,9vw,128px)] leading-[0.92] uppercase tracking-tight text-white">
                       <span className="block text-white">РАЗВИВАЮ</span>
