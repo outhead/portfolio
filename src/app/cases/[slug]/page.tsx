@@ -266,31 +266,56 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                   )
                 )}
 
-                {/* Timeline — горизонтальная шкала событий */}
+                {/* Timeline — горизонтальная шкала событий.
+                    Если ≤4 точек — равномерный grid на десктопе.
+                    Если >4 — всегда flex со скроллом и фикс-шириной ячейки, чтобы текст не сжимался. */}
                 {section.timeline && section.timeline.length > 0 && (
                   <div className="mt-7 -mx-5 md:mx-0 px-5 md:px-0 overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
-                    <ol className="relative flex gap-0 min-w-max md:min-w-0 md:grid" style={{ gridTemplateColumns: `repeat(${section.timeline.length}, minmax(0, 1fr))` }}>
-                      {/* Линия */}
-                      <div className="absolute left-0 right-0 top-[18px] h-px bg-white/[0.08]" aria-hidden />
-                      {section.timeline.map((t, idx) => (
-                        <li key={idx} className="relative flex flex-col gap-2 pr-6 md:pr-4 w-[260px] md:w-auto">
-                          {/* Точка */}
-                          <div className="relative z-[1] w-[9px] h-[9px] rounded-full bg-[#A6FF00] ring-4 ring-black mt-[14px]" />
-                          {/* Дата */}
-                          <div className="font-mono text-[10px] tracking-[0.1em] uppercase text-white/45 mt-1">
-                            {t.date}
-                          </div>
-                          {/* Заголовок */}
-                          <div className="text-sm md:text-[15px] text-white/90 font-medium leading-snug">
-                            {t.title}
-                          </div>
-                          {/* Заметка */}
-                          {t.note && (
-                            <div className="text-[12px] text-white/50 leading-snug">{t.note}</div>
-                          )}
-                        </li>
-                      ))}
-                    </ol>
+                    {section.timeline.length > 4 ? (
+                      <ol className="relative flex gap-0 min-w-max">
+                        <div className="absolute left-0 right-0 top-[18px] h-px bg-white/[0.08]" aria-hidden />
+                        {section.timeline.map((t, idx) => (
+                          <li key={idx} className="relative flex flex-col gap-2 pr-8 w-[220px] md:w-[240px] shrink-0">
+                            <div className="relative z-[1] w-[9px] h-[9px] rounded-full bg-[#A6FF00] ring-4 ring-black mt-[14px]" />
+                            <div className="font-mono text-[10px] tracking-[0.1em] uppercase text-white/45 mt-1">
+                              {t.date}
+                            </div>
+                            <div className="text-sm md:text-[15px] text-white/90 font-medium leading-snug">
+                              {t.title}
+                            </div>
+                            {t.note && (
+                              <div className="text-[12px] text-white/50 leading-snug">{t.note}</div>
+                            )}
+                          </li>
+                        ))}
+                      </ol>
+                    ) : (
+                      <ol
+                        className="relative flex gap-0 min-w-max md:min-w-0 md:grid"
+                        style={{ gridTemplateColumns: `repeat(${section.timeline.length}, minmax(0, 1fr))` }}
+                      >
+                        <div className="absolute left-0 right-0 top-[18px] h-px bg-white/[0.08]" aria-hidden />
+                        {section.timeline.map((t, idx) => (
+                          <li key={idx} className="relative flex flex-col gap-2 pr-6 md:pr-4 w-[260px] md:w-auto">
+                            <div className="relative z-[1] w-[9px] h-[9px] rounded-full bg-[#A6FF00] ring-4 ring-black mt-[14px]" />
+                            <div className="font-mono text-[10px] tracking-[0.1em] uppercase text-white/45 mt-1">
+                              {t.date}
+                            </div>
+                            <div className="text-sm md:text-[15px] text-white/90 font-medium leading-snug">
+                              {t.title}
+                            </div>
+                            {t.note && (
+                              <div className="text-[12px] text-white/50 leading-snug">{t.note}</div>
+                            )}
+                          </li>
+                        ))}
+                      </ol>
+                    )}
+                    {section.timeline.length > 4 && (
+                      <div className="text-[10px] tracking-[0.14em] uppercase text-white/30 mt-3">
+                        ← листайте, чтобы увидеть все запуски →
+                      </div>
+                    )}
                   </div>
                 )}
 

@@ -168,6 +168,9 @@ export const projects: Project[] = [
         ],
         heroes: [
           { src: "/images/mts/voice-new/hero-trio.png", alt: "Голосовая экосистема МТС — трио продуктов", aspect: "16/9" },
+          { src: "/images/mts/voice-new/hero-recording.png", alt: "Запись разговоров — постер", aspect: "16/9" },
+          { src: "/images/mts/voice-new/hero-station.png", alt: "Голос через Яндекс Станцию — постер", aspect: "16/9" },
+          { src: "/images/mts/voice-new/hero-recording-trio.png", alt: "Запись разговоров — трио экранов", aspect: "16/9" },
         ],
         screenshots: [
           { src: "/images/mts/voice-new/screen-recording-1.png", label: "ЗАПИСЬ РАЗГОВОРОВ — ЛЕНДИНГ" },
@@ -240,7 +243,15 @@ export const projects: Project[] = [
           { value: "ЛизаАлерт", label: "публичное партнёрство" },
           { value: "3 роли", label: "взрослый / ребёнок / старший" },
         ],
+        heroes: [
+          { src: "/images/mts/family/hero-family.png", alt: "Семейная группа — постер", aspect: "16/9" },
+          { src: "/images/mts/family/hero-family-role.png", alt: "Семейная группа — выбор роли", aspect: "16/9" },
+          { src: "/images/mts/family/hero-family-group.png", alt: "Семейная группа — общий контур", aspect: "16/9" },
+          { src: "/images/mts/family/hero-family-locations.png", alt: "МТС.ГеоПоиск — локации близких", aspect: "16/9" },
+        ],
         screenshots: [
+          { src: "/images/mts/family/screen-family-home.png", label: "СЕМЕЙНАЯ — ВХОД В МОЙ МТС" },
+          { src: "/images/mts/family/screen-family-group.png", label: "ИНТЕРФЕЙС СЕМЕЙНОЙ ГРУППЫ" },
           { src: "/images/mts/family/family-profile-setup.png", label: "ПРОФИЛЬ ОРГАНИЗАТОРА" },
           { src: "/images/mts/family/family-geozones-empty.png", label: "ГЕОЗОНЫ — ПУСТОЙ СТЕЙТ" },
         ],
@@ -261,6 +272,9 @@ export const projects: Project[] = [
           { value: "16,5%", label: "доходность на момент запуска" },
           { value: "100 ₽", label: "минимум на счёт" },
           { value: "Госуслуги", label: "бесшовная подача" },
+        ],
+        heroes: [
+          { src: "/images/mts/savings/hero-savings.png", alt: "МТС Накопления — постер", aspect: "16/9" },
         ],
         screenshots: [
           { src: "/images/mts/savings/savings-dashboard.png", label: "ГЛАВНАЯ — БАЛАНС И ДОХОД" },
