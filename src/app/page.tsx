@@ -1649,12 +1649,14 @@ export default function PreviewHome() {
                   "Инноватор, шарит за ИИ. Уравновешенный — принимает только хорошо обдуманные решения. Собирает сильные команды, строит отлаженные процессы. И при этом очень приятный человек.",
                 name: "Никита Вишневский",
                 role: "Управляющий директор, Райффайзен (ранее — МТС)",
+                avatar: "/images/testimonials/vishnevsky.jpeg",
               },
               {
                 quote:
                   "Работал с Егором и в Газпром нефти и когда он был в МТС. Лучше чем Егора найти трудно. Он легенда дизайна, ИИ и менеджмента.",
                 name: "Егор Гончарук",
                 role: "Руководитель проектного офиса, Газпром Нефть",
+                avatar: "/images/testimonials/goncharuk.png",
               },
             ].map((t) => (
               <motion.div
@@ -1667,9 +1669,20 @@ export default function PreviewHome() {
                   {t.quote}
                 </p>
                 {/* mt-auto прижимает подпись к низу карточки — выравнивает подписи в обоих кейсах */}
-                <div className="mt-auto pt-5 md:pt-6 border-t border-white/[0.06]">
-                  <div className="text-sm text-white font-medium leading-tight">{t.name}</div>
-                  <div className="text-[11px] text-white/40 mt-1 leading-snug">{t.role}</div>
+                <div className="mt-auto pt-5 md:pt-6 border-t border-white/[0.06] flex items-center gap-4">
+                  <div className="relative shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-full overflow-hidden border border-white/[0.08] bg-white/[0.04]">
+                    <Image
+                      src={t.avatar}
+                      alt={t.name}
+                      fill
+                      sizes="56px"
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm text-white font-medium leading-tight">{t.name}</div>
+                    <div className="text-[11px] text-white/40 mt-1 leading-snug">{t.role}</div>
+                  </div>
                 </div>
               </motion.div>
             ))}
