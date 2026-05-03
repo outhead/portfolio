@@ -109,11 +109,11 @@ export default function SecretPage() {
           </p>
 
           {/* Большой текст — шифр или дешифровка.
-              Контейнер фиксирован по высоте, чтобы при движении ползунка
-              layout под шифром не «прыгал» вверх-вниз из-за смены числа строк. */}
+              Контейнер фиксирован по высоте (~3 строки), чтобы при движении
+              ползунка layout под шифром не «прыгал» вверх-вниз. */}
           <div
             className="relative"
-            style={{ minHeight: "clamp(180px, 30vw, 460px)" }}
+            style={{ minHeight: "clamp(120px, 14vw, 240px)" }}
           >
             <h1
               className={`font-p95 leading-[1.05] uppercase tracking-tight transition-colors duration-300 break-words ${
