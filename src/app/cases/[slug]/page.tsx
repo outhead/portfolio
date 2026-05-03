@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowRight, ChevronDown } from "lucide-react";
 import ImageLightbox from "@/components/ImageLightbox";
 import { HeroCoverVideo } from "@/components/CoverVideo";
 import CaseLinkCard from "@/components/CaseLinkCard";
+import HeroLightbox from "@/components/HeroLightbox";
 
 export function generateStaticParams() {
   return projects.map((project) => ({
@@ -350,40 +351,13 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                   </div>
                 )}
 
-                {/* Heroes — широкие плакаты без рамки телефона.
-                    Никогда не сжимаем до 4 колонок (плакаты теряют читаемость) — максимум 2 на десктопе. */}
+                {/* Heroes — широкие плакаты без рамки телефона. Кликабельные для увеличения. */}
                 {section.heroes && section.heroes.length > 0 && (
                   <div className="mt-10 md:mt-14">
-                    <div className="text-[10px] tracking-[0.18em] uppercase text-white/40 mb-4 md:mb-5">
-                      Постеры · {section.heroes.length}
-                    </div>
-                    <div
-                      className={`grid gap-4 md:gap-5 ${
-                        section.heroes.length === 1
-                          ? "grid-cols-1"
-                          : "grid-cols-1 md:grid-cols-2"
-                      }`}
-                    >
-                      {section.heroes.map((h, idx) => (
-                        <div
-                          key={idx}
-                          className="relative w-full overflow-hidden rounded-2xl border border-white/[0.06] bg-black"
-                          style={{ aspectRatio: h.aspect ?? "16/9" }}
-                        >
-                          <Image
-                            src={h.src}
-                            alt={h.alt ?? `${section.title} — постер ${idx + 1}`}
-                            fill
-                            sizes={
-                              section.heroes!.length === 1
-                                ? "(min-width: 1024px) 100vw, 100vw"
-                                : "(min-width: 768px) 50vw, 100vw"
-                            }
-                            className="object-cover"
-                          />
-                        </div>
-                      ))}
-                    </div>
+                    <HeroLightbox
+                      heroes={section.heroes}
+                      label={`Постеры · ${section.heroes.length}`}
+                    />
                   </div>
                 )}
 
