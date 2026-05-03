@@ -325,11 +325,32 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                   </div>
                 )}
 
-                {/* Inline links — единый рендер через CaseLinkCard (size=sm) */}
-                {section.links && section.links.length > 0 && (
-                  <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {section.links.map((link) => (
-                      <CaseLinkCard key={link.url} link={link} size="sm" />
+                {/* Heroes — широкие плакаты без рамки телефона.
+                    1 → full-width 16:9; 2 → grid 2-col; 3-4 → grid 2/4 col на десктопе. */}
+                {section.heroes && section.heroes.length > 0 && (
+                  <div className={`mt-8 md:mt-10 grid gap-3 md:gap-4 ${
+                    section.heroes.length === 1
+                      ? "grid-cols-1"
+                      : section.heroes.length === 2
+                      ? "grid-cols-1 md:grid-cols-2"
+                      : section.heroes.length === 3
+                      ? "grid-cols-1 md:grid-cols-3"
+                      : "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
+                  }`}>
+                    {section.heroes.map((h, idx) => (
+                      <div
+                        key={idx}
+                        className="relative w-full overflow-hidden rounded-2xl border border-white/[0.06] bg-black"
+                        style={{ aspectRatio: h.aspect ?? "16/9" }}
+                      >
+                        <Image
+                          src={h.src}
+                          alt={h.alt ?? `${section.title} — постер ${idx + 1}`}
+                          fill
+                          sizes="(min-width: 1024px) 50vw, 100vw"
+                          className="object-cover"
+                        />
+                      </div>
                     ))}
                   </div>
                 )}
@@ -352,6 +373,21 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                         return { src, alt, label, caption, protected: isProtected, kind, poster };
                       })}
                     />
+                  </div>
+                )}
+
+                {/* Inline links — переехали В КОНЕЦ секции, после скриншотов
+                    («пресса/публикации» как естественное завершение блока). */}
+                {section.links && section.links.length > 0 && (
+                  <div className="mt-8 md:mt-10">
+                    <div className="text-[10px] tracking-[0.14em] uppercase text-white/40 mb-3">
+                      Пресса и публикации
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {section.links.map((link) => (
+                        <CaseLinkCard key={link.url} link={link} size="sm" />
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>

@@ -69,6 +69,11 @@ export interface Project {
     callouts?: { value: string; label: string }[];
     /** Inline-пруфы: ссылки рядом с релевантным контентом, а не только в нижнем блоке. */
     links?: { label: string; url: string; thumbnail?: string; kind?: "video" | "article" | "site" | "github" }[];
+    /**
+     * Hero-плакаты секции. Рендерятся БЕЗ рамки телефона, отдельным блоком над скриншотами.
+     * Если 1 элемент — full-width 16:9, если 2-4 — grid.
+     */
+    heroes?: { src: string; alt?: string; aspect?: string }[];
     screenshots?: Screenshot[];
     /** Override `screenshotsMode` проекта для этой секции. */
     screenshotsMode?: "web" | "phone";
@@ -147,27 +152,42 @@ export const projects: Project[] = [
         context:
           "Это и был мой главный фокус все 14 месяцев. Стык AI и телекома, и меня это зацепило с первого дня. На входе в команде уже работали Раф (миддл-дизайнер) и Женя Мухуров (синьор), но без арт-директора и без чёткой дизайн-функции. Я нанял Марка арт-директором голосовой, позже мы добавили Алину из его прошлого состава.",
         approach:
-          "Главное в этом периоде — ритм. Мы часто собирались всей командой: дизайн, продакты, разработка. Защищали новые идеи, разбирали концепты и подходы, после релизов смотрели метрики и обсуждали, что и почему сработало. Прививали интерес к продукту всей команде, не только тем, кто рисует экраны. Дискавери под новые продукты делали через анализ открытых данных и нейросети, без классической UX-панели — быстрее и дешевле, а нам нужно было успеть к плану года.\n\nДальше пошли запуски. За 2025-й команда вывела четыре публичных продукта. Запись разговоров (июль, бета) — автоматическая запись и расшифровка звонков прямо в Мой МТС. Голосовые вызовы через Яндекс Станцию (сентябрь 2024) — совместный пилот с экосистемой Яндекса. МТС AI Секретарь (октябрь 2025) — голосовой автоответчик: принимает звонок, расшифровывает, предлагает действия. AI-шумоподавление в голосовых вызовах (октябрь 2025) — МТС заявил его как первое на рынке мобильной связи. Плюс собственный дайлер и транскрибация с ответами текстом — фича, которая мне самому казалась нишевой, пока не пообщался с людьми, которым тяжело говорить голосом во время звонка.",
+          "Главное в этом периоде — ритм. Мы часто собирались всей командой: дизайн, продакты, разработка. Защищали новые идеи, разбирали концепты и подходы, после релизов смотрели метрики и обсуждали, что и почему сработало. Прививали интерес к продукту всей команде, не только тем, кто рисует экраны. Дискавери под новые продукты делали через анализ открытых данных и нейросети, без классической UX-панели — быстрее и дешевле, а нам нужно было успеть к плану года.\n\nДальше пошли запуски. За 2024–2025 команда вывела восемь публичных шагов в голосовой и антифрод-экосистеме. От «Защитника» (антиспам с голосовым ботом) и умного определителя номера до AI-шумоподавления, которое МТС заявил как первое на рынке мобильной связи. Плюс отдельная ветка про «не хочу/не могу говорить голосом» — Запись разговоров, МТС Секретарь и «Звонок в чат», когда Секретарь озвучивает написанный текст звонящему.",
         result:
-          "Четыре публичных запуска за 2025 год. AI-шумоподавление — первый продукт такого класса на рынке мобильной связи. Я лично держал руку на пульсе всех запусков от этапа концепта и до релиза.",
+          "Голосовая экосистема МТС за 2024–2025 — это уже не одна функция, а связка: антиспам-периметр (Защитник + умный определитель + блокировки для абонентов других операторов), антифрод во время разговора (Безопасный звонок), пилот с Алисой через Яндекс Станцию, запись и расшифровка разговоров, голосовой автоответчик и инфраструктурное AI-шумоподавление. Я лично держал руку на пульсе всех релизов — от концепта до публичного запуска.",
         timeline: [
-          { date: "05.09.2024", title: "Голос через Яндекс Станцию", note: "Совместный пилот с экосистемой Яндекса" },
-          { date: "16.07.2025", title: "Запись разговоров", note: "Автоматическая запись и расшифровка звонков (бета)" },
-          { date: "08.10.2025", title: "МТС AI Секретарь", note: "Голосовой автоответчик: принимает, расшифровывает, предлагает действия" },
-          { date: "24.10.2025", title: "AI-шумоподавление", note: "Заявлено как первое на рынке мобильной связи" },
+          { date: "23.01.2024", title: "Защитник", note: "Антиспам-приложение: переадресация на голосового бота и расшифровка" },
+          { date: "20.08.2024", title: "Умный определитель", note: "Big Data маркирует звонки тремя цветами" },
+          { date: "05.09.2024", title: "Голос через Яндекс Станцию", note: "Пилот с экосистемой Яндекса" },
+          { date: "16.10.2024", title: "Защитник для других операторов", note: "Блокировки + ИИ-бот для не-абонентов МТС" },
+          { date: "24.10.2024", title: "Безопасный звонок", note: "ИИ предупреждает о мошенничестве во время разговора" },
+          { date: "16.07.2025", title: "Запись разговоров", note: "Автозапись и расшифровка звонков (бета)" },
+          { date: "20.08.2025", title: "Звонок в чат", note: "Секретарь озвучивает написанный текст звонящему" },
+          { date: "08.10.2025", title: "МТС AI Секретарь", note: "Голосовой автоответчик с расшифровкой и действиями" },
+          { date: "24.10.2025", title: "AI-шумоподавление", note: "Первое на рынке мобильной связи" },
+        ],
+        heroes: [
+          { src: "/images/mts/voice-new/hero-trio.png", alt: "Голосовая экосистема МТС — трио продуктов", aspect: "16/9" },
         ],
         screenshots: [
-          { src: "/images/mts/voice/voice-demo-2.mp4", kind: "video", label: "ДЕМО — ВТОРОЙ СЦЕНАРИЙ", poster: "/images/mts/voice/voice-secretary-spam-vocal.png" },
-          { src: "/images/mts/voice/voice-recording-landing.png", label: "ЗАПИСЬ РАЗГОВОРОВ — ЛЕНДИНГ" },
-          { src: "/images/mts/voice/voice-recording-active.png", label: "ЗАПИСЬ — ПОДКЛЮЧЕНО" },
-          { src: "/images/mts/voice/voice-marvin-landing.png", label: "АССИСТЕНТ В ЗВОНКЕ" },
-          { src: "/images/mts/voice/voice-secretary-landing.png", label: "МТС СЕКРЕТАРЬ — ЛЕНДИНГ" },
+          { src: "/images/mts/voice-new/screen-recording-1.png", label: "ЗАПИСЬ РАЗГОВОРОВ — ЛЕНДИНГ" },
+          { src: "/images/mts/voice-new/screen-recording-2.png", label: "ЗАПИСЬ — ПОДКЛЮЧЕНО" },
+          { src: "/images/mts/voice-new/screen-recording-3.png", label: "ЗАПИСЬ — СОСТОЯНИЕ 3" },
+          { src: "/images/mts/voice-new/screen-recording-4.png", label: "ЗАПИСЬ — СОСТОЯНИЕ 4" },
+          { src: "/images/mts/voice-new/screen-summary-1.png", label: "САММАРИ РАЗГОВОРА" },
+          { src: "/images/mts/voice-new/screen-summary-2.png", label: "САММАРИ — ВАРИАНТ 2" },
+          { src: "/images/mts/voice-new/screen-summary-3.png", label: "САММАРИ — ВАРИАНТ 3" },
         ],
         links: [
           { label: "AI-шумоподавление — впервые на рынке моб. связи (24.10.2025)", url: "https://golicino.mts.ru/about/media-centr/soobshheniya-kompanii/novosti-mts-v-rossii-i-mire/2025-10-24/mts-pervoj-na-rynke-zapuskaet-funkciyu-ai-shumopodavleniya-v-golosovyh-vyzovah" },
           { label: "Запуск МТС AI Секретаря (08.10.2025)", url: "https://moskva.mts.ru/about/media-centr/soobshheniya-kompanii/novosti-mts-v-rossii-i-mire/2025-10-08/mts-zapustila-servis-dlya-otveta-na-zvonki-cherez-golosovogo-pomoshhnika" },
+          { label: "«Звонок в чат» — Секретарь озвучивает текст (20.08.2025)", url: "https://moskva.mts.ru/personal/novosti/2025-08-20/ne-mozhete-govoritj-napishite--sekretarj-sam-ozvuchit-otvet-zvonyaschemu" },
           { label: "Услуга «Запись разговоров» (16.07.2025)", url: "https://moskva.mts.ru/personal/novosti/2025-07-16/novaya-usluga-zapisj-razgovorov-avtomaticheskaya-zapisj-bez-ogranichenij" },
+          { label: "«Безопасный звонок» — ИИ-предупреждение о мошенничестве (24.10.2024)", url: "https://moskva.mts.ru/about/media-centr/soobshheniya-kompanii/novosti-mts-v-rossii-i-mire/2024-10-24/mts-nachala-preduprezhdat-o-telefonnom-moshennichestve-vo-vremya-razgovora" },
+          { label: "Защитник для абонентов других операторов (16.10.2024)", url: "https://moskva.mts.ru/about/media-centr/soobshheniya-kompanii/novosti-mts-v-rossii-i-mire/2024-10-16/mts-vnedrila-funkciyu-blokirovok-zvonkov-v-prilozhenii-zashhitnik-dlya-abonentov-drugih-operatorov" },
           { label: "Голосовые вызовы через Яндекс Станцию (РБК)", url: "https://www.rbc.ru/technology_and_media/05/09/2024/66d88a609a79479f19a10ecc" },
+          { label: "Умный определитель номера (20.08.2024)", url: "https://moskva.mts.ru/about/media-centr/soobshheniya-kompanii/novosti-mts-v-rossii-i-mire/2024-08-20/mts-zapustila-besplatnuyu-funkciyu-umnogo-opredelitelya-nomera-s-zashhitoj-ot-spama-v-servise-zashhitnik" },
+          { label: "Запуск приложения «Защитник» (23.01.2024)", url: "https://moskva.mts.ru/about/media-centr/soobshheniya-kompanii/novosti-mts-v-rossii-i-mire/2024-01-23/mts-zapuskaet-antispam-prilozhenie-zashhitnik" },
         ],
       },
       {
