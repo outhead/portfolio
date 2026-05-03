@@ -1202,30 +1202,12 @@ export default function PreviewHome() {
                 className="block h-full no-underline group"
               >
                 <div className="relative h-full min-h-[260px] md:min-h-[280px] rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5 md:p-6 flex flex-col justify-between gap-5 overflow-hidden transition-all duration-300 group-hover:border-[#A6FF00]/40 group-hover:bg-white/[0.04]">
-                  {/* Радар-кольца справа */}
-                  <div
-                    aria-hidden
-                    className="pointer-events-none absolute -right-16 top-1/2 -translate-y-1/2 w-[260px] h-[260px] opacity-55"
-                    style={{
-                      background:
-                        "repeating-radial-gradient(circle, rgba(166,255,0,0.18) 0 1px, transparent 1px 22px)",
-                    }}
-                  />
-                  <div
-                    aria-hidden
-                    className="pointer-events-none absolute right-[14px] top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-[#A6FF00] shadow-[0_0_14px_rgba(166,255,0,0.85)]"
-                  />
-
                   {/* Топ-метка */}
-                  <div className="flex items-start justify-between gap-3 relative z-[1]">
+                  <div className="relative z-[1]">
                     <span className="inline-flex items-center gap-2 font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-[#A6FF00] leading-none">
                       <Compass className="w-4 h-4 shrink-0" strokeWidth={1.75} />
                       Экспертиза
                     </span>
-                    <ArrowUpRight
-                      className="w-5 h-5 shrink-0 text-[#A6FF00]/40 opacity-0 -translate-x-1 translate-y-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 group-hover:text-[#A6FF00] transition-all duration-300"
-                      strokeWidth={1.75}
-                    />
                   </div>
 
                   {/* 3 направления — синхронно с секцией ниже */}
