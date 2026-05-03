@@ -1143,14 +1143,24 @@ export default function PreviewHome() {
                 className="block h-full no-underline group"
               >
                 <div className="relative h-full min-h-[260px] md:min-h-[280px] rounded-2xl border border-[#C9A66B]/30 bg-gradient-to-br from-[#C9A66B]/[0.10] via-[#C9A66B]/[0.04] to-transparent p-5 md:p-6 flex flex-col justify-between gap-4 overflow-hidden transition-all duration-300 group-hover:border-[#C9A66B]/60 group-hover:from-[#C9A66B]/[0.14] group-hover:shadow-[0_0_40px_-8px_rgba(201,166,107,0.28)]">
-                  {/* мягкое золотое свечение справа — намёк на трофей */}
+                  {/* мягкое золотое свечение справа — ambient под трофеем */}
                   <div
                     aria-hidden
-                    className="pointer-events-none absolute -right-10 top-1/2 -translate-y-1/2 w-[180px] h-[180px] rounded-full opacity-60"
+                    className="pointer-events-none absolute -right-10 top-1/2 -translate-y-1/2 w-[200px] h-[200px] rounded-full opacity-60"
                     style={{
                       background:
-                        "radial-gradient(circle, rgba(201,166,107,0.30) 0%, rgba(201,166,107,0.10) 35%, rgba(201,166,107,0) 70%)",
+                        "radial-gradient(circle, rgba(201,166,107,0.32) 0%, rgba(201,166,107,0.10) 35%, rgba(201,166,107,0) 70%)",
                     }}
+                  />
+
+                  {/* Иконка приза справа — реальный 3D-объект */}
+                  <Image
+                    src="/images/gpn/prize.png"
+                    alt="CX Awards 2024 — приз"
+                    width={462}
+                    height={616}
+                    aria-hidden
+                    className="pointer-events-none absolute right-2 md:right-3 top-1/2 -translate-y-1/2 w-[110px] md:w-[140px] h-auto opacity-90 group-hover:opacity-100 group-hover:scale-[1.04] transition-all duration-500 drop-shadow-[0_8px_30px_rgba(201,166,107,0.35)]"
                   />
 
                   {/* Топ-метка */}

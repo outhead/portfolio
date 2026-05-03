@@ -176,7 +176,6 @@ export const projects: Project[] = [
           { src: "/images/mts/voice-new/screen-recording-1.png", label: "ЗАПИСЬ РАЗГОВОРОВ — ЛЕНДИНГ" },
           { src: "/images/mts/voice-new/screen-recording-2.png", label: "ЗАПИСЬ — ПОДКЛЮЧЕНО" },
           { src: "/images/mts/voice-new/screen-recording-3.png", label: "ЗАПИСЬ — СОСТОЯНИЕ 3" },
-          { src: "/images/mts/voice-new/screen-recording-4.png", label: "ЗАПИСЬ — СОСТОЯНИЕ 4" },
           { src: "/images/mts/voice-new/screen-summary-1.png", label: "САММАРИ РАЗГОВОРА" },
           { src: "/images/mts/voice-new/screen-summary-2.png", label: "САММАРИ — ВАРИАНТ 2" },
           { src: "/images/mts/voice-new/screen-summary-3.png", label: "САММАРИ — ВАРИАНТ 3" },
