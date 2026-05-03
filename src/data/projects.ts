@@ -400,7 +400,6 @@ export const projects: Project[] = [
           { label: "Карточка ЕСО на CX Awards 2024 (РБК)", url: "https://cxa-spb.rbc.ru/proposals/147/" },
         ],
         heroes: [
-          { src: "/images/gpn/eso-new/eso-start.png", alt: "ЕСО — стартовый экран (генерация)", aspect: "3/2" },
           { src: "/images/gpn/eso-new/eso-page-8.png", alt: "ЕСО — экран 8 (генерация)", aspect: "3/2" },
           { src: "/images/gpn/eso-new/eso-page-11.png", alt: "ЕСО — экран 11 (генерация)", aspect: "3/2" },
           { src: "/images/gpn/eso-new/eso-page-16.png", alt: "ЕСО — экран 16 (генерация)", aspect: "3/2" },
