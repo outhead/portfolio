@@ -265,6 +265,7 @@ export const projects: Project[] = [
           { value: "~50%", label: "команды используют AI в нескольких задачах" },
           { value: "M + T", label: "хоткей вызова плагина" },
         ],
+        screenshotsMode: "web",
         screenshots: [
           { src: "/images/mts/ai/01-figma-svg-icons.png", label: "Вход · SVG в Figma", caption: "Стартовая точка: набор системных иконок в Figma — Person, Plane, Filter, Heart, Play, Search, Premium. Дизайнер выбирает SVG и нажимает Export." },
           { src: "/images/mts/ai/02-c4d-plugin-ui.png", label: "Плагин · Cinema 4D", caption: "Тот самый плагин в Cinema 4D, написанный за 8 часов на vibe coding (Cursor + Claude). Поля: SVG, материал (Металл / Пластик / …), освещение (Контрастный свет / …), пресет поворота, имя файла. Кнопка «Рендер» — и готово. Cinema 4D тут — engine, в который дизайнер не залезает руками." },
