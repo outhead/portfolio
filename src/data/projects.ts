@@ -426,6 +426,9 @@ export const projects: Project[] = [
           { label: "Consta на GitHub", url: "https://github.com/consta-design-system" },
           { label: "Статья vc.ru от ГПН", url: "https://vc.ru/gazpromneft/676527" },
         ],
+        heroes: [
+          { src: "/images/gpn/consta/hero-consta.png", alt: "Consta — постер дизайн-системы", aspect: "16/9" },
+        ],
         screenshots: [
           { src: "/images/gpn/consta/consta-quick-start.png", label: "Quick Start", caption: "Consta — open-source дизайн-система ГПН. Бесплатна по MIT, распространяется на любых продуктах: веб, мобильные, видеостены" },
           { src: "/images/gpn/consta/consta-buttons.png", label: "Вариативность кнопок", caption: "Кнопки как пример вариативности: 4 размера, 3 формы, 3 цветовых акцента, состояния — без жёстких ограничений на сочетания" },
