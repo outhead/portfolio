@@ -5,6 +5,7 @@ import ParticleSphere from "@/components/ParticleSphere";
 import PulseAnimation, { type PulseVariant } from "@/components/PulseAnimation";
 import FlippingWord from "@/components/FlippingWord";
 import FinalCTA from "@/components/FinalCTA";
+import CompanyMarquee from "@/components/CompanyMarquee";
 import { TypographyFix } from "@/components/TypographyFix";
 import { workProjects } from "@/data/projects";
 import Link from "next/link";
@@ -1302,39 +1303,9 @@ export default function PreviewHome() {
           </motion.div>
         </motion.div>
 
-        {/* Marquee — bento-band card */}
+        {/* Marquee — bento-band card с drag-to-spin */}
         <div className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pb-10 md:pb-14">
-          <div
-            aria-label="Компании, в которых я работал"
-            className="relative rounded-2xl border border-white/[0.08] bg-white/[0.015] py-6 md:py-8 overflow-hidden"
-          >
-            <div className="relative overflow-hidden">
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-y-0 left-0 w-16 md:w-24 z-10"
-                style={{ background: "linear-gradient(to right, rgba(10,10,10,1), rgba(10,10,10,0))" }}
-              />
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-y-0 right-0 w-16 md:w-24 z-10"
-                style={{ background: "linear-gradient(to left, rgba(10,10,10,1), rgba(10,10,10,0))" }}
-              />
-              <div className="flex items-center whitespace-nowrap marquee">
-                {[0, 1].map((loopIdx) => (
-                  <div key={loopIdx} className="flex items-center shrink-0" aria-hidden={loopIdx === 1}>
-                    {["МТС", "Ozon", "Газпром Нефть", "MWS AI", "ВШЭ"].map((name) => (
-                      <span key={name + loopIdx} className="flex items-center">
-                        <span className="font-p95 text-[22px] md:text-[32px] lg:text-[40px] tracking-[0.04em] uppercase text-white/80 leading-none px-6 md:px-10">
-                          {name}
-                        </span>
-                        <span aria-hidden className="text-white/20 text-2xl md:text-3xl select-none leading-none">·</span>
-                      </span>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          <CompanyMarquee />
         </div>
       </section>
 
