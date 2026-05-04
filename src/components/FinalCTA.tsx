@@ -12,7 +12,7 @@ import { ArrowRight, Send } from "lucide-react";
 // раз в 3 секунды синхронизируемся с сервером (берём max).
 // ───────────────────────────────────────────────────────────
 const NS = "shugaev-portfolio";
-const KEY = "scroll-thanks";
+const KEY = "scroll-thanks-v2";
 const GET_URL = `https://abacus.jasoncameron.dev/get/${NS}/${KEY}`;
 const HIT_URL = `https://abacus.jasoncameron.dev/hit/${NS}/${KEY}`;
 
