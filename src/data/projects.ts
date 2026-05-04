@@ -108,7 +108,7 @@ export const projects: Project[] = [
     slug: "mts-2024",
     title: "Дать МТС голос и собрать Мой МТС в платформу",
     company: "МТС",
-    role: "Руководитель направления дизайна — Digital Storefronts (B2C ecosystem)",
+    role: "Руководитель направления дизайна (B2C ecosystem)",
     period: "май 2024 — июль 2025",
     year: 2024,
     description:
