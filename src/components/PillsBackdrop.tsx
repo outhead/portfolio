@@ -72,9 +72,9 @@ export default function PillsBackdrop() {
       };
 
       // Pill factory — крупные лаймовые пилюли
-      const pillW = Math.max(54, Math.round(w * 0.16));
-      const pillH = Math.max(22, Math.round(pillW * 0.42));
-      const maxPills = 30;
+      const pillW = Math.max(72, Math.round(w * 0.22));
+      const pillH = Math.max(30, Math.round(pillW * 0.42));
+      const maxPills = 25;
 
       const pillBodies: Matter.Body[] = [];
       const spawnPill = () => {
@@ -112,11 +112,12 @@ export default function PillsBackdrop() {
       const onEnter = () => {
         addGround();
         if (spawnId != null) return;
-        // burst старта
-        for (let i = 0; i < 4; i++) {
-          window.setTimeout(spawnPill, i * 110);
+        // Стартовый burst: 8 пилюль в первые 400мс
+        for (let i = 0; i < 8; i++) {
+          window.setTimeout(spawnPill, i * 50);
         }
-        spawnId = window.setInterval(spawnPill, 550);
+        // Дальше — каждые 120мс, чтобы половина кубика заполнялась за ~3 секунды
+        spawnId = window.setInterval(spawnPill, 120);
       };
       const onLeave = () => {
         if (spawnId != null) {
