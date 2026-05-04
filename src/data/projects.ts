@@ -447,7 +447,6 @@ export const projects: Project[] = [
           { value: "2", label: "продукта в кейсе" },
           { value: "1", label: "DS — Consta на оба" },
           { value: "3", label: "контекста ЭРА: промысел · НТЦ · центр" },
-          { value: "≠", label: "команды: ЭРА — Титяев, Юпитер — соседний отдел" },
         ],
         screenshots: [
           { src: "/images/gpn/consta/jupiter-main.png", label: "Юпитер · главная", caption: "Юпитер — главная: поиск по внутренним системам ГПН и лента изменений", protected: true },
