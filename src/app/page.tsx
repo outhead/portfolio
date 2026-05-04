@@ -1598,7 +1598,7 @@ export default function PreviewHome() {
             <h3 className="mt-5 md:mt-7 font-p95 text-[clamp(40px,8.5vw,128px)] leading-[0.9] uppercase tracking-tight text-white">
               Не&nbsp;верьте мне на&nbsp;слово<Star />
             </h3>
-            <p className="mt-5 md:mt-7 font-p95 text-[clamp(14px,1.4vw,18px)] tracking-[0.22em] uppercase text-[#A6FF00]">
+            <p className="mt-5 md:mt-7 font-p95 text-[clamp(18px,2vw,28px)] tracking-[0.22em] uppercase text-[#A6FF00]">
               *&nbsp;Спросите тех, кто со&nbsp;мной работал
             </p>
           </motion.div>
