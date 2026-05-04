@@ -15,6 +15,10 @@ import { useEffect, useRef } from "react";
 
 const COMPANIES = ["МТС", "Ozon", "Газпром Нефть", "MWS AI", "ВШЭ"];
 
+// Сколько раз дублировать список — чтобы контента всегда хватало даже при быстром флике
+// на широком экране (4К). 5 копий × ~800px ≈ 4000px, покрывает любую раскрутку.
+const N_COPIES = 5;
+
 const BASE_VELOCITY = -80; // px/sec — обычная скорость дрейфа влево
 const MAX_VELOCITY = 3000; // px/sec — потолок флика
 const DECAY = 0.96; // коэф затухания velocity к BASE_VELOCITY за кадр
@@ -38,8 +42,8 @@ export default function CompanyMarquee() {
     if (reduced) velocityRef.current = 0;
 
     const measure = () => {
-      // Half-width = ширина одного набора (рендерим 2 копии)
-      halfWidthRef.current = el.scrollWidth / 2;
+      // Период повтора = ширина одного набора. Рендерим N_COPIES копий → делим scrollWidth на N.
+      halfWidthRef.current = el.scrollWidth / N_COPIES;
     };
     measure();
 
@@ -159,8 +163,8 @@ export default function CompanyMarquee() {
           style={{ background: "linear-gradient(to left, rgba(10,10,10,1), rgba(10,10,10,0))" }}
         />
         <div ref={trackRef} className="flex items-center whitespace-nowrap will-change-transform">
-          {[0, 1].map((loopIdx) => (
-            <div key={loopIdx} className="flex items-center shrink-0" aria-hidden={loopIdx === 1}>
+          {Array.from({ length: N_COPIES }, (_, loopIdx) => (
+            <div key={loopIdx} className="flex items-center shrink-0" aria-hidden={loopIdx > 0}>
               {COMPANIES.map((name) => (
                 <span key={name + loopIdx} className="flex items-center">
                   <span className="font-p95 text-[22px] md:text-[32px] lg:text-[40px] tracking-[0.04em] uppercase text-white/80 leading-none px-6 md:px-10">
