@@ -106,9 +106,11 @@ export function CardCoverVideo({
     v.addEventListener("pause", onPauseOrEnded);
     v.addEventListener("ended", onPauseOrEnded);
 
-    // ── ВЕТКА 1: Touch (no hover) — autoplay loop, но только когда в вьюпорте.
-    // Игнорируем pauseAt: на мобиле hover нет, тап = переход по карточке.
-    // Чтобы не жечь батарейку на куче карточек одновременно, паузим вне вьюпорта.
+    // ── ВЕТКА 1: Touch (no hover) — autoplay loop, но только когда карточка
+    // в узкой полосе фокуса в центре viewport (50%—65% от верха), а не
+    // просто видна на четверть. Иначе при скролле играют сразу 2-3 карточки.
+    // Та же полоса, что использует useMobileFocus в ProjectCard для cover-opacity,
+    // → play и cover синхронны.
     if (isTouch) {
       const playWhenReady = () => {
         v.play().catch(() => {});
@@ -126,7 +128,13 @@ export function CardCoverVideo({
               }
             }
           },
-          { threshold: 0.25 },
+          {
+            // Виртуальный root сжат до полосы 50%—65% от верха viewport.
+            // Карточка считается активной, только если её bbox пересекает
+            // эту узкую зону → одновременно играет максимум одна карточка.
+            rootMargin: "-50% 0px -35% 0px",
+            threshold: 0,
+          },
         );
         io.observe(target);
       } else {
