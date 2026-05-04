@@ -1116,14 +1116,14 @@ export default function PreviewHome() {
                       <Link
                         href="https://t.me/egoradi"
                         target="_blank"
-                        className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-[#A6FF00] text-black font-p95 text-[15px] md:text-sm tracking-[0.12em] uppercase hover:bg-white transition-colors no-underline"
+                        className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-[#A6FF00] text-black font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:bg-white transition-colors no-underline"
                       >
                         Обсудить проект
                         <ArrowRight className="w-4 h-4" strokeWidth={2.2} />
                       </Link>
                       <Link
                         href="#portfolio"
-                        className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 font-p95 text-[15px] md:text-sm tracking-[0.12em] uppercase hover:border-white/50 hover:text-white transition-colors no-underline"
+                        className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:border-white/50 hover:text-white transition-colors no-underline"
                       >
                         Смотреть кейсы
                         <ArrowRight className="w-4 h-4" strokeWidth={2} />

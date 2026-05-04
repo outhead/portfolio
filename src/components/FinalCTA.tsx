@@ -367,7 +367,7 @@ export default function FinalCTA() {
               type="button"
               onClick={onClick}
               whileTap={{ scale: 0.92 }}
-              className={`group relative inline-flex items-center justify-center px-8 py-3.5 md:px-10 md:py-4 rounded-full bg-[#A6FF00] text-black font-p95 text-sm md:text-[15px] tracking-[0.16em] uppercase select-none shadow-[0_0_0_0_rgba(166,255,0,0)] hover:shadow-[0_0_60px_-10px_rgba(166,255,0,0.55)] transition-shadow ${
+              className={`group relative inline-flex items-center justify-center px-6 py-3.5 rounded-full bg-[#A6FF00] text-black font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase select-none shadow-[0_0_0_0_rgba(166,255,0,0)] hover:shadow-[0_0_60px_-10px_rgba(166,255,0,0.55)] transition-shadow ${
                 pressing ? "scale-[0.94]" : "scale-100"
               }`}
               aria-label="Улыбнуться"
@@ -395,16 +395,16 @@ export default function FinalCTA() {
             <Link
               href="https://t.me/egoradi"
               target="_blank"
-              className="inline-flex items-center gap-2 px-7 py-4 md:px-8 md:py-5 rounded-full border border-[#A6FF00]/40 text-[#A6FF00] font-p95 text-sm md:text-[15px] tracking-[0.14em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
+              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-[#A6FF00]/40 text-[#A6FF00] font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
             >
-              <Send className="w-4 h-4 md:w-5 md:h-5" strokeWidth={2.2} />
+              <Send className="w-4 h-4" strokeWidth={2.2} />
               Написать в Telegram
             </Link>
             {/* Используем обычный <a>, не next/link — для якорной прокрутки внутри страницы.
                 Next.js Link иногда обрабатывает hash-ссылки как навигацию на корень. */}
             <a
               href="#contacts"
-              className="inline-flex items-center gap-2 px-7 py-4 md:px-8 md:py-5 rounded-full border border-white/20 text-white/85 font-p95 text-sm md:text-[15px] tracking-[0.14em] uppercase hover:border-white/50 hover:text-white transition-colors no-underline"
+              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:border-white/50 hover:text-white transition-colors no-underline"
             >
               Все каналы
               <ArrowRight className="w-4 h-4" strokeWidth={2} />

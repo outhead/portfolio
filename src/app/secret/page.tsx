@@ -173,7 +173,7 @@ export default function SecretPage() {
                 </p>
                 <Link
                   href="/"
-                  className="mt-6 inline-flex items-center gap-2 px-6 py-3 md:px-7 md:py-3.5 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
+                  className="mt-6 inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2.2} />
                   Вернуться
