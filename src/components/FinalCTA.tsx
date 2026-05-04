@@ -310,7 +310,19 @@ export default function FinalCTA() {
           variants={stagger}
           className="relative rounded-3xl border border-white/[0.1] bg-gradient-to-br from-[#0c0c0c] via-[#0a0a0a] to-[#080808] overflow-hidden p-7 md:p-10 lg:p-14"
         >
-          {/* Мягкое свечение внутри карточки */}
+          {/* Точечная сетка — еле заметная, циклично повторяется */}
+          <div
+            aria-hidden
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)",
+              backgroundSize: "24px 24px",
+              backgroundPosition: "0 0",
+            }}
+          />
+
+          {/* Мягкое свечение внутри карточки — поверх сетки */}
           <div
             aria-hidden
             className="absolute inset-0 pointer-events-none opacity-80"

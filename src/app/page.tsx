@@ -1792,8 +1792,8 @@ export default function PreviewHome() {
             {/* 6. Location — компактная плитка, глобус справа (выходит за правый край), текст слева. */}
             <motion.div variants={fadeUp} className="col-span-2 md:col-span-4">
               <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0a0a0a] min-h-[200px] md:min-h-[220px]">
-                {/* Текст — слева по центру */}
-                <div className="relative z-[2] flex flex-col items-start justify-center gap-3 h-full md:h-[220px] pl-6 md:pl-8 pr-[40%] py-5 md:py-6">
+                {/* Текст — абсолют, чтобы НЕ блокировать drag по глобусу справа */}
+                <div className="absolute z-[2] left-6 md:left-8 top-1/2 -translate-y-1/2 max-w-[60%] md:max-w-[55%] flex flex-col items-start gap-3 pointer-events-none">
                   <h4 className="font-p95 text-[clamp(20px,2.4vw,30px)] uppercase tracking-[0.02em] text-white leading-none">
                     Москва, Россия
                   </h4>
@@ -1805,9 +1805,9 @@ export default function PreviewHome() {
                     Открыт к работе по всему миру
                   </div>
                 </div>
-                {/* Глобус — справа, центр сдвинут за правый край, видна левая половина с маркером Москвы */}
+                {/* Глобус — справа, чуть протискивается за правый край; левая часть с маркером Москвы видна */}
                 <div
-                  className="absolute top-1/2 -translate-y-1/2 right-[-260px] md:right-[-280px] aspect-square pointer-events-auto"
+                  className="absolute top-1/2 -translate-y-1/2 right-[-120px] md:right-[-160px] aspect-square pointer-events-auto"
                   style={{ width: "560px" }}
                 >
                   <DotGlobe />
