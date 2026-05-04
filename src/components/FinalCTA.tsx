@@ -390,14 +390,15 @@ export default function FinalCTA() {
                   <Send className="w-4 h-4" strokeWidth={2.2} />
                   Написать в Telegram
                 </Link>
-                <a
-                  href="#contacts"
-                  data-ym-goal="all_channels"
+                <Link
+                  href="https://t.me/vigrom"
+                  target="_blank"
+                  data-ym-goal="vigrom_channel"
                   className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:border-white/50 hover:text-white transition-colors no-underline"
                 >
-                  Все каналы
-                  <ArrowRight className="w-4 h-4" strokeWidth={2} />
-                </a>
+                  <Send className="w-4 h-4" strokeWidth={2.2} />
+                  Подписаться на Vigrom
+                </Link>
               </motion.div>
             </div>
 
