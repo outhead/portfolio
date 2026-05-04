@@ -331,85 +331,88 @@ export default function FinalCTA() {
             )}
           </motion.div>
 
-          {/* Заголовок — меняется по достижении порогов */}
-          <div className="relative min-h-[clamp(120px,16vw,240px)]">
-            <AnimatePresence mode="wait">
-              <motion.h2
-                key={stage.id}
-                initial={{ opacity: 0, y: 18, filter: "blur(8px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                exit={{ opacity: 0, y: -10, filter: "blur(8px)" }}
-                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute inset-0 font-p95 text-[clamp(32px,6.5vw,96px)] leading-[0.98] uppercase tracking-tight max-w-[1400px] text-white"
-              >
-                {stage.headline}
-                {stage.accent ? (
-                  <span className="text-[#A6FF00]">{stage.accent}</span>
-                ) : null}
-                {stage.bonus ? (
-                  <Link
-                    href={stage.bonus.href}
-                    className="inline-flex align-middle items-center gap-1.5 ml-3 md:ml-5 px-4 py-2 md:px-5 md:py-2.5 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[15px] md:text-[15px] tracking-[0.2em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
+          <div className="relative grid md:grid-cols-[1fr_auto] gap-8 md:gap-12 lg:gap-16 md:items-center">
+            {/* Левая колонка — заголовок + Telegram-кнопки */}
+            <div className="min-w-0">
+              {/* Заголовок — меняется по достижении порогов */}
+              <div className="relative min-h-[clamp(120px,16vw,240px)]">
+                <AnimatePresence mode="wait">
+                  <motion.h2
+                    key={stage.id}
+                    initial={{ opacity: 0, y: 18, filter: "blur(8px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    exit={{ opacity: 0, y: -10, filter: "blur(8px)" }}
+                    transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                    className="absolute inset-0 font-p95 text-[clamp(32px,6vw,84px)] leading-[0.98] uppercase tracking-tight text-white"
                   >
-                    {stage.bonus.label}
-                  </Link>
-                ) : null}
-              </motion.h2>
-            </AnimatePresence>
-          </div>
-
-          {/* Кнопка-счётчик */}
-          <motion.div
-            variants={fadeUp}
-            className="relative mt-6 md:mt-8 flex flex-wrap items-center gap-5 md:gap-7"
-          >
-            <motion.button
-              type="button"
-              onClick={onClick}
-              whileTap={{ scale: 0.92 }}
-              className={`group relative inline-flex items-center justify-center px-6 py-3.5 rounded-full bg-[#A6FF00] text-black font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase select-none shadow-[0_0_0_0_rgba(166,255,0,0)] hover:shadow-[0_0_60px_-10px_rgba(166,255,0,0.55)] transition-shadow ${
-                pressing ? "scale-[0.94]" : "scale-100"
-              }`}
-              aria-label="Улыбнуться"
-            >
-              <span className="relative">Улыбнуться</span>
-            </motion.button>
-
-            {globalCount != null && (
-              <div className="inline-flex items-baseline gap-2 font-p95">
-                <span className="text-[clamp(22px,2.6vw,36px)] leading-none text-white tabular-nums">
-                  {globalCount.toLocaleString("ru-RU")}
-                </span>
-                <span className="text-[13px] md:text-[14px] tracking-[0.18em] uppercase text-white/45">
-                  {pluralize(globalCount)} нажали
-                </span>
+                    {stage.headline}
+                    {stage.accent ? (
+                      <span className="text-[#A6FF00]">{stage.accent}</span>
+                    ) : null}
+                    {stage.bonus ? (
+                      <Link
+                        href={stage.bonus.href}
+                        className="inline-flex align-middle items-center gap-1.5 ml-3 md:ml-5 px-4 py-2 md:px-5 md:py-2.5 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[15px] md:text-[15px] tracking-[0.2em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
+                      >
+                        {stage.bonus.label}
+                      </Link>
+                    ) : null}
+                  </motion.h2>
+                </AnimatePresence>
               </div>
-            )}
-          </motion.div>
 
-          {/* Telegram + все каналы */}
-          <motion.div
-            variants={fadeUp}
-            className="relative mt-6 md:mt-8 flex flex-wrap items-center gap-3"
-          >
-            <Link
-              href="https://t.me/egoradi"
-              target="_blank"
-              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-[#A6FF00]/40 text-[#A6FF00] font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
+              {/* Telegram + все каналы */}
+              <motion.div
+                variants={fadeUp}
+                className="mt-6 md:mt-8 flex flex-wrap items-center gap-3"
+              >
+                <Link
+                  href="https://t.me/egoradi"
+                  target="_blank"
+                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-[#A6FF00]/40 text-[#A6FF00] font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
+                >
+                  <Send className="w-4 h-4" strokeWidth={2.2} />
+                  Написать в Telegram
+                </Link>
+                <a
+                  href="#contacts"
+                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:border-white/50 hover:text-white transition-colors no-underline"
+                >
+                  Все каналы
+                  <ArrowRight className="w-4 h-4" strokeWidth={2} />
+                </a>
+              </motion.div>
+            </div>
+
+            {/* Правая колонка — Улыбнуться + счётчик, центрирована по вертикали */}
+            <motion.div
+              variants={fadeUp}
+              className="flex flex-col items-start md:items-center gap-4 md:gap-5"
             >
-              <Send className="w-4 h-4" strokeWidth={2.2} />
-              Написать в Telegram
-            </Link>
-            {/* Используем обычный <a>, не next/link — для якорной прокрутки внутри страницы.
-                Next.js Link иногда обрабатывает hash-ссылки как навигацию на корень. */}
-            <a
-              href="#contacts"
-              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:border-white/50 hover:text-white transition-colors no-underline"
-            >
-              Все каналы
-              <ArrowRight className="w-4 h-4" strokeWidth={2} />
-            </a>
-          </motion.div>
+              <motion.button
+                type="button"
+                onClick={onClick}
+                whileTap={{ scale: 0.92 }}
+                className={`group relative inline-flex items-center justify-center px-8 md:px-10 py-4 md:py-5 rounded-full bg-[#A6FF00] text-black font-p95 text-[16px] md:text-[18px] tracking-[0.14em] uppercase select-none shadow-[0_0_0_0_rgba(166,255,0,0)] hover:shadow-[0_0_80px_-10px_rgba(166,255,0,0.6)] transition-shadow ${
+                  pressing ? "scale-[0.94]" : "scale-100"
+                }`}
+                aria-label="Улыбнуться"
+              >
+                <span className="relative">Улыбнуться</span>
+              </motion.button>
+
+              {globalCount != null && (
+                <div className="inline-flex items-baseline gap-2 font-p95">
+                  <span className="text-[clamp(22px,2.6vw,36px)] leading-none text-white tabular-nums">
+                    {globalCount.toLocaleString("ru-RU")}
+                  </span>
+                  <span className="text-[13px] md:text-[14px] tracking-[0.18em] uppercase text-white/45">
+                    {pluralize(globalCount)} нажали
+                  </span>
+                </div>
+              )}
+            </motion.div>
+          </div>
 
         </motion.div>
       </div>
