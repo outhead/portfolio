@@ -309,7 +309,6 @@ export const projects: Project[] = [
         screenshots: [
           { src: "/images/mts/ai/konvert-demo.mp4", kind: "video", label: "КОНВЕРТ · ДЕМО", caption: "Конверт — мой первый vibe-coded Figma-плагин. Автоматизирует переименование в snake_case, конвертацию JPG/AVIF/WEBP, контроль веса и упаковку. Раньше — 20–80 минут вручную, после плагина — 1–2 минуты. С него и пошла волна vibe-coding в команде.", poster: "/images/mts/ai/konvert-demo-poster.jpg" },
           { src: "/images/mts/ai-new/plugin-ui-1.png", label: "C4D-ПЛАГИН · ИНТЕРФЕЙС", caption: "Cinema 4D-плагин одного из дизайнеров на vibe coding (Cursor + Claude): выбор SVG-иконки, материала, типа освещения и угла поворота, имя файла. Кнопка «Рендер» — и на выходе 3D-иконка в брендовой стилистике." },
-          { src: "/images/mts/ai-new/plugin-ui-2.png", label: "C4D-ПЛАГИН · ВЫБОР ПАРАМЕТРОВ", caption: "Расширенный экран параметров: пресеты материалов и освещения, контроль угла поворота, путь сохранения. Дизайнер не лезет в C4D руками — engine скрыт под капотом." },
         ],
       },
       {
