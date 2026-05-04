@@ -1213,25 +1213,25 @@ export default function PreviewHome() {
                     </span>
                   </div>
 
-                  {/* 3 направления — синхронно с секцией ниже */}
-                  <ul className="space-y-3 md:space-y-3.5 relative z-[1]">
+                  {/* 3 направления — синхронно с секцией #skills */}
+                  <ul className="space-y-4 md:space-y-5 relative z-[1]">
                     {[
-                      { num: "01", label: "Управление", note: "дизайн-функции" },
-                      { num: "02", label: "Продукт", note: "B2C, B2E, EdTech" },
-                      { num: "03", label: "Ремесло", note: "AI и код, руками" },
+                      { num: "01", label: "Управление", note: "строю и масштабирую дизайн-функции" },
+                      { num: "02", label: "Продукт", note: "B2C, B2E, EdTech — всегда на метрики" },
+                      { num: "03", label: "Ремесло", note: "AI и код, остаюсь в макетах руками" },
                     ].map((item) => (
                       <li
                         key={item.num}
                         className="flex items-baseline gap-3"
                       >
-                        <span className="font-p95 text-[12px] md:text-[15px] tracking-[0.2em] uppercase text-[#A6FF00]/55 leading-none w-6 shrink-0">
+                        <span className="text-[12px] md:text-[13px] tabular-nums tracking-[0.1em] text-[#A6FF00]/60 leading-none w-6 shrink-0">
                           {item.num}
                         </span>
                         <span className="flex-1 leading-tight">
-                          <span className="font-p95 text-[15px] md:text-[16px] tracking-[0.14em] uppercase text-white">
+                          <span className="text-[15px] md:text-[16px] font-semibold tracking-[0.04em] uppercase text-white">
                             {item.label}
                           </span>
-                          <span className="block text-[15px] md:text-[16px] text-white/45 font-light leading-snug mt-0.5">
+                          <span className="block text-[14px] md:text-[15px] text-white/55 font-light leading-snug mt-1">
                             {item.note}
                           </span>
                         </span>
