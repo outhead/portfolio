@@ -130,7 +130,7 @@ export default function Header() {
             target="_blank"
             className="inline-flex items-center gap-1.5 text-[12px] tracking-[0.12em] uppercase text-white/55 no-underline hover:text-white transition-colors border border-white/[0.08] hover:border-white/25 rounded px-3 py-2 min-h-[44px]"
           >
-            <FileDown className="w-3 h-3" strokeWidth={2} />
+            <FileDown className="w-3.5 h-3.5 text-[#A6FF00]" strokeWidth={2} />
             CV
           </Link>
         </div>
@@ -177,7 +177,7 @@ export default function Header() {
                   target="_blank"
                   className="inline-flex items-center gap-2 text-sm tracking-[0.1em] uppercase text-white/40 no-underline hover:text-white/60 transition-colors mt-2 pt-4 border-t border-white/[0.06] min-h-[44px]"
                 >
-                  <FileDown className="w-3.5 h-3.5" strokeWidth={2} />
+                  <FileDown className="w-4 h-4 text-[#A6FF00]" strokeWidth={2} />
                   Скачать CV
                 </Link>
               </nav>
