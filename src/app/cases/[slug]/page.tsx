@@ -137,7 +137,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
               <div className={`grid grid-cols-2 ${colsClass} gap-px bg-white/[0.04] rounded-lg overflow-hidden my-0`}>
                 {project.results!.map((r) => (
                   <div key={r.label} className="bg-black p-5 md:p-6 text-center">
-                    <div className="text-3xl md:text-5xl font-semibold text-white leading-none mb-2">
+                    <div className="font-p95 text-4xl md:text-6xl text-white leading-none mb-2 tracking-tight">
                       {r.value}
                     </div>
                     <div className="text-[15px] md:text-[16px] tracking-[0.1em] uppercase text-white/45">
@@ -353,7 +353,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                         key={c.label}
                         className="bg-black p-5 md:p-7 text-center"
                       >
-                        <div className="text-3xl md:text-5xl font-semibold text-white leading-none mb-2">
+                        <div className="font-p95 text-4xl md:text-6xl text-white leading-none mb-2 tracking-tight">
                           {c.value}
                         </div>
                         <div className="text-[12px] md:text-[16px] tracking-[0.12em] uppercase text-white/45 leading-tight">
