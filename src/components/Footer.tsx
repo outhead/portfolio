@@ -47,7 +47,7 @@ export default function Footer() {
           ))}
         </div>
 
-        <div className="flex items-center gap-4 text-[10px] tracking-[0.12em] uppercase text-white/25">
+        <div className="flex items-center gap-4 text-[12px] tracking-[0.12em] uppercase text-white/25">
           <span>Егор Шугаев © {new Date().getFullYear()}</span>
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}

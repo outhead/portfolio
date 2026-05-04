@@ -91,12 +91,12 @@ export default function SecretPage() {
       <header className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pt-8 md:pt-10 flex items-center justify-between">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-white/45 hover:text-white transition-colors no-underline"
+          className="inline-flex items-center gap-2 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/45 hover:text-white transition-colors no-underline"
         >
           <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2} />
           На главную
         </Link>
-        <span className="font-p95 text-[10px] md:text-[11px] tracking-[0.25em] uppercase text-[#A6FF00]">
+        <span className="font-p95 text-[12px] md:text-[13px] tracking-[0.25em] uppercase text-[#A6FF00]">
           [ Загадка ]
         </span>
       </header>
@@ -104,7 +104,7 @@ export default function SecretPage() {
       {/* Контент */}
       <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pt-14 md:pt-24 pb-20">
         <div className="max-w-[1100px]">
-          <p className="font-p95 text-[11px] md:text-[12px] tracking-[0.25em] uppercase text-white/40 mb-6 md:mb-8">
+          <p className="font-p95 text-[13px] md:text-[14px] tracking-[0.25em] uppercase text-white/40 mb-6 md:mb-8">
             Шифр Цезаря · сдвиньте, чтобы прочитать
           </p>
 
@@ -132,7 +132,7 @@ export default function SecretPage() {
           {/* Слайдер */}
           <div className="mt-12 md:mt-16 max-w-2xl">
             <div className="flex items-baseline justify-between mb-3">
-              <span className="font-p95 text-[10px] md:text-[11px] tracking-[0.25em] uppercase text-white/40">
+              <span className="font-p95 text-[12px] md:text-[13px] tracking-[0.25em] uppercase text-white/40">
                 Сдвиг
               </span>
               <span className="font-p95 text-[clamp(18px,2vw,28px)] tabular-nums text-white">
@@ -151,7 +151,7 @@ export default function SecretPage() {
               className="w-full h-2 appearance-none bg-white/[0.08] rounded-full outline-none cursor-pointer slider-lime"
             />
 
-            <div className="flex items-center justify-between mt-3 text-[10px] md:text-[11px] tracking-[0.18em] uppercase text-white/30 font-p95 tabular-nums">
+            <div className="flex items-center justify-between mt-3 text-[12px] md:text-[13px] tracking-[0.18em] uppercase text-white/30 font-p95 tabular-nums">
               <span>0</span>
               <span>{SHIFT_MAX}</span>
             </div>
@@ -173,7 +173,7 @@ export default function SecretPage() {
                 </p>
                 <Link
                   href="/"
-                  className="mt-6 inline-flex items-center gap-2 px-6 py-3 md:px-7 md:py-3.5 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[11px] md:text-[12px] tracking-[0.2em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
+                  className="mt-6 inline-flex items-center gap-2 px-6 py-3 md:px-7 md:py-3.5 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2.2} />
                   Вернуться

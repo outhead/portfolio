@@ -26,7 +26,7 @@ export default function PressCollapse({ links }: Props) {
         className="group inline-flex items-center gap-2.5 px-4 py-2.5 rounded-full border border-white/[0.08] hover:border-white/[0.2] text-white/65 hover:text-white transition-colors"
       >
         <Newspaper className="w-3.5 h-3.5 text-white/45 group-hover:text-[#A6FF00] transition-colors" strokeWidth={2} />
-        <span className="font-p95 text-[10px] tracking-[0.18em] uppercase">
+        <span className="font-p95 text-[12px] tracking-[0.18em] uppercase">
           Пресса и публикации · {links.length}
         </span>
         <ChevronDown

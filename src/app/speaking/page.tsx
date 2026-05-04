@@ -31,7 +31,7 @@ export default function SpeakingPage() {
           className="max-w-4xl"
         >
           <motion.div variants={fadeUp}>
-            <div className="inline-flex items-center gap-2 text-[10px] md:text-[11px] tracking-[0.22em] uppercase text-white/50 font-medium mb-4">
+            <div className="inline-flex items-center gap-2 text-[12px] md:text-[13px] tracking-[0.22em] uppercase text-white/50 font-medium mb-4">
               <span className="h-1 w-1 rounded-full bg-[#A6FF00]" />
               Публично
             </div>
@@ -66,7 +66,7 @@ export default function SpeakingPage() {
           <motion.div variants={fadeUp}>
             <div className="flex items-center gap-2 mb-4">
               <Mic2 className="w-4 h-4 text-white/30" strokeWidth={1.5} />
-              <div className="text-[10px] tracking-[0.18em] uppercase text-white/40 font-medium">
+              <div className="text-[12px] tracking-[0.18em] uppercase text-white/40 font-medium">
                 Выступления
               </div>
             </div>
@@ -86,7 +86,7 @@ export default function SpeakingPage() {
           <motion.div variants={fadeUp}>
             <div className="flex items-center gap-2 mb-4">
               <GraduationCap className="w-4 h-4 text-white/30" strokeWidth={1.5} />
-              <div className="text-[10px] tracking-[0.18em] uppercase text-white/40 font-medium">
+              <div className="text-[12px] tracking-[0.18em] uppercase text-white/40 font-medium">
                 Менторство и&nbsp;курсы
               </div>
             </div>
@@ -107,7 +107,7 @@ export default function SpeakingPage() {
           <motion.div variants={fadeUp}>
             <div className="flex items-center gap-2 mb-4">
               <Send className="w-4 h-4 text-white/30" strokeWidth={1.5} />
-              <div className="text-[10px] tracking-[0.18em] uppercase text-white/40 font-medium">
+              <div className="text-[12px] tracking-[0.18em] uppercase text-white/40 font-medium">
                 Telegram-канал
               </div>
             </div>

@@ -112,7 +112,7 @@ export default function ImageLightbox({ images, mode = "web" }: ImageLightboxPro
               <div className="text-sm md:text-[15px] text-white/85 font-medium leading-snug">
                 Закрыто по NDA{protectedCount > 0 ? ` · ${protectedCount}` : ""}
               </div>
-              <div className="text-[11px] text-white/45 mt-0.5">Скрины внутренних продуктов. Введите пароль, чтобы раскрыть.</div>
+              <div className="text-[13px] text-white/45 mt-0.5">Скрины внутренних продуктов. Введите пароль, чтобы раскрыть.</div>
             </div>
           </div>
           <form
@@ -147,7 +147,7 @@ export default function ImageLightbox({ images, mode = "web" }: ImageLightboxPro
             </button>
           </form>
           {passwordError && (
-            <div className="text-[11px] text-red-400/85">Неверный пароль</div>
+            <div className="text-[13px] text-red-400/85">Неверный пароль</div>
           )}
         </div>
       )}
@@ -229,7 +229,7 @@ export default function ImageLightbox({ images, mode = "web" }: ImageLightboxPro
                 )}
               </button>
               {(img.label || img.caption) && (
-                <figcaption className="font-mono text-[10px] md:text-[11px] tracking-[0.16em] uppercase text-white/40 text-center px-2">
+                <figcaption className="font-mono text-[12px] md:text-[13px] tracking-[0.16em] uppercase text-white/40 text-center px-2">
                   {img.label ?? img.caption}
                 </figcaption>
               )}
@@ -283,7 +283,7 @@ export default function ImageLightbox({ images, mode = "web" }: ImageLightboxPro
 
           <div className="flex-shrink-0 px-4 py-4 md:py-5 flex flex-col items-center gap-2 text-center">
             {images[activeIndex].label && (
-              <div className="font-mono text-[10px] md:text-[11px] tracking-[0.18em] uppercase text-white/45">
+              <div className="font-mono text-[12px] md:text-[13px] tracking-[0.18em] uppercase text-white/45">
                 {images[activeIndex].label}
               </div>
             )}
@@ -292,7 +292,7 @@ export default function ImageLightbox({ images, mode = "web" }: ImageLightboxPro
                 {images[activeIndex].caption}
               </div>
             )}
-            <div className="text-[10px] tracking-[0.12em] uppercase text-white/30">
+            <div className="text-[12px] tracking-[0.12em] uppercase text-white/30">
               {activeIndex + 1} / {images.length} · ESC для выхода · ← →
             </div>
           </div>

@@ -79,7 +79,7 @@ export default function MentoringPage() {
                   <p className="text-sm text-white/50 leading-relaxed mb-6">
                     {format.description}
                   </p>
-                  <div className="text-[10px] tracking-[0.12em] uppercase text-white/25">
+                  <div className="text-[12px] tracking-[0.12em] uppercase text-white/25">
                     {format.duration}
                   </div>
                 </div>
@@ -174,7 +174,7 @@ export default function MentoringPage() {
             {/* Cal.com booking */}
             <div className="flex flex-col gap-8">
               <div className="border border-white/[0.06] rounded-lg p-6 md:p-8 text-center hover:border-white/[0.08] transition-colors duration-300">
-                <div className="text-[10px] tracking-[0.1em] uppercase text-white/20 mb-4">
+                <div className="text-[12px] tracking-[0.1em] uppercase text-white/20 mb-4">
                   Или выберите время в календаре
                 </div>
                 <p className="text-xs text-white/40 mb-6 leading-relaxed">
@@ -190,7 +190,7 @@ export default function MentoringPage() {
                   Записаться через Cal.com
                 </Link>
 
-                <div className="my-4 text-[10px] tracking-[0.1em] uppercase text-white/20">
+                <div className="my-4 text-[12px] tracking-[0.1em] uppercase text-white/20">
                   или
                 </div>
 

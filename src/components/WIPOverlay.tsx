@@ -38,7 +38,7 @@ export default function WIPOverlay({
         />
 
         <div className="relative">
-          <span className="inline-flex items-center gap-2 font-p95 text-[11px] md:text-[12px] tracking-[0.22em] uppercase text-[#A6FF00]">
+          <span className="inline-flex items-center gap-2 font-p95 text-[13px] md:text-[14px] tracking-[0.22em] uppercase text-[#A6FF00]">
             <Wrench className="w-3.5 h-3.5" strokeWidth={2} />
             В работе
           </span>
@@ -55,14 +55,14 @@ export default function WIPOverlay({
           <div className="mt-7 md:mt-8 flex flex-wrap items-center gap-3">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 px-5 py-3 md:px-6 md:py-3.5 rounded-full bg-[#A6FF00] text-black font-p95 text-[11px] md:text-[12px] tracking-[0.18em] uppercase hover:bg-white transition-colors no-underline"
+              className="inline-flex items-center gap-2 px-5 py-3 md:px-6 md:py-3.5 rounded-full bg-[#A6FF00] text-black font-p95 text-[13px] md:text-[14px] tracking-[0.18em] uppercase hover:bg-white transition-colors no-underline"
             >
               <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2.2} />
               На главную
             </Link>
             <Link
               href="/#portfolio"
-              className="inline-flex items-center gap-2 px-5 py-3 md:px-6 md:py-3.5 rounded-full border border-white/[0.15] text-white/85 font-p95 text-[11px] md:text-[12px] tracking-[0.18em] uppercase hover:border-white/40 hover:text-white transition-colors no-underline"
+              className="inline-flex items-center gap-2 px-5 py-3 md:px-6 md:py-3.5 rounded-full border border-white/[0.15] text-white/85 font-p95 text-[13px] md:text-[14px] tracking-[0.18em] uppercase hover:border-white/40 hover:text-white transition-colors no-underline"
             >
               Готовые кейсы
               <ArrowRight className="w-3.5 h-3.5" strokeWidth={2} />

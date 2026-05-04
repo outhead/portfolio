@@ -578,19 +578,19 @@ function CareerHoverList() {
                 }`}
                 aria-hidden
               />
-              <span className="shrink-0 font-p95 text-[11px] tracking-[0.2em] uppercase text-white/50 w-[88px]">
+              <span className="shrink-0 font-p95 text-[13px] tracking-[0.2em] uppercase text-white/50 w-[88px]">
                 {job.year}
               </span>
               <span className="flex-1 min-w-0 flex flex-col">
                 <span className="font-p95 text-[15px] text-white uppercase leading-tight">
                   {job.company}
                   {job.current && (
-                    <span className="ml-2 text-[10px] tracking-[0.12em] uppercase text-[#A6FF00]/85">
+                    <span className="ml-2 text-[12px] tracking-[0.12em] uppercase text-[#A6FF00]/85">
                       now
                     </span>
                   )}
                 </span>
-                <span className="text-[12px] text-white/55 leading-tight">
+                <span className="text-[14px] text-white/55 leading-tight">
                   {job.role}
                 </span>
               </span>
@@ -610,14 +610,14 @@ function CareerHoverList() {
                 }`}
                 aria-hidden
               />
-              <span className="shrink-0 font-p95 text-[12px] tracking-[0.2em] uppercase text-white/50 w-[110px]">
+              <span className="shrink-0 font-p95 text-[14px] tracking-[0.2em] uppercase text-white/50 w-[110px]">
                 {job.year}
               </span>
               <span className="flex-1 min-w-0 flex flex-row items-baseline gap-3">
                 <span className="font-p95 text-[17px] text-white uppercase leading-tight truncate">
                   {job.company}
                   {job.current && (
-                    <span className="ml-2 text-[10px] tracking-[0.12em] uppercase text-[#A6FF00]/85">
+                    <span className="ml-2 text-[12px] tracking-[0.12em] uppercase text-[#A6FF00]/85">
                       now
                     </span>
                   )}
@@ -667,14 +667,14 @@ function CareerHoverList() {
                   transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
                 >
                   <div className="px-5 pb-4 pl-[calc(20px+8px+16px+88px)]">
-                    <p className="text-[12px] text-white/65 leading-relaxed mb-3">
+                    <p className="text-[14px] text-white/65 leading-relaxed mb-3">
                       {job.scope}
                     </p>
                     <ul className="space-y-1.5">
                       {job.details.map((d) => (
                         <li
                           key={d}
-                          className="flex items-start gap-2 text-[12px] text-white/55 leading-snug"
+                          className="flex items-start gap-2 text-[14px] text-white/55 leading-snug"
                         >
                           <span className="mt-[7px] h-px w-2 shrink-0 bg-white/30" />
                           <span>{d}</span>
@@ -771,13 +771,13 @@ function ServiceTile({ tile }: { tile: ServiceTileData }) {
             strokeWidth={1.75}
           />
           <span
-            className="font-p95 text-[10px] md:text-[11px] tracking-[0.22em] uppercase"
+            className="font-p95 text-[12px] md:text-[13px] tracking-[0.22em] uppercase"
             style={{ color: `${accent}CC` }}
           >
             ( {label} )
           </span>
         </div>
-        <span className="font-p95 text-[10px] md:text-[11px] tracking-[0.22em] uppercase text-white/30">
+        <span className="font-p95 text-[12px] md:text-[13px] tracking-[0.22em] uppercase text-white/30">
           {index} /
         </span>
       </div>
@@ -809,7 +809,7 @@ function ServiceTile({ tile }: { tile: ServiceTileData }) {
       {/* Низ: items — горизонтальный список через ·.
           mt-auto прижимает блок к низу карточки независимо от длины
           описания/items, чтобы низ всех 3 карточек выровнялся. */}
-      <div className="mt-auto pt-4 md:pt-5 border-t border-white/[0.06] text-[11px] md:text-[12px] tracking-[0.04em] text-white/45 leading-relaxed">
+      <div className="mt-auto pt-4 md:pt-5 border-t border-white/[0.06] text-[13px] md:text-[14px] tracking-[0.04em] text-white/45 leading-relaxed">
         {items.join(" · ")}
       </div>
     </motion.div>
@@ -986,7 +986,7 @@ function Toolbox() {
             className="mb-8 md:mb-10 flex items-baseline gap-3"
           >
             <SectionLabel>В РАБОТЕ</SectionLabel>
-            <span className="text-[11px] md:text-[12px] text-white/40 tracking-[0.06em]">
+            <span className="text-[13px] md:text-[14px] text-white/40 tracking-[0.06em]">
               без ритуалов и ярлыков
             </span>
           </motion.div>
@@ -1005,7 +1005,7 @@ function Toolbox() {
                 <div className="w-7 h-7 md:w-8 md:h-8 text-white/55 group-hover:text-white transition-colors">
                   {t.icon}
                 </div>
-                <span className="font-p95 text-[12px] md:text-[13px] tracking-[0.18em] uppercase text-white/70 group-hover:text-white transition-colors">
+                <span className="font-p95 text-[14px] md:text-[13px] tracking-[0.18em] uppercase text-white/70 group-hover:text-white transition-colors">
                   {t.name}
                 </span>
               </motion.div>
@@ -1080,12 +1080,12 @@ export default function PreviewHome() {
                 </div>
 
                 {/* Якорь — нижний левый угол */}
-                <div className="absolute bottom-6 left-6 md:bottom-10 md:left-10 lg:bottom-12 lg:left-12 z-[2] font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-white/40 whitespace-nowrap">
+                <div className="absolute bottom-6 left-6 md:bottom-10 md:left-10 lg:bottom-12 lg:left-12 z-[2] font-p95 text-[14px] md:text-[13px] tracking-[0.2em] uppercase text-white/40 whitespace-nowrap">
                   Москва
                 </div>
 
                 {/* Якорь — нижний правый угол */}
-                <div className="absolute bottom-6 right-6 md:bottom-10 md:right-10 lg:bottom-12 lg:right-12 z-[2] inline-flex items-center gap-2.5 font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-white/65 whitespace-nowrap">
+                <div className="absolute bottom-6 right-6 md:bottom-10 md:right-10 lg:bottom-12 lg:right-12 z-[2] inline-flex items-center gap-2.5 font-p95 text-[14px] md:text-[13px] tracking-[0.2em] uppercase text-white/65 whitespace-nowrap">
                   <span className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-[#A6FF00]" />
@@ -1169,7 +1169,7 @@ export default function PreviewHome() {
 
                   {/* Топ-метка */}
                   <div className="relative z-[1]">
-                    <span className="inline-flex items-center gap-2 font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-[#C9A66B] leading-none">
+                    <span className="inline-flex items-center gap-2 font-p95 text-[14px] md:text-[13px] tracking-[0.2em] uppercase text-[#C9A66B] leading-none">
                       <Trophy className="w-4 h-4 shrink-0" strokeWidth={1.75} />
                       Награда · 2024
                     </span>
@@ -1180,13 +1180,13 @@ export default function PreviewHome() {
                     <div className="font-p95 text-[clamp(40px,4.6vw,68px)] uppercase tracking-tight text-[#C9A66B] leading-[0.9]">
                       CX&apos;24
                     </div>
-                    <div className="text-[12px] md:text-[13px] tracking-[0.14em] uppercase text-white/75 mt-3 font-light">
+                    <div className="text-[14px] md:text-[13px] tracking-[0.14em] uppercase text-white/75 mt-3 font-light">
                       Customer Experience Awards
                     </div>
                   </div>
 
                   {/* Футер: победитель в сегменте, без стрелки */}
-                  <div className="relative z-[1] font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-[#C9A66B]/85 leading-none pt-3.5 border-t border-[#C9A66B]/15">
+                  <div className="relative z-[1] font-p95 text-[14px] md:text-[13px] tracking-[0.2em] uppercase text-[#C9A66B]/85 leading-none pt-3.5 border-t border-[#C9A66B]/15">
                     Победитель в сегменте B2E
                   </div>
                 </div>
@@ -1206,7 +1206,7 @@ export default function PreviewHome() {
                 <div className="relative h-full min-h-[260px] md:min-h-[280px] rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5 md:p-6 flex flex-col justify-between gap-5 overflow-hidden transition-all duration-300 group-hover:border-[#A6FF00]/40 group-hover:bg-white/[0.04]">
                   {/* Топ-метка */}
                   <div className="relative z-[1]">
-                    <span className="inline-flex items-center gap-2 font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-[#A6FF00] leading-none">
+                    <span className="inline-flex items-center gap-2 font-p95 text-[14px] md:text-[13px] tracking-[0.2em] uppercase text-[#A6FF00] leading-none">
                       <Compass className="w-4 h-4 shrink-0" strokeWidth={1.75} />
                       Экспертиза
                     </span>
@@ -1223,14 +1223,14 @@ export default function PreviewHome() {
                         key={item.num}
                         className="flex items-baseline gap-3"
                       >
-                        <span className="font-p95 text-[10px] md:text-[11px] tracking-[0.2em] uppercase text-[#A6FF00]/55 leading-none w-6 shrink-0">
+                        <span className="font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-[#A6FF00]/55 leading-none w-6 shrink-0">
                           {item.num}
                         </span>
                         <span className="flex-1 leading-tight">
                           <span className="font-p95 text-[13px] md:text-[14px] tracking-[0.14em] uppercase text-white">
                             {item.label}
                           </span>
-                          <span className="block text-[11px] md:text-[12px] text-white/45 font-light leading-snug mt-0.5">
+                          <span className="block text-[13px] md:text-[14px] text-white/45 font-light leading-snug mt-0.5">
                             {item.note}
                           </span>
                         </span>
@@ -1250,7 +1250,7 @@ export default function PreviewHome() {
                 {/* Топ-метка */}
                 <div className="flex items-center gap-2">
                   <BarChart3 className="w-4 h-4 shrink-0 text-[#A6FF00]" strokeWidth={1.75} />
-                  <span className="font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-[#A6FF00] leading-none">
+                  <span className="font-p95 text-[14px] md:text-[13px] tracking-[0.2em] uppercase text-[#A6FF00] leading-none">
                     В цифрах
                   </span>
                 </div>
@@ -1271,7 +1271,7 @@ export default function PreviewHome() {
                       <div className="font-p95 text-[clamp(28px,3.2vw,44px)] uppercase tracking-tight text-[#A6FF00] leading-none">
                         {item.value}
                       </div>
-                      <div className="text-[11px] md:text-[12px] tracking-[0.1em] uppercase text-white/55 leading-[1.35] font-light">
+                      <div className="text-[13px] md:text-[14px] tracking-[0.1em] uppercase text-white/55 leading-[1.35] font-light">
                         {item.label}
                       </div>
                     </div>
@@ -1373,7 +1373,7 @@ export default function PreviewHome() {
               <Link href="/experiments" className="no-underline group block h-full">
                 <div className="relative h-full min-h-[280px] md:min-h-[340px] rounded-2xl overflow-hidden border border-white/[0.06] group-hover:border-[#A6FF00]/40 bg-[#0a0a0a] transition-colors duration-300 p-6 md:p-7 flex flex-col justify-between">
                   <div>
-                    <div className="font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-white/50 mb-3">
+                    <div className="font-p95 text-[14px] md:text-[13px] tracking-[0.2em] uppercase text-white/50 mb-3">
                       ЭКСПЕРИМЕНТЫ
                     </div>
                     <h3 className="font-p95 text-[clamp(22px,3vw,36px)] uppercase leading-[0.95] text-white">
@@ -1572,7 +1572,7 @@ export default function PreviewHome() {
                   className="object-cover grayscale contrast-[1.05]"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4 flex items-center gap-1.5 text-[9px] tracking-[0.2em] uppercase text-white/60">
+                <div className="absolute bottom-4 left-4 right-4 flex items-center gap-1.5 text-[11px] tracking-[0.2em] uppercase text-white/60">
                   <span className="relative flex h-1.5 w-1.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
                     <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#A6FF00]" />
@@ -1603,7 +1603,7 @@ export default function PreviewHome() {
           <motion.div variants={fadeUp} className="pt-8 md:pt-10 border-t border-white/[0.06]">
             <div className="mb-4 flex items-center justify-between">
               <SectionLabel>КАРЬЕРА</SectionLabel>
-              <span className="text-[10px] md:text-[11px] tracking-[0.15em] uppercase text-white/35 hidden md:inline">
+              <span className="text-[12px] md:text-[13px] tracking-[0.15em] uppercase text-white/35 hidden md:inline">
                 Наведи, чтобы раскрыть
               </span>
             </div>
@@ -1670,7 +1670,7 @@ export default function PreviewHome() {
                   </div>
                   <div className="min-w-0">
                     <div className="text-sm text-white font-medium leading-tight">{t.name}</div>
-                    <div className="text-[11px] text-white/40 mt-1 leading-snug">{t.role}</div>
+                    <div className="text-[13px] text-white/40 mt-1 leading-snug">{t.role}</div>
                   </div>
                 </div>
               </motion.div>
@@ -1771,7 +1771,7 @@ export default function PreviewHome() {
               >
                 <div className="relative h-full min-h-[180px] md:min-h-[260px] rounded-2xl overflow-hidden border border-[#A6FF00]/30 bg-[#A6FF00] hover:bg-[#B8FF33] transition-colors p-6 md:p-8 flex flex-col justify-between">
                   <div className="flex items-start justify-between">
-                    <div className="font-p95 text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-black/60">
+                    <div className="font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-black/60">
                       TELEGRAM
                     </div>
                     <Send className="w-5 h-5 md:w-6 md:h-6 text-black" strokeWidth={2} />
@@ -1780,7 +1780,7 @@ export default function PreviewHome() {
                     <div className="font-p95 text-[clamp(28px,4.5vw,56px)] uppercase leading-[0.95] text-black">
                       @egoradi
                     </div>
-                    <div className="mt-3 inline-flex items-center gap-2 text-[12px] md:text-[13px] tracking-[0.12em] uppercase text-black/70 group-hover:text-black transition-colors">
+                    <div className="mt-3 inline-flex items-center gap-2 text-[14px] md:text-[13px] tracking-[0.12em] uppercase text-black/70 group-hover:text-black transition-colors">
                       Написать
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" strokeWidth={2.2} />
                     </div>
@@ -1804,7 +1804,7 @@ export default function PreviewHome() {
                 >
                   <div className="relative h-full min-h-[120px] md:min-h-[130px] rounded-2xl overflow-hidden border border-white/[0.08] bg-white/[0.015] hover:border-white/[0.2] hover:bg-white/[0.035] transition-colors p-5 flex flex-col justify-between">
                     <div className="flex items-start justify-between">
-                      <div className="font-p95 text-[10px] md:text-[11px] tracking-[0.2em] uppercase text-white/50">
+                      <div className="font-p95 text-[12px] md:text-[13px] tracking-[0.2em] uppercase text-white/50">
                         {link.label.toUpperCase()}
                       </div>
                       <link.Icon className="w-4 h-4 text-white/45 group-hover:text-white transition-colors" strokeWidth={1.75} />
@@ -1825,7 +1825,7 @@ export default function PreviewHome() {
                   <h4 className="font-p95 text-[clamp(20px,2.4vw,30px)] uppercase tracking-[0.02em] text-white">
                     Москва, Россия
                   </h4>
-                  <div className="inline-flex items-center gap-2.5 font-p95 text-[10px] md:text-[11px] tracking-[0.22em] uppercase text-white/55">
+                  <div className="inline-flex items-center gap-2.5 font-p95 text-[12px] md:text-[13px] tracking-[0.22em] uppercase text-white/55">
                     <span className="relative inline-flex items-center justify-center w-3 h-3">
                       <span className="absolute inset-0 rounded-full bg-[#A6FF00]/30 animate-ping" />
                       <span className="relative w-2 h-2 rounded-full bg-[#A6FF00] shadow-[0_0_10px_#A6FF00]" />
