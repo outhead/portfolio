@@ -155,8 +155,8 @@ export default function SmileFireworksButton({
           aria-hidden
           className="absolute inset-0 w-full h-full pointer-events-none"
         />
-        {/* Текст */}
-        <span className="relative font-p95 text-[clamp(28px,3.5vw,44px)] leading-none uppercase tracking-tight text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.85)]">
+        {/* Текст — translate-y компенсирует cap-height-смещение Bebas Neue */}
+        <span className="relative font-p95 text-[clamp(28px,3.5vw,44px)] leading-none uppercase tracking-tight text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.85)] translate-y-[2px]">
           Улыбнуться
         </span>
         {/* Hover-fill: лайм-полоска, выезжающая снизу */}
