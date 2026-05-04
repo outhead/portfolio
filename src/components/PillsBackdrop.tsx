@@ -82,9 +82,10 @@ export default function PillsBackdrop() {
         const x = pillW / 2 + Math.random() * (w - pillW);
         const pill = Bodies.rectangle(x, -pillH, pillW, pillH, {
           chamfer: { radius: pillH / 2 },
-          restitution: 0.45,
-          friction: 0.06,
-          frictionAir: 0.012,
+          density: 0.003, // ×3 от дефолтной (0.001) — тяжелее
+          restitution: 0.35,
+          friction: 0.08,
+          frictionAir: 0.01,
           angle: Math.random() * Math.PI,
           render: {
             fillStyle: "#A6FF00",
