@@ -34,7 +34,7 @@ export default function PillsBackdrop() {
       if (w < 10 || h < 10) return;
 
       const engine = Engine.create();
-      engine.gravity.y = 1.05;
+      engine.gravity.y = 1.8;
 
       const render = Render.create({
         element: container,
@@ -85,7 +85,7 @@ export default function PillsBackdrop() {
           density: 0.003, // ×3 от дефолтной (0.001) — тяжелее
           restitution: 0.35,
           friction: 0.08,
-          frictionAir: 0.01,
+          frictionAir: 0.004,
           angle: Math.random() * Math.PI,
           render: {
             fillStyle: "#A6FF00",
