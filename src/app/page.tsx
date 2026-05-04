@@ -1231,7 +1231,7 @@ export default function PreviewHome() {
                           <span className="font-p95 text-[16px] md:text-[17px] tracking-[0.18em] uppercase text-white">
                             {item.label}
                           </span>
-                          <span className="block text-[14px] md:text-[15px] text-white/55 font-light leading-snug mt-1">
+                          <span className="block text-[12px] md:text-[13px] tracking-[0.06em] uppercase text-white/55 font-light leading-snug mt-1">
                             {item.note}
                           </span>
                         </span>
