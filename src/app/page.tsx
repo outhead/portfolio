@@ -1225,7 +1225,7 @@ export default function PreviewHome() {
                         key={item.num}
                         className="flex items-baseline gap-3"
                       >
-                        <span className="font-p95 text-[14px] md:text-[15px] tabular-nums tracking-[0.1em] text-[#A6FF00]/60 leading-none w-6 shrink-0">
+                        <span className="font-p95 text-[14px] md:text-[15px] tabular-nums tracking-[0.1em] text-white/45 leading-none w-6 shrink-0">
                           {item.num}
                         </span>
                         <span className="flex-1 leading-tight">
@@ -1251,8 +1251,8 @@ export default function PreviewHome() {
               <div className="relative h-full min-h-[260px] md:min-h-[280px] rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5 md:p-6 flex flex-col gap-8 md:gap-10 overflow-hidden">
                 {/* Топ-метка */}
                 <div className="flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4 shrink-0 text-[#A6FF00]" strokeWidth={1.75} />
-                  <span className="font-p95 text-[15px] md:text-[16px] tracking-[0.2em] uppercase text-[#A6FF00] leading-none">
+                  <BarChart3 className="w-4 h-4 shrink-0 text-white/70" strokeWidth={1.75} />
+                  <span className="font-p95 text-[15px] md:text-[16px] tracking-[0.2em] uppercase text-white/70 leading-none">
                     В цифрах
                   </span>
                 </div>
@@ -1270,7 +1270,7 @@ export default function PreviewHome() {
                         idx > 0 ? "border-l border-white/10 pl-3 md:pl-4" : ""
                       }`}
                     >
-                      <div className="font-p95 text-[clamp(32px,3.6vw,52px)] uppercase tracking-tight text-[#A6FF00] leading-none">
+                      <div className="font-p95 text-[clamp(32px,3.6vw,52px)] uppercase tracking-tight text-white leading-none">
                         {item.value}
                       </div>
                       <div className="text-[11px] md:text-[12px] tracking-[0.04em] uppercase text-white/55 leading-[1.4] font-light">
