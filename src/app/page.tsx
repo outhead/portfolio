@@ -1789,27 +1789,26 @@ export default function PreviewHome() {
               </motion.div>
             ))}
 
-            {/* 6. Location — компактная плитка, глобус в исходном размере (видна только верхняя часть, нижняя обрезается overflow-hidden) */}
+            {/* 6. Location — компактная плитка, глобус справа (выходит за правый край), текст слева. */}
             <motion.div variants={fadeUp} className="col-span-2 md:col-span-4">
               <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0a0a0a] min-h-[200px] md:min-h-[220px]">
-                {/* Текст — по центру сверху, поверх глобуса */}
-                <div className="relative z-[2] flex flex-col items-center gap-2.5 pt-7 md:pt-9 px-5 text-center">
-                  <h4 className="font-p95 text-[clamp(20px,2.4vw,30px)] uppercase tracking-[0.02em] text-white">
+                {/* Текст — слева по центру */}
+                <div className="relative z-[2] flex flex-col items-start justify-center gap-3 h-full md:h-[220px] pl-6 md:pl-8 pr-[40%] py-5 md:py-6">
+                  <h4 className="font-p95 text-[clamp(20px,2.4vw,30px)] uppercase tracking-[0.02em] text-white leading-none">
                     Москва, Россия
                   </h4>
                   <div className="inline-flex items-center gap-2.5 font-p95 text-[12px] md:text-[15px] tracking-[0.22em] uppercase text-white/55">
-                    <span className="relative inline-flex items-center justify-center w-3 h-3">
+                    <span className="relative inline-flex items-center justify-center w-3 h-3 shrink-0">
                       <span className="absolute inset-0 rounded-full bg-[#A6FF00]/30 animate-ping" />
                       <span className="relative w-2 h-2 rounded-full bg-[#A6FF00] shadow-[0_0_10px_#A6FF00]" />
                     </span>
                     Открыт к работе по всему миру
                   </div>
                 </div>
-                {/* Глобус большого размера — выходит за нижний край плитки, видна только верхняя часть.
-                    Квадратный контейнер width=ширина плитки, top=110px → верхушка диска вписана под текст. */}
+                {/* Глобус — справа, центр сдвинут за правый край, видна левая половина с маркером Москвы */}
                 <div
-                  className="absolute left-1/2 -translate-x-1/2 top-[110px] md:top-[120px] aspect-square pointer-events-auto"
-                  style={{ width: "min(560px, 92%)" }}
+                  className="absolute top-1/2 -translate-y-1/2 right-[-260px] md:right-[-280px] aspect-square pointer-events-auto"
+                  style={{ width: "560px" }}
                 >
                   <DotGlobe />
                 </div>

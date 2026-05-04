@@ -375,16 +375,16 @@ export default function FinalCTA() {
               <span className="relative">Улыбнуться</span>
             </motion.button>
 
-            <div className="inline-flex items-baseline gap-2 font-p95">
-              <span className="text-[clamp(28px,4.5vw,52px)] leading-none text-white tabular-nums">
-                {globalCount == null ? "—" : globalCount.toLocaleString("ru-RU")}
-              </span>
-              <span className="text-[15px] md:text-[16px] tracking-[0.2em] uppercase text-white/45">
-                {globalCount == null
-                  ? "загружаем"
-                  : `${pluralize(globalCount)} нажали`}
-              </span>
-            </div>
+            {globalCount != null && (
+              <div className="inline-flex items-baseline gap-2 font-p95">
+                <span className="text-[clamp(22px,2.6vw,36px)] leading-none text-white tabular-nums">
+                  {globalCount.toLocaleString("ru-RU")}
+                </span>
+                <span className="text-[13px] md:text-[14px] tracking-[0.18em] uppercase text-white/45">
+                  {pluralize(globalCount)} нажали
+                </span>
+              </div>
+            )}
           </motion.div>
 
           {/* Telegram + все каналы */}
