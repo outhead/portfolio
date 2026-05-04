@@ -43,33 +43,79 @@ export default function SmileFireworksButton({
     const PALETTE = ["#A6FF00", "#D9FF66", "#ECFFB3", "#FFFFFF"];
 
     let stopped = false;
-    const fireBurst = () => {
+
+    // Основной залп — снизу-в-центре, веером вверх
+    const fireMain = () => {
       if (stopped) return;
-      // Случайный источник внутри нижней половины — феерверки летят вверх
-      const originX = 0.15 + Math.random() * 0.7;
-      const originY = 0.7 + Math.random() * 0.2;
+      const originX = 0.35 + Math.random() * 0.3;
       local({
-        particleCount: 14 + Math.floor(Math.random() * 10),
-        angle: 60 + Math.random() * 60,
-        spread: 65 + Math.random() * 25,
-        startVelocity: 26 + Math.random() * 8,
-        gravity: 0.55,
-        ticks: 110,
-        decay: 0.93,
-        scalar: 0.85,
-        origin: { x: originX, y: originY },
+        particleCount: 28 + Math.floor(Math.random() * 14),
+        angle: 90,
+        spread: 95 + Math.random() * 25,
+        startVelocity: 32 + Math.random() * 10,
+        gravity: 0.45,
+        ticks: 140,
+        decay: 0.94,
+        scalar: 1.0,
+        origin: { x: originX, y: 0.92 },
         colors: PALETTE,
         disableForReducedMotion: true,
       });
     };
 
-    // Старт: маленький burst, потом интервал
-    fireBurst();
-    const intervalId = window.setInterval(fireBurst, 900 + Math.random() * 400);
+    // Боковой залп — из левого/правого нижнего угла под углом
+    const fireSide = (side: "left" | "right") => {
+      if (stopped) return;
+      const isLeft = side === "left";
+      local({
+        particleCount: 18 + Math.floor(Math.random() * 8),
+        angle: isLeft ? 70 : 110,
+        spread: 50,
+        startVelocity: 28 + Math.random() * 6,
+        gravity: 0.5,
+        ticks: 130,
+        decay: 0.94,
+        scalar: 0.9,
+        origin: { x: isLeft ? 0.1 : 0.9, y: 0.95 },
+        colors: PALETTE,
+        disableForReducedMotion: true,
+      });
+    };
+
+    // Sparkle — крошечные искры по всей площади
+    const fireSparkle = () => {
+      if (stopped) return;
+      local({
+        particleCount: 6,
+        spread: 360,
+        startVelocity: 8,
+        gravity: 0.25,
+        ticks: 80,
+        decay: 0.91,
+        scalar: 0.55,
+        origin: { x: 0.2 + Math.random() * 0.6, y: 0.3 + Math.random() * 0.5 },
+        colors: PALETTE,
+        disableForReducedMotion: true,
+      });
+    };
+
+    // Старт: тройной burst, потом разные интервалы для разных типов
+    fireMain();
+    setTimeout(() => fireSide("left"), 200);
+    setTimeout(() => fireSide("right"), 400);
+
+    const mainId = window.setInterval(fireMain, 700);
+    const sideId = window.setInterval(
+      () => fireSide(Math.random() < 0.5 ? "left" : "right"),
+      950,
+    );
+    const sparkleId = window.setInterval(fireSparkle, 350);
 
     return () => {
       stopped = true;
-      window.clearInterval(intervalId);
+      window.clearInterval(mainId);
+      window.clearInterval(sideId);
+      window.clearInterval(sparkleId);
       local.reset();
     };
   }, []);
@@ -104,13 +150,13 @@ export default function SmileFireworksButton({
         aria-hidden
         className="absolute inset-0 w-full h-full pointer-events-none z-[1]"
       />
-      {/* Лёгкое свечение у нижнего края — место «вылета» салютов */}
+      {/* Свечение у нижнего края — место «вылета» салютов; и тонкий ободок света сверху */}
       <div
         aria-hidden
-        className="absolute inset-x-0 bottom-0 h-1/2 pointer-events-none z-[1]"
+        className="absolute inset-0 pointer-events-none z-[1]"
         style={{
           background:
-            "radial-gradient(ellipse at 50% 100%, rgba(166,255,0,0.18), transparent 70%)",
+            "radial-gradient(ellipse 70% 50% at 50% 100%, rgba(166,255,0,0.32), transparent 70%), radial-gradient(ellipse 50% 30% at 50% 0%, rgba(166,255,0,0.08), transparent 70%)",
         }}
       />
       {/* Текст */}
