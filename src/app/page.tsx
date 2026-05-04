@@ -1247,21 +1247,21 @@ export default function PreviewHome() {
               variants={fadeUp}
               className="col-span-12 lg:col-span-4 order-5 lg:order-none"
             >
-              <div className="relative h-full min-h-[260px] md:min-h-[280px] rounded-2xl border border-[#A6FF00]/22 bg-[#A6FF00]/[0.05] p-5 md:p-6 flex flex-col justify-between gap-4 overflow-hidden">
+              <div className="relative h-full min-h-[260px] md:min-h-[280px] rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5 md:p-6 flex flex-col gap-8 md:gap-10 overflow-hidden">
                 {/* Топ-метка */}
                 <div className="flex items-center gap-2">
                   <BarChart3 className="w-4 h-4 shrink-0 text-[#A6FF00]" strokeWidth={1.75} />
-                  <span className="font-p95 text-[16px] md:text-[15px] tracking-[0.2em] uppercase text-[#A6FF00] leading-none">
+                  <span className="font-p95 text-[15px] md:text-[16px] tracking-[0.2em] uppercase text-[#A6FF00] leading-none">
                     В цифрах
                   </span>
                 </div>
 
                 {/* Три цифры в ряд */}
-                <div className="grid grid-cols-3 gap-3 md:gap-4">
+                <div className="grid grid-cols-3 gap-3 md:gap-4 flex-1 content-center">
                   {[
-                    { value: "30+", label: "продуктов запущено" },
-                    { value: "9+", label: "лет опыта" },
-                    { value: "200+", label: "дизайнеров в нетворке" },
+                    { value: "30+", label: "продуктов запущено" },
+                    { value: "9+", label: "лет опыта" },
+                    { value: "200+", label: "знакомых дизайнеров" },
                   ].map((item, idx) => (
                     <div
                       key={item.value}
@@ -1272,7 +1272,7 @@ export default function PreviewHome() {
                       <div className="font-p95 text-[clamp(32px,3.6vw,52px)] uppercase tracking-tight text-[#A6FF00] leading-none">
                         {item.value}
                       </div>
-                      <div className="text-[12px] md:text-[13px] tracking-[0.06em] uppercase text-white/55 leading-[1.35] font-light break-words">
+                      <div className="text-[12px] md:text-[13px] tracking-[0.06em] uppercase text-white/55 leading-[1.35] font-light [overflow-wrap:anywhere]">
                         {item.label}
                       </div>
                     </div>
