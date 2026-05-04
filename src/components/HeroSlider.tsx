@@ -153,7 +153,7 @@ export default function HeroSlider({ heroes, label }: HeroSliderProps) {
               type="button"
               onClick={prev}
               aria-label="Предыдущий постер"
-              className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 inline-flex items-center justify-center w-10 h-10 md:w-11 md:h-11 rounded-full bg-black/60 hover:bg-black active:bg-black text-white/80 hover:text-white border border-white/[0.1] backdrop-blur-sm transition-colors z-10"
+              className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 inline-flex items-center justify-center w-10 h-10 md:w-11 md:h-11 rounded-full bg-black/25 hover:bg-black/60 active:bg-black text-white/30 hover:text-white/85 border border-white/[0.05] hover:border-white/[0.12] backdrop-blur-sm transition-colors z-10"
             >
               <ChevronLeft className="w-5 h-5" strokeWidth={2} />
             </button>
@@ -161,7 +161,7 @@ export default function HeroSlider({ heroes, label }: HeroSliderProps) {
               type="button"
               onClick={next}
               aria-label="Следующий постер"
-              className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 inline-flex items-center justify-center w-10 h-10 md:w-11 md:h-11 rounded-full bg-black/60 hover:bg-black active:bg-black text-white/80 hover:text-white border border-white/[0.1] backdrop-blur-sm transition-colors z-10"
+              className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 inline-flex items-center justify-center w-10 h-10 md:w-11 md:h-11 rounded-full bg-black/25 hover:bg-black/60 active:bg-black text-white/30 hover:text-white/85 border border-white/[0.05] hover:border-white/[0.12] backdrop-blur-sm transition-colors z-10"
             >
               <ChevronRight className="w-5 h-5" strokeWidth={2} />
             </button>
