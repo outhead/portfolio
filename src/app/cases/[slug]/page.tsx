@@ -114,7 +114,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
           <h1 className="font-p95 text-[clamp(32px,6vw,72px)] uppercase leading-[0.95] mb-4">
             {project.title}
           </h1>
-          <p className="text-[13px] tracking-[0.05em] text-white/40 uppercase">
+          <p className="text-[15px] tracking-[0.05em] text-white/40 uppercase">
             {project.role} · {project.period}
           </p>
 
@@ -140,7 +140,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                     <div className="text-3xl md:text-5xl font-semibold text-white leading-none mb-2">
                       {r.value}
                     </div>
-                    <div className="text-[13px] md:text-[14px] tracking-[0.1em] uppercase text-white/45">
+                    <div className="text-[15px] md:text-[16px] tracking-[0.1em] uppercase text-white/45">
                       {r.label}
                     </div>
                   </div>
@@ -232,7 +232,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
               <div key={i} id={`section-${i + 1}`} className="mb-16 md:mb-24 scroll-mt-24">
                 {/* Section header: large number + title */}
                 <div className="flex items-baseline gap-4 mb-6">
-                  <span className="text-[13px] tracking-[0.14em] uppercase text-white/25 font-mono">
+                  <span className="text-[15px] tracking-[0.14em] uppercase text-white/25 font-mono">
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <h3 className="text-xl md:text-2xl text-white/95 font-semibold leading-tight">
@@ -298,7 +298,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                               {t.title}
                             </div>
                             {t.note && (
-                              <div className="text-[14px] text-white/50 leading-snug">{t.note}</div>
+                              <div className="text-[16px] text-white/50 leading-snug">{t.note}</div>
                             )}
                           </li>
                         ))}
@@ -319,7 +319,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                               {t.title}
                             </div>
                             {t.note && (
-                              <div className="text-[14px] text-white/50 leading-snug">{t.note}</div>
+                              <div className="text-[16px] text-white/50 leading-snug">{t.note}</div>
                             )}
                           </li>
                         ))}
@@ -356,7 +356,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                         <div className="text-3xl md:text-5xl font-semibold text-white leading-none mb-2">
                           {c.value}
                         </div>
-                        <div className="text-[12px] md:text-[14px] tracking-[0.12em] uppercase text-white/45 leading-tight">
+                        <div className="text-[12px] md:text-[16px] tracking-[0.12em] uppercase text-white/45 leading-tight">
                           {c.label}
                         </div>
                       </div>
@@ -478,7 +478,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                   <li key={i}>
                     <a
                       href={`#section-${i + 1}`}
-                      className="group flex items-baseline gap-2 text-[13px] text-white/40 hover:text-white/85 transition-colors no-underline"
+                      className="group flex items-baseline gap-2 text-[15px] text-white/40 hover:text-white/85 transition-colors no-underline"
                     >
                       <span className="font-mono text-[12px] text-white/25 group-hover:text-white/60 flex-shrink-0">
                         {String(i + 1).padStart(2, "0")}

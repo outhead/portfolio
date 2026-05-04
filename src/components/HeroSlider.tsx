@@ -185,7 +185,7 @@ export default function HeroSlider({ heroes, label }: HeroSliderProps) {
               }`}
             />
           ))}
-          <span className="ml-3 font-mono text-[13px] tracking-[0.14em] uppercase text-white/45 tabular-nums">
+          <span className="ml-3 font-mono text-[15px] tracking-[0.14em] uppercase text-white/45 tabular-nums">
             {String(active + 1).padStart(2, "0")} /{" "}
             {String(heroes.length).padStart(2, "0")}
           </span>
@@ -214,7 +214,7 @@ export default function HeroSlider({ heroes, label }: HeroSliderProps) {
           </button>
 
           {heroes.length > 1 ? (
-            <div className="fixed top-[max(1.5rem,env(safe-area-inset-top))] left-5 z-20 font-mono text-[13px] tracking-[0.14em] uppercase text-white/55 tabular-nums pointer-events-none">
+            <div className="fixed top-[max(1.5rem,env(safe-area-inset-top))] left-5 z-20 font-mono text-[15px] tracking-[0.14em] uppercase text-white/55 tabular-nums pointer-events-none">
               {String(active + 1).padStart(2, "0")} /{" "}
               {String(heroes.length).padStart(2, "0")}
             </div>

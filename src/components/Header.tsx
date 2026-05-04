@@ -90,11 +90,11 @@ export default function Header() {
           aria-label="Главная"
           className="inline-flex items-center gap-3 md:gap-3.5 no-underline hover:opacity-80 transition-opacity"
         >
-          <span className="font-p95 text-[14px] md:text-[13px] uppercase tracking-[0.14em] text-white">
+          <span className="font-p95 text-[16px] md:text-[15px] uppercase tracking-[0.14em] text-white">
             Егор Шугаев
           </span>
           <span aria-hidden className="hidden lg:inline h-6 w-px bg-white/15 shrink-0" />
-          <span className="hidden lg:inline font-p95 text-[14px] md:text-[13px] uppercase tracking-[0.14em] text-white/55">
+          <span className="hidden lg:inline font-p95 text-[16px] md:text-[15px] uppercase tracking-[0.14em] text-white/55">
             Дизайн-директор
           </span>
         </Link>
@@ -111,7 +111,7 @@ export default function Header() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`relative text-[13px] font-normal tracking-[0.1em] uppercase no-underline transition-colors duration-200 group min-h-[44px] flex items-center ${
+                className={`relative text-[15px] font-normal tracking-[0.1em] uppercase no-underline transition-colors duration-200 group min-h-[44px] flex items-center ${
                   isActive ? "text-white" : "text-white/55 hover:text-white"
                 }`}
               >

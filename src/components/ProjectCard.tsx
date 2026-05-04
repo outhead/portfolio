@@ -120,7 +120,7 @@ interface ProjectCardProps {
 /** Маленький chip — stokt-style pill под title. */
 function TagChip({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center px-3 py-1.5 rounded-full border border-white/15 bg-white/[0.04] text-[13px] md:text-[14px] tracking-[0.04em] text-white/80 leading-[1.2] backdrop-blur-sm">
+    <span className="inline-flex items-center px-3 py-1.5 rounded-full border border-white/15 bg-white/[0.04] text-[15px] md:text-[16px] tracking-[0.04em] text-white/80 leading-[1.2] backdrop-blur-sm">
       {children}
     </span>
   );
@@ -138,7 +138,7 @@ function MetricChip({
     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#A6FF00]/10 border border-[#A6FF00]/25 text-[#A6FF00] leading-[1.2]">
       <span className="font-p95 text-[15px] md:text-[16px] tracking-tight">{value}</span>
       {label && (
-        <span className="text-[14px] md:text-[13px] tracking-[0.08em] uppercase text-[#A6FF00]/75">
+        <span className="text-[16px] md:text-[15px] tracking-[0.08em] uppercase text-[#A6FF00]/75">
           {label}
         </span>
       )}
@@ -165,7 +165,7 @@ export default function ProjectCard({
         featured ? "p-6 md:p-8 lg:p-10" : wide ? "p-6 md:p-8" : "p-5 md:p-6"
       }`}
     >
-      <div className="font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/55">
+      <div className="font-p95 text-[15px] md:text-[16px] tracking-[0.2em] uppercase text-white/55">
         {project.company}
       </div>
       <h3

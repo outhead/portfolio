@@ -321,11 +321,11 @@ export default function FinalCTA() {
           />
 
           <motion.div variants={fadeUp} className="relative mb-5 md:mb-7 flex items-center gap-3">
-            <span className="font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-[#A6FF00]">
+            <span className="font-p95 text-[15px] md:text-[16px] tracking-[0.2em] uppercase text-[#A6FF00]">
               [ Без церемоний ]
             </span>
             {sessionCount > 0 && (
-              <span className="font-p95 text-[12px] md:text-[13px] tracking-[0.18em] uppercase text-white/30 tabular-nums">
+              <span className="font-p95 text-[12px] md:text-[15px] tracking-[0.18em] uppercase text-white/30 tabular-nums">
                 · сессия: {sessionCount}
               </span>
             )}
@@ -349,7 +349,7 @@ export default function FinalCTA() {
                 {stage.bonus ? (
                   <Link
                     href={stage.bonus.href}
-                    className="inline-flex align-middle items-center gap-1.5 ml-3 md:ml-5 px-4 py-2 md:px-5 md:py-2.5 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[13px] md:text-[13px] tracking-[0.2em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
+                    className="inline-flex align-middle items-center gap-1.5 ml-3 md:ml-5 px-4 py-2 md:px-5 md:py-2.5 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[15px] md:text-[15px] tracking-[0.2em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
                   >
                     {stage.bonus.label}
                   </Link>
@@ -379,7 +379,7 @@ export default function FinalCTA() {
               <span className="text-[clamp(28px,4.5vw,52px)] leading-none text-white tabular-nums">
                 {globalCount == null ? "—" : globalCount.toLocaleString("ru-RU")}
               </span>
-              <span className="text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/45">
+              <span className="text-[15px] md:text-[16px] tracking-[0.2em] uppercase text-white/45">
                 {globalCount == null
                   ? "загружаем"
                   : `${pluralize(globalCount)} нажали`}
