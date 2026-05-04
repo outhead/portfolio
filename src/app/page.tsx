@@ -1134,10 +1134,12 @@ export default function PreviewHome() {
               </div>
             </motion.div>
 
-            {/* === TILE 3: НАГРАДА · CX'24 (col-span-4) — линкуем на кейс Газпром Нефть === */}
+            {/* === TILE 3: НАГРАДА · CX'24 (col-span-4) — линкуем на кейс Газпром Нефть ===
+                На md (iPad-портрет / iPhone-лендскейп) тайл узкий, трофей требует pr-44
+                и крупного клампа "CX'24" — налезает. Поэтому 3-в-ряд только с lg+. */}
             <motion.div
               variants={fadeUp}
-              className="col-span-12 md:col-span-4 order-3 md:order-none"
+              className="col-span-12 lg:col-span-4 order-3 lg:order-none"
             >
               <Link
                 href="/cases/gazprom-neft"
@@ -1194,7 +1196,7 @@ export default function PreviewHome() {
             {/* === TILE 4: ЭКСПЕРТИЗА (col-span-4) — 3 направления, ссылка на секцию #skills === */}
             <motion.div
               variants={fadeUp}
-              className="col-span-12 md:col-span-4 order-4 md:order-none"
+              className="col-span-12 lg:col-span-4 order-4 lg:order-none"
             >
               <Link
                 href="#skills"
@@ -1242,7 +1244,7 @@ export default function PreviewHome() {
             {/* === TILE 5: В ЦИФРАХ (col-span-4) — три метрики === */}
             <motion.div
               variants={fadeUp}
-              className="col-span-12 md:col-span-4 order-5 md:order-none"
+              className="col-span-12 lg:col-span-4 order-5 lg:order-none"
             >
               <div className="relative h-full min-h-[260px] md:min-h-[280px] rounded-2xl border border-[#A6FF00]/22 bg-[#A6FF00]/[0.05] p-5 md:p-6 flex flex-col justify-between gap-4 overflow-hidden">
                 {/* Топ-метка */}

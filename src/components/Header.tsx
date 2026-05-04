@@ -93,8 +93,8 @@ export default function Header() {
           <span className="font-p95 text-[12px] md:text-[13px] uppercase tracking-[0.14em] text-white">
             Егор Шугаев
           </span>
-          <span aria-hidden className="hidden md:inline h-6 w-px bg-white/15 shrink-0" />
-          <span className="hidden md:inline font-p95 text-[12px] md:text-[13px] uppercase tracking-[0.14em] text-white/55">
+          <span aria-hidden className="hidden lg:inline h-6 w-px bg-white/15 shrink-0" />
+          <span className="hidden lg:inline font-p95 text-[12px] md:text-[13px] uppercase tracking-[0.14em] text-white/55">
             Дизайн-директор
           </span>
         </Link>
