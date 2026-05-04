@@ -159,11 +159,6 @@ export default function SmileFireworksButton({
         <span className="relative font-p95 text-[clamp(28px,3.5vw,44px)] leading-none uppercase tracking-tight text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.85)] translate-y-[2px]">
           Улыбнуться
         </span>
-        {/* Hover-fill: лайм-полоска, выезжающая снизу */}
-        <span
-          aria-hidden
-          className="absolute inset-x-0 bottom-0 h-0 group-hover:h-1 bg-[#A6FF00] transition-all duration-300"
-        />
       </button>
 
       {/* Счётчик — отдельной строкой под кнопкой */}
