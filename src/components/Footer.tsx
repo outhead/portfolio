@@ -21,12 +21,12 @@ const XIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-const links = [
-  { href: "https://t.me/egoradi", label: "Telegram", Icon: Send },
-  { href: "mailto:egor.outhead@gmail.com", label: "Email", Icon: Mail },
-  { href: "https://github.com/outhead", label: "GitHub", Icon: GithubIcon },
-  { href: "https://www.linkedin.com/in/egorshugaev/", label: "LinkedIn", Icon: LinkedinIcon },
-  { href: "https://x.com/egoradi", label: "X", Icon: XIcon },
+const links: Array<{ href: string; label: string; Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; goal: string }> = [
+  { href: "https://t.me/egoradi", label: "Telegram", Icon: Send, goal: "cta_telegram" },
+  { href: "mailto:egor.outhead@gmail.com", label: "Email", Icon: Mail, goal: "cta_email" },
+  { href: "https://github.com/outhead", label: "GitHub", Icon: GithubIcon, goal: "cta_github" },
+  { href: "https://www.linkedin.com/in/egorshugaev/", label: "LinkedIn", Icon: LinkedinIcon, goal: "cta_linkedin" },
+  { href: "https://x.com/egoradi", label: "X", Icon: XIcon, goal: "cta_x" },
 ];
 
 export default function Footer() {
@@ -40,6 +40,8 @@ export default function Footer() {
               href={l.href}
               target="_blank"
               aria-label={l.label}
+              data-ym-goal={l.goal}
+              data-ym-goal-params='{"placement":"footer"}'
               className="text-white/35 no-underline hover:text-white/70 transition-colors min-h-[44px] flex items-center"
             >
               <l.Icon className="w-4 h-4" strokeWidth={1.75} />

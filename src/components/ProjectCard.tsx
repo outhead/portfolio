@@ -240,10 +240,18 @@ export default function ProjectCard({
     />
   );
 
+  // Параметры цели — общие для всех вариантов карточки.
+  const goalParams = JSON.stringify({ case_slug: project.slug, variant: featured ? "featured" : wide ? "wide" : "regular" });
+
   // === FEATURED — крупная hero-карточка (2×2 в сетке) ===
   if (featured) {
     return (
-      <Link href={`/cases/${project.slug}`} className="no-underline group h-full block">
+      <Link
+        href={`/cases/${project.slug}`}
+        data-ym-goal="case_open"
+        data-ym-goal-params={goalParams}
+        className="no-underline group h-full block"
+      >
         <motion.article
           ref={articleRef}
           whileHover={{ y: -4 }}
@@ -265,7 +273,12 @@ export default function ProjectCard({
   // === WIDE — 2×1 акцент-карта ===
   if (wide) {
     return (
-      <Link href={`/cases/${project.slug}`} className="no-underline group h-full block">
+      <Link
+        href={`/cases/${project.slug}`}
+        data-ym-goal="case_open"
+        data-ym-goal-params={goalParams}
+        className="no-underline group h-full block"
+      >
         <motion.article
           ref={articleRef}
           whileHover={{ y: -4 }}
@@ -286,7 +299,12 @@ export default function ProjectCard({
 
   // === REGULAR — компактная bento-карточка ===
   return (
-    <Link href={`/cases/${project.slug}`} className="no-underline group h-full block">
+    <Link
+      href={`/cases/${project.slug}`}
+      data-ym-goal="case_open"
+      data-ym-goal-params={goalParams}
+      className="no-underline group h-full block"
+    >
       <motion.article
         ref={articleRef}
         whileHover={{ y: -4 }}

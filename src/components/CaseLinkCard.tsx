@@ -47,6 +47,8 @@ export default function CaseLinkCard({ link, size = "md" }: CaseLinkCardProps) {
       href={link.url}
       target="_blank"
       rel="noopener noreferrer"
+      data-ym-goal="case_external_link"
+      data-ym-goal-params={JSON.stringify({ kind: link.kind ?? "link", domain, category: link.category })}
       className="group flex items-stretch gap-0 rounded-md border border-white/[0.08] hover:border-[#A6FF00]/40 hover:bg-white/[0.02] transition-colors no-underline overflow-hidden"
     >
       {hasThumb && (

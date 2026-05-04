@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import YandexMetrika from "@/components/YandexMetrika";
+import ScrollGoals from "@/components/ScrollGoals";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://portfolio-egors-projects-baaaa1ca.vercel.app"),
@@ -171,6 +173,8 @@ export default function RootLayout({
         <Header />
         <main id="main-content">{children}</main>
         <Footer />
+        <YandexMetrika />
+        <ScrollGoals />
       </body>
     </html>
   );

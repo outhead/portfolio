@@ -1119,6 +1119,8 @@ export default function PreviewHome() {
                       <Link
                         href="https://t.me/egoradi"
                         target="_blank"
+                        data-ym-goal="cta_telegram"
+                        data-ym-goal-params='{"placement":"hero"}'
                         className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-[#A6FF00] text-black font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:bg-white transition-colors no-underline"
                       >
                         Обсудить проект
@@ -1126,6 +1128,7 @@ export default function PreviewHome() {
                       </Link>
                       <Link
                         href="#portfolio"
+                        data-ym-goal="hero_view_cases"
                         className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:border-white/50 hover:text-white transition-colors no-underline"
                       >
                         Смотреть кейсы
@@ -1147,6 +1150,8 @@ export default function PreviewHome() {
               <Link
                 href="/cases/gazprom-neft"
                 aria-label="Открыть кейс Газпром Нефть — CX Awards 2024"
+                data-ym-goal="case_open"
+                data-ym-goal-params='{"case_slug":"gazprom-neft","placement":"hero_award_tile"}'
                 className="block h-full no-underline group"
               >
                 <div className="relative h-full min-h-[260px] md:min-h-[280px] rounded-2xl border border-[#C9A66B]/30 bg-gradient-to-br from-[#C9A66B]/[0.10] via-[#C9A66B]/[0.04] to-transparent py-5 md:py-6 pl-5 md:pl-6 pr-36 md:pr-44 flex flex-col justify-between gap-4 overflow-hidden transition-all duration-300 group-hover:border-[#C9A66B]/60 group-hover:from-[#C9A66B]/[0.14] group-hover:shadow-[0_0_40px_-8px_rgba(201,166,107,0.28)]">
@@ -1204,6 +1209,7 @@ export default function PreviewHome() {
               <Link
                 href="#skills"
                 aria-label="Перейти к экспертизе"
+                data-ym-goal="nav_skills"
                 className="block h-full no-underline group"
               >
                 <div className="relative h-full min-h-[260px] md:min-h-[280px] rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5 md:p-6 flex flex-col justify-between gap-5 overflow-hidden transition-all duration-300 group-hover:border-[#A6FF00]/40 group-hover:bg-white/[0.04]">
@@ -1343,7 +1349,7 @@ export default function PreviewHome() {
                 Кладём его в широкий блок ниже experiments-link, чтобы свежий work-кейс
                 закрывал блок проектов на главной. */}
             <motion.div variants={fadeUp}>
-              <Link href="/experiments" className="no-underline group block h-full">
+              <Link href="/experiments" data-ym-goal="nav_experiments" data-ym-goal-params='{"placement":"work_grid"}' className="no-underline group block h-full">
                 <div className="relative h-full min-h-[280px] md:min-h-[340px] rounded-2xl overflow-hidden border border-white/[0.06] group-hover:border-[#A6FF00]/40 bg-[#0a0a0a] transition-colors duration-300 p-6 md:p-7 flex flex-col justify-between">
                   <PillsBackdrop />
                   <div className="relative z-[2]">
@@ -1684,7 +1690,12 @@ export default function PreviewHome() {
               },
             ].map((t) => (
               <motion.div key={t.href} variants={fadeUp}>
-                <Link href={t.href} className="no-underline group block h-full">
+                <Link
+                  href={t.href}
+                  data-ym-goal={t.href === "/mentoring" ? "nav_mentoring" : "nav_speaking"}
+                  data-ym-goal-params='{"placement":"offer_cards"}'
+                  className="no-underline group block h-full"
+                >
                   <div className="relative h-full rounded-2xl overflow-hidden border border-white/[0.06] group-hover:border-white/20 bg-[#0a0a0a] transition-colors duration-300 p-7 md:p-9 flex flex-col justify-between min-h-[260px]">
                     <div
                       className="absolute top-7 right-7 md:top-9 md:right-9 h-2 w-2 rounded-full"
@@ -1741,6 +1752,8 @@ export default function PreviewHome() {
               <Link
                 href="https://t.me/egoradi"
                 target="_blank"
+                data-ym-goal="cta_telegram"
+                data-ym-goal-params='{"placement":"contacts_grid"}'
                 className="group no-underline block h-full"
               >
                 <div className="relative h-full min-h-[180px] md:min-h-[260px] rounded-2xl overflow-hidden border border-[#A6FF00]/30 bg-[#A6FF00] hover:bg-[#B8FF33] transition-colors p-6 md:p-8 flex flex-col justify-between">
@@ -1765,15 +1778,17 @@ export default function PreviewHome() {
 
             {/* 2-5. Email, LinkedIn, GitHub, CV — 4 равных мини-плитки */}
             {[
-              { label: "Email", value: "egor.outhead@gmail.com", href: "mailto:egor.outhead@gmail.com", Icon: Mail },
-              { label: "LinkedIn", value: "egorshugaev", href: "https://www.linkedin.com/in/egorshugaev/", Icon: LinkedinIcon },
-              { label: "GitHub", value: "outhead", href: "https://github.com/outhead", Icon: GithubIcon },
-              { label: "CV / PDF", value: "Скачать", href: "/Egor_Shugaev_CV.pdf", Icon: FileDown },
+              { label: "Email", value: "egor.outhead@gmail.com", href: "mailto:egor.outhead@gmail.com", Icon: Mail, goal: "cta_email" },
+              { label: "LinkedIn", value: "egorshugaev", href: "https://www.linkedin.com/in/egorshugaev/", Icon: LinkedinIcon, goal: "cta_linkedin" },
+              { label: "GitHub", value: "outhead", href: "https://github.com/outhead", Icon: GithubIcon, goal: "cta_github" },
+              { label: "CV / PDF", value: "Скачать", href: "/Egor_Shugaev_CV.pdf", Icon: FileDown, goal: "cta_cv" },
             ].map((link) => (
               <motion.div key={link.label} variants={fadeUp}>
                 <Link
                   href={link.href}
                   target="_blank"
+                  data-ym-goal={link.goal}
+                  data-ym-goal-params='{"placement":"contacts_grid"}'
                   className="group no-underline block h-full"
                 >
                   <div className="relative h-full min-h-[120px] md:min-h-[130px] rounded-2xl overflow-hidden border border-white/[0.08] bg-white/[0.015] hover:border-white/[0.2] hover:bg-white/[0.035] transition-colors p-5 flex flex-col justify-between">

@@ -365,6 +365,7 @@ export default function FinalCTA() {
                     {stage.bonus ? (
                       <Link
                         href={stage.bonus.href}
+                        data-ym-goal="secret_open"
                         className="inline-flex align-middle items-center gap-1.5 ml-3 md:ml-5 px-4 py-2 md:px-5 md:py-2.5 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[15px] md:text-[15px] tracking-[0.2em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
                       >
                         {stage.bonus.label}
@@ -382,6 +383,8 @@ export default function FinalCTA() {
                 <Link
                   href="https://t.me/egoradi"
                   target="_blank"
+                  data-ym-goal="cta_telegram"
+                  data-ym-goal-params='{"placement":"final_cta"}'
                   className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-[#A6FF00]/40 text-[#A6FF00] font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
                 >
                   <Send className="w-4 h-4" strokeWidth={2.2} />
@@ -389,6 +392,7 @@ export default function FinalCTA() {
                 </Link>
                 <a
                   href="#contacts"
+                  data-ym-goal="all_channels"
                   className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:border-white/50 hover:text-white transition-colors no-underline"
                 >
                   Все каналы
