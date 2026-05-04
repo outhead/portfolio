@@ -1264,14 +1264,14 @@ export default function PreviewHome() {
                   ].map((item, idx) => (
                     <div
                       key={item.value}
-                      className={`flex flex-col gap-2 ${
+                      className={`flex flex-col gap-2 min-w-0 ${
                         idx > 0 ? "border-l border-white/10 pl-3 md:pl-4" : ""
                       }`}
                     >
-                      <div className="font-p95 text-[clamp(28px,3.2vw,44px)] uppercase tracking-tight text-[#A6FF00] leading-none">
+                      <div className="font-p95 text-[clamp(32px,3.6vw,52px)] uppercase tracking-tight text-[#A6FF00] leading-none">
                         {item.value}
                       </div>
-                      <div className="text-[15px] md:text-[16px] tracking-[0.1em] uppercase text-white/55 leading-[1.35] font-light">
+                      <div className="text-[12px] md:text-[13px] tracking-[0.06em] uppercase text-white/55 leading-[1.35] font-light break-words">
                         {item.label}
                       </div>
                     </div>
