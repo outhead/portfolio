@@ -793,9 +793,9 @@ export const projects: Project[] = [
     ],
   },
   {
-    slug: "vigrom-agent",
+    slug: "telegram-dashboard",
     wip: true,
-    title: "Vigrom Agent",
+    title: "Telegram dashboard",
     company: "Pet Project",
     role: "Developer",
     period: "2025",
@@ -803,13 +803,13 @@ export const projects: Project[] = [
     description:
       "От ссылки до готового черновика за 30 секунд. Telegram-бот для моего авторского канала про AI: принимает материалы, транскрибирует, собирает черновик. Python, aiogram, Claude API.",
     longDescription:
-      "Автоматизация создания контента для Telegram-канала Vigrom. Бот принимает материалы (ссылки, голосовые, скриншоты), транскрибирует через Whisper, парсит статьи через trafilatura, генерирует черновик поста через Claude. Цель — снять рутину сборки и черновика, при этом не потерять авторский голос. Полностью убрать себя из цикла не пытаюсь, авторский голос пока умеет придумать только живой человек.",
+      "Автоматизация создания контента для Telegram-канала «Снятся ли Егору нейросети». Бот принимает материалы (ссылки, голосовые, скриншоты), транскрибирует через Whisper, парсит статьи через trafilatura, генерирует черновик поста через Claude. Цель — снять рутину сборки и черновика, при этом не потерять авторский голос. Полностью убрать себя из цикла не пытаюсь, авторский голос пока умеет придумать только живой человек.",
     tags: ["Python", "Claude API", "Telegram Bot", "AI Automation"],
     metric: "30с",
     metricLabel: "от ссылки до черновика",
     type: "experiment",
     coverColor: "#1a2e2e",
-    coverImage: "/images/covers/vigrom-agent.svg",
+    coverImage: "/images/covers/telegram-dashboard.svg",
     sections: [
       {
         title: "Проблема",

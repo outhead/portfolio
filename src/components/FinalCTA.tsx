@@ -391,13 +391,13 @@ export default function FinalCTA() {
                   Написать в Telegram
                 </Link>
                 <Link
-                  href="https://t.me/vigrom"
+                  href="https://t.me/aiegorka"
                   target="_blank"
-                  data-ym-goal="vigrom_channel"
+                  data-ym-goal="telegram_channel"
                   className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:border-white/50 hover:text-white transition-colors no-underline"
                 >
                   <Send className="w-4 h-4" strokeWidth={2.2} />
-                  Подписаться на Vigrom
+                  Подписаться на канал
                 </Link>
               </motion.div>
             </div>

@@ -195,7 +195,7 @@ export default function MentoringPage() {
                 </div>
 
                 <Link
-                  href="https://t.me/vigrom"
+                  href="https://t.me/aiegorka"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-block bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.08] rounded px-6 py-2.5 text-sm text-white/60 hover:text-white/80 transition-all duration-200 uppercase tracking-[0.1em] no-underline"

@@ -108,7 +108,7 @@ export default function SpeakingPage() {
             className="text-base md:text-lg text-white/60 leading-relaxed max-w-2xl"
           >
             Выступаю на отраслевых конференциях, менторю дизайнеров и лидов, веду Telegram-канал
-            Vigrom про AI-инструменты для дизайнеров. Не штатный спикер —
+            «Снятся ли Егору нейросети» про AI-инструменты для дизайнеров. Не штатный спикер —
             к каждому большому залу готовлюсь долго и тщательно.
           </motion.p>
         </motion.div>
@@ -215,10 +215,10 @@ export default function SpeakingPage() {
               </div>
             </div>
             <p className="text-[15px] md:text-[16px] text-white/65 leading-relaxed mb-5">
-              «Vigrom» — AI-инструменты для&nbsp;дизайнеров. Разборы Claude, Cursor, vibe-coding.
+              «Снятся ли Егору нейросети» — авторский канал про AI-инструменты для&nbsp;дизайнеров. Разборы Claude, Cursor, vibe-coding.
             </p>
             <Link
-              href="https://t.me/vigrom"
+              href="https://t.me/aiegorka"
               target="_blank"
               className="inline-flex items-center gap-2 text-[14px] md:text-[15px] tracking-[0.04em] text-white/55 hover:text-[#A6FF00] transition-colors no-underline"
             >
