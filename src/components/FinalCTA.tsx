@@ -5,7 +5,6 @@ import { AnimatePresence, motion, useReducedMotion, type Variants } from "framer
 import confetti from "canvas-confetti";
 import Link from "next/link";
 import { ArrowRight, Send } from "lucide-react";
-import SmilePhysicsButton from "./SmilePhysicsButton";
 
 // ───────────────────────────────────────────────────────────
 // Глобальный счётчик через abacus.jasoncameron.dev (без своего бэка).
@@ -397,16 +396,34 @@ export default function FinalCTA() {
               </motion.div>
             </div>
 
-            {/* Правая колонка — физический смайл-блок (Matter.js, лаймовые пилюли) */}
+            {/* Правая колонка — большой смайл-блок (focal), центрирован по вертикали */}
             <motion.div
               variants={fadeUp}
               className="flex flex-col items-stretch md:items-center gap-3 md:gap-4 w-full md:w-auto"
             >
-              <SmilePhysicsButton
+              <motion.button
+                type="button"
                 onClick={onClick}
-                globalCount={globalCount}
-                pressing={pressing}
-              />
+                whileTap={{ scale: 0.95 }}
+                className={`group relative inline-flex flex-col items-center justify-center w-full md:w-[220px] lg:w-[260px] aspect-[5/3] md:aspect-square rounded-3xl bg-[#A6FF00] text-black font-p95 select-none shadow-[0_0_0_0_rgba(166,255,0,0)] hover:shadow-[0_0_100px_-10px_rgba(166,255,0,0.65)] transition-shadow ${
+                  pressing ? "scale-[0.96]" : "scale-100"
+                }`}
+                aria-label="Улыбнуться"
+              >
+                <span className="relative font-p95 text-[clamp(28px,3.8vw,52px)] leading-none uppercase tracking-tight">
+                  Улыбнуться
+                </span>
+                {globalCount != null && (
+                  <span className="relative mt-3 md:mt-4 inline-flex items-baseline gap-1.5 font-p95 text-black/60">
+                    <span className="text-[18px] md:text-[20px] leading-none tabular-nums">
+                      {globalCount.toLocaleString("ru-RU")}
+                    </span>
+                    <span className="text-[10px] md:text-[11px] tracking-[0.18em] uppercase">
+                      {pluralize(globalCount)} нажали
+                    </span>
+                  </span>
+                )}
+              </motion.button>
             </motion.div>
           </div>
 

@@ -6,6 +6,7 @@ import PulseAnimation, { type PulseVariant } from "@/components/PulseAnimation";
 import FlippingWord from "@/components/FlippingWord";
 import FinalCTA from "@/components/FinalCTA";
 import CompanyMarquee from "@/components/CompanyMarquee";
+import PillsBackdrop from "@/components/PillsBackdrop";
 import { TypographyFix } from "@/components/TypographyFix";
 import { workProjects } from "@/data/projects";
 import Link from "next/link";
@@ -1344,15 +1345,16 @@ export default function PreviewHome() {
             <motion.div variants={fadeUp}>
               <Link href="/experiments" className="no-underline group block h-full">
                 <div className="relative h-full min-h-[280px] md:min-h-[340px] rounded-2xl overflow-hidden border border-white/[0.06] group-hover:border-[#A6FF00]/40 bg-[#0a0a0a] transition-colors duration-300 p-6 md:p-7 flex flex-col justify-between">
-                  <div>
+                  <PillsBackdrop />
+                  <div className="relative z-[2]">
                     <div className="font-p95 text-[16px] md:text-[15px] tracking-[0.2em] uppercase text-white/50 mb-3">
                       ЭКСПЕРИМЕНТЫ
                     </div>
-                    <h3 className="font-p95 text-[clamp(22px,3vw,36px)] uppercase leading-[0.95] text-white">
+                    <h3 className="font-p95 text-[clamp(22px,3vw,36px)] uppercase leading-[0.95] text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
                       Код,<br />WebGL,<br />шейдеры.
                     </h3>
                   </div>
-                  <span className="inline-flex items-center gap-2 text-sm tracking-[0.1em] uppercase text-white/60 group-hover:text-[#A6FF00] transition-colors mt-6">
+                  <span className="relative z-[2] inline-flex items-center gap-2 text-sm tracking-[0.1em] uppercase text-white/60 group-hover:text-[#A6FF00] transition-colors mt-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
                     Смотреть
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" strokeWidth={2} />
                   </span>
