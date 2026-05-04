@@ -1219,7 +1219,7 @@ export default function PreviewHome() {
                   <ul className="space-y-4 md:space-y-5 relative z-[1]">
                     {[
                       { num: "01", label: "Управление", note: "дизайн-функции и команды" },
-                      { num: "02", label: "Продукт", note: "B2C / B2E / EdTech на метрики" },
+                      { num: "02", label: "Продукт", note: "B2C / B2E / EdTech на метриках" },
                       { num: "03", label: "Ремесло", note: "AI и код руками" },
                     ].map((item) => (
                       <li
@@ -1413,7 +1413,7 @@ export default function PreviewHome() {
                 key: "product",
                 index: "02",
                 label: "ПРОДУКТ",
-                title: "B2C, B2E и EdTech, всегда на метрики",
+                title: "Дизайн B2C, B2E и EdTech на метриках",
                 Icon: Sparkles,
                 accent: "#C9A66B",
                 animation: "spiral" as PulseVariant,
