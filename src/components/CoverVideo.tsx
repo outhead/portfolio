@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /* ─────────────────────────────────────────────────────────────────
  * HeroCoverVideo
@@ -85,6 +85,14 @@ export function CardCoverVideo({
   const ref = useRef<HTMLVideoElement>(null);
   /** Был ли уже hover-цикл. Нужно чтобы на init НЕ запускать leave-логику. */
   const hasHoveredRef = useRef(false);
+  /** Touch-устройство (без hover). Считаем один раз на маунте, чтобы синхронно
+   *  выставить autoPlay/loop у <video>. */
+  const [isTouch, setIsTouch] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setIsTouch(window.matchMedia("(hover: none)").matches);
+  }, []);
 
   useEffect(() => {
     const v = ref.current;
@@ -98,6 +106,42 @@ export function CardCoverVideo({
     v.addEventListener("pause", onPauseOrEnded);
     v.addEventListener("ended", onPauseOrEnded);
 
+    // ── ВЕТКА 1: Touch (no hover) — autoplay loop, но только когда в вьюпорте.
+    // Игнорируем pauseAt: на мобиле hover нет, тап = переход по карточке.
+    // Чтобы не жечь батарейку на куче карточек одновременно, паузим вне вьюпорта.
+    if (isTouch) {
+      const playWhenReady = () => {
+        v.play().catch(() => {});
+      };
+      const target = hoverTarget?.current ?? v.parentElement;
+      let io: IntersectionObserver | null = null;
+      if (target && typeof IntersectionObserver !== "undefined") {
+        io = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting) {
+                playWhenReady();
+              } else {
+                v.pause();
+              }
+            }
+          },
+          { threshold: 0.25 },
+        );
+        io.observe(target);
+      } else {
+        // Fallback: просто запустить.
+        playWhenReady();
+      }
+      return () => {
+        io?.disconnect();
+        v.removeEventListener("play", onPlay);
+        v.removeEventListener("pause", onPauseOrEnded);
+        v.removeEventListener("ended", onPauseOrEnded);
+      };
+    }
+
+    // ── ВЕТКА 2: Hover-устройство без pauseAt — обычный autoplay loop.
     if (pauseAt === undefined) {
       return () => {
         v.removeEventListener("play", onPlay);
@@ -105,6 +149,8 @@ export function CardCoverVideo({
         v.removeEventListener("ended", onPauseOrEnded);
       };
     }
+
+    // ── ВЕТКА 3: Hover-устройство с pauseAt — стейт-машина по mouseenter/leave.
 
     /** Гарантированно поставить на pauseAt и встать. */
     const seekAndPause = () => {
@@ -168,17 +214,19 @@ export function CardCoverVideo({
         target.removeEventListener("mouseleave", onLeave);
       }
     };
-  }, [pauseAt, hoverTarget, onPlayingChange]);
+  }, [pauseAt, hoverTarget, onPlayingChange, isTouch]);
 
-  const usePauseMode = pauseAt !== undefined;
+  // На тач-устройствах всегда autoplay+loop (pauseAt игнорируется).
+  // На hover-устройствах — старая логика: pauseAt → не autoplay/loop.
+  const useLoopAutoplay = isTouch || pauseAt === undefined;
   return (
     <video
       ref={ref}
       src={src}
       poster={poster}
-      autoPlay={!usePauseMode}
+      autoPlay={useLoopAutoplay}
       muted
-      loop={!usePauseMode}
+      loop={useLoopAutoplay}
       playsInline
       preload="auto"
       className={className}
