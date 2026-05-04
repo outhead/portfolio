@@ -9,6 +9,7 @@ import CompanyMarquee from "@/components/CompanyMarquee";
 import PillsBackdrop from "@/components/PillsBackdrop";
 import { TypographyFix } from "@/components/TypographyFix";
 import { workProjects } from "@/data/projects";
+import { ymGoal } from "@/lib/yandex-metrika";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
@@ -262,16 +263,30 @@ function DotGlobe() {
 
     rafId = requestAnimationFrame(render);
 
+    // Я.Метрика — фиксируем интеракт с глобусом ровно один раз за маунт
+    // компонента. И отдельно — первый реальный drag (>3px), чтобы отличать
+    // случайный клик от осознанного «покрутил».
+    let goalInteractFired = false;
+    let goalDragFired = false;
+    let dragStartPX = 0;
+    let dragStartPY = 0;
+
     // Pointer-интеракция
     const onDown = (e: PointerEvent) => {
       dragging = true;
       lastPX = e.clientX;
       lastPY = e.clientY;
+      dragStartPX = e.clientX;
+      dragStartPY = e.clientY;
       lastMoveT = performance.now();
       velLon = 0;
       velLat = 0;
       canvas.setPointerCapture(e.pointerId);
       canvas.style.cursor = "grabbing";
+      if (!goalInteractFired) {
+        goalInteractFired = true;
+        ymGoal("globe_interact");
+      }
     };
     const onMove = (e: PointerEvent) => {
       if (!dragging) return;
@@ -291,6 +306,15 @@ function DotGlobe() {
       const vyNow = dLat / mdt;
       velLon = velLon * 0.5 + vxNow * 0.5;
       velLat = velLat * 0.5 + vyNow * 0.5;
+      // Первый «реальный» drag — порог в 3px, чтобы не считать дрожание мышки.
+      if (!goalDragFired) {
+        const totalDx = e.clientX - dragStartPX;
+        const totalDy = e.clientY - dragStartPY;
+        if (Math.hypot(totalDx, totalDy) > 3) {
+          goalDragFired = true;
+          ymGoal("globe_drag");
+        }
+      }
     };
     const onUp = (e: PointerEvent) => {
       if (!dragging) return;

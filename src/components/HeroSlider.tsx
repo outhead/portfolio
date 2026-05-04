@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, X, ZoomIn } from "lucide-react";
+import { ymGoal } from "@/lib/yandex-metrika";
 
 export interface HeroImage {
   src: string;
@@ -36,26 +37,58 @@ export default function HeroSlider({ heroes, label }: HeroSliderProps) {
   const swipeStart = useRef<{ x: number; y: number } | null>(null);
   const didSwipe = useRef(false);
 
-  const next = useCallback(
-    () => setActive((a) => (a + 1) % heroes.length),
-    [heroes.length],
-  );
-  const prev = useCallback(
-    () => setActive((a) => (a - 1 + heroes.length) % heroes.length),
-    [heroes.length],
-  );
+  // Я.Метрика — direction следующей смены слайда. Заполняется в обёртках
+  // next/prev/setActive(idx), читается эффектом на `active`. Через ref —
+  // чтобы не пересоздавать колбэки при каждом изменении.
+  const nextDirection = useRef<"next" | "prev" | "dot" | "key" | "swipe">("next");
+  // Считаем сколько раз в сессии пользователь переключал, чтобы в отчёте
+  // удобно было разделить «открыл и не двигал» от «листал глубоко».
+  const changeCountRef = useRef(0);
+
+  const next = useCallback(() => {
+    nextDirection.current = "next";
+    setActive((a) => (a + 1) % heroes.length);
+  }, [heroes.length]);
+  const prev = useCallback(() => {
+    nextDirection.current = "prev";
+    setActive((a) => (a - 1 + heroes.length) % heroes.length);
+  }, [heroes.length]);
   const close = useCallback(() => setZoomed(false), []);
+
+  // Шлём цель на каждое реальное переключение. Пропускаем самый первый
+  // эффект-проход (active=0 после маунта — это не «смена», это первый показ).
+  useEffect(() => {
+    if (active === 0 && changeCountRef.current === 0) return;
+    changeCountRef.current += 1;
+    ymGoal("hero_slider_change", {
+      slide_index: active,
+      direction: nextDirection.current,
+      total_changes: changeCountRef.current,
+    });
+  }, [active]);
 
   // ESC и стрелки
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (zoomed) {
         if (e.key === "Escape") close();
-        if (e.key === "ArrowLeft") prev();
-        if (e.key === "ArrowRight") next();
+        if (e.key === "ArrowLeft") {
+          nextDirection.current = "key";
+          prev();
+        }
+        if (e.key === "ArrowRight") {
+          nextDirection.current = "key";
+          next();
+        }
       } else {
-        if (e.key === "ArrowLeft") prev();
-        if (e.key === "ArrowRight") next();
+        if (e.key === "ArrowLeft") {
+          nextDirection.current = "key";
+          prev();
+        }
+        if (e.key === "ArrowRight") {
+          nextDirection.current = "key";
+          next();
+        }
       }
     };
     window.addEventListener("keydown", onKey);
@@ -88,6 +121,7 @@ export default function HeroSlider({ heroes, label }: HeroSliderProps) {
     const dy = e.clientY - start.y;
     if (Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dy) < SWIPE_MAX_VERTICAL) {
       didSwipe.current = true;
+      nextDirection.current = "swipe";
       if (dx < 0) next();
       else prev();
     }
@@ -176,7 +210,10 @@ export default function HeroSlider({ heroes, label }: HeroSliderProps) {
             <button
               key={idx}
               type="button"
-              onClick={() => setActive(idx)}
+              onClick={() => {
+                nextDirection.current = "dot";
+                setActive(idx);
+              }}
               aria-label={`Перейти к постеру ${idx + 1}`}
               className={`h-1.5 rounded-full transition-all ${
                 idx === active

@@ -6,6 +6,7 @@ import confetti from "canvas-confetti";
 import Link from "next/link";
 import { ArrowRight, Send } from "lucide-react";
 import SmileFireworksButton from "./SmileFireworksButton";
+import { ymGoal } from "@/lib/yandex-metrika";
 
 // ───────────────────────────────────────────────────────────
 // Глобальный счётчик через abacus.jasoncameron.dev (без своего бэка).
@@ -279,17 +280,33 @@ export default function FinalCTA() {
       // первая инициализация (id "0") — пропускаем
       if (lastStageRef.current !== "0" || stage.id !== "0") {
         if (stage.id !== "0" && !reduced) fireMilestone();
+        // Я.Метрика — фиксируем достижение нового stage один раз за сессию.
+        // Цели: smile_stage_1 / _15 / _30 / _46. Stage "0" — стартовый,
+        // его не считаем достижением.
+        if (stage.id !== "0") {
+          ymGoal(`smile_stage_${stage.id}`, { count: sessionCount });
+        }
       }
       lastStageRef.current = stage.id;
     }
-  }, [stage.id, reduced]);
+  }, [stage.id, reduced, sessionCount]);
 
   const onClick = useCallback(() => {
     setPressing(true);
     setTimeout(() => setPressing(false), 120);
 
     // Локальные счётчики — мгновенно
-    setSessionCount((c) => c + 1);
+    setSessionCount((c) => {
+      const next = c + 1;
+      // Я.Метрика — шлём smile_click только на значимых отметках, чтобы
+      // не плодить тысячи событий: 1-й клик, потом каждое 10-е, плюс
+      // разовый «совсем-долго-кликает» на 100. count в параметрах —
+      // полезен для отчёта по распределению.
+      if (next === 1 || next % 10 === 0 || next === 100) {
+        ymGoal("smile_click", { count: next });
+      }
+      return next;
+    });
     setGlobalCount((c) => (c == null ? 1 : c + 1));
 
     // Фейерверк
