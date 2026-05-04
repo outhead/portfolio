@@ -1259,9 +1259,9 @@ export default function PreviewHome() {
                 {/* Три цифры в ряд */}
                 <div className="grid grid-cols-3 gap-3 md:gap-4 flex-1 content-center">
                   {[
-                    { value: "30+", label: "продуктов запущено" },
+                    { value: "30+", label: "запусков" },
                     { value: "9+", label: "лет опыта" },
-                    { value: "200+", label: "знакомых дизайнеров" },
+                    { value: "200+", label: "контактов" },
                   ].map((item, idx) => (
                     <div
                       key={item.value}
@@ -1272,7 +1272,7 @@ export default function PreviewHome() {
                       <div className="font-p95 text-[clamp(32px,3.6vw,52px)] uppercase tracking-tight text-[#A6FF00] leading-none">
                         {item.value}
                       </div>
-                      <div className="text-[12px] md:text-[13px] tracking-[0.06em] uppercase text-white/55 leading-[1.35] font-light [overflow-wrap:anywhere]">
+                      <div className="text-[11px] md:text-[12px] tracking-[0.04em] uppercase text-white/55 leading-[1.4] font-light">
                         {item.label}
                       </div>
                     </div>
