@@ -1291,9 +1291,9 @@ export default function PreviewHome() {
                 {/* Три цифры в ряд */}
                 <div className="grid grid-cols-3 gap-3 md:gap-4 flex-1 content-center">
                   {[
-                    { value: "30+", label: "запусков" },
-                    { value: "9+", label: "лет опыта" },
-                    { value: "200+", label: "контактов" },
+                    { value: "30", label: "запусков" },
+                    { value: "9", label: "лет опыта" },
+                    { value: "27", label: "команд" },
                   ].map((item, idx) => (
                     <div
                       key={item.value}

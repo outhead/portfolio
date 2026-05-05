@@ -28,7 +28,7 @@ interface Props {
 }
 
 /**
- * «Улыбнуться» — пилль-форма, чёрный фон, лаймовый ободок и пульсация.
+ * «Не нажимать» — пилль-форма, чёрный фон, лаймовый ободок и пульсация.
  * При hover — короткий confetti-шлейф; при click — крупный залп.
  * Счётчик отдельным блоком под кнопкой с форматированием 1-100K-1M.
  */
@@ -135,7 +135,7 @@ export default function SmileFireworksButton({
         type="button"
         onClick={handleClick}
         onMouseEnter={handleHover}
-        aria-label="Улыбнуться"
+        aria-label="Не нажимать"
         className={`group relative inline-flex items-center justify-center w-full md:w-[300px] h-[88px] md:h-[96px] rounded-full bg-black overflow-hidden border border-[#A6FF00]/35 select-none cursor-pointer transition-all duration-300 hover:border-[#A6FF00] hover:shadow-[0_0_70px_-10px_rgba(166,255,0,0.7)] ${
           pressing ? "scale-[0.97]" : "scale-100"
         }`}
@@ -157,7 +157,7 @@ export default function SmileFireworksButton({
         />
         {/* Текст — translate-y компенсирует cap-height-смещение Bebas Neue */}
         <span className="relative font-p95 text-[clamp(28px,3.5vw,44px)] leading-none uppercase tracking-tight text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.85)] translate-y-[2px]">
-          Улыбнуться
+          Не нажимать
         </span>
       </button>
 
