@@ -427,34 +427,53 @@ export default function FinalCTA() {
             </div>
 
             {/* Правая колонка — счётчик-табло «не нажали N раз» (шутка на кнопку) */}
-            <motion.div
-              variants={fadeUp}
-              className="flex flex-col items-start md:items-center gap-1 md:gap-1.5 w-full md:w-auto md:min-w-[260px]"
-            >
-              <div className="font-p95 text-[12px] md:text-[14px] tracking-[0.22em] uppercase text-white/45 leading-none">
-                Не нажали
-              </div>
-              <motion.div
-                animate={{ scale: pressing ? 1.05 : 1 }}
-                transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                className="relative font-p95 text-[clamp(72px,10vw,160px)] leading-[0.92] uppercase tracking-tight text-[#A6FF00] tabular-nums"
-                aria-live="polite"
-                aria-label={
-                  globalCount != null
-                    ? `${globalCount} ${pluralize(globalCount)} не нажали`
-                    : "счётчик загружается"
-                }
-              >
-                {globalCount != null ? (
-                  formatCount(globalCount)
-                ) : (
-                  <span className="text-[#A6FF00]/20">—</span>
-                )}
-              </motion.div>
-              <div className="font-p95 text-[12px] md:text-[14px] tracking-[0.22em] uppercase text-white/45 leading-none">
-                {globalCount != null ? `${pluralize(globalCount)}` : "счётчик…"}
-              </div>
-            </motion.div>
+            {(() => {
+              // Полный номер с разрядами, без сокращений K/M — пользователю
+              // важно видеть точное число при любом масштабе.
+              const display =
+                globalCount != null ? globalCount.toLocaleString("ru-RU") : "—";
+              // Шрифт даунгрейдится по длине строки, чтобы 7+ знаков не вылезали
+              // за колонку. Класс целиком — иначе Tailwind JIT его не подцепит.
+              const len = display.length;
+              const sizeClass =
+                len <= 4
+                  ? "text-[clamp(72px,10vw,160px)]"
+                  : len <= 7
+                    ? "text-[clamp(56px,7.5vw,116px)]"
+                    : len <= 10
+                      ? "text-[clamp(44px,5.5vw,88px)]"
+                      : "text-[clamp(34px,4.5vw,64px)]";
+              return (
+                <motion.div
+                  variants={fadeUp}
+                  className="flex flex-col items-start md:items-center gap-1 md:gap-1.5 w-full md:w-auto md:min-w-[260px]"
+                >
+                  <div className="font-p95 text-[12px] md:text-[14px] tracking-[0.22em] uppercase text-white/45 leading-none">
+                    Не нажали
+                  </div>
+                  <motion.div
+                    animate={{ scale: pressing ? 1.05 : 1 }}
+                    transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                    className={`relative font-p95 ${sizeClass} leading-[0.92] uppercase tracking-tight text-[#A6FF00] tabular-nums`}
+                    aria-live="polite"
+                    aria-label={
+                      globalCount != null
+                        ? `${globalCount} ${pluralize(globalCount)} не нажали`
+                        : "счётчик загружается"
+                    }
+                  >
+                    {globalCount != null ? (
+                      display
+                    ) : (
+                      <span className="text-[#A6FF00]/20">—</span>
+                    )}
+                  </motion.div>
+                  <div className="font-p95 text-[12px] md:text-[14px] tracking-[0.22em] uppercase text-white/45 leading-none">
+                    {globalCount != null ? pluralize(globalCount) : "счётчик…"}
+                  </div>
+                </motion.div>
+              );
+            })()}
           </div>
 
         </motion.div>
