@@ -6,17 +6,17 @@ import { useEffect, useRef, type RefObject } from "react";
 // поверхности целевой фигуры (shape), держится и затухает.
 // Физика: инвертированная версия алгоритма rectangleworld.com.
 //
-// Интерактив:
-//   • auto-rotate — фигура крутится по yaw со скоростью autoYawSpeed
-//   • hover — при входе курсора фигура плавно «поворачивается в сторону
-//             курсора» по кратчайшему пути (важно: без «раскрутки» через
-//             накопленные в idle обороты)
-// События курсора слушаются либо на самом canvas, либо на элементе
-// `trackingRef`, чтобы курсор можно было отслеживать в более широкой
-// области (например, на весь hero-bento, а не только в плитке).
-// Drag и click-teleport сняты намеренно: плитка воспринималась как
-// ловушка для случайных кликов по ссылкам, а дёргать шар вручную —
-// лишняя функция, которая ничего не добавляла.
+// Интерактив (state machine: DRAG → INERTIA → HOVER → IDLE):
+//   • DRAG — pointerdown по canvas + move: шар крутится «как глобус», dx/dy
+//            мапятся в yaw/pitch (полная ширина = π рад). Pitch клампится
+//            в ±pitchLimit, чтобы не выворачивался.
+//   • INERTIA — после release: yawVel/pitchVel затухают экспоненциально, пока
+//               не упадут ниже порога; тогда возвращается hover/auto-rotate.
+//   • HOVER — cursorInside и нет инерции: cursor-follow («смотрит» в сторону
+//             курсора), кратчайший путь по yaw, мягкая амплитуда.
+//   • IDLE — auto-rotate по yaw со скоростью autoYawSpeed.
+// Hover слушается на canvas или на trackingRef (если задан), чтобы тригер
+// hover-зоной мог быть бенто-тайл целиком, а драг — только по самому шару.
 
 export type ParticleShape = "sphere" | "heart";
 
@@ -272,6 +272,7 @@ export default function ParticleSphere({
     };
 
     // ── Интерактив ─────────────────────────────────────────────────
+    // State machine: DRAG → INERTIA → HOVER (cursor-follow) → IDLE (auto-rotate)
     let yaw = 0;
     let pitch = 0;
     let lastFrameT = performance.now();
@@ -280,7 +281,19 @@ export default function ParticleSphere({
     let cursorCanvasX = 0;
     let cursorCanvasY = 0;
 
-    // Элемент, на котором слушаем события (может быть шире, чем canvas).
+    // Drag-state — pointerdown захватывает шар, pointermove крутит его, на
+    // release остаётся инерция (yawVel/pitchVel), затухающая экспоненциально.
+    let isDragging = false;
+    let dragPointerId: number | null = null;
+    let lastPointerX = 0;
+    let lastPointerY = 0;
+    let lastPointerT = performance.now();
+    let yawVel = 0;
+    let pitchVel = 0;
+    const inertiaDecayPerSec = 1.8; // выше → быстрее затухает после release
+    const inertiaSpeedThreshold = 0.05; // ниже — выходим в hover/auto-rotate
+
+    // Элемент, на котором слушаем hover-события (может быть шире, чем canvas).
     const eventTarget: HTMLElement =
       (trackingRef && trackingRef.current) || canvas;
 
@@ -292,14 +305,32 @@ export default function ParticleSphere({
       };
     };
 
-    // Только tracking курсора — ни drag, ни click-teleport. При входе
-    // помечаем cursorInside=true, в step() cursor-follow возьмёт
-    // актуальные координаты.
+    // Pointer-move: всегда обновляем курсор для hover, плюс — если идёт drag —
+    // применяем дельту к yaw/pitch и считаем сглаженную угловую скорость для
+    // последующей инерции.
     const onPointerMove = (e: PointerEvent) => {
       const c = cursorToCanvas(e.clientX, e.clientY);
       cursorCanvasX = c.x;
       cursorCanvasY = c.y;
       cursorInside = true;
+
+      if (isDragging) {
+        const now = performance.now();
+        const dtMove = Math.max(0.008, (now - lastPointerT) / 1000);
+        const dx = e.clientX - lastPointerX;
+        const dy = e.clientY - lastPointerY;
+        lastPointerX = e.clientX;
+        lastPointerY = e.clientY;
+        lastPointerT = now;
+        // Чувствительность: drag на полную ширину/высоту = π рад поворота
+        const dYaw = (dx * Math.PI) / Math.max(1, cssW);
+        const dPitch = (dy * Math.PI) / Math.max(1, cssH);
+        yaw = normalizeAngle(yaw + dYaw);
+        pitch = Math.max(-pitchLimit, Math.min(pitchLimit, pitch + dPitch));
+        // EMA по угловой скорости (рад/с) — мягкая инерция без рывков
+        yawVel = yawVel * 0.5 + (dYaw / dtMove) * 0.5;
+        pitchVel = pitchVel * 0.5 + (dPitch / dtMove) * 0.5;
+      }
     };
 
     const onPointerLeave = () => {
@@ -310,10 +341,54 @@ export default function ParticleSphere({
       cursorInside = true;
     };
 
+    // Drag — стартует только при клике непосредственно на canvas (на «шаре»),
+    // а не на широкой trackingRef-области, чтобы случайные клики по hero
+    // не дёргали фигуру.
+    const onPointerDown = (e: PointerEvent) => {
+      isDragging = true;
+      dragPointerId = e.pointerId;
+      lastPointerX = e.clientX;
+      lastPointerY = e.clientY;
+      lastPointerT = performance.now();
+      yawVel = 0;
+      pitchVel = 0;
+      try {
+        canvas.setPointerCapture(e.pointerId);
+      } catch {}
+      canvas.style.cursor = "grabbing";
+      e.preventDefault();
+    };
+
+    const onPointerUp = (e: PointerEvent) => {
+      if (!isDragging) return;
+      if (dragPointerId !== null && e.pointerId !== dragPointerId) return;
+      isDragging = false;
+      dragPointerId = null;
+      try {
+        canvas.releasePointerCapture(e.pointerId);
+      } catch {}
+      canvas.style.cursor = "grab";
+      // Кэп инерции — резкий «швырок» не должен улетать в космос
+      const maxV = 4.5;
+      const sp = Math.hypot(yawVel, pitchVel);
+      if (sp > maxV) {
+        yawVel = (yawVel / sp) * maxV;
+        pitchVel = (pitchVel / sp) * maxV;
+      }
+    };
+
     if (interactive) {
       eventTarget.addEventListener("pointermove", onPointerMove);
       eventTarget.addEventListener("pointerleave", onPointerLeave);
       eventTarget.addEventListener("pointerenter", onPointerEnter);
+      // Drag — на canvas, плюс pointermove на canvas как fallback при
+      // pointer-capture (когда события не доходят до eventTarget-родителя).
+      canvas.addEventListener("pointerdown", onPointerDown);
+      canvas.addEventListener("pointermove", onPointerMove);
+      canvas.addEventListener("pointerup", onPointerUp);
+      canvas.addEventListener("pointercancel", onPointerUp);
+      canvas.style.cursor = "grab";
+      canvas.style.touchAction = "none";
     }
 
     // ── Рендер-цикл ───────────────────────────────────────────────
@@ -329,11 +404,31 @@ export default function ParticleSphere({
       currentCX += (targetCX - currentCX) * cLerp;
       currentCY += (targetCY - currentCY) * cLerp;
 
-      // Углы поворота — или cursor-follow, или auto-rotate.
-      if (cursorInside) {
+      // Углы поворота — state machine: DRAG → INERTIA → HOVER → IDLE.
+      if (isDragging) {
+        // yaw/pitch обновлены в onPointerMove — здесь ничего не делаем.
+      } else if (
+        Math.hypot(yawVel, pitchVel) > inertiaSpeedThreshold
+      ) {
+        // INERTIA: продолжаем крутиться от драга, экспоненциально затухая.
+        yaw = normalizeAngle(yaw + yawVel * dt);
+        pitch += pitchVel * dt;
+        if (pitch > pitchLimit) {
+          pitch = pitchLimit;
+          pitchVel = 0;
+        } else if (pitch < -pitchLimit) {
+          pitch = -pitchLimit;
+          pitchVel = 0;
+        }
+        const decay = Math.exp(-inertiaDecayPerSec * dt);
+        yawVel *= decay;
+        pitchVel *= decay;
+      } else if (cursorInside) {
         // Cursor-follow: фигура «смотрит» в сторону курсора. Горизонталь
         // инвертирована — шар поворачивается В ту же сторону, куда ведёт
         // курсор, а не вслед за ним.
+        yawVel = 0;
+        pitchVel = 0;
         const dxC = cursorCanvasX - currentCX;
         const dyC = cursorCanvasY - currentCY;
         const nx = Math.max(-1, Math.min(1, dxC / (cssW * 0.5)));
@@ -350,6 +445,8 @@ export default function ParticleSphere({
       } else {
         // Auto-rotate. Нормализуем yaw в [-π, π], чтобы он не накапливал
         // обороты — так вход cursor-follow всегда идёт коротким путём.
+        yawVel = 0;
+        pitchVel = 0;
         yaw = normalizeAngle(yaw + autoYawSpeed * dt);
         pitch *= Math.pow(0.6, dt);
       }
@@ -449,6 +546,10 @@ export default function ParticleSphere({
         eventTarget.removeEventListener("pointermove", onPointerMove);
         eventTarget.removeEventListener("pointerleave", onPointerLeave);
         eventTarget.removeEventListener("pointerenter", onPointerEnter);
+        canvas.removeEventListener("pointerdown", onPointerDown);
+        canvas.removeEventListener("pointermove", onPointerMove);
+        canvas.removeEventListener("pointerup", onPointerUp);
+        canvas.removeEventListener("pointercancel", onPointerUp);
       }
     };
   }, [r, g, b, sphereRadFactor, numPerFrame, startMul, flightFrames, holdFrames, decayFrames, shape, interactive, trackingRef]);
