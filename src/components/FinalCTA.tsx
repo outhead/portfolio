@@ -36,7 +36,7 @@ const STAGES: Stage[] = [
   {
     id: "0",
     threshold: 0,
-    headline: "Спасибо, что долистали, вот вам кнопочка",
+    headline: "Спасибо, что долистали, вот вам ещё кнопочки",
     accent: ".",
   },
   {
@@ -397,16 +397,13 @@ export default function FinalCTA() {
                 variants={fadeUp}
                 className="mt-6 md:mt-8 flex flex-wrap items-center gap-3"
               >
-                <Link
-                  href="https://t.me/egoradi"
-                  target="_blank"
-                  data-ym-goal="cta_telegram"
-                  data-ym-goal-params='{"placement":"final_cta"}'
-                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-[#A6FF00]/40 text-[#A6FF00] font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
+                <button
+                  type="button"
+                  onClick={onClick}
+                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-[#A6FF00]/40 bg-transparent text-[#A6FF00] font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors cursor-pointer select-none"
                 >
-                  <Send className="w-4 h-4" strokeWidth={2.2} />
-                  Написать в Telegram
-                </Link>
+                  Не нажимать
+                </button>
                 <Link
                   href="https://t.me/aiegorka"
                   target="_blank"
@@ -417,6 +414,13 @@ export default function FinalCTA() {
                   Подписаться на канал
                 </Link>
               </motion.div>
+
+              <motion.p
+                variants={fadeUp}
+                className="mt-3 md:mt-4 text-[13px] md:text-[14px] text-white/45 leading-relaxed max-w-md"
+              >
+                А ещё, если вам стало интересно — я веду телеграм-канал.
+              </motion.p>
             </div>
 
             {/* Правая колонка — большой смайл-блок (focal), центрирован по вертикали */}
