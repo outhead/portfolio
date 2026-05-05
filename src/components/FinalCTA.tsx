@@ -5,6 +5,7 @@ import { AnimatePresence, motion, useReducedMotion, type Variants } from "framer
 import confetti from "canvas-confetti";
 import Link from "next/link";
 import { Send } from "lucide-react";
+import SmileFireworksButton from "./SmileFireworksButton";
 import { ymGoal } from "@/lib/yandex-metrika";
 
 // ───────────────────────────────────────────────────────────
@@ -406,13 +407,11 @@ export default function FinalCTA() {
                 variants={fadeUp}
                 className="mt-6 md:mt-8 flex flex-wrap items-center gap-3"
               >
-                <button
-                  type="button"
+                <SmileFireworksButton
                   onClick={onClick}
-                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-[#A6FF00]/40 bg-transparent text-[#A6FF00] font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors cursor-pointer select-none"
-                >
-                  Не нажимать
-                </button>
+                  pressing={pressing}
+                  compact
+                />
                 <Link
                   href="https://t.me/aiegorka"
                   target="_blank"
