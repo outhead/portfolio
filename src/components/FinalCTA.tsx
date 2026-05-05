@@ -352,7 +352,7 @@ export default function FinalCTA() {
 
           <motion.div variants={fadeUp} className="relative mb-5 md:mb-7 flex items-center gap-3">
             <span className="font-p95 text-[15px] md:text-[16px] tracking-[0.2em] uppercase text-[#A6FF00]">
-              [ Без церемоний ]
+              [ Поздравляю ]
             </span>
             {sessionCount > 0 && (
               <span className="font-p95 text-[12px] md:text-[15px] tracking-[0.18em] uppercase text-white/30 tabular-nums">
