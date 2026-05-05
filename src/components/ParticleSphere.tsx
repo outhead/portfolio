@@ -389,6 +389,9 @@ export default function ParticleSphere({
       canvas.addEventListener("pointercancel", onPointerUp);
       canvas.style.cursor = "grab";
       canvas.style.touchAction = "none";
+      // Родительская обёртка hero часто имеет pointer-events:none (декор);
+      // явно включаем события на canvas, чтобы драг доходил до шара.
+      canvas.style.pointerEvents = "auto";
     }
 
     // ── Рендер-цикл ───────────────────────────────────────────────
