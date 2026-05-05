@@ -1160,7 +1160,7 @@ export default function PreviewHome() {
                         data-ym-goal-params='{"placement":"hero"}'
                         className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-[#A6FF00] text-black font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:bg-white transition-colors no-underline"
                       >
-                        Обсудить проект
+                        <span className="leading-none translate-y-[1px]">Обсудить проект</span>
                         <ArrowRight className="w-4 h-4" strokeWidth={2.2} />
                       </Link>
                       <Link
@@ -1168,7 +1168,7 @@ export default function PreviewHome() {
                         data-ym-goal="hero_view_cases"
                         className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:border-white/50 hover:text-white transition-colors no-underline"
                       >
-                        Смотреть кейсы
+                        <span className="leading-none translate-y-[1px]">Смотреть кейсы</span>
                         <ArrowRight className="w-4 h-4" strokeWidth={2} />
                       </Link>
                     </div>

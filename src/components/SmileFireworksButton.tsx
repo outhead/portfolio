@@ -149,7 +149,7 @@ export default function SmileFireworksButton({
           aria-hidden
           className="absolute inset-0 w-full h-full pointer-events-none"
         />
-        <span className="relative z-[1] font-p95 text-[15px] md:text-[16px] leading-none uppercase tracking-[0.12em]">
+        <span className="relative z-[1] font-p95 text-[15px] md:text-[16px] leading-none uppercase tracking-[0.12em] translate-y-[1px]">
           Не нажимать
         </span>
       </button>
