@@ -364,6 +364,11 @@ export default function FinalCTA() {
             <span className="font-p95 text-[15px] md:text-[16px] tracking-[0.2em] uppercase text-[#A6FF00]">
               [ Поздравляю ]
             </span>
+            {sessionCount > 0 && (
+              <span className="font-p95 text-[12px] md:text-[15px] tracking-[0.18em] uppercase text-white/30 tabular-nums">
+                · запустили фейерверк {sessionCount} {pluralize(sessionCount)}
+              </span>
+            )}
           </motion.div>
 
           <div className="relative grid md:grid-cols-[1fr_auto] gap-8 md:gap-8 lg:gap-10 md:items-center">
