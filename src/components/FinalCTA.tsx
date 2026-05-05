@@ -52,7 +52,7 @@ const STAGES: Stage[] = [
   {
     id: "1",
     threshold: 1,
-    headline: "Вы всё ещё можете написать мне в Telegram",
+    headline: "Вы всё ещё можете подписаться на мой канал",
     accent: ".",
   },
   {
@@ -364,11 +364,6 @@ export default function FinalCTA() {
             <span className="font-p95 text-[15px] md:text-[16px] tracking-[0.2em] uppercase text-[#A6FF00]">
               [ Поздравляю ]
             </span>
-            {sessionCount > 0 && (
-              <span className="font-p95 text-[12px] md:text-[15px] tracking-[0.18em] uppercase text-white/30 tabular-nums">
-                · сессия: {sessionCount}
-              </span>
-            )}
           </motion.div>
 
           <div className="relative grid md:grid-cols-[1fr_auto] gap-8 md:gap-8 lg:gap-10 md:items-center">
@@ -431,27 +426,33 @@ export default function FinalCTA() {
               </motion.p>
             </div>
 
-            {/* Правая колонка — крупный счётчик (focal), центрирован по вертикали */}
+            {/* Правая колонка — счётчик-табло «не нажали N раз» (шутка на кнопку) */}
             <motion.div
               variants={fadeUp}
-              className="flex flex-col items-start md:items-center gap-2 md:gap-3 w-full md:w-auto md:min-w-[280px]"
+              className="flex flex-col items-start md:items-center gap-1 md:gap-1.5 w-full md:w-auto md:min-w-[260px]"
             >
+              <div className="font-p95 text-[12px] md:text-[14px] tracking-[0.22em] uppercase text-white/45 leading-none">
+                Не нажали
+              </div>
               <motion.div
                 animate={{ scale: pressing ? 1.05 : 1 }}
                 transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                className="relative font-p95 text-[clamp(80px,12vw,180px)] leading-[0.9] uppercase tracking-tight text-white tabular-nums"
+                className="relative font-p95 text-[clamp(72px,10vw,160px)] leading-[0.92] uppercase tracking-tight text-[#A6FF00] tabular-nums"
                 aria-live="polite"
+                aria-label={
+                  globalCount != null
+                    ? `${globalCount} ${pluralize(globalCount)} не нажали`
+                    : "счётчик загружается"
+                }
               >
                 {globalCount != null ? (
                   formatCount(globalCount)
                 ) : (
-                  <span className="text-white/15">—</span>
+                  <span className="text-[#A6FF00]/20">—</span>
                 )}
               </motion.div>
               <div className="font-p95 text-[12px] md:text-[14px] tracking-[0.22em] uppercase text-white/45 leading-none">
-                {globalCount != null
-                  ? `${pluralize(globalCount)} нажали`
-                  : "счётчик…"}
+                {globalCount != null ? `${pluralize(globalCount)}` : "счётчик…"}
               </div>
             </motion.div>
           </div>
