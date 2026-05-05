@@ -112,7 +112,7 @@ export default function Header() {
                 key={link.href}
                 href={link.href}
                 data-ym-goal={link.goal}
-                className={`relative text-[15px] font-normal tracking-[0.1em] uppercase no-underline transition-colors duration-200 group min-h-[44px] flex items-center ${
+                className={`relative text-[13px] font-normal tracking-[0.12em] uppercase no-underline transition-colors duration-200 group min-h-[44px] flex items-center ${
                   isActive ? "text-white" : "text-white/55 hover:text-white"
                 }`}
               >

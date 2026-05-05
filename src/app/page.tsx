@@ -144,9 +144,14 @@ function DotGlobe() {
     const MOS_LON = 37.62 * DEG;
 
     // Состояние анимации
-    let rotLon = -0.4;
-    let rotLat = 0.32;
-    const autoSpeed = 0.08;
+    // HOME — точка покоя: Москва смотрит на зрителя чуть правее центра,
+    // северный полюс наклонён к камере. После драга шар плавно возвращается
+    // в HOME, чтобы метка Москвы всегда была видна, когда юзер не крутит.
+    const HOME_LON = -0.4;
+    const HOME_LAT = 0.32;
+    const homeReturnPerSec = 1.4; // скорость возврата к HOME
+    let rotLon = HOME_LON;
+    let rotLat = HOME_LAT;
     let dragging = false;
     let lastPX = 0;
     let lastPY = 0;
@@ -155,7 +160,7 @@ function DotGlobe() {
     let velLon = 0;
     let velLat = 0;
     let last = performance.now();
-    let idleResumeAt = 0;
+    let idleResumeAt = 0; // пауза перед возвратом к HOME (после клика/drag)
     let rafId = 0;
 
     const resize = () => {
@@ -181,9 +186,17 @@ function DotGlobe() {
           velLon *= decay;
           velLat *= decay;
         } else if (now > idleResumeAt) {
+          // Spring-back в HOME — Москва всегда возвращается на фронт.
           velLon = 0;
           velLat = 0;
-          rotLon += autoSpeed * dt;
+          const k = 1 - Math.exp(-homeReturnPerSec * dt);
+          // Кратчайший путь по долготе (через ±π), чтобы не «раскручиваться»
+          // через накопленные обороты.
+          let dHomeLon = HOME_LON - rotLon;
+          if (dHomeLon > Math.PI) dHomeLon -= Math.PI * 2;
+          else if (dHomeLon < -Math.PI) dHomeLon += Math.PI * 2;
+          rotLon += dHomeLon * k;
+          rotLat += (HOME_LAT - rotLat) * k;
         }
       }
 
