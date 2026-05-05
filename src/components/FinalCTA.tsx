@@ -4,9 +4,18 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion, type Variants } from "framer-motion";
 import confetti from "canvas-confetti";
 import Link from "next/link";
-import { ArrowRight, Send } from "lucide-react";
-import SmileFireworksButton from "./SmileFireworksButton";
+import { Send } from "lucide-react";
 import { ymGoal } from "@/lib/yandex-metrika";
+
+// ───────────────────────────────────────────────────────────
+// Счётчик-табло: форматирование больших чисел (1 234 → 12K → 1,2M).
+// ───────────────────────────────────────────────────────────
+function formatCount(n: number): string {
+  if (n < 100_000) return n.toLocaleString("ru-RU");
+  if (n < 1_000_000) return `${Math.floor(n / 1000)}K`;
+  const m = n / 1_000_000;
+  return m >= 10 ? `${Math.floor(m)}M` : `${m.toFixed(1).replace(".", ",")}M`;
+}
 
 // ───────────────────────────────────────────────────────────
 // Глобальный счётчик через abacus.jasoncameron.dev (без своего бэка).
@@ -423,16 +432,28 @@ export default function FinalCTA() {
               </motion.p>
             </div>
 
-            {/* Правая колонка — большой смайл-блок (focal), центрирован по вертикали */}
+            {/* Правая колонка — крупный счётчик (focal), центрирован по вертикали */}
             <motion.div
               variants={fadeUp}
-              className="flex flex-col items-stretch md:items-center gap-3 md:gap-4 w-full md:w-auto"
+              className="flex flex-col items-start md:items-center gap-2 md:gap-3 w-full md:w-auto md:min-w-[280px]"
             >
-              <SmileFireworksButton
-                onClick={onClick}
-                globalCount={globalCount}
-                pressing={pressing}
-              />
+              <motion.div
+                animate={{ scale: pressing ? 1.05 : 1 }}
+                transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                className="relative font-p95 text-[clamp(80px,12vw,180px)] leading-[0.9] uppercase tracking-tight text-white tabular-nums"
+                aria-live="polite"
+              >
+                {globalCount != null ? (
+                  formatCount(globalCount)
+                ) : (
+                  <span className="text-white/15">—</span>
+                )}
+              </motion.div>
+              <div className="font-p95 text-[12px] md:text-[14px] tracking-[0.22em] uppercase text-white/45 leading-none">
+                {globalCount != null
+                  ? `${pluralize(globalCount)} нажали`
+                  : "счётчик…"}
+              </div>
             </motion.div>
           </div>
 
