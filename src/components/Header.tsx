@@ -93,10 +93,6 @@ export default function Header() {
           <span className="font-p95 text-[16px] md:text-[15px] uppercase tracking-[0.14em] text-white">
             Егор Шугаев
           </span>
-          <span aria-hidden className="hidden lg:inline h-6 w-px bg-white/15 shrink-0" />
-          <span className="hidden lg:inline font-p95 text-[16px] md:text-[15px] uppercase tracking-[0.14em] text-white/55">
-            Дизайн-директор
-          </span>
         </Link>
 
         <nav aria-label="Основная навигация" className="hidden md:flex gap-6 absolute left-1/2 -translate-x-1/2">

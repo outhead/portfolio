@@ -25,7 +25,7 @@ const links: Array<{ href: string; label: string; Icon: React.ComponentType<Reac
   { href: "https://t.me/egoradi", label: "Telegram", Icon: Send, goal: "cta_telegram" },
   { href: "mailto:egor.outhead@gmail.com", label: "Email", Icon: Mail, goal: "cta_email" },
   { href: "https://github.com/outhead", label: "GitHub", Icon: GithubIcon, goal: "cta_github" },
-  { href: "https://www.linkedin.com/in/egorshugaev/", label: "LinkedIn", Icon: LinkedinIcon, goal: "cta_linkedin" },
+  { href: "https://www.linkedin.com/in/егор-шугаев-03735078/", label: "LinkedIn", Icon: LinkedinIcon, goal: "cta_linkedin" },
   { href: "https://x.com/egoradi", label: "X", Icon: XIcon, goal: "cta_x" },
 ];
 

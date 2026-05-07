@@ -465,8 +465,8 @@ export default function ParticleSphere({
       const sinP = Math.sin(pitch);
       const cosP = Math.cos(pitch);
 
-      ctx.fillStyle = "#000000";
-      ctx.fillRect(0, 0, cssW, cssH);
+      // Прозрачный фон — чтобы под canvas просвечивала плитка/градиент.
+      ctx.clearRect(0, 0, cssW, cssH);
 
       let p = particleList.first;
       while (p !== null) {

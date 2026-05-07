@@ -5,7 +5,6 @@ import ParticleSphere from "@/components/ParticleSphere";
 import PulseAnimation, { type PulseVariant } from "@/components/PulseAnimation";
 import FlippingWord from "@/components/FlippingWord";
 import FinalCTA from "@/components/FinalCTA";
-import CompanyMarquee from "@/components/CompanyMarquee";
 import PillsBackdrop from "@/components/PillsBackdrop";
 import { TypographyFix } from "@/components/TypographyFix";
 import { workProjects } from "@/data/projects";
@@ -751,7 +750,7 @@ type ServiceTileData = {
 };
 
 function ServiceTile({ tile }: { tile: ServiceTileData }) {
-  const { index, label, title, Icon, accent, animation, animationReverse, body, items } = tile;
+  const { index, label, title, Icon, accent, animation, animationReverse, body } = tile;
   const tileRef = useRef<HTMLDivElement>(null);
   const [mobileActive, setMobileActive] = useState(false);
 
@@ -800,7 +799,7 @@ function ServiceTile({ tile }: { tile: ServiceTileData }) {
     <motion.div
       ref={tileRef}
       variants={fadeUp}
-      className="group relative rounded-2xl border border-white/[0.08] bg-white/[0.015] hover:border-white/[0.2] transition-colors p-6 md:p-8 flex flex-col gap-5 md:gap-6 min-h-[420px] md:min-h-[520px] overflow-hidden"
+      className="group relative w-full rounded-2xl border border-white/[0.08] bg-white/[0.015] hover:border-white/[0.2] transition-colors p-6 md:p-8 flex flex-col gap-5 md:gap-6 min-h-[420px] md:min-h-[520px] overflow-hidden"
     >
       {/* Верх: index / icon / label */}
       <div className="flex items-start justify-between gap-3">
@@ -841,17 +840,11 @@ function ServiceTile({ tile }: { tile: ServiceTileData }) {
         </div>
       </div>
 
-      {/* Описание */}
-      <p className="text-[15px] md:text-[16px] leading-relaxed text-white/60">
+      {/* Описание — прижато к низу карточки (на место бывших items),
+          mt-auto выравнивает низ всех 3 карточек по горизонтали. */}
+      <p className="mt-auto text-[15px] md:text-[16px] leading-relaxed text-white/60">
         {body}
       </p>
-
-      {/* Низ: items — горизонтальный список через ·.
-          mt-auto прижимает блок к низу карточки независимо от длины
-          описания/items, чтобы низ всех 3 карточек выровнялся. */}
-      <div className="mt-auto pt-4 md:pt-5 border-t border-white/[0.06] text-[15px] md:text-[16px] tracking-[0.04em] text-white/45 leading-relaxed">
-        {items.join(" · ")}
-      </div>
     </motion.div>
   );
 }
@@ -1089,7 +1082,7 @@ export default function PreviewHome() {
               variants={fadeUp}
               className="col-span-12 order-1 md:order-none"
             >
-              <div className="relative rounded-3xl border border-white/[0.1] bg-gradient-to-br from-white/[0.025] via-white/[0.01] to-transparent overflow-hidden md:min-h-[600px]">
+              <div className="relative rounded-3xl border border-white/[0.1] bg-gradient-to-br from-white/[0.025] via-white/[0.01] to-transparent overflow-hidden md:min-h-[600px] lg:min-h-[720px]">
                 {/* Сфера — на десктопе абсолютно справа, на мобилке банером сверху */}
                 <div
                   aria-hidden
@@ -1099,46 +1092,42 @@ export default function PreviewHome() {
                     className="absolute inset-0"
                     style={{
                       background:
-                        "radial-gradient(ellipse 60% 55% at 50% 50%, rgba(166,255,0,0.10) 0%, rgba(201,166,107,0.07) 35%, rgba(0,0,0,0) 70%), radial-gradient(circle at 50% 50%, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 1px, transparent 1.2px) 0 0/22px 22px",
+                        "radial-gradient(circle at 50% 50%, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 1px, transparent 1.2px) 0 0/22px 22px",
                     }}
                   />
                   <ParticleSphere className="absolute inset-0 w-full h-full" />
-                  <div
-                    className="absolute inset-0"
-                    style={{
-                      background:
-                        "radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.55) 100%)",
-                    }}
-                  />
                 </div>
 
-                {/* Якорь — верхний левый угол всей плитки (над сферой на мобилке) */}
-                <div className="absolute top-6 left-6 md:top-10 md:left-10 lg:top-12 lg:left-12 z-[2] font-p95 text-[15px] md:text-[16px] tracking-[0.2em] uppercase text-white/70">
+                {/* Якорь — верхний правый угол: роль (на всех ширинах) */}
+                <div className="absolute top-6 right-6 md:top-10 md:right-10 lg:top-12 lg:right-12 z-[2] font-p95 text-[15px] md:text-[16px] tracking-[0.2em] uppercase text-white/70">
                   <span className="text-[#A6FF00]/80">[</span>
-                  <span className="mx-2">Портфолио 2026</span>
+                  <span className="mx-2">Дизайн-директор</span>
                   <span className="text-[#A6FF00]/80">]</span>
                 </div>
 
-                {/* Якорь — нижний левый угол */}
-                <div className="absolute bottom-6 left-6 md:bottom-10 md:left-10 lg:bottom-12 lg:left-12 z-[2] font-p95 text-[16px] md:text-[15px] tracking-[0.2em] uppercase text-white/40 whitespace-nowrap">
-                  Москва
+                {/* Якорь — нижний левый угол: «Работал в» + лого */}
+                <div className="absolute bottom-6 left-6 md:bottom-10 md:left-10 lg:bottom-12 lg:left-12 z-[2] flex items-end gap-8 md:gap-12 flex-wrap">
+                  <span className="font-p95 text-[15px] md:text-[16px] tracking-[0.2em] uppercase text-white/70 whitespace-nowrap">
+                    Работал в
+                  </span>
+                  <img src="/images/logos/ozon.svg" alt="Ozon" className="h-4 md:h-[22px] w-auto self-center brightness-0 invert opacity-55 hover:opacity-100 transition-opacity duration-200" />
+                  <img src="/images/logos/mts.svg" alt="МТС" className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity duration-200" />
+                  <img src="/images/logos/gazpromneft.svg" alt="Газпром нефть" className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity duration-200" />
+                  <img src="/images/logos/hse.svg" alt="ВШЭ" className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity duration-200" />
                 </div>
 
-                {/* Якорь — нижний правый угол */}
-                <div className="absolute bottom-6 right-6 md:bottom-10 md:right-10 lg:bottom-12 lg:right-12 z-[2] inline-flex items-center gap-2.5 font-p95 text-[16px] md:text-[15px] tracking-[0.2em] uppercase text-white/65 whitespace-nowrap">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#A6FF00]" />
-                  </span>
-                  Доступен для проектов
+                {/* Якорь — нижний правый угол: город */}
+                <div className="absolute bottom-6 right-6 md:bottom-10 md:right-10 lg:bottom-12 lg:right-12 z-[2] font-p95 text-[16px] md:text-[15px] tracking-[0.2em] uppercase text-white/70 whitespace-nowrap">
+                  Москва
                 </div>
 
                 {/* Центральный контент — ограничен слева, чтобы не наезжать на сферу.
                     На мобиле justify-start — содержимое сидит сразу под сферой, без огромного gap.
                     На десктопе justify-center — текст ровно центрирован внутри tile. */}
-                <div className="relative z-[1] flex flex-col justify-start md:justify-center p-7 md:p-10 lg:p-12 pt-[280px] md:pt-24 pb-20 md:pb-24 md:min-h-[600px]">
+                <div className="relative z-[1] flex flex-col justify-start md:justify-center p-7 md:p-10 lg:p-12 pt-[280px] md:pt-24 pb-24 md:pb-32 md:min-h-[600px] lg:min-h-[720px]">
                   <div className="flex flex-col gap-6 md:gap-8 md:max-w-[58%]">
                     <h1 className="font-p95 text-[clamp(64px,9vw,128px)] leading-[0.92] uppercase tracking-tight text-white">
+                      <span className="block text-white">9 лет</span>
                       <span className="block text-white">РАЗВИВАЮ</span>
                       <span className="block">
                         <FlippingWord
@@ -1172,6 +1161,7 @@ export default function PreviewHome() {
                         <ArrowRight className="w-4 h-4" strokeWidth={2} />
                       </Link>
                     </div>
+
                   </div>
                 </div>
               </div>
@@ -1330,29 +1320,6 @@ export default function PreviewHome() {
 
       </section>
 
-      {/* ═══════ EXPERIENCE + COMPANIES ═══════ */}
-      <section className="relative z-[1] bg-black border-t border-white/[0.06] overflow-hidden">
-        <motion.div
-          initial="hidden"
-          whileInView="show"
-          viewport={viewport}
-          variants={stagger}
-          className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pt-14 md:pt-20 pb-6 md:pb-8"
-        >
-          <motion.div variants={fadeUp}>
-            <SectionLabel>ОПЫТ</SectionLabel>
-            <h2 className="font-p95 text-[clamp(26px,3.8vw,52px)] uppercase mt-2 leading-[0.95] max-w-3xl">
-              9 лет в крупнейших бигтех-компаниях<span className="text-[#A6FF00]">.</span>
-            </h2>
-          </motion.div>
-        </motion.div>
-
-        {/* Marquee — bento-band card с drag-to-spin */}
-        <div className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pb-10 md:pb-14">
-          <CompanyMarquee />
-        </div>
-      </section>
-
       {/* ═══════ PROJECTS — полноширинный асимметричный бенто ═══════ */}
       <section
         id="portfolio"
@@ -1431,14 +1398,14 @@ export default function PreviewHome() {
             <SectionLabel>ЭКСПЕРТИЗА</SectionLabel>
           </motion.div>
 
-          {/* 3 плитки side-by-side — статичный бенто */}
-          <div className="grid md:grid-cols-3 gap-3 md:gap-4">
+          {/* На мобиле — горизонтальная карусель со snap-скроллом, на md+ — 3-колоночный грид. */}
+          <div className="flex md:grid md:grid-cols-3 gap-3 md:gap-4 overflow-x-auto md:overflow-visible snap-x snap-mandatory -mx-5 px-5 md:mx-0 md:px-0 pb-2 md:pb-0 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {[
               {
                 key: "management",
                 index: "01",
                 label: "УПРАВЛЕНИЕ",
-                title: "Строю и масштабирую дизайн-функции",
+                title: "Строю дизайн-функции",
                 Icon: Users,
                 accent: "#A6FF00",
                 animation: "shockwave" as PulseVariant,
@@ -1456,7 +1423,7 @@ export default function PreviewHome() {
                 key: "product",
                 index: "02",
                 label: "ПРОДУКТ",
-                title: "Дизайн B2C, B2E и EdTech на метриках",
+                title: "Фокус на метриках",
                 Icon: Sparkles,
                 accent: "#C9A66B",
                 animation: "spiral" as PulseVariant,
@@ -1490,142 +1457,11 @@ export default function PreviewHome() {
                 ],
               },
             ].map((tile) => (
-              <ServiceTile key={tile.key} tile={tile} />
+              <div key={tile.key} className="shrink-0 w-[85vw] sm:w-[60vw] md:w-auto snap-start md:snap-align-none">
+                <ServiceTile tile={tile} />
+              </div>
             ))}
           </div>
-        </motion.div>
-      </section>
-
-      {/* ═══════ PRINCIPLES — тёмный блок ═══════ */}
-      <section className="relative z-[1] bg-black border-t border-white/[0.06] overflow-hidden">
-        <motion.div
-          initial="hidden"
-          whileInView="show"
-          viewport={viewport}
-          variants={stagger}
-          className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-16 md:py-24"
-        >
-          <motion.div variants={fadeUp} className="mb-10 md:mb-14">
-            <SectionLabel>ПРИНЦИПЫ</SectionLabel>
-          </motion.div>
-
-          {/* Bento-grid: 01 — широкая карточка (col-span-2), 02/03 — обычные, 04 — широкая */}
-          <div className="grid md:grid-cols-2 gap-4 md:gap-5">
-            {[
-              {
-                n: "01",
-                title: "Дизайн должен считаться",
-                body:
-                  "Если после релиза метрика не двинулась, работу я не считаю сделанной. Discovery, гипотезы, A/B и обратная связь с продуктом — для меня обязательные этапы, не опциональные.",
-                wide: true,
-              },
-              {
-                n: "02",
-                title: "Промолчал на ревью — значит согласился",
-                body:
-                  "Я не верю в позицию «наблюдателя». За то, что уехало в прод, отвечают все, кто видел макет: лид, продакт, ревьюеры, автор. Защитить красивое в фигме — лёгкая часть; разобраться, что в релизе работает не так, и поправить — сложная. Лид, который перестал открывать свой продукт, первым теряет контакт с реальностью.",
-              },
-              {
-                n: "03",
-                title: "Команда сильнее героя",
-                body:
-                  "Десять сильных людей без меня делают больше, чем я один на износе. Нанимаю на рост, даю зоны, поддерживаю мотивацию, помогаю с инструментами развития.",
-              },
-              {
-                n: "04",
-                title: "Дизайн делается по любви",
-                body:
-                  "Чтобы найти новое — надо копать вглубь, а без огня к делу это не получается. Я горю учиться, учить и делиться, поэтому везде собираю комьюнити заинтересованных и разжигаю их интерес ещё больше.",
-                wide: true,
-              },
-            ].map((p) => (
-              <motion.div
-                key={p.n}
-                variants={fadeUp}
-                className={`rounded-2xl border border-white/[0.08] bg-white/[0.02] hover:border-white/[0.2] hover:bg-white/[0.04] transition-colors p-7 md:p-10 flex flex-col justify-between min-h-[240px] md:min-h-[280px] ${
-                  p.wide ? "md:col-span-2" : ""
-                }`}
-              >
-                <div>
-                  <div className="font-p95 text-[15px] md:text-[16px] tracking-[0.2em] uppercase text-white/45 mb-3">
-                    {p.n} /
-                  </div>
-                  <h3 className="font-p95 text-[clamp(22px,3.2vw,44px)] uppercase leading-[0.98] text-white mb-4 max-w-2xl">
-                    {p.title}
-                  </h3>
-                </div>
-                <p className="text-sm md:text-[15px] text-white/60 leading-relaxed max-w-2xl">
-                  {p.body}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-      </section>
-
-      {/* ═══════ ABOUT + CAREER — о себе + hover-list side-by-side ═══════ */}
-      <section
-        id="about"
-        className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-20"
-      >
-        <motion.div
-          initial="hidden"
-          whileInView="show"
-          viewport={viewport}
-          variants={stagger}
-        >
-          <motion.div variants={fadeUp} className="mb-8 md:mb-12">
-            <SectionLabel>О СЕБЕ</SectionLabel>
-          </motion.div>
-
-          {/* Верхний ряд: фото (узкая колонка) + bio + chips + CTA рядом */}
-          <div className="grid lg:grid-cols-[minmax(260px,320px)_1fr] gap-6 md:gap-10 mb-12 md:mb-16">
-            <motion.div variants={fadeUp}>
-              <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border border-white/[0.06]">
-                <Image
-                  src="/images/photos/photo-3.jpg"
-                  alt="Егор Шугаев — дизайн-директор, ментор и независимый консультант"
-                  fill
-                  className="object-cover grayscale contrast-[1.05]"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4 flex items-center gap-1.5 text-[11px] tracking-[0.2em] uppercase text-white/60">
-                  <span className="relative flex h-1.5 w-1.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#A6FF00]" />
-                  </span>
-                  Сейчас · МСК
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div variants={fadeUp} className="flex flex-col">
-              {/* 3 параграфа — bio */}
-              <div className="space-y-4 md:space-y-5 max-w-2xl">
-                <p className="text-sm md:text-[15px] text-white/70 leading-relaxed">
-                  Пришёл в дизайн из&nbsp;полиграфии и&nbsp;остался в&nbsp;нём по простой причине: мне нравится узнавать первопричины потребностей пользователей и&nbsp;решений бизнеса, искать провалы, растить людей и&nbsp;цифры. В&nbsp;какой-то момент это оказалось не побочным интересом, а&nbsp;рабочей профессией.
-                </p>
-                <p className="text-sm md:text-[15px] text-white/70 leading-relaxed">
-                  Сейчас мне интересна связка «дизайн и&nbsp;AI». Менторю дизайнеров и&nbsp;лидов, экспериментирую сам, пишу код. Иногда поделки получаются криво, но это часть процесса.
-                </p>
-                <p className="text-sm md:text-[15px] text-white/70 leading-relaxed">
-                  Работаю от&nbsp;задачи: строю и&nbsp;автоматизирую процессы, влезаю глубоко — от&nbsp;стратегии до&nbsp;ревью макетов. Задача руководителя, как я&nbsp;её вижу, — дать команде ясность: кто чем занят и&nbsp;зачем. Тогда люди действуют увереннее, а&nbsp;не на&nbsp;ощупь.
-                </p>
-              </div>
-
-            </motion.div>
-          </div>
-
-          {/* Карьера — отдельной строкой, на всю ширину */}
-          <motion.div variants={fadeUp} className="pt-8 md:pt-10 border-t border-white/[0.06]">
-            <div className="mb-4 flex items-center justify-between">
-              <SectionLabel>КАРЬЕРА</SectionLabel>
-              <span className="text-[12px] md:text-[15px] tracking-[0.15em] uppercase text-white/35 hidden md:inline">
-                Наведи, чтобы раскрыть
-              </span>
-            </div>
-            <CareerHoverList />
-          </motion.div>
         </motion.div>
       </section>
 
@@ -1640,7 +1476,7 @@ export default function PreviewHome() {
           {/* Центрированный заголовочный блок: ярлык → крупный хедлайн → астерикс-сноска */}
           <motion.div variants={fadeUp} className="mb-14 md:mb-20 text-center">
             <SectionLabel>ОТЗЫВЫ</SectionLabel>
-            <h3 className="mt-5 md:mt-7 font-p95 text-[clamp(40px,8.5vw,128px)] leading-[0.9] uppercase tracking-tight text-white">
+            <h3 className="mt-5 md:mt-7 font-p95 text-[clamp(36px,7.2vw,108px)] leading-[0.9] uppercase tracking-tight text-white">
               Не&nbsp;верьте мне на&nbsp;слово<Star />
             </h3>
             <p className="mt-5 md:mt-7 font-p95 text-[clamp(18px,2vw,28px)] tracking-[0.22em] uppercase text-[#A6FF00]">
@@ -1767,6 +1603,72 @@ export default function PreviewHome() {
       {/* ═══════ FINAL CTA — счётчик + фейерверк, easter-egg на 15/30/46 кликах ═══════ */}
       <FinalCTA />
 
+      {/* ═══════ ABOUT + CAREER — о себе + hover-list side-by-side ═══════ */}
+      <section
+        id="about"
+        className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-20"
+      >
+        <motion.div
+          initial="hidden"
+          whileInView="show"
+          viewport={viewport}
+          variants={stagger}
+        >
+          <motion.div variants={fadeUp} className="mb-8 md:mb-12">
+            <SectionLabel>О СЕБЕ</SectionLabel>
+          </motion.div>
+
+          {/* Верхний ряд: фото (узкая колонка) + bio + chips + CTA рядом */}
+          <div className="grid lg:grid-cols-[minmax(260px,320px)_1fr] gap-6 md:gap-10 mb-12 md:mb-16">
+            <motion.div variants={fadeUp}>
+              <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border border-white/[0.06]">
+                <Image
+                  src="/images/photos/photo-3.jpg"
+                  alt="Егор Шугаев — дизайн-директор, ментор и независимый консультант"
+                  fill
+                  className="object-cover grayscale contrast-[1.05]"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4 flex items-center gap-1.5 text-[11px] tracking-[0.2em] uppercase text-white/60">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#A6FF00]" />
+                  </span>
+                  Сейчас · МСК
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div variants={fadeUp} className="flex flex-col">
+              {/* 3 параграфа — bio */}
+              <div className="space-y-4 md:space-y-5 max-w-2xl">
+                <p className="text-sm md:text-[15px] text-white/70 leading-relaxed">
+                  Пришёл в дизайн из&nbsp;полиграфии и&nbsp;остался в&nbsp;нём по простой причине: мне нравится узнавать первопричины потребностей пользователей и&nbsp;решений бизнеса, искать провалы, растить людей и&nbsp;цифры. В&nbsp;какой-то момент это оказалось не побочным интересом, а&nbsp;рабочей профессией.
+                </p>
+                <p className="text-sm md:text-[15px] text-white/70 leading-relaxed">
+                  Сейчас мне интересна связка «дизайн и&nbsp;AI». Менторю дизайнеров и&nbsp;лидов, экспериментирую сам, пишу код. Иногда поделки получаются криво, но это часть процесса.
+                </p>
+                <p className="text-sm md:text-[15px] text-white/70 leading-relaxed">
+                  Работаю от&nbsp;задачи: строю и&nbsp;автоматизирую процессы, влезаю глубоко — от&nbsp;стратегии до&nbsp;ревью макетов. Задача руководителя, как я&nbsp;её вижу, — дать команде ясность: кто чем занят и&nbsp;зачем. Тогда люди действуют увереннее, а&nbsp;не на&nbsp;ощупь.
+                </p>
+              </div>
+
+            </motion.div>
+          </div>
+
+          {/* Карьера — отдельной строкой, на всю ширину */}
+          <motion.div variants={fadeUp} className="pt-8 md:pt-10 border-t border-white/[0.06]">
+            <div className="mb-4 flex items-center justify-between">
+              <SectionLabel>КАРЬЕРА</SectionLabel>
+              <span className="text-[12px] md:text-[15px] tracking-[0.15em] uppercase text-white/35 hidden md:inline">
+                Наведи, чтобы раскрыть
+              </span>
+            </div>
+            <CareerHoverList />
+          </motion.div>
+        </motion.div>
+      </section>
+
       {/* ═══════ CONTACTS — bento-грид из action-тайлов ═══════ */}
       <section
         id="contacts"
@@ -1816,7 +1718,7 @@ export default function PreviewHome() {
             {/* 2-5. Email, LinkedIn, GitHub, CV — 4 равных мини-плитки */}
             {[
               { label: "Email", value: "egor.outhead@gmail.com", href: "mailto:egor.outhead@gmail.com", Icon: Mail, goal: "cta_email" },
-              { label: "LinkedIn", value: "egorshugaev", href: "https://www.linkedin.com/in/egorshugaev/", Icon: LinkedinIcon, goal: "cta_linkedin" },
+              { label: "LinkedIn", value: "егор-шугаев-03735078", href: "https://www.linkedin.com/in/егор-шугаев-03735078/", Icon: LinkedinIcon, goal: "cta_linkedin" },
               { label: "GitHub", value: "outhead", href: "https://github.com/outhead", Icon: GithubIcon, goal: "cta_github" },
               { label: "CV / PDF", value: "Скачать", href: "/Egor_Shugaev_CV.pdf", Icon: FileDown, goal: "cta_cv" },
             ].map((link) => (

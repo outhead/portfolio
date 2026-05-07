@@ -131,7 +131,7 @@ export default function RootLayout({
               sameAs: [
                 "https://t.me/egoradi",
                 "https://github.com/outhead",
-                "https://www.linkedin.com/in/egorshugaev/",
+                "https://www.linkedin.com/in/егор-шугаев-03735078/",
                 "https://x.com/egoradi",
               ],
               knowsAbout: [

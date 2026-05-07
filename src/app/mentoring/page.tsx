@@ -230,6 +230,71 @@ export default function MentoringPage() {
         </div>
       </section>
 
+      {/* ===== PRINCIPLES ===== */}
+      <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-20 md:py-32 border-t border-white/[0.04] bg-black/75">
+        <div className="max-w-5xl">
+          <ScrollReveal>
+            <div className="font-p95 text-[15px] md:text-[16px] tracking-[0.2em] uppercase text-white/70 mb-6">
+              <span className="text-[#A6FF00]/80">[</span>
+              <span className="mx-2">Принципы</span>
+              <span className="text-[#A6FF00]/80">]</span>
+            </div>
+          </ScrollReveal>
+
+          {/* Bento-grid: 01 — широкая карточка (col-span-2), 02/03 — обычные, 04 — широкая */}
+          <div className="grid md:grid-cols-2 gap-4 md:gap-5">
+            {[
+              {
+                n: "01",
+                title: "Дизайн должен считаться",
+                body:
+                  "Если после релиза метрика не двинулась, работу я не считаю сделанной. Discovery, гипотезы, A/B и обратная связь с продуктом — для меня обязательные этапы, не опциональные.",
+                wide: true,
+              },
+              {
+                n: "02",
+                title: "Промолчал на ревью — значит согласился",
+                body:
+                  "Я не верю в позицию «наблюдателя». За то, что уехало в прод, отвечают все, кто видел макет: лид, продакт, ревьюеры, автор. Защитить красивое в фигме — лёгкая часть; разобраться, что в релизе работает не так, и поправить — сложная. Лид, который перестал открывать свой продукт, первым теряет контакт с реальностью.",
+              },
+              {
+                n: "03",
+                title: "Команда сильнее героя",
+                body:
+                  "Десять сильных людей без меня делают больше, чем я один на износе. Нанимаю на рост, даю зоны, поддерживаю мотивацию, помогаю с инструментами развития.",
+              },
+              {
+                n: "04",
+                title: "Дизайн делается по любви",
+                body:
+                  "Чтобы найти новое — надо копать вглубь, а без огня к делу это не получается. Я горю учиться, учить и делиться, поэтому везде собираю комьюнити заинтересованных и разжигаю их интерес ещё больше.",
+                wide: true,
+              },
+            ].map((p, i) => (
+              <ScrollReveal
+                key={p.n}
+                delay={i * 80}
+                className={p.wide ? "md:col-span-2 h-full" : "h-full"}
+              >
+                <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] hover:border-white/[0.2] hover:bg-white/[0.04] transition-colors p-7 md:p-10 flex flex-col justify-between min-h-[240px] md:min-h-[280px] h-full">
+                  <div>
+                    <div className="font-p95 text-[15px] md:text-[16px] tracking-[0.2em] uppercase text-white/45 mb-3">
+                      {p.n} /
+                    </div>
+                    <h3 className="font-p95 text-[clamp(22px,3.2vw,44px)] uppercase leading-[0.98] text-white mb-4 max-w-2xl">
+                      {p.title}
+                    </h3>
+                  </div>
+                  <p className="text-sm md:text-[15px] text-white/60 leading-relaxed max-w-2xl">
+                    {p.body}
+                  </p>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ===== BACK LINK ===== */}
       <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-12 md:py-16 border-t border-white/[0.06] bg-black">
         <Link
