@@ -31,16 +31,29 @@ function CoverMedia({
   const baseTransition = "transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]";
   if (project.coverVideo) {
     return (
-      <CardCoverVideo
-        src={project.coverVideo}
-        poster={project.coverImage}
-        pauseAt={project.coverVideoPauseAt}
-        hoverTarget={hoverTarget}
-        onPlayingChange={onVideoPlayingChange}
-        className={`absolute inset-0 w-full h-full object-cover z-0 ${baseTransition} ${
-          active ? "opacity-60" : "opacity-0"
-        }`}
-      />
+      <>
+        {/* Постер-заглушка — всегда виден под видео, чтобы карточка не была
+            пустой темнотой когда видео ещё не игралось или уже закончилось. */}
+        {project.coverImage && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={project.coverImage}
+            alt=""
+            aria-hidden
+            className="absolute inset-0 w-full h-full object-cover z-0"
+          />
+        )}
+        <CardCoverVideo
+          src={project.coverVideo}
+          poster={project.coverImage}
+          pauseAt={project.coverVideoPauseAt}
+          hoverTarget={hoverTarget}
+          onPlayingChange={onVideoPlayingChange}
+          className={`absolute inset-0 w-full h-full object-cover z-[1] ${baseTransition} ${
+            active ? "opacity-100" : "opacity-0"
+          }`}
+        />
+      </>
     );
   }
   if (project.coverImage) {

@@ -129,7 +129,7 @@ export const projects: Project[] = [
     ],
     type: "work",
     coverColor: "#0E0E0E",
-    coverImage: "/images/covers/mts-2024-cover.png",
+    coverImage: "/videos/mts-cover.png",
     coverVideo: "/videos/mts-cover.mp4",
     coverVideoPauseAt: 2.86,
     screenshotsMode: "phone",
@@ -346,7 +346,7 @@ export const projects: Project[] = [
     type: "work",
     // Чистый тёмный фон под видео-обложку (раньше была бронза #C9A66B — давала бежевую подсветку)
     coverColor: "#0E0E0E",
-    coverImage: "/images/covers/gpn-cover.jpg",
+    coverImage: "/videos/gpn-cover.png",
     coverVideo: "/videos/gpn-cover.mp4",
     coverVideoPauseAt: 2.86,
     // heroImage намеренно НЕ задан: gpn-cubes.png — тёмная композиция, под opacity почти не видна.
@@ -551,7 +551,7 @@ export const projects: Project[] = [
     ],
     type: "work",
     coverColor: "#0E0E0E",
-    coverImage: "/images/covers/ozon-cubes.png",
+    coverImage: "/videos/ozon-cover.png",
     coverVideo: "/videos/ozon-cover.mp4",
     coverVideoPauseAt: 2.86,
     screenshots: [
@@ -615,7 +615,7 @@ export const projects: Project[] = [
     ],
     type: "work",
     coverColor: "#0E0E0E",
-    coverImage: "/images/covers/mts-b2c-cover.jpg",
+    coverImage: "/videos/mts-b2c-cover.png",
     coverVideo: "/videos/mts-b2c-cover.mp4",
     coverVideoPauseAt: 2.86,
     sections: [

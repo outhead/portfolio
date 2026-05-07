@@ -1382,6 +1382,26 @@ export default function PreviewHome() {
         </motion.div>
       </section>
 
+      {/* ═══════ CAREER — hover-list с историей ролей, сразу после кейсов ═══════ */}
+      <section className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-20">
+        <motion.div
+          initial="hidden"
+          whileInView="show"
+          viewport={viewport}
+          variants={stagger}
+        >
+          <motion.div variants={fadeUp}>
+            <div className="mb-4 flex items-center justify-between">
+              <SectionLabel>КАРЬЕРА</SectionLabel>
+              <span className="text-[12px] md:text-[15px] tracking-[0.15em] uppercase text-white/35 hidden md:inline">
+                Наведи, чтобы раскрыть
+              </span>
+            </div>
+            <CareerHoverList />
+          </motion.div>
+        </motion.div>
+      </section>
+
       {/* ═══════ SERVICES / EXPERTISE — 3-колоночный бенто по мотивам Stokt ═══════ */}
       <section
         id="skills"
@@ -1603,7 +1623,7 @@ export default function PreviewHome() {
       {/* ═══════ FINAL CTA — счётчик + фейерверк, easter-egg на 15/30/46 кликах ═══════ */}
       <FinalCTA />
 
-      {/* ═══════ ABOUT + CAREER — о себе + hover-list side-by-side ═══════ */}
+      {/* ═══════ ABOUT — о себе, последняя секция перед глобальным футером ═══════ */}
       <section
         id="about"
         className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-20"
@@ -1618,8 +1638,8 @@ export default function PreviewHome() {
             <SectionLabel>О СЕБЕ</SectionLabel>
           </motion.div>
 
-          {/* Верхний ряд: фото (узкая колонка) + bio + chips + CTA рядом */}
-          <div className="grid lg:grid-cols-[minmax(260px,320px)_1fr] gap-6 md:gap-10 mb-12 md:mb-16">
+          {/* Фото (узкая колонка) + bio (широкая) */}
+          <div className="grid lg:grid-cols-[minmax(260px,320px)_1fr] gap-6 md:gap-10">
             <motion.div variants={fadeUp}>
               <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border border-white/[0.06]">
                 <Image
@@ -1640,7 +1660,6 @@ export default function PreviewHome() {
             </motion.div>
 
             <motion.div variants={fadeUp} className="flex flex-col">
-              {/* 3 параграфа — bio */}
               <div className="space-y-4 md:space-y-5 max-w-2xl">
                 <p className="text-sm md:text-[15px] text-white/70 leading-relaxed">
                   Пришёл в дизайн из&nbsp;полиграфии и&nbsp;остался в&nbsp;нём по простой причине: мне нравится узнавать первопричины потребностей пользователей и&nbsp;решений бизнеса, искать провалы, растить людей и&nbsp;цифры. В&nbsp;какой-то момент это оказалось не побочным интересом, а&nbsp;рабочей профессией.
@@ -1652,20 +1671,8 @@ export default function PreviewHome() {
                   Работаю от&nbsp;задачи: строю и&nbsp;автоматизирую процессы, влезаю глубоко — от&nbsp;стратегии до&nbsp;ревью макетов. Задача руководителя, как я&nbsp;её вижу, — дать команде ясность: кто чем занят и&nbsp;зачем. Тогда люди действуют увереннее, а&nbsp;не на&nbsp;ощупь.
                 </p>
               </div>
-
             </motion.div>
           </div>
-
-          {/* Карьера — отдельной строкой, на всю ширину */}
-          <motion.div variants={fadeUp} className="pt-8 md:pt-10 border-t border-white/[0.06]">
-            <div className="mb-4 flex items-center justify-between">
-              <SectionLabel>КАРЬЕРА</SectionLabel>
-              <span className="text-[12px] md:text-[15px] tracking-[0.15em] uppercase text-white/35 hidden md:inline">
-                Наведи, чтобы раскрыть
-              </span>
-            </div>
-            <CareerHoverList />
-          </motion.div>
         </motion.div>
       </section>
 
