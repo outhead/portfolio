@@ -135,10 +135,10 @@ function MetricChip({
   label?: string;
 }) {
   return (
-    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#A6FF00]/10 border border-[#A6FF00]/25 text-[#A6FF00] leading-[1.2]">
-      <span className="font-p95 text-[15px] md:text-[16px] tracking-tight">{value}</span>
+    <span className="inline-flex items-baseline gap-1.5 px-3 py-1.5 rounded-full bg-[#A6FF00]/10 border border-[#A6FF00]/25 text-[#A6FF00] leading-[1.2]">
+      <span className="font-p95 text-[15px] md:text-[16px] tracking-tight translate-y-[1px]">{value}</span>
       {label && (
-        <span className="text-[16px] md:text-[15px] tracking-[0.08em] uppercase text-[#A6FF00]/75">
+        <span className="text-[15px] md:text-[16px] tracking-[0.08em] uppercase text-[#A6FF00]/75">
           {label}
         </span>
       )}
