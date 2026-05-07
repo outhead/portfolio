@@ -146,8 +146,8 @@ function DotGlobe() {
     // HOME — точка покоя: Москва смотрит на зрителя чуть правее центра,
     // северный полюс наклонён к камере. После драга шар плавно возвращается
     // в HOME, чтобы метка Москвы всегда была видна, когда юзер не крутит.
-    const HOME_LON = -0.4;
-    const HOME_LAT = 0.32;
+    const HOME_LON = -0.6;
+    const HOME_LAT = 0.75;
     const homeReturnPerSec = 1.4; // скорость возврата к HOME
     let rotLon = HOME_LON;
     let rotLat = HOME_LAT;
@@ -1082,7 +1082,7 @@ export default function PreviewHome() {
               variants={fadeUp}
               className="col-span-12 order-1 md:order-none"
             >
-              <div className="relative rounded-3xl border border-white/[0.1] bg-gradient-to-br from-white/[0.025] via-white/[0.01] to-transparent overflow-hidden md:min-h-[600px] lg:min-h-[720px]">
+              <div className="relative rounded-3xl border border-white/[0.1] bg-black overflow-hidden md:min-h-[600px] lg:min-h-[720px]">
                 {/* Сфера — на десктопе абсолютно справа, на мобилке банером сверху */}
                 <div
                   aria-hidden
