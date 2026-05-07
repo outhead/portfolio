@@ -6,10 +6,10 @@ import YandexMetrika from "@/components/YandexMetrika";
 import ScrollGoals from "@/components/ScrollGoals";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://portfolio-egors-projects-baaaa1ca.vercel.app"),
+  metadataBase: new URL("https://shugaev.vercel.app"),
   title: "Егор Шугаев — Дизайн-директор · Консультант · Ментор",
   description:
-    "11 лет в дизайне, 9 — в бигтехе России: МТС (Art Director B2C и Design Director), Ozon (Community Lead), Газпром Нефть (Head of Design), MWS AI (AI Visioner). 11М+ пользователей, 100+ дизайнеров, CX Award 2024. Сейчас — консультирую, advisory, менторинг.",
+    "6 лет в дизайне в бигтехе России: МТС (Art Director B2C и Design Director), Ozon (Community Lead), Газпром Нефть (Head of Design), MWS AI (AI Visioner). 11М+ пользователей, 100+ дизайнеров, CX Award 2024. Сейчас — консультирую, advisory, менторинг.",
   keywords: [
     "дизайн-директор",
     "head of design",
@@ -28,15 +28,15 @@ export const metadata: Metadata = {
     "Газпром Нефть",
     "MWS AI",
   ],
-  authors: [{ name: "Егор Шугаев", url: "https://portfolio-egors-projects-baaaa1ca.vercel.app" }],
+  authors: [{ name: "Егор Шугаев", url: "https://shugaev.vercel.app" }],
   robots: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
   openGraph: {
     title: "Егор Шугаев — Дизайн-директор · Консультант · Ментор",
     description:
-      "11 лет в дизайне, 9 — в бигтехе: МТС, Ozon, Газпром Нефть, MWS AI. 11М+ пользователей, 100+ дизайнеров, CX Award 2024.",
+      "6 лет в дизайне в бигтехе: МТС, Ozon, Газпром Нефть, MWS AI. 11М+ пользователей, 100+ дизайнеров, CX Award 2024.",
     type: "website",
     locale: "ru_RU",
-    url: "https://portfolio-egors-projects-baaaa1ca.vercel.app",
+    url: "https://shugaev.vercel.app",
     siteName: "Егор Шугаев · Портфолио",
     images: [
       {
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Егор Шугаев — Дизайн-директор · Консультант · Ментор",
-    description: "11 лет в дизайне, 9 — в бигтехе. Сейчас — консультирую, advisory, менторинг.",
+    description: "6 лет в дизайне в бигтехе. Сейчас — консультирую, advisory, менторинг.",
     images: ["/og-image.png"],
   },
 };
@@ -126,8 +126,8 @@ export default function RootLayout({
                 name: "Независимый консультант",
               },
               email: "egor.outhead@gmail.com",
-              url: "https://portfolio-egors-projects-baaaa1ca.vercel.app",
-              image: "https://portfolio-egors-projects-baaaa1ca.vercel.app/images/photos/photo-5.jpg",
+              url: "https://shugaev.vercel.app",
+              image: "https://shugaev.vercel.app/images/photos/photo-5.jpg",
               sameAs: [
                 "https://t.me/egoradi",
                 "https://github.com/outhead",

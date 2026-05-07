@@ -1127,7 +1127,7 @@ export default function PreviewHome() {
                 <div className="relative z-[1] flex flex-col justify-start md:justify-center p-7 md:p-10 lg:p-12 pt-[280px] md:pt-24 pb-24 md:pb-32 md:min-h-[600px] lg:min-h-[720px]">
                   <div className="flex flex-col gap-6 md:gap-8 md:max-w-[58%]">
                     <h1 className="font-p95 text-[clamp(64px,9vw,128px)] leading-[0.92] uppercase tracking-tight text-white">
-                      <span className="block text-white">9 лет</span>
+                      <span className="block text-white">6 лет</span>
                       <span className="block text-white">РАЗВИВАЮ</span>
                       <span className="block">
                         <FlippingWord
@@ -1295,7 +1295,7 @@ export default function PreviewHome() {
                 <div className="grid grid-cols-3 gap-3 md:gap-4 flex-1 content-center">
                   {[
                     { value: "30", label: "запусков" },
-                    { value: "9", label: "лет опыта" },
+                    { value: "6", label: "лет опыта" },
                     { value: "27", label: "команд" },
                   ].map((item, idx) => (
                     <div
