@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://shugaev.vercel.app"),
   title: "Егор Шугаев — Дизайн-директор · Консультант · Ментор",
   description:
-    "6 лет в дизайне в бигтехе России: МТС (Art Director B2C и Design Director), Ozon (Community Lead), Газпром Нефть (Head of Design), MWS AI (AI Visioner). 11М+ пользователей, 100+ дизайнеров, CX Award 2024. Сейчас — консультирую, advisory, менторинг.",
+    "7 лет в дизайне в бигтехе России: МТС (Art Director B2C и Design Director), Ozon (Community Lead), Газпром Нефть (Head of Design), MWS AI (AI Visioner). 11М+ пользователей, 100+ дизайнеров, CX Award 2024. Сейчас — консультирую, advisory, менторинг.",
   keywords: [
     "дизайн-директор",
     "head of design",
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Егор Шугаев — Дизайн-директор · Консультант · Ментор",
     description:
-      "6 лет в дизайне в бигтехе: МТС, Ozon, Газпром Нефть, MWS AI. 11М+ пользователей, 100+ дизайнеров, CX Award 2024.",
+      "7 лет в дизайне в бигтехе: МТС, Ozon, Газпром Нефть, MWS AI. 11М+ пользователей, 100+ дизайнеров, CX Award 2024.",
     type: "website",
     locale: "ru_RU",
     url: "https://shugaev.vercel.app",
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Егор Шугаев — Дизайн-директор · Консультант · Ментор",
-    description: "6 лет в дизайне в бигтехе. Сейчас — консультирую, advisory, менторинг.",
+    description: "7 лет в дизайне в бигтехе. Сейчас — консультирую, advisory, менторинг.",
     images: ["/og-image.png"],
   },
 };

@@ -685,7 +685,7 @@ export const projects: Project[] = [
     ],
     type: "work",
     coverColor: "#0a0a0a",
-    coverImage: "/images/mentoring/pillsdrop-poster.jpg",
+    coverImage: "/videos/pillsdrop.png",
     coverVideo: "/videos/pillsdrop.mp4",
     coverVideoPauseAt: 2.86,
     // Скрины темплейта временно убраны: html-to-image капчура поехала по вёрстке

@@ -131,6 +131,27 @@ export default function PillsBackdrop() {
       trigger.addEventListener("mouseenter", onEnter);
       trigger.addEventListener("mouseleave", onLeave);
 
+      // На тач-устройствах (без hover) триггерим тем же IntersectionObserver-ом,
+      // что используется у card-видео: когда карточка пересекает полосу-фокус
+      // (50%—65% от верха viewport) — onEnter; ушла — onLeave. Без этого на
+      // мобиле пилюли никогда не появлялись (mouseenter не приходит).
+      const isTouch =
+        typeof window !== "undefined" &&
+        window.matchMedia("(hover: none)").matches;
+      let mobileIO: IntersectionObserver | null = null;
+      if (isTouch && typeof IntersectionObserver !== "undefined") {
+        mobileIO = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting) onEnter();
+              else onLeave();
+            }
+          },
+          { rootMargin: "-50% 0px -35% 0px", threshold: 0 }
+        );
+        mobileIO.observe(trigger);
+      }
+
       // Resize
       const onResize = () => {
         const next = measure();
@@ -151,6 +172,7 @@ export default function PillsBackdrop() {
         window.clearInterval(sweepId);
         trigger.removeEventListener("mouseenter", onEnter);
         trigger.removeEventListener("mouseleave", onLeave);
+        mobileIO?.disconnect();
         window.removeEventListener("resize", onResize);
         Render.stop(render);
         Runner.stop(runner);
