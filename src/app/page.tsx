@@ -1520,6 +1520,13 @@ export default function PreviewHome() {
                 role: "Руководитель проектного офиса, Газпром Нефть",
                 avatar: "/images/testimonials/goncharuk.png",
               },
+              {
+                quote:
+                  "С Егором сложные задачи решаются легче, сильные hard skills сочетаются с редким умением выстраивать процессы, которые реально работают. Егор искренне болеет за результат и делает всё, чтобы его достичь.",
+                name: "Семён Речмедин",
+                role: "CPO Eva, МегаФон (ранее — CPO голосовой экосистемы)",
+                avatar: "/images/testimonials/rechmedin.jpg",
+              },
             ].map((t) => (
               <motion.div
                 key={t.name}
