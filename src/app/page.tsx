@@ -1504,7 +1504,10 @@ export default function PreviewHome() {
             </p>
           </motion.div>
 
-          <motion.div variants={stagger} className="grid md:grid-cols-2 gap-4 md:gap-5">
+          <motion.div
+            variants={stagger}
+            className="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 overflow-x-auto md:overflow-visible snap-x snap-mandatory -mx-5 px-5 md:mx-0 md:px-0 pb-2 md:pb-0 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
             {[
               {
                 quote:
@@ -1531,7 +1534,7 @@ export default function PreviewHome() {
               <motion.div
                 key={t.name}
                 variants={fadeUp}
-                className="relative h-full p-6 md:p-7 rounded-2xl border border-white/[0.06] bg-white/[0.015] hover:border-[#A6FF00]/20 transition-colors duration-300 flex flex-col"
+                className="shrink-0 w-[85vw] sm:w-[60vw] md:w-auto snap-start md:snap-align-none relative h-full p-6 md:p-7 rounded-2xl border border-white/[0.06] bg-white/[0.015] hover:border-[#A6FF00]/20 transition-colors duration-300 flex flex-col"
               >
                 <Quote className="w-5 h-5 text-[#A6FF00]/40 mb-4" strokeWidth={1.5} />
                 <p className="text-white/75 text-base md:text-[17px] leading-relaxed">

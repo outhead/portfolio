@@ -41,6 +41,33 @@ export default function ImageLightbox({ images, mode = "web" }: ImageLightboxPro
   const promptRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
+  // Pinch-to-zoom + двойной тап для зума в открытой картинке (мобила).
+  // На десктопе те же transform работают: dblclick → toggle 1× ↔ 2.5×.
+  const [zoom, setZoom] = useState<{ scale: number; x: number; y: number }>({
+    scale: 1,
+    x: 0,
+    y: 0,
+  });
+  // gestureStart хранит начальные значения дистанции/позиций пальцев на старте жеста.
+  const gestureStart = useRef<
+    | {
+        kind: "pinch";
+        dist: number;
+        scale: number;
+        x: number;
+        y: number;
+      }
+    | { kind: "pan"; px: number; py: number; x: number; y: number }
+    | null
+  >(null);
+  const lastTapRef = useRef(0);
+
+  // Сбрасываем зум при смене слайда / закрытии оверлея.
+  useEffect(() => {
+    setZoom({ scale: 1, x: 0, y: 0 });
+    gestureStart.current = null;
+  }, [activeIndex]);
+
   const hasProtected = images.some((img) => img.protected);
   const protectedCount = images.filter((img) => img.protected).length;
 
@@ -86,6 +113,83 @@ export default function ImageLightbox({ images, mode = "web" }: ImageLightboxPro
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [activeIndex, images.length, close]);
+
+  // ===== Жесты в оверлее: pinch для зума + pan при scale>1, double-tap toggle =====
+  const MIN_SCALE = 1;
+  const MAX_SCALE = 4;
+  const toggleZoomAt = useCallback(() => {
+    setZoom((z) => (z.scale > 1 ? { scale: 1, x: 0, y: 0 } : { scale: 2.5, x: 0, y: 0 }));
+  }, []);
+
+  const onTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      if (e.touches.length === 2) {
+        const [a, b] = [e.touches[0], e.touches[1]];
+        const dx = a.clientX - b.clientX;
+        const dy = a.clientY - b.clientY;
+        gestureStart.current = {
+          kind: "pinch",
+          dist: Math.hypot(dx, dy) || 1,
+          scale: zoom.scale,
+          x: zoom.x,
+          y: zoom.y,
+        };
+      } else if (e.touches.length === 1) {
+        // double-tap detection
+        const now = Date.now();
+        if (now - lastTapRef.current < 280) {
+          toggleZoomAt();
+          lastTapRef.current = 0;
+          gestureStart.current = null;
+          return;
+        }
+        lastTapRef.current = now;
+        // pan только когда уже зум-ин
+        gestureStart.current = {
+          kind: "pan",
+          px: e.touches[0].clientX,
+          py: e.touches[0].clientY,
+          x: zoom.x,
+          y: zoom.y,
+        };
+      }
+    },
+    [zoom, toggleZoomAt]
+  );
+
+  const onTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      const g = gestureStart.current;
+      if (!g) return;
+      if (e.touches.length === 2 && g.kind === "pinch") {
+        const [a, b] = [e.touches[0], e.touches[1]];
+        const d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY) || 1;
+        const ratio = d / g.dist;
+        const next = Math.min(MAX_SCALE, Math.max(MIN_SCALE, g.scale * ratio));
+        setZoom({ scale: next, x: g.x, y: g.y });
+        // блокируем нативный pinch-zoom страницы
+        if (e.cancelable) e.preventDefault();
+      } else if (e.touches.length === 1 && g.kind === "pan" && zoom.scale > 1) {
+        const dx = e.touches[0].clientX - g.px;
+        const dy = e.touches[0].clientY - g.py;
+        setZoom({ scale: zoom.scale, x: g.x + dx, y: g.y + dy });
+        if (e.cancelable) e.preventDefault();
+      }
+    },
+    [zoom.scale]
+  );
+
+  const onTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      // если осталось 0–1 палец — сбрасываем жест, чтобы следующий tap начался чисто
+      if (e.touches.length < 2) gestureStart.current = null;
+      // если ушли ниже 1× — нормализуем
+      setZoom((z) => (z.scale <= 1.02 ? { scale: 1, x: 0, y: 0 } : z));
+    },
+    []
+  );
+
+  const isZoomed = zoom.scale > 1.02;
 
   useEffect(() => {
     if (activeIndex !== null) {
@@ -255,10 +359,22 @@ export default function ImageLightbox({ images, mode = "web" }: ImageLightboxPro
           </div>
 
           <div
-            className="flex-1 min-h-0 flex items-center justify-center px-4 md:px-8"
+            className="flex-1 min-h-0 flex items-center justify-center px-4 md:px-8 overflow-hidden select-none [touch-action:none]"
             onClick={(e) => e.stopPropagation()}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+            onDoubleClick={toggleZoomAt}
+            style={{ cursor: isZoomed ? "zoom-out" : "zoom-in" }}
           >
-            <div className="relative w-full h-full max-w-[1400px]">
+            <div
+              className="relative w-full h-full max-w-[1400px] will-change-transform"
+              style={{
+                transform: `translate3d(${zoom.x}px, ${zoom.y}px, 0) scale(${zoom.scale})`,
+                transformOrigin: "center center",
+                transition: gestureStart.current ? "none" : "transform 180ms cubic-bezier(0.22,1,0.36,1)",
+              }}
+            >
               {images[activeIndex].kind === "video" ? (
                 <video
                   src={images[activeIndex].src}
@@ -274,8 +390,9 @@ export default function ImageLightbox({ images, mode = "web" }: ImageLightboxPro
                   src={images[activeIndex].src}
                   alt={images[activeIndex].alt}
                   fill
-                  className="object-contain"
+                  className="object-contain pointer-events-none"
                   sizes="(max-width: 1400px) 100vw, 1400px"
+                  draggable={false}
                 />
               )}
             </div>
@@ -293,7 +410,8 @@ export default function ImageLightbox({ images, mode = "web" }: ImageLightboxPro
               </div>
             )}
             <div className="text-[12px] tracking-[0.12em] uppercase text-white/30">
-              {activeIndex + 1} / {images.length} · ESC для выхода · ← →
+              <span className="hidden md:inline">{activeIndex + 1} / {images.length} · ESC · ← → · 2× клик — зум</span>
+              <span className="md:hidden">{activeIndex + 1} / {images.length} · щипок или 2× тап — зум</span>
             </div>
           </div>
         </div>
