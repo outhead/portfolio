@@ -119,14 +119,18 @@ export default function SecretPage() {
             style={{ minHeight: "clamp(120px, 14vw, 240px)" }}
           >
             {isSecretFound ? (
-              <Link
-                href={QUEST2_HREF}
-                data-ym-goal="quest2_open"
-                className="font-p95 leading-[1.05] uppercase tracking-tight break-words inline-block no-underline cursor-pointer text-[#C9A66B] hover:text-[#A6FF00] transition-colors border-b-2 border-[#A6FF00]/70 hover:border-[#A6FF00] pb-1"
-                style={{ fontSize: "clamp(28px, 5.2vw, 76px)" }}
-              >
-                {decoded}
-              </Link>
+              <span className="block">
+                <Link
+                  href={QUEST2_HREF}
+                  data-ym-goal="quest2_open"
+                  className="group font-p95 leading-[1.05] uppercase tracking-tight inline no-underline cursor-pointer text-[#C9A66B] hover:text-[#A6FF00] transition-colors"
+                  style={{ fontSize: "clamp(28px, 5.2vw, 76px)" }}
+                >
+                  <span className="border-b-2 border-[#A6FF00]/70 group-hover:border-[#A6FF00] pb-1">
+                    {decoded}
+                  </span>
+                </Link>
+              </span>
             ) : (
               <h1
                 className={`font-p95 leading-[1.05] uppercase tracking-tight transition-colors duration-300 break-words ${
