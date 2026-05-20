@@ -149,8 +149,15 @@ function formatDateTime(ms: number): string {
 // Если env не задан или Supabase недоступен — фолбэк на localStorage,
 // чтобы флоу работал и без бэкенда.
 const LB_KEY = "secret_dalshe_leaderboard_v1";
-const SB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const SB_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+// Публичный anon-ключ Supabase — по дизайну безопасен в браузере (доступ ограничен
+// политиками RLS: читать всем, вставлять валидную запись, править/удалять нельзя).
+// env имеет приоритет, если когда-нибудь захочется переопределить.
+const SB_URL =
+  process.env.NEXT_PUBLIC_SUPABASE_URL ||
+  "https://hvkygaghhxgaolxemndr.supabase.co";
+const SB_KEY =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2a3lnYWdoaHhnYW9seGVtbmRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzMDYwNjAsImV4cCI6MjA5NDg4MjA2MH0.IoRNKO3Jb51k1XA2y7-Q-PSaxpPhBj56G1SZJaKKau4";
 const hasSupabase = Boolean(SB_URL && SB_KEY);
 const SB_TABLE = "leaderboard";
 
