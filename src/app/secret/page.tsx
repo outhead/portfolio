@@ -79,7 +79,10 @@ export default function SecretPage() {
   }, []);
 
   return (
-    <main className="relative min-h-screen bg-black text-white overflow-hidden">
+    <main
+      className="relative bg-black text-white overflow-hidden flex flex-col"
+      style={{ minHeight: "100dvh" }}
+    >
       {/* Мягкое свечение */}
       <div
         aria-hidden
@@ -90,32 +93,18 @@ export default function SecretPage() {
         }}
       />
 
-      {/* Шапка */}
-      <header className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pt-8 md:pt-10 flex items-center justify-between">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/45 hover:text-white transition-colors no-underline"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2} />
-          На главную
-        </Link>
-        <span className="font-p95 text-[12px] md:text-[13px] tracking-[0.25em] uppercase text-[#A6FF00]">
-          [ Загадка ]
-        </span>
-      </header>
-
-      {/* Контент */}
-      <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pt-14 md:pt-24 pb-20">
-        <div className="max-w-[1100px]">
-          <p className="font-p95 text-[13px] md:text-[14px] tracking-[0.25em] uppercase text-white/40 mb-6 md:mb-8">
-            Шифр Цезаря · сдвиньте, чтобы прочитать
+      {/* Контент — по центру, как на странице крестиков */}
+      <section className="relative z-[1] flex-1 flex items-start justify-center px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pt-[88px] pb-12">
+        <div className="w-full max-w-[860px] mx-auto flex flex-col items-center text-center">
+          <p className="font-p95 text-[12px] md:text-[13px] tracking-[0.25em] uppercase text-white/40 mb-6 md:mb-8">
+            Шифр Цезаря · Загадка №1
           </p>
 
           {/* Большой текст — шифр или дешифровка.
               Контейнер фиксирован по высоте (~3 строки), чтобы при движении
               ползунка layout под шифром не «прыгал» вверх-вниз. */}
           <div
-            className="relative"
+            className="relative w-full"
             style={{ minHeight: "clamp(120px, 14vw, 240px)" }}
           >
             {isSecretFound ? (
@@ -148,7 +137,7 @@ export default function SecretPage() {
           </div>
 
           {/* Слайдер */}
-          <div className="mt-12 md:mt-16 max-w-2xl">
+          <div className="mt-10 md:mt-14 w-full max-w-2xl mx-auto">
             <div className="flex items-baseline justify-between mb-3">
               <span className="font-p95 text-[12px] md:text-[13px] tracking-[0.25em] uppercase text-white/40">
                 Сдвиг
@@ -176,16 +165,16 @@ export default function SecretPage() {
 
             {/* Подсказка после 8 сек */}
             <p
-              className={`mt-8 md:mt-10 text-sm md:text-[15px] text-white/55 max-w-md transition-opacity duration-700 ${
+              className={`mt-8 md:mt-10 text-sm md:text-[15px] text-white/55 max-w-md mx-auto text-center transition-opacity duration-700 ${
                 showHint && !isSolved && !isSecretFound ? "opacity-100" : "opacity-0"
               }`}
             >
-              Подсказка: настоящий сдвиг — двузначное число. Но если поедете дальше, может, что-то найдёте.
+              Подсказка: настоящий сдвиг — двузначное число. Но если поедешь дальше, может, что-то найдёшь.
             </p>
 
             {/* Сообщение после разгадки */}
             {isSolved ? (
-              <div className="mt-8 md:mt-10">
+              <div className="mt-8 md:mt-10 flex flex-col items-center text-center">
                 <p className="text-sm md:text-[15px] text-white/65 max-w-lg">
                   Я очень люблю пасхалки. Особенно когда они ведут ещё куда-то.
                 </p>
