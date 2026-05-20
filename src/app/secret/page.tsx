@@ -33,10 +33,8 @@ const SECRET_SHIFT = 61;
 const SECRET_TEXT_RAW = "21 мая, здесь будет новая пасхалка";
 const SECRET_TEXT_REVERSED = [...SECRET_TEXT_RAW].reverse().join("");
 
-// Продолжение квеста (часть II) открывается в полночь 21 мая по Москве (UTC+3).
-// 21 мая 00:00 MSK == 20 мая 21:00 UTC.
+// Ссылка на продолжение квеста (часть II).
 const QUEST2_HREF = "/secret/dalshe";
-const QUEST2_OPEN_MS = Date.UTC(2026, 4, 20, 21, 0, 0);
 
 // Сколько мс пользователь должен «постоять» на правильной позиции, прежде чем
 // мы подтвердим разгадку (зелёный текст + сообщение). Иначе при простом
@@ -80,14 +78,6 @@ export default function SecretPage() {
     return () => clearTimeout(t);
   }, []);
 
-  // Продолжение открывается 21 мая. Считаем на клиенте, чтобы не было
-  // рассинхрона SSR/CSR: сервер и первый клиентский рендер дают false,
-  // затем эффект включает ссылку, если дата наступила.
-  const [questOpen, setQuestOpen] = useState(false);
-  useEffect(() => {
-    setQuestOpen(Date.now() >= QUEST2_OPEN_MS);
-  }, []);
-
   return (
     <main className="relative min-h-screen bg-black text-white overflow-hidden">
       {/* Мягкое свечение */}
@@ -128,11 +118,11 @@ export default function SecretPage() {
             className="relative"
             style={{ minHeight: "clamp(120px, 14vw, 240px)" }}
           >
-            {isSecretFound && questOpen ? (
+            {isSecretFound ? (
               <Link
                 href={QUEST2_HREF}
                 data-ym-goal="quest2_open"
-                className="font-p95 leading-[1.05] uppercase tracking-tight break-words inline-block no-underline cursor-pointer text-[#C9A66B] hover:text-[#A6FF00] transition-colors border-b-2 border-[#C9A66B]/40 hover:border-[#A6FF00] pb-1"
+                className="font-p95 leading-[1.05] uppercase tracking-tight break-words inline-block no-underline cursor-pointer text-[#C9A66B] hover:text-[#A6FF00] transition-colors border-b-2 border-[#A6FF00]/70 hover:border-[#A6FF00] pb-1"
                 style={{ fontSize: "clamp(28px, 5.2vw, 76px)" }}
               >
                 {decoded}
