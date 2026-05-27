@@ -1098,15 +1098,25 @@ export default function PreviewHome() {
                   <ParticleSphere className="absolute inset-0 w-full h-full" />
                 </div>
 
-                {/* Якорь — верхний правый угол: роль (на всех ширинах) */}
-                <div className="absolute top-6 right-6 md:top-10 md:right-10 lg:top-12 lg:right-12 z-[2] font-p95 text-[15px] md:text-[16px] tracking-[0.2em] uppercase text-white/70">
+                {/* Якорь — верхний правый угол: роль (md+; на мобиле — в строке ниже) */}
+                <div className="hidden md:block absolute top-6 right-6 md:top-10 md:right-10 lg:top-12 lg:right-12 z-[2] font-p95 text-[15px] md:text-[16px] tracking-[0.2em] uppercase text-white/70">
                   <span className="text-[#A6FF00]/80">[</span>
                   <span className="mx-2">Дизайн-директор</span>
                   <span className="text-[#A6FF00]/80">]</span>
                 </div>
 
-                {/* Якорь — нижний левый угол: «Работал в» + лого */}
-                <div className="absolute bottom-6 left-6 md:bottom-10 md:left-10 lg:bottom-12 lg:left-12 z-[2] flex items-end gap-8 md:gap-12 flex-wrap">
+                {/* Мобильная строка под шапкой «Егор Шугаев»: слева роль, справа город */}
+                <div className="md:hidden absolute top-12 left-6 right-6 z-[2] flex items-center justify-between font-p95 text-[15px] tracking-[0.2em] uppercase text-white/70">
+                  <span className="whitespace-nowrap">
+                    <span className="text-[#A6FF00]/80">[</span>
+                    <span className="mx-2">Дизайн-директор</span>
+                    <span className="text-[#A6FF00]/80">]</span>
+                  </span>
+                  <span className="whitespace-nowrap">Москва</span>
+                </div>
+
+                {/* Якорь — нижний левый угол: «Работал в» + лого (md+; на мобиле — в потоке под кнопками) */}
+                <div className="hidden md:flex absolute bottom-6 left-6 md:bottom-10 md:left-10 lg:bottom-12 lg:left-12 z-[2] items-end gap-8 md:gap-12 flex-wrap">
                   <span className="font-p95 text-[15px] md:text-[16px] tracking-[0.2em] uppercase text-white/70 whitespace-nowrap">
                     Работал в
                   </span>
@@ -1116,15 +1126,15 @@ export default function PreviewHome() {
                   <img src="/images/logos/hse.svg" alt="ВШЭ" className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity duration-200" />
                 </div>
 
-                {/* Якорь — нижний правый угол: город */}
-                <div className="absolute bottom-6 right-6 md:bottom-10 md:right-10 lg:bottom-12 lg:right-12 z-[2] font-p95 text-[16px] md:text-[15px] tracking-[0.2em] uppercase text-white/70 whitespace-nowrap">
+                {/* Якорь — нижний правый угол: город (md+; на мобиле — в строке под шапкой) */}
+                <div className="hidden md:block absolute bottom-6 right-6 md:bottom-10 md:right-10 lg:bottom-12 lg:right-12 z-[2] font-p95 text-[16px] md:text-[15px] tracking-[0.2em] uppercase text-white/70 whitespace-nowrap">
                   Москва
                 </div>
 
                 {/* Центральный контент — ограничен слева, чтобы не наезжать на сферу.
                     На мобиле justify-start — содержимое сидит сразу под сферой, без огромного gap.
                     На десктопе justify-center — текст ровно центрирован внутри tile. */}
-                <div className="relative z-[1] flex flex-col justify-start md:justify-center p-7 md:p-10 lg:p-12 pt-[280px] md:pt-24 pb-24 md:pb-32 md:min-h-[600px] lg:min-h-[720px]">
+                <div className="relative z-[1] flex flex-col justify-start md:justify-center p-7 md:p-10 lg:p-12 pt-[280px] md:pt-24 pb-12 md:pb-32 md:min-h-[600px] lg:min-h-[720px]">
                   <div className="flex flex-col gap-6 md:gap-8 md:max-w-[58%]">
                     <h1 className="font-p95 text-[clamp(64px,9vw,128px)] leading-[0.92] uppercase tracking-tight text-white">
                       <span className="block text-white">7 лет</span>
@@ -1160,6 +1170,19 @@ export default function PreviewHome() {
                         <span className="leading-none translate-y-[1px]">Смотреть кейсы</span>
                         <ArrowRight className="w-4 h-4" strokeWidth={2} />
                       </Link>
+                    </div>
+
+                    {/* Mobile-only: «Работал в» в потоке под кнопками — без перекрытия */}
+                    <div className="md:hidden mt-2 flex flex-col gap-3">
+                      <span className="font-p95 text-[14px] tracking-[0.2em] uppercase text-white/50">
+                        Работал в
+                      </span>
+                      <div className="flex items-center gap-5 flex-wrap">
+                        <img src="/images/logos/ozon.svg" alt="Ozon" className="h-4 w-auto self-center brightness-0 invert opacity-55" />
+                        <img src="/images/logos/mts.svg" alt="МТС" className="h-6 w-auto brightness-0 invert opacity-55" />
+                        <img src="/images/logos/gazpromneft.svg" alt="Газпром нефть" className="h-6 w-auto brightness-0 invert opacity-55" />
+                        <img src="/images/logos/hse.svg" alt="ВШЭ" className="h-6 w-auto brightness-0 invert opacity-55" />
+                      </div>
                     </div>
 
                   </div>
@@ -1252,8 +1275,8 @@ export default function PreviewHome() {
                   <ul className="space-y-4 md:space-y-5 relative z-[1]">
                     {[
                       { num: "01", label: "Управление", note: "дизайн-функции и команды" },
-                      { num: "02", label: "Продукт", note: "B2C / B2E / EdTech на метриках" },
-                      { num: "03", label: "Ремесло", note: "AI и код руками" },
+                      { num: "02", label: "Направления", note: "B2C / B2E / EdTech / E-COM" },
+                      { num: "03", label: "Ремесло", note: "оптимизация процессов и применение AI" },
                     ].map((item) => (
                       <li
                         key={item.num}
