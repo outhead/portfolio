@@ -740,7 +740,7 @@ type ServiceTileData = {
 };
 
 function ServiceTile({ tile }: { tile: ServiceTileData }) {
-  const { index, label, title, Icon, accent, animation, animationReverse, body } = tile;
+  const { label, title, Icon, accent, animation, animationReverse, body } = tile;
   const tileRef = useRef<HTMLDivElement>(null);
   const [mobileActive, setMobileActive] = useState(false);
 
@@ -806,9 +806,6 @@ function ServiceTile({ tile }: { tile: ServiceTileData }) {
             ( {label} )
           </span>
         </div>
-        <span className="font-p95 text-[12px] md:text-[15px] tracking-[0.22em] uppercase text-white/30">
-          {index} /
-        </span>
       </div>
 
       {/* Заголовок — фиксируем под 2 строки на md+, чтобы круги ниже выровнялись по горизонтали даже при разной длине заголовка. */}
@@ -1008,9 +1005,9 @@ function Toolbox() {
             variants={fadeUp}
             className="mb-8 md:mb-10 flex items-baseline gap-3"
           >
-            <SectionLabel>В РАБОТЕ</SectionLabel>
+            <SectionLabel>ИНСТРУМЕНТЫ</SectionLabel>
             <span className="text-[15px] md:text-[16px] text-white/40 tracking-[0.06em]">
-              без ритуалов и ярлыков
+              которые я использую каждый день
             </span>
           </motion.div>
 
@@ -1044,6 +1041,7 @@ function Toolbox() {
 // PAGE
 // ═══════════════════════════════════════════════════════════════════
 export default function PreviewHome() {
+  const heroTileRef = useRef<HTMLDivElement>(null);
   return (
     <>
       <TypographyFix />
@@ -1072,7 +1070,7 @@ export default function PreviewHome() {
               variants={fadeUp}
               className="col-span-12 order-1 md:order-none"
             >
-              <div className="relative rounded-3xl border border-white/[0.1] bg-black overflow-hidden md:min-h-[600px] lg:min-h-[720px]">
+              <div ref={heroTileRef} className="relative rounded-3xl border border-white/[0.1] bg-black overflow-hidden md:min-h-[600px] lg:min-h-[720px]">
                 {/* Сфера — на десктопе абсолютно справа, на мобилке банером сверху */}
                 <div
                   aria-hidden
@@ -1085,7 +1083,15 @@ export default function PreviewHome() {
                         "radial-gradient(circle at 50% 50%, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 1px, transparent 1.2px) 0 0/22px 22px",
                     }}
                   />
-                  <ParticleSphere className="absolute inset-0 w-full h-full" />
+                  <ParticleSphere
+                    className="absolute inset-0 w-full h-full"
+                    trackingRef={heroTileRef}
+                    tapMessages={[
+                      "Воу. Интерактив.",
+                      "Ладно-ладно. По сайту спрятаны пасхалки и мини-задания.",
+                      "Долистай до конца — там кнопка с сюрпризом.",
+                    ]}
+                  />
                 </div>
 
                 {/* Якорь — верхний правый угол: роль (md+; на мобиле — в строке ниже) */}

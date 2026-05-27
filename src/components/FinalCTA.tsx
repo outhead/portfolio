@@ -46,13 +46,19 @@ const STAGES: Stage[] = [
   {
     id: "0",
     threshold: 0,
-    headline: "Спасибо, что долистали, вот вам ещё кнопочки",
+    headline: "Спасибо, что долистали, вот вам ещё кнопочка",
     accent: ".",
   },
   {
     id: "1",
     threshold: 1,
-    headline: "Вы всё ещё можете подписаться на мой канал",
+    headline: "хехе, ладно, но больше не нажимай",
+    accent: ".",
+  },
+  {
+    id: "2",
+    threshold: 2,
+    headline: "я знал, что ты это сделаешь",
     accent: ".",
   },
   {
@@ -374,33 +380,46 @@ export default function FinalCTA() {
           <div className="relative grid md:grid-cols-[1fr_auto] gap-8 md:gap-8 lg:gap-10 md:items-center">
             {/* Левая колонка — заголовок + Telegram-кнопки */}
             <div className="min-w-0">
-              {/* Заголовок — меняется по достижении порогов */}
-              <div className="relative min-h-[clamp(120px,16vw,240px)]">
-                <AnimatePresence mode="wait">
+              {/* Заголовок — меняется по достижении порогов.
+                  Grid-стек (оба состояния в одной ячейке): контейнер сам тянется
+                  под текущий заголовок. Без фиксированной min-h — иначе длинные
+                  заголовки на узких экранах вылезали и перекрывали кнопки. */}
+              <div className="grid">
+                <AnimatePresence>
                   <motion.h2
                     key={stage.id}
                     initial={{ opacity: 0, y: 18, filter: "blur(8px)" }}
                     animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                     exit={{ opacity: 0, y: -10, filter: "blur(8px)" }}
                     transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                    className="absolute inset-0 font-p95 text-[clamp(32px,5.5vw,76px)] leading-[0.98] uppercase tracking-tight text-white max-w-3xl"
+                    className="[grid-area:1/1] font-p95 text-[clamp(32px,5.5vw,76px)] leading-[0.98] uppercase tracking-tight text-white max-w-3xl"
                   >
                     {stage.headline}
                     {stage.accent ? (
                       <span className="text-[#A6FF00]">{stage.accent}</span>
                     ) : null}
-                    {stage.bonus ? (
-                      <Link
-                        href={stage.bonus.href}
-                        data-ym-goal="secret_open"
-                        className="inline-flex align-middle items-center gap-1.5 ml-3 md:ml-5 px-4 py-2 md:px-5 md:py-2.5 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[15px] md:text-[15px] tracking-[0.2em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
-                      >
-                        <span className="leading-none translate-y-[1px]">{stage.bonus.label}</span>
-                      </Link>
-                    ) : null}
                   </motion.h2>
                 </AnimatePresence>
               </div>
+
+              {/* Бонус-кнопка (на финальном пороге) — отдельной строкой в потоке,
+                  чтобы не вставать внутрь заголовка и не съезжать на узких. */}
+              {stage.bonus ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                  className="mt-4"
+                >
+                  <Link
+                    href={stage.bonus.href}
+                    data-ym-goal="secret_open"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 md:px-5 md:py-2.5 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[15px] tracking-[0.2em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
+                  >
+                    <span className="leading-none translate-y-[1px]">{stage.bonus.label}</span>
+                  </Link>
+                </motion.div>
+              ) : null}
 
               {/* Telegram + все каналы */}
               <motion.div
@@ -412,23 +431,35 @@ export default function FinalCTA() {
                   pressing={pressing}
                   compact
                 />
-                <Link
-                  href="https://t.me/aiegorka"
-                  target="_blank"
-                  data-ym-goal="telegram_channel"
-                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:border-white/50 hover:text-white transition-colors no-underline"
-                >
-                  <Send className="w-4 h-4" strokeWidth={2.2} />
-                  <span className="leading-none translate-y-[1px]">Подписаться на канал</span>
-                </Link>
+                {sessionCount >= 2 && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.96 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    <Link
+                      href="https://t.me/aiegorka"
+                      target="_blank"
+                      data-ym-goal="telegram_channel"
+                      className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:border-white/50 hover:text-white transition-colors no-underline"
+                    >
+                      <Send className="w-4 h-4" strokeWidth={2.2} />
+                      <span className="leading-none translate-y-[1px]">Подписаться на канал</span>
+                    </Link>
+                  </motion.div>
+                )}
               </motion.div>
 
-              <motion.p
-                variants={fadeUp}
-                className="mt-3 md:mt-4 text-[13px] md:text-[14px] text-white/45 leading-relaxed max-w-md"
-              >
-                А ещё, если вам стало интересно — я веду телеграм-канал.
-              </motion.p>
+              {sessionCount >= 2 && (
+                <motion.p
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                  className="mt-3 md:mt-4 text-[13px] md:text-[14px] text-white/45 leading-relaxed max-w-md"
+                >
+                  А ещё, если вам стало интересно — я веду телеграм-канал.
+                </motion.p>
+              )}
             </div>
 
             {/* Правая колонка — счётчик: только число, без обвеса */}

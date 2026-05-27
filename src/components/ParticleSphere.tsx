@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, type RefObject } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 
 // ParticleSphere — облако частиц, которое стягивается из глубины кадра к
 // поверхности целевой фигуры (shape), держится и затухает.
@@ -35,6 +36,9 @@ interface ParticleSphereProps {
   interactive?: boolean;
   // Элемент, на который вешаем события курсора. Если не задан — сам canvas.
   trackingRef?: RefObject<HTMLElement | null>;
+  // Реплики, показываемые в пузырьке по тапу (клику без протяжки) на шар,
+  // по стадиям: 1-й клик → [0], 2-й → [1] и т.д., дальше держим последнюю.
+  tapMessages?: string[];
 }
 
 // ── Генераторы целевых точек для разных форм ─────────────────────
@@ -99,8 +103,15 @@ export default function ParticleSphere({
   shape = "sphere",
   interactive = true,
   trackingRef,
+  tapMessages = [],
 }: ParticleSphereProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [tapStage, setTapStage] = useState(0);
+  const [bubbleVisible, setBubbleVisible] = useState(false);
+  // Актуальные реплики держим в ref — чтобы не перезапускать эффект-анимацию,
+  // когда родитель передаёт новый литерал массива на каждый рендер.
+  const tapMessagesRef = useRef(tapMessages);
+  tapMessagesRef.current = tapMessages;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -293,6 +304,20 @@ export default function ParticleSphere({
     const inertiaDecayPerSec = 1.8; // выше → быстрее затухает после release
     const inertiaSpeedThreshold = 0.05; // ниже — выходим в hover/auto-rotate
 
+    // Тап (клик без протяжки) — отличаем от drag по дистанции и времени.
+    let downX = 0;
+    let downY = 0;
+    let downT = 0;
+    let bubbleTimer: number | null = null;
+    const handleTap = () => {
+      const msgs = tapMessagesRef.current;
+      if (!msgs || msgs.length === 0) return;
+      setTapStage((s) => Math.min(s + 1, msgs.length));
+      setBubbleVisible(true);
+      if (bubbleTimer != null) window.clearTimeout(bubbleTimer);
+      bubbleTimer = window.setTimeout(() => setBubbleVisible(false), 4500);
+    };
+
     // Элемент, на котором слушаем hover-события (может быть шире, чем canvas).
     const eventTarget: HTMLElement =
       (trackingRef && trackingRef.current) || canvas;
@@ -350,6 +375,9 @@ export default function ParticleSphere({
       lastPointerX = e.clientX;
       lastPointerY = e.clientY;
       lastPointerT = performance.now();
+      downX = e.clientX;
+      downY = e.clientY;
+      downT = performance.now();
       yawVel = 0;
       pitchVel = 0;
       try {
@@ -375,6 +403,10 @@ export default function ParticleSphere({
         yawVel = (yawVel / sp) * maxV;
         pitchVel = (pitchVel / sp) * maxV;
       }
+      // Тап без протяжки → реплика. Иначе это был drag-вращение.
+      const tapDist = Math.hypot(e.clientX - downX, e.clientY - downY);
+      const tapDt = performance.now() - downT;
+      if (tapDist < 6 && tapDt < 350) handleTap();
     };
 
     if (interactive) {
@@ -545,6 +577,7 @@ export default function ParticleSphere({
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
+      if (bubbleTimer != null) window.clearTimeout(bubbleTimer);
       if (interactive) {
         eventTarget.removeEventListener("pointermove", onPointerMove);
         eventTarget.removeEventListener("pointerleave", onPointerLeave);
@@ -558,10 +591,26 @@ export default function ParticleSphere({
   }, [r, g, b, sphereRadFactor, numPerFrame, startMul, flightFrames, holdFrames, decayFrames, shape, interactive, trackingRef]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className={className}
-      aria-hidden
-    />
+    <div className={className}>
+      <canvas
+        ref={canvasRef}
+        className="w-full h-full transition-transform duration-300 ease-out hover:scale-[1.06]"
+        aria-hidden
+      />
+      <AnimatePresence>
+        {bubbleVisible && tapStage > 0 && tapMessages[tapStage - 1] ? (
+          <motion.div
+            key="sphere-bubble"
+            initial={{ opacity: 0, y: 8, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="pointer-events-none absolute left-1/2 top-1/2 z-[3] -translate-x-1/2 -translate-y-1/2 max-w-[80%] rounded-2xl border border-[#A6FF00]/40 bg-black/80 px-4 py-2 text-center text-[13px] md:text-[14px] leading-snug text-white shadow-[0_4px_24px_rgba(0,0,0,0.5)] backdrop-blur-sm"
+          >
+            {tapMessages[tapStage - 1]}
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+    </div>
   );
 }
