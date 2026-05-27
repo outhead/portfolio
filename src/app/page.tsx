@@ -623,11 +623,6 @@ function CareerHoverList() {
               <span className="flex-1 min-w-0 flex flex-col">
                 <span className="font-p95 text-[15px] text-white uppercase leading-tight">
                   {job.company}
-                  {job.current && (
-                    <span className="ml-2 text-[12px] tracking-[0.12em] uppercase text-[#A6FF00]/85">
-                      now
-                    </span>
-                  )}
                 </span>
                 <span className="text-[16px] text-white/55 leading-tight">
                   {job.role}
@@ -655,11 +650,6 @@ function CareerHoverList() {
               <span className="flex-1 min-w-0 flex flex-row items-baseline gap-3">
                 <span className="font-p95 text-[17px] text-white uppercase leading-tight truncate">
                   {job.company}
-                  {job.current && (
-                    <span className="ml-2 text-[12px] tracking-[0.12em] uppercase text-[#A6FF00]/85">
-                      now
-                    </span>
-                  )}
                 </span>
                 <span className="text-[15px] text-white/55 leading-tight truncate">
                   {job.role}
@@ -1377,7 +1367,7 @@ export default function PreviewHome() {
                 закрывал блок проектов на главной. */}
             <motion.div variants={fadeUp}>
               <Link href="/experiments" data-ym-goal="nav_experiments" data-ym-goal-params='{"placement":"work_grid"}' className="no-underline group block h-full">
-                <div className="relative h-full min-h-[280px] md:min-h-[340px] rounded-2xl overflow-hidden border border-white/[0.06] group-hover:border-[#A6FF00]/40 bg-[#0a0a0a] transition-colors duration-300 p-6 md:p-7 flex flex-col justify-between">
+                <div className="relative h-full min-h-[280px] md:min-h-[340px] rounded-2xl overflow-hidden border-2 border-white/[0.06] group-hover:border-[#A6FF00]/40 bg-[#0a0a0a] transition-colors duration-300 p-6 md:p-7 flex flex-col justify-between">
                   <PillsBackdrop />
                   <div className="relative z-[2]">
                     <div className="font-p95 text-[16px] md:text-[15px] tracking-[0.2em] uppercase text-white/50 mb-3">
@@ -1416,9 +1406,6 @@ export default function PreviewHome() {
           <motion.div variants={fadeUp}>
             <div className="mb-4 flex items-center justify-between">
               <SectionLabel>КАРЬЕРА</SectionLabel>
-              <span className="text-[12px] md:text-[15px] tracking-[0.15em] uppercase text-white/35 hidden md:inline">
-                Наведи, чтобы раскрыть
-              </span>
             </div>
             <CareerHoverList />
           </motion.div>
@@ -1485,12 +1472,12 @@ export default function PreviewHome() {
                 key: "craft",
                 index: "03",
                 label: "РЕМЕСЛО",
-                title: "AI и код, руками",
+                title: "Оптимизирую процессы",
                 Icon: Code2,
                 accent: "#4FC3F7",
                 animation: "wave" as PulseVariant,
                 body:
-                  "Остаюсь в макетах и в IDE. React, TypeScript, WebGL, AI-инструменты и агенты. Понимаю, что реально сделать руками и сколько это стоит в человеко-часах. Знаю, когда применять AI, а когда позвать эксперта под задачу.",
+                  "Автоматизирую рутину, собираю AI-инструменты и агенты под конкретные задачи. Понимаю, что реально сделать руками и сколько это стоит в человеко-часах. Знаю, когда применять AI, а когда нанимать эксперта.",
                 items: [
                   "AI-инструменты · агенты",
                   "Prompt engineering",

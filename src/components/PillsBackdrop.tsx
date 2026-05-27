@@ -71,10 +71,12 @@ export default function PillsBackdrop() {
         ground = null;
       };
 
-      // Pill factory — крупные лаймовые пилюли
-      const pillW = Math.max(72, Math.round(w * 0.22));
-      const pillH = Math.max(30, Math.round(pillW * 0.42));
-      const maxPills = 25;
+      // Pill factory — лаймовые пилюли. Компактные, с потолком по ширине,
+      // чтобы не закрывали текст, не клипались и не раздувались на широком тайле.
+      const mobile = window.matchMedia("(max-width: 767px)").matches;
+      const pillW = Math.min(64, Math.max(40, Math.round(w * 0.13)));
+      const pillH = Math.max(18, Math.round(pillW * 0.4));
+      const maxPills = mobile ? 64 : 16;
 
       const pillBodies: Matter.Body[] = [];
       const spawnPill = () => {
@@ -113,12 +115,14 @@ export default function PillsBackdrop() {
       const onEnter = () => {
         addGround();
         if (spawnId != null) return;
-        // Стартовый burst: 8 пилюль в первые 400мс
-        for (let i = 0; i < 8; i++) {
-          window.setTimeout(spawnPill, i * 50);
+        // Стартовый burst + интервал. На мобиле плотнее: пилюль больше (maxPills)
+        // и сыпем чаще, чтобы успели накопиться, пока тайл в фокусе при скролле.
+        const burst = mobile ? 16 : 8;
+        const interval = mobile ? 45 : 120;
+        for (let i = 0; i < burst; i++) {
+          window.setTimeout(spawnPill, i * 40);
         }
-        // Дальше — каждые 120мс, чтобы половина кубика заполнялась за ~3 секунды
-        spawnId = window.setInterval(spawnPill, 120);
+        spawnId = window.setInterval(spawnPill, interval);
       };
       const onLeave = () => {
         if (spawnId != null) {
