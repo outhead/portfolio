@@ -703,6 +703,9 @@ export const projects: Project[] = [
           { value: "30+", label: "менти за карьеру" },
           { value: "1 ч / 2 нед", label: "формат сессий" },
         ],
+        screenshots: [
+          { src: "/videos/preview-web.mp4", kind: "video", poster: "/videos/preview-poster.jpg", label: "СТРАНИЦА МЕНТИ", caption: "Тестовая страница менти: история сессий, договорённости, задачи и прогресс. Реальные страницы запаролены." },
+        ],
       },
       {
         title: "Агент 1 — рутина после сессии",
