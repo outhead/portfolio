@@ -73,7 +73,7 @@ export interface Project {
      * Hero-плакаты секции. Рендерятся БЕЗ рамки телефона, отдельным блоком над скриншотами.
      * Если 1 элемент — full-width 16:9, если 2-4 — grid.
      */
-    heroes?: { src: string; alt?: string; aspect?: string }[];
+    heroes?: { src: string; alt?: string; aspect?: string; kind?: "image" | "video"; poster?: string }[];
     screenshots?: Screenshot[];
     /** Override `screenshotsMode` проекта для этой секции. */
     screenshotsMode?: "web" | "phone";
@@ -699,12 +699,12 @@ export const projects: Project[] = [
           "Формат простой: часовая сессия раз в две недели, общая страница менти с историей сессий, договорённостями и задачами. Доступ к страницам запаролен — материалы менти не свечу публично, даже в портфолио. Менти видит только свою страницу.",
         result:
           "Главное узкое место — рутина после сессий: разобрать заметки, оформить страницу, выписать задачи, не потерять контекст. Час-полтора на каждую встречу. Поэтому развёрнутую страницу раньше я делал только избранным менти.",
+        heroes: [
+          { src: "/videos/preview-web.mp4", kind: "video", poster: "/videos/preview-poster.jpg", alt: "Тестовая страница менти", aspect: "31/32" },
+        ],
         callouts: [
           { value: "30+", label: "менти за карьеру" },
           { value: "1 ч / 2 нед", label: "формат сессий" },
-        ],
-        screenshots: [
-          { src: "/videos/preview-web.mp4", kind: "video", poster: "/videos/preview-poster.jpg", label: "СТРАНИЦА МЕНТИ", caption: "Тестовая страница менти: история сессий, договорённости, задачи и прогресс. Реальные страницы запаролены." },
         ],
       },
       {

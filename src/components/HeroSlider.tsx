@@ -10,6 +10,10 @@ export interface HeroImage {
   alt?: string;
   /** Соотношение сторон, например "16/9" или "4/5". По умолчанию 16/9. */
   aspect?: string;
+  /** "video" — рендерится <video> с autoplay/muted/loop/playsinline. По умолчанию "image". */
+  kind?: "image" | "video";
+  /** Постер для kind="video". Также используется как fallback-картинка в zoom-overlay. */
+  poster?: string;
 }
 
 interface HeroSliderProps {
@@ -165,16 +169,31 @@ export default function HeroSlider({ heroes, label }: HeroSliderProps) {
           className="group relative block w-full overflow-hidden rounded-2xl border border-white/[0.06] bg-black cursor-zoom-in select-none touch-pan-y"
           style={{ aspectRatio: aspect }}
         >
-          <Image
-            key={current.src}
-            src={current.src}
-            alt={current.alt ?? `Постер ${active + 1}`}
-            fill
-            sizes="(min-width: 1024px) 80vw, 100vw"
-            className="object-contain transition-opacity duration-300 pointer-events-none"
-            priority
-            draggable={false}
-          />
+          {current.kind === "video" ? (
+            <video
+              key={current.src}
+              src={current.src}
+              poster={current.poster}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+              aria-label={current.alt ?? `Видео ${active + 1}`}
+            />
+          ) : (
+            <Image
+              key={current.src}
+              src={current.src}
+              alt={current.alt ?? `Постер ${active + 1}`}
+              fill
+              sizes="(min-width: 1024px) 80vw, 100vw"
+              className="object-contain transition-opacity duration-300 pointer-events-none"
+              priority
+              draggable={false}
+            />
+          )}
           <span className="absolute top-3 right-3 inline-flex items-center justify-center w-9 h-9 rounded-full bg-black/55 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
             <ZoomIn className="w-4 h-4 text-white" strokeWidth={2} />
           </span>
@@ -294,16 +313,31 @@ export default function HeroSlider({ heroes, label }: HeroSliderProps) {
             onPointerCancel={onPointerCancel}
           >
             <div className="relative w-full max-h-full" style={{ aspectRatio: aspect }}>
-              <Image
-                key={current.src}
-                src={current.src}
-                alt={current.alt ?? `Постер ${active + 1}`}
-                fill
-                sizes="100vw"
-                className="object-contain pointer-events-none"
-                priority
-                draggable={false}
-              />
+              {current.kind === "video" ? (
+                <video
+                  key={current.src}
+                  src={current.src}
+                  poster={current.poster}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  controls
+                  className="absolute inset-0 w-full h-full object-contain"
+                  aria-label={current.alt ?? `Видео ${active + 1}`}
+                />
+              ) : (
+                <Image
+                  key={current.src}
+                  src={current.src}
+                  alt={current.alt ?? `Постер ${active + 1}`}
+                  fill
+                  sizes="100vw"
+                  className="object-contain pointer-events-none"
+                  priority
+                  draggable={false}
+                />
+              )}
             </div>
           </div>
         </div>
