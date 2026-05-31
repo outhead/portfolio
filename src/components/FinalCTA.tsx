@@ -275,6 +275,30 @@ export default function FinalCTA() {
   const [pressing, setPressing] = useState(false);
   const lastStageRef = useRef<string>("0");
   const reduced = useReducedMotion();
+  // Ref + Observer для цели final_cta_view: фиксируем, что блок попал
+  // в viewport ≥ на 20%. Шлём ровно один раз за сессию — чтобы можно было
+  // считать конверсию «увидел блок → нажал ≥1» в Метрике.
+  const sectionRef = useRef<HTMLElement>(null);
+  const viewFiredRef = useRef(false);
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el || viewFiredRef.current) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting && !viewFiredRef.current) {
+            viewFiredRef.current = true;
+            ymGoal("final_cta_view");
+            io.disconnect();
+          }
+        }
+      },
+      { threshold: 0.2 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   // Подгружаем глобальный счётчик при маунте + ресинк раз в 5 сек.
   // Supabase RPC get_counter возвращает чистое bigint (PostgREST: JSON-число).
@@ -332,10 +356,14 @@ export default function FinalCTA() {
     // Локальные счётчики — мгновенно
     setSessionCount((c) => {
       const next = c + 1;
-      // Я.Метрика — шлём smile_click только на значимых отметках, чтобы
-      // не плодить тысячи событий: 1-й клик, потом каждое 10-е, плюс
-      // разовый «совсем-долго-кликает» на 100. count в параметрах —
-      // полезен для отчёта по распределению.
+      // Я.Метрика — отдельная цель на самый первый клик в сессии. Удобна как
+      // знаменатель конверсии (final_cta_view → smile_first_click) и не путается
+      // с интервальным smile_click.
+      if (next === 1) {
+        ymGoal("smile_first_click");
+      }
+      // smile_click — только на значимых отметках, чтобы не плодить тысячи
+      // событий: 1-й клик, потом каждое 10-е, плюс отдельный на 100-м.
       if (next === 1 || next % 10 === 0 || next === 100) {
         ymGoal("smile_click", { count: next });
       }
@@ -367,7 +395,7 @@ export default function FinalCTA() {
   }, [reduced]);
 
   return (
-    <section className="relative z-[1] bg-black border-t border-white/[0.06]">
+    <section ref={sectionRef} className="relative z-[1] bg-black border-t border-white/[0.06]">
       <div className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-10 md:py-14">
         <motion.div
           initial="hidden"
