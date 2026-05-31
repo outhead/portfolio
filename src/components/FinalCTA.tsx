@@ -19,14 +19,26 @@ function formatCount(n: number): string {
 }
 
 // ───────────────────────────────────────────────────────────
-// Глобальный счётчик через abacus.jasoncameron.dev (без своего бэка).
-// На каждый клик — fire-and-forget /hit, локально считаем оптимистично,
-// раз в 3 секунды синхронизируемся с сервером (берём max).
+// Глобальный счётчик через свой Supabase (проект hvkygaghhxgaolxemndr).
+// RPC increment_counter атомарно делает upsert+1 и возвращает новое значение.
+// RPC get_counter — стабильное чтение. Никаких потерь и rate-limit, как у abacus.
+// На каждый клик: ждём ответ RPC и записываем серверное значение (без оптимистики).
+// Чтение раз в 5 сек — на случай если кто-то другой жмёт параллельно.
 // ───────────────────────────────────────────────────────────
-const NS = "shugaev-portfolio";
 const KEY = "scroll-thanks-v2";
-const GET_URL = `https://abacus.jasoncameron.dev/get/${NS}/${KEY}`;
-const HIT_URL = `https://abacus.jasoncameron.dev/hit/${NS}/${KEY}`;
+const SB_URL =
+  process.env.NEXT_PUBLIC_SUPABASE_URL ||
+  "https://hvkygaghhxgaolxemndr.supabase.co";
+const SB_KEY =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2a3lnYWdoaHhnYW9seGVtbmRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzMDYwNjAsImV4cCI6MjA5NDg4MjA2MH0.IoRNKO3Jb51k1XA2y7-Q-PSaxpPhBj56G1SZJaKKau4";
+const RPC_GET_URL = `${SB_URL}/rest/v1/rpc/get_counter`;
+const RPC_HIT_URL = `${SB_URL}/rest/v1/rpc/increment_counter`;
+const SB_HEADERS = {
+  "Content-Type": "application/json",
+  apikey: SB_KEY,
+  Authorization: `Bearer ${SB_KEY}`,
+} as const;
 
 // ───────────────────────────────────────────────────────────
 // Easter-egg тексты на разных порогах сессии
@@ -264,16 +276,22 @@ export default function FinalCTA() {
   const lastStageRef = useRef<string>("0");
   const reduced = useReducedMotion();
 
-  // Подгружаем глобальный счётчик при маунте + ресинк раз в 5 сек
+  // Подгружаем глобальный счётчик при маунте + ресинк раз в 5 сек.
+  // Supabase RPC get_counter возвращает чистое bigint (PostgREST: JSON-число).
   useEffect(() => {
     let cancelled = false;
     const load = () =>
-      fetch(GET_URL, { cache: "no-store" })
+      fetch(RPC_GET_URL, {
+        method: "POST",
+        cache: "no-store",
+        headers: SB_HEADERS,
+        body: JSON.stringify({ p_key: KEY }),
+      })
         .then((r) => r.json())
-        .then((data: { value?: number }) => {
-          if (!cancelled && typeof data.value === "number") {
+        .then((value: unknown) => {
+          if (!cancelled && typeof value === "number") {
             setGlobalCount((prev) =>
-              prev == null ? data.value! : Math.max(prev, data.value!),
+              prev == null ? value : Math.max(prev, value),
             );
           }
         })
@@ -328,10 +346,24 @@ export default function FinalCTA() {
     // Фейерверк
     if (!reduced) fireRandom();
 
-    // Серверный hit fire-and-forget
-    fetch(HIT_URL, { cache: "no-store" }).catch(() => {
-      /* ignore network errors — оптимистичный счётчик уже сработал */
-    });
+    // Серверный инкремент через Supabase RPC. Ждём ответ и подменяем
+    // оптимистичную цифру реальным серверным значением: если в это же время
+    // кто-то ещё кликал — увидим корректную сумму, без потери.
+    fetch(RPC_HIT_URL, {
+      method: "POST",
+      cache: "no-store",
+      headers: SB_HEADERS,
+      body: JSON.stringify({ p_key: KEY }),
+    })
+      .then((r) => r.json())
+      .then((value: unknown) => {
+        if (typeof value === "number") {
+          setGlobalCount((prev) => (prev == null ? value : Math.max(prev, value)));
+        }
+      })
+      .catch(() => {
+        /* при сетевой ошибке оптимистическая +1 остаётся, ресинк раз в 5 сек подровняет */
+      });
   }, [reduced]);
 
   return (

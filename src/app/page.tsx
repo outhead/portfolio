@@ -8,6 +8,7 @@ import FinalCTA from "@/components/FinalCTA";
 import PillsBackdrop from "@/components/PillsBackdrop";
 import { TypographyFix } from "@/components/TypographyFix";
 import { workProjects } from "@/data/projects";
+import { Plus } from "lucide-react";
 import { ymGoal } from "@/lib/yandex-metrika";
 import Link from "next/link";
 import Image from "next/image";
@@ -1042,6 +1043,12 @@ function Toolbox() {
 // ═══════════════════════════════════════════════════════════════════
 export default function PreviewHome() {
   const heroTileRef = useRef<HTMLDivElement>(null);
+  // На главной по умолчанию показываем только готовые work-кейсы (без wip).
+  // wip-кейсы (ozon, mts-b2c) — за кнопкой «Показать ещё», чтобы недоделанные
+  // карточки не утяжеляли первое впечатление.
+  const [showExtraProjects, setShowExtraProjects] = useState(false);
+  const mainProjects = useMemo(() => workProjects.filter((p) => !p.wip), []);
+  const extraProjects = useMemo(() => workProjects.filter((p) => p.wip), []);
   return (
     <>
       <TypographyFix />
@@ -1350,9 +1357,9 @@ export default function PreviewHome() {
           viewport={viewport}
           variants={stagger}
         >
-          {/* Топ-4 кейса — равные плитки 2×2 на десктопе */}
+          {/* Топ-2 готовых кейса — равные плитки 2×1 на десктопе */}
           <div className="grid md:grid-cols-2 gap-4 md:gap-5">
-            {workProjects.slice(0, 4).map((p, i) =>
+            {mainProjects.slice(0, 2).map((p, i) =>
               p ? (
                 <motion.div key={p.slug ?? i} variants={fadeUp}>
                   <ProjectCard project={p} index={i} />
@@ -1361,16 +1368,13 @@ export default function PreviewHome() {
             )}
           </div>
 
-          {/* Хвост: ещё кейс + ссылка на эксперименты + широкий нижний кейс */}
+          {/* Хвост: широкий mentorship-agent + ссылка на эксперименты */}
           <div className="grid md:grid-cols-3 gap-4 md:gap-5 mt-4 md:mt-5">
-            {workProjects[4] && (
+            {mainProjects[2] && (
               <motion.div variants={fadeUp} className="md:col-span-2">
-                <ProjectCard project={workProjects[4]} index={4} wide />
+                <ProjectCard project={mainProjects[2]} index={2} wide />
               </motion.div>
             )}
-            {/* mentorship-agent (workProjects[5]) — кейс про менторскую практику и AI-агентов.
-                Кладём его в широкий блок ниже experiments-link, чтобы свежий work-кейс
-                закрывал блок проектов на главной. */}
             <motion.div variants={fadeUp}>
               <Link href="/experiments" data-ym-goal="nav_experiments" data-ym-goal-params='{"placement":"work_grid"}' className="no-underline group block h-full">
                 <div className="relative h-full min-h-[280px] md:min-h-[340px] rounded-2xl overflow-hidden border-2 border-white/[0.06] group-hover:border-[#A6FF00]/40 bg-[#0a0a0a] transition-colors duration-300 p-6 md:p-7 flex flex-col justify-between">
@@ -1390,14 +1394,45 @@ export default function PreviewHome() {
                 </div>
               </Link>
             </motion.div>
-
-            {/* workProjects[5] — широкий блок снизу (mentorship-agent) */}
-            {workProjects[5] && (
-              <motion.div variants={fadeUp} className="md:col-span-3">
-                <ProjectCard project={workProjects[5]} index={5} wide />
-              </motion.div>
-            )}
           </div>
+
+          {/* Wip-кейсы (ozon, mts-b2c) — за кнопкой «Показать ещё»: они в работе,
+              не хочу утяжелять первое впечатление недоделанными карточками. */}
+          {extraProjects.length > 0 && (
+            <>
+              {!showExtraProjects ? (
+                <motion.div
+                  variants={fadeUp}
+                  className="mt-6 md:mt-8 flex items-center justify-center"
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowExtraProjects(true);
+                      ymGoal("home_show_more_projects");
+                    }}
+                    className="group inline-flex items-center gap-3 px-6 md:px-8 py-3 md:py-4 rounded-full border border-white/[0.12] bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/25 transition-colors"
+                  >
+                    <Plus className="w-4 h-4 text-white/60 group-hover:text-[#A6FF00] transition-colors" strokeWidth={2} />
+                    <span className="font-p95 text-[15px] md:text-[16px] tracking-[0.18em] uppercase text-white/80 group-hover:text-white transition-colors">
+                      Показать ещё {extraProjects.length} кейса
+                    </span>
+                  </button>
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+                  className="grid md:grid-cols-2 gap-4 md:gap-5 mt-4 md:mt-5"
+                >
+                  {extraProjects.map((p, i) => (
+                    <ProjectCard key={p.slug} project={p} index={mainProjects.length + i} />
+                  ))}
+                </motion.div>
+              )}
+            </>
+          )}
         </motion.div>
       </section>
 
