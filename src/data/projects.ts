@@ -702,7 +702,6 @@ export const projects: Project[] = [
         callouts: [
           { value: "30+", label: "менти за карьеру" },
           { value: "1 ч / 2 нед", label: "формат сессий" },
-          { value: "приватные", label: "страницы менти" },
         ],
       },
       {
