@@ -49,3 +49,6 @@ next-env.d.ts
 
 # Исходники HEVC для гиперкуб-кейса (тяжёлые, не для веба)
 public/videos/case hypercube/
+
+# Исходный тяжёлый PNG схемы (в репо идёт оптимизированный pipeline.jpg)
+public/images/cases/hypercube/pipeline.png
