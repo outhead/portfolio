@@ -775,8 +775,10 @@ export const projects: Project[] = [
       "Иногда хочется разобраться, что находится по другую сторону красивого референса. Проект начался как попытка собрать стеклянный куб с внутренней светящейся сеткой, а потом превратился в набор экспериментов с WebGL, шейдерами и процедурной геометрией. Использую Three.js, пишу собственные GLSL-шейдеры, пробую разные способы морфинга и генерации внутренних структур. Часть идей уже работает, часть всё ещё лежит в ветках с названиями вроде «final-final-v4». Для меня это способ руками разобраться, где заканчивается дизайн и начинается creative coding.",
     tags: ["Three.js", "GLSL", "WebGL", "Creative Coding"],
     type: "experiment",
-    coverColor: "#0a1a2e",
-    coverImage: "/images/covers/webgl-experiments.svg",
+    coverColor: "#0a0a0a",
+    coverImage: "/videos/webgl-cover.png",
+    coverVideo: "/videos/webgl-cover.mp4",
+    coverVideoPauseAt: 4.67,
     sections: [
       {
         title: "Идея",
@@ -791,6 +793,9 @@ export const projects: Project[] = [
         title: "Как устроено",
         approach:
           "**Рендеринг.** Сцена на Three.js, ключевые визуальные эффекты вынесены в собственные GLSL-шейдеры.\n\n**Стекло.** Fresnel-эффект, преломление и post-processing для свечения и цветовых искажений.\n\n**Внутренняя сетка.** Геометрия строится через систему lattice points и процедурную генерацию связей между ними.\n\n**Морфинг.** Формы плавно переходят друг в друга через интерполяцию геометрии и параметров шейдеров.",
+        heroes: [
+          { src: "/videos/webgl-process.mp4", kind: "video", poster: "/videos/webgl-process.png", alt: "Скринкаст: морфинг форм и панель параметров шейдера", aspect: "16/9" },
+        ],
         callouts: [
           { value: "Fresnel", label: "стеклянные края" },
           { value: "Bloom", label: "постобработка" },
