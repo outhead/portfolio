@@ -133,9 +133,11 @@ export default function SecretLoviPage() {
     const { w, h } = sizeRef.current;
     const mx = Math.max(0.7 * w, 200);
     const my = Math.max(0.7 * h, 200);
-    // экранный центр в мир-координатах = (-camX, -camY); держим его в пределах
-    camRef.current.x = clamp(camRef.current.x + dx, -(ex.x + mx), mx);
-    camRef.current.y = clamp(camRef.current.y + dy, -(Math.abs(ex.y) + my), my);
+    // чтобы выход (ex) можно было вывести в центр, нужно camX=-ex.x, camY=-ex.y.
+    // границы строим вокруг диапазона [0 .. target] с запасом — под любое направление.
+    const tx = -ex.x, ty = -ex.y;
+    camRef.current.x = clamp(camRef.current.x + dx, Math.min(0, tx) - mx, Math.max(0, tx) + mx);
+    camRef.current.y = clamp(camRef.current.y + dy, Math.min(0, ty) - my, Math.max(0, ty) + my);
     applyCam();
     if (startRef.current === null) startRef.current = Date.now();
     if (!movedRef.current) { movedRef.current = true; setHintMove(false); }
