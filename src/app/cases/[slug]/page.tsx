@@ -152,26 +152,6 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
         </section>
       )}
 
-      {/* Try-it CTA — заметная лаймовая кнопка для проектов с живым демо */}
-      {project.tryUrl && (
-        <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-8 md:py-10 bg-black border-t border-white/[0.06]">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-            <a
-              href={project.tryUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-md bg-[#A6FF00] text-black font-p95 text-base md:text-lg uppercase tracking-tight hover:bg-[#B8FF33] transition-colors no-underline shadow-[0_0_40px_-8px_rgba(166,255,0,0.5)]"
-            >
-              <span className="text-xl leading-none">▶</span>
-              {project.tryLabel ?? "Попробовать вживую"}
-            </a>
-            {project.tryNote && (
-              <p className="text-sm text-white/45 leading-relaxed max-w-sm">{project.tryNote}</p>
-            )}
-          </div>
-        </section>
-      )}
-
       {/* Content */}
       <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-16 md:py-24 bg-black border-t border-white/[0.06]">
         <div className="lg:flex lg:gap-x-12 xl:gap-x-16">
@@ -418,7 +398,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                           className="inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-md bg-[#A6FF00] text-black font-p95 text-base md:text-lg uppercase tracking-tight hover:bg-[#B8FF33] transition-colors no-underline shadow-[0_0_40px_-8px_rgba(166,255,0,0.5)]"
                         >
                           <span className="text-xl leading-none">▶</span>
-                          Попробовать самому
+                          Попробовать
                         </a>
                         <p className="text-sm text-white/45 leading-relaxed max-w-sm">
                           Тот самый конструктор из видео — открой и покрути сам.
