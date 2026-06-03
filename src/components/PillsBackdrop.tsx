@@ -76,7 +76,7 @@ export default function PillsBackdrop() {
       const mobile = window.matchMedia("(max-width: 767px)").matches;
       const pillW = Math.min(64, Math.max(40, Math.round(w * 0.13)));
       const pillH = Math.max(18, Math.round(pillW * 0.4));
-      const maxPills = mobile ? 320 : 80; // ×5
+      const maxPills = mobile ? 64 : 80; // десктоп ×5, мобайл без изменений
 
       const pillBodies: Matter.Body[] = [];
       const spawnPill = () => {
@@ -117,8 +117,8 @@ export default function PillsBackdrop() {
         if (spawnId != null) return;
         // Стартовый burst + интервал. На мобиле плотнее: пилюль больше (maxPills)
         // и сыпем чаще, чтобы успели накопиться, пока тайл в фокусе при скролле.
-        const burst = mobile ? 40 : 32;
-        const interval = mobile ? 30 : 55;
+        const burst = mobile ? 16 : 32;
+        const interval = mobile ? 45 : 55;
         for (let i = 0; i < burst; i++) {
           window.setTimeout(spawnPill, i * 40);
         }
