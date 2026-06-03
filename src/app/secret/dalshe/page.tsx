@@ -390,6 +390,7 @@ export default function SecretDalshePage() {
     if (!isInner(r, c)) return;
 
     if (innerBoard(next).indexOf("") === -1) {
+      setOver(true);
       setStatus("Ничья");
       return;
     }
@@ -412,6 +413,7 @@ export default function SecretDalshePage() {
         setStatus("Компьютер выиграл.");
         setWinLine({ cells: wl.cells, color: WIN_COLOR });
       } else if (innerBoard(after).indexOf("") === -1) {
+        setOver(true);
         setStatus("Ничья");
       }
     }, 520);
@@ -631,15 +633,15 @@ export default function SecretDalshePage() {
                     {status}
                   </p>
                 ) : null}
-                {over && !won ? (
-                  <button
-                    type="button"
-                    onClick={reset}
-                    className="mt-5 inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white/70 font-p95 text-[14px] md:text-[15px] tracking-[0.12em] uppercase hover:border-white/40 hover:text-white transition-colors"
-                  >
-                    <span className="leading-none translate-y-[1px]">Повторить</span>
-                  </button>
-                ) : null}
+                <button
+                  type="button"
+                  onClick={reset}
+                  className="mt-5 inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white/70 font-p95 text-[14px] md:text-[15px] tracking-[0.12em] uppercase hover:border-white/40 hover:text-white transition-colors"
+                >
+                  <span className="leading-none translate-y-[1px]">
+                    {over ? "Повторить" : "Начать заново"}
+                  </span>
+                </button>
               </>
             )}
           </div>
