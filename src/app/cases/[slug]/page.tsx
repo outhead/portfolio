@@ -392,6 +392,42 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                   </div>
                 )}
 
+                {/* Video-блок во всю ширину + CTA «Попробовать самому» рядом */}
+                {section.videoBlock && (
+                  <div className="mt-10 md:mt-12">
+                    <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-black">
+                      {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+                      <video
+                        src={section.videoBlock.src}
+                        poster={section.videoBlock.poster}
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        preload="metadata"
+                        className="block w-full h-auto"
+                        aria-label={section.videoBlock.alt ?? `${section.title} — видео`}
+                      />
+                    </div>
+                    {section.videoBlock.cta && project.tryUrl && (
+                      <div className="mt-5 flex flex-col sm:flex-row sm:items-center gap-4">
+                        <a
+                          href={project.tryUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-md bg-[#A6FF00] text-black font-p95 text-base md:text-lg uppercase tracking-tight hover:bg-[#B8FF33] transition-colors no-underline shadow-[0_0_40px_-8px_rgba(166,255,0,0.5)]"
+                        >
+                          <span className="text-xl leading-none">▶</span>
+                          Попробовать самому
+                        </a>
+                        <p className="text-sm text-white/45 leading-relaxed max-w-sm">
+                          Тот самый конструктор из видео — открой и покрути сам.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Screenshots — phone/web сетка интерфейсов после задачи и подхода */}
                 {hasSectionScreenshots && (
                   <div className="mt-10 md:mt-12">

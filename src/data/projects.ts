@@ -87,6 +87,12 @@ export interface Project {
      * Если 1 элемент — full-width 16:9, если 2-4 — grid.
      */
     heroes?: { src: string; alt?: string; aspect?: string; kind?: "image" | "video"; poster?: string }[];
+    /**
+     * Опционально: отдельный видео-блок во всю ширину ниже текста секции.
+     * Если `cta: true` и у проекта задан `tryUrl` — рядом рендерится
+     * кнопка «Попробовать самому».
+     */
+    videoBlock?: { src: string; poster?: string; alt?: string; cta?: boolean };
     screenshots?: Screenshot[];
     /** Override `screenshotsMode` проекта для этой секции. */
     screenshotsMode?: "web" | "phone";
@@ -819,8 +825,13 @@ export const projects: Project[] = [
           "**Фигура ненастоящая.** Обычно 3D-объект — это сетка из тысяч треугольников. Здесь её нет: компьютер для каждой точки экрана сам считает по формуле, попал луч в фигуру или нет и где у неё край. Получается дешевле и чётче.\n\n**Это стекло.** Свет проходит сквозь фигуру и преломляется, как в настоящем стекле или воде — поэтому она кажется прозрачной и тяжёлой, хотя внутри пусто.\n\n**Сияние сзади.** Это «северное сияние»: несколько лент, которые медленно колышет случайный шум, чтобы фон жил и дышал.\n\n**Светящиеся точки.** Вокруг летают тысячи частиц, и считает их движение видеокарта — поэтому их много и ничего не тормозит.",
         heroes: [
           { src: "/images/cases/hypercube/pipeline.jpg", alt: "Как собирается картинка — схема слоёв рендера: сияние, частицы, стекло, свечение, цвет", aspect: "16/9" },
-          { src: "/videos/webgl-process.mp4", kind: "video", poster: "/videos/webgl-process.png", alt: "Скринкаст: морфинг форм и панель параметров", aspect: "16/9" },
         ],
+        videoBlock: {
+          src: "/videos/webgl-process.mp4",
+          poster: "/videos/webgl-process.png",
+          alt: "Скринкаст: морфинг форм и панель параметров конструктора",
+          cta: true,
+        },
         callouts: [
           { value: "SDF", label: "рейтрейс вместо меша" },
           { value: "GPGPU", label: "частицы на GPU" },
