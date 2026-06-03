@@ -10,6 +10,7 @@ import CaseLinkCard from "@/components/CaseLinkCard";
 import HeroSlider from "@/components/HeroSlider";
 import PressCollapse from "@/components/PressCollapse";
 import WIPOverlay from "@/components/WIPOverlay";
+import DecryptApproach from "@/components/DecryptApproach";
 
 export function generateStaticParams() {
   return projects.map((project) => ({
@@ -283,7 +284,14 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                     {section.approach && (
                       <div>
                         <div className={labelClass}>Подход</div>
-                        {renderProse(section.approach)}
+                        {section.approachSimple ? (
+                          <DecryptApproach
+                            technical={section.approach}
+                            simple={section.approachSimple}
+                          />
+                        ) : (
+                          renderProse(section.approach)
+                        )}
                       </div>
                     )}
                     {section.helped && (
