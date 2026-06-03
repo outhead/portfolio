@@ -763,7 +763,6 @@ export const projects: Project[] = [
   },
   {
     slug: "webgl-experiments",
-    wip: true,
     title: "Граница дизайна и кода",
     company: "Pet Project",
     role: "Creative Developer",
