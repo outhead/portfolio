@@ -50,7 +50,7 @@ export default function DecryptApproach({
   const proseSimple = "leading-relaxed text-base md:text-xl";
 
   const renderTech = () => (
-    <div className="space-y-3 fadeswap">
+    <div className="space-y-3 decrypt-fadeswap">
       {techParas.map((segs, pi) => (
         <p key={pi} className={proseTech}>
           {segs.map((seg, si) =>
@@ -91,7 +91,7 @@ export default function DecryptApproach({
                     return (
                       <span
                         key={k}
-                        className="word"
+                        className="decrypt-word"
                         style={{ animationDelay: `${delay}ms` }}
                       >
                         {part}
@@ -122,46 +122,6 @@ export default function DecryptApproach({
         </span>
         {revealed ? "Вернуть как было" : "Расшифровать на человеческий"}
       </button>
-
-      <style jsx>{`
-        .word {
-          display: inline-block;
-          opacity: 0;
-          animation: wordIn 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
-        }
-        @keyframes wordIn {
-          from {
-            opacity: 0;
-            filter: blur(6px);
-            transform: translateY(7px);
-          }
-          to {
-            opacity: 1;
-            filter: blur(0);
-            transform: translateY(0);
-          }
-        }
-        .fadeswap {
-          animation: fadeSwap 300ms ease both;
-        }
-        @keyframes fadeSwap {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .word {
-            animation: none;
-            opacity: 1;
-          }
-          .fadeswap {
-            animation: none;
-          }
-        }
-      `}</style>
     </div>
   );
 }

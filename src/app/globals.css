@@ -195,3 +195,33 @@ main {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
 }
+
+/* DecryptApproach — плавная проявка слов в «человеческой» версии Подхода */
+.decrypt-word {
+  display: inline-block;
+  opacity: 0;
+  animation: decryptWordIn 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes decryptWordIn {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+.decrypt-fadeswap {
+  animation: decryptFadeSwap 300ms ease both;
+}
+@keyframes decryptFadeSwap {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .decrypt-word { animation: none; opacity: 1; }
+  .decrypt-fadeswap { animation: none; }
+}
