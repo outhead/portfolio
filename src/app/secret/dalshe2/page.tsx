@@ -143,11 +143,11 @@ export default function Dalshe2() {
             className="touch-none cursor-grab active:cursor-grabbing select-none font-p95"
             style={{
               fontSize: "clamp(40px, 12vw, 60px)", lineHeight: 1,
-              color: v === "X" ? "#A6FF00" : "#C9A66B",
+              color: v === "X" ? "#FF4040" : "#A6FF00",
               transform: active ? `translate(${off.x}px, ${off.y}px)` : "none",
               transition: active ? "none" : "transform .15s ease",
               zIndex: active ? 30 : 1,
-              filter: v === "X" ? "drop-shadow(0 0 10px rgba(166,255,0,0.45))" : "none",
+              filter: v === "X" ? "drop-shadow(0 0 10px rgba(255,64,64,0.5))" : "drop-shadow(0 0 9px rgba(166,255,0,0.4))",
             }}
           >
             {v === "X" ? "✕" : "◯"}
@@ -158,7 +158,7 @@ export default function Dalshe2() {
   };
 
   return (
-    <main className="relative bg-black text-white overflow-hidden flex flex-col items-center justify-center px-5" style={{ minHeight: "100dvh" }}>
+    <main className="relative bg-black text-white overflow-y-auto grid place-items-center px-5 py-24" style={{ minHeight: "100dvh" }}>
       <div aria-hidden className="absolute inset-0 pointer-events-none opacity-60" style={{
         background: "radial-gradient(ellipse 55% 45% at 50% 38%, rgba(166,255,0,0.07), transparent 60%)",
       }} />

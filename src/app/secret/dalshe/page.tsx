@@ -15,8 +15,8 @@ type Cell = "X" | "O";
 type Marks = Record<string, Cell>;
 type LbEntry = { name: string; timeMs: number; at: number };
 
-const X_COLOR = "#A6FF00";
-const O_COLOR = "#C9A66B";
+const X_COLOR = "#FF4040"; // крестики — красные
+const O_COLOR = "#A6FF00"; // нолики — зелёные
 const WIN_COLOR = "#FFFFFF";
 
 const innerCells: Array<[number, number]> = [
