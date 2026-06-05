@@ -10,7 +10,7 @@ import { ArrowLeft } from "lucide-react";
  * которая выглядит как декоративная техничка: СЕКТОР 4 · УЗЕЛ 7 · ШЛЮЗ 1 · КЛЮЧ 9.
  * Числа по порядку = 4719. Плюс заметный декой-номер, чтобы сбить.
  */
-const CODE = "4719";
+const CODE = "4688";
 
 export default function KodProto() {
   const [entry, setEntry] = useState("");
@@ -39,15 +39,6 @@ export default function KodProto() {
       <div aria-hidden className="absolute inset-0 pointer-events-none opacity-60" style={{
         background: "radial-gradient(ellipse 50% 40% at 50% 40%, rgba(166,255,0,0.06), transparent 60%)",
       }} />
-
-      {/* «системная шапка» — выглядит как декор, но числа по порядку и есть код */}
-      {!won && (
-        <div className="absolute top-[76px] left-0 right-0 z-[1] flex justify-center pointer-events-none">
-          <div className="font-mono text-[11px] md:text-[12px] tracking-[0.18em] uppercase text-white/30">
-            Сектор 4 · Узел 7 · Шлюз 1 · Ключ 9
-          </div>
-        </div>
-      )}
 
       {!won ? (
         <div className="relative z-[1] w-full max-w-[320px] mx-auto flex flex-col items-center text-center select-none">
@@ -81,11 +72,11 @@ export default function KodProto() {
           </div>
 
           <p className="mt-8 text-[13px] text-[#C9A66B]/85 transition-opacity duration-700 min-h-[20px]" style={{ opacity: hint ? 1 : 0 }}>
-            Код подбирать не нужно. Прочитай шапку.
+            Код подбирать не нужно. Загляни в описание страницы.
           </p>
         </div>
       ) : (
-        <Won note="Код был в системной шапке: 4-7-1-9. Просто читался как декор." />
+        <Won note="Код был спрятан в описании страницы: Сектор 4 · Узел 6 · Шлюз 8 · Ключ 8 → 4688." />
       )}
     </main>
   );
