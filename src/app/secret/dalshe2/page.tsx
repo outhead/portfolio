@@ -140,17 +140,25 @@ export default function Dalshe2() {
             onPointerMove={onMove}
             onPointerUp={onUp}
             onPointerCancel={onUp}
-            className="touch-none cursor-grab active:cursor-grabbing select-none font-p95"
+            className="touch-none cursor-grab active:cursor-grabbing select-none"
             style={{
-              fontSize: "clamp(40px, 12vw, 60px)", lineHeight: 1,
-              color: v === "X" ? "#FF4040" : "#A6FF00",
+              width: "100%", height: "100%",
               transform: active ? `translate(${off.x}px, ${off.y}px)` : "none",
               transition: active ? "none" : "transform .15s ease",
               zIndex: active ? 30 : 1,
-              filter: v === "X" ? "drop-shadow(0 0 10px rgba(255,64,64,0.5))" : "drop-shadow(0 0 9px rgba(166,255,0,0.4))",
+              filter: v === "X" ? "drop-shadow(0 0 8px rgba(255,64,64,0.5))" : "drop-shadow(0 0 8px rgba(166,255,0,0.4))",
             }}
           >
-            {v === "X" ? "✕" : "◯"}
+            <svg viewBox="0 0 100 100" width="100%" height="100%" style={{ display: "block", pointerEvents: "none" }} aria-hidden>
+              {v === "X" ? (
+                <g stroke="#FF4040" strokeWidth={7} strokeLinecap="round" fill="none">
+                  <line x1={28} y1={28} x2={72} y2={72} />
+                  <line x1={72} y1={28} x2={28} y2={72} />
+                </g>
+              ) : (
+                <circle cx={50} cy={50} r={22} stroke="#A6FF00" strokeWidth={7} fill="none" />
+              )}
+            </svg>
           </div>
         )}
       </div>
