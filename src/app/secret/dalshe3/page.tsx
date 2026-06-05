@@ -129,7 +129,7 @@ export default function Dalshe3() {
     setMarks(START()); setSolved(false); setThinking(false); setDragId(null); setOff({ x: 0, y: 0 });
   };
 
-  const S = "clamp(72px, 25vw, 108px)";
+  const S = "min(18vw, 10.4vh, 92px)";
   const cell = (i: number) => {
     const v = marks[i];
     const active = dragId === i;
@@ -182,10 +182,10 @@ export default function Dalshe3() {
             <div className="grid" style={{ gridTemplateColumns: `repeat(3, ${S})`, gridTemplateRows: `repeat(3, ${S})` }}>
               {Array.from({ length: 9 }).map((_, i) => cell(i))}
             </div>
-            <div aria-hidden className="absolute top-0 bottom-0 bg-white/15" style={{ left: `calc(${S})`, width: 1 }} />
-            <div aria-hidden className="absolute top-0 bottom-0 bg-white/15" style={{ left: `calc(${S} * 2)`, width: 1 }} />
-            <div aria-hidden className="absolute left-0 right-0 bg-white/15" style={{ top: `calc(${S})`, height: 1 }} />
-            <div aria-hidden className="absolute left-0 right-0 bg-white/15" style={{ top: `calc(${S} * 2)`, height: 1 }} />
+            <div aria-hidden className="absolute top-0 bottom-0 bg-white/20" style={{ left: `calc(${S} - 1px)`, width: 2 }} />
+            <div aria-hidden className="absolute top-0 bottom-0 bg-white/20" style={{ left: `calc(${S} * 2 - 1px)`, width: 2 }} />
+            <div aria-hidden className="absolute left-0 right-0 bg-white/20" style={{ top: `calc(${S} - 1px)`, height: 2 }} />
+            <div aria-hidden className="absolute left-0 right-0 bg-white/20" style={{ top: `calc(${S} * 2 - 1px)`, height: 2 }} />
           </div>
 
           <button type="button" onClick={reset}

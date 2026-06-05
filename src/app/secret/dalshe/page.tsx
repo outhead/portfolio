@@ -472,11 +472,11 @@ export default function SecretDalshePage() {
           );
         })}
 
-        <g stroke="rgba(255,255,255,0.22)" strokeWidth={3} strokeLinecap="round" style={{ pointerEvents: "none" }}>
-          <line x1={200} y1={100} x2={200} y2={400} />
-          <line x1={300} y1={100} x2={300} y2={400} />
-          <line x1={100} y1={200} x2={400} y2={200} />
-          <line x1={100} y1={300} x2={400} y2={300} />
+        <g stroke="rgba(255,255,255,0.2)" strokeWidth={2} strokeLinecap="round" style={{ pointerEvents: "none" }}>
+          <line x1={200} y1={100} x2={200} y2={400} vectorEffect="non-scaling-stroke" />
+          <line x1={300} y1={100} x2={300} y2={400} vectorEffect="non-scaling-stroke" />
+          <line x1={100} y1={200} x2={400} y2={200} vectorEffect="non-scaling-stroke" />
+          <line x1={100} y1={300} x2={400} y2={300} vectorEffect="non-scaling-stroke" />
         </g>
 
         <g style={{ opacity: winLine ? 0.28 : 1, transition: "opacity .4s ease" }}>
