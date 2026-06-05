@@ -33,15 +33,13 @@ export default function PraviloProto() {
     if (!startRef.current) return;
     setDrag({ x: startRef.current.ox + (e.clientX - startRef.current.px), y: startRef.current.oy + (e.clientY - startRef.current.py) });
   };
-  const onUp = () => {
+  const onUp = (e: React.PointerEvent) => {
     if (!startRef.current) return;
     startRef.current = null;
     const slot = slotRef.current?.getBoundingClientRect();
-    const chip = chipRef.current?.getBoundingClientRect();
-    if (slot && chip) {
-      const cx = chip.left + chip.width / 2;
-      const cy = chip.top + chip.height / 2;
-      const over = cx > slot.left - 20 && cx < slot.right + 20 && cy > slot.top - 20 && cy < slot.bottom + 20;
+    if (slot) {
+      const m = 28; // запас на промах
+      const over = e.clientX > slot.left - m && e.clientX < slot.right + m && e.clientY > slot.top - m && e.clientY < slot.bottom + m;
       if (over) {
         setPlaced(true);
         setTimeout(() => setWon(true), 700);
