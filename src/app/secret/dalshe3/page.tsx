@@ -7,11 +7,38 @@ import confetti from "canvas-confetti";
 
 /**
  * Крестики L3 — «Этого не достаточно».
- * Поле с крестиками (X) компьютера + фраза «ЭТОГО НЕ ДОСТАТОЧНО».
- * Подвох: перетащить X компьютера на слово «НЕ» — тогда «этого достаточно»,
- * и открывается следующий уровень с кодом (/secret/lab/kod).
+ * Начинается как обычная игра: нолик первый в центр, играешь X против идеального
+ * минимакса, без подсказок, сетка без граней. Над полем — фраза «ЭТОГО НЕ ДОСТАТОЧНО»
+ * («не» обычным словом). Подвох: любую фигуру можно перетаскивать — и если перетащить
+ * свой X на слово «не», условие меняется на «достаточно» → открывается терминал с кодом.
  */
-const START: (string | null)[] = ["X", null, null, null, "X", null, null, null, "X"];
+const LINES = [
+  [0, 1, 2], [3, 4, 5], [6, 7, 8],
+  [0, 3, 6], [1, 4, 7], [2, 5, 8],
+  [0, 4, 8], [2, 4, 6],
+];
+type M = "" | "X" | "O";
+const win9 = (b: M[]): M | null => {
+  for (const [a, c, d] of LINES) if (b[a] && b[a] === b[c] && b[c] === b[d]) return b[a];
+  return null;
+};
+function minimax(b: M[], isO: boolean, depth = 0): { s: number; i?: number } {
+  const w = win9(b);
+  if (w === "O") return { s: 10 - depth };
+  if (w === "X") return { s: depth - 10 };
+  if (b.every((x) => x)) return { s: 0 };
+  let best: { s: number; i?: number } = isO ? { s: -1e9 } : { s: 1e9 };
+  for (let i = 0; i < 9; i++) {
+    if (!b[i]) {
+      b[i] = isO ? "O" : "X";
+      const r = minimax(b, !isO, depth + 1);
+      b[i] = "";
+      if (isO ? r.s > best.s : r.s < best.s) best = { s: r.s, i };
+    }
+  }
+  return best;
+}
+const START = (): M[] => { const b: M[] = ["", "", "", "", "", "", "", "", ""]; b[4] = "O"; return b; };
 
 function celebrate() {
   const colors = ["#A6FF00", "#D9FF66", "#ECFFB3", "#FFFFFF"];
@@ -21,92 +48,116 @@ function celebrate() {
 }
 
 export default function Dalshe3() {
-  const [marks, setMarks] = useState<(string | null)[]>(START);
+  const [marks, setMarks] = useState<M[]>(START);
   const [solved, setSolved] = useState(false);
-  const [hint, setHint] = useState(false);
+  const [thinking, setThinking] = useState(false);
 
   const [dragId, setDragId] = useState<number | null>(null);
   const [off, setOff] = useState({ x: 0, y: 0 });
-  const startRef = useRef<{ px: number; py: number } | null>(null);
+  const dragStart = useRef<{ px: number; py: number } | null>(null);
+  const moved = useRef(false);
   const cellRefs = useRef<(HTMLDivElement | null)[]>([]);
   const neRef = useRef<HTMLSpanElement>(null);
+  const compTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    const t = setTimeout(() => setHint(true), 9000);
-    return () => clearTimeout(t);
-  }, []);
+  useEffect(() => () => { if (compTimer.current) clearTimeout(compTimer.current); }, []);
+
+  const place = (i: number) => {
+    if (solved || thinking || marks[i]) return;
+    const next = [...marks]; next[i] = "X"; setMarks(next);
+    if (win9(next) || next.every((x) => x)) return;
+    setThinking(true);
+    compTimer.current = setTimeout(() => {
+      const mv = minimax([...next], true);
+      const after = [...next];
+      if (mv.i != null) after[mv.i] = "O";
+      setMarks(after);
+      setThinking(false);
+    }, 460);
+  };
 
   const onDown = (i: number) => (e: React.PointerEvent) => {
-    if (solved || marks[i] !== "X") return;
+    if (solved || !marks[i]) return;
     (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
-    setDragId(i);
-    setOff({ x: 0, y: 0 });
-    startRef.current = { px: e.clientX, py: e.clientY };
+    setDragId(i); setOff({ x: 0, y: 0 }); moved.current = false;
+    dragStart.current = { px: e.clientX, py: e.clientY };
   };
   const onMove = (e: React.PointerEvent) => {
-    if (!startRef.current || dragId === null) return;
-    setOff({ x: e.clientX - startRef.current.px, y: e.clientY - startRef.current.py });
+    if (!dragStart.current || dragId === null) return;
+    const dx = e.clientX - dragStart.current.px, dy = e.clientY - dragStart.current.py;
+    if (Math.hypot(dx, dy) > 4) moved.current = true;
+    setOff({ x: dx, y: dy });
   };
   const onUp = (e: React.PointerEvent) => {
-    if (!startRef.current || dragId === null) return;
+    if (dragStart.current === null || dragId === null) return;
     const from = dragId;
-    startRef.current = null;
-    setDragId(null);
-    setOff({ x: 0, y: 0 });
+    const wasMoved = moved.current;
+    const draggedVal = marks[from];
+    dragStart.current = null; setDragId(null); setOff({ x: 0, y: 0 });
+    if (!wasMoved) return;
 
-    // на слово «НЕ»?
-    const ne = neRef.current?.getBoundingClientRect();
-    if (ne) {
-      const pad = 16;
-      if (e.clientX > ne.left - pad && e.clientX < ne.right + pad && e.clientY > ne.top - pad && e.clientY < ne.bottom + pad) {
-        setMarks((p) => { const n = [...p]; n[from] = null; return n; });
-        setSolved(true);
-        celebrate();
-        return;
+    // перетащили X на слово «не»?
+    if (draggedVal === "X") {
+      const ne = neRef.current?.getBoundingClientRect();
+      if (ne) {
+        const pad = 18;
+        if (e.clientX > ne.left - pad && e.clientX < ne.right + pad && e.clientY > ne.top - pad && e.clientY < ne.bottom + pad) {
+          setMarks((p) => { const n = [...p]; n[from] = ""; return n; });
+          setSolved(true); celebrate(); return;
+        }
       }
     }
-    // иначе — переставить по ячейкам (живость), без победного условия
+    // иначе — переставить по ячейкам / за край
+    const m = 40;
+    const offscreen = e.clientX < m || e.clientX > window.innerWidth - m || e.clientY < m || e.clientY > window.innerHeight - m;
     setMarks((prev) => {
       const next = [...prev];
+      if (offscreen) { next[from] = ""; return next; }
       let target: number | null = null;
       cellRefs.current.forEach((el, idx) => {
-        if (!el) return;
-        const r = el.getBoundingClientRect();
+        if (!el) return; const r = el.getBoundingClientRect();
         if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) target = idx;
       });
-      if (target === null) return prev;
-      if (target !== from && next[target] !== null) return prev;
-      next[from] = null; next[target] = "X";
+      if (target === null || target === from || next[target]) return prev;
+      next[target] = next[from]; next[from] = "";
       return next;
     });
   };
 
+  const reset = () => {
+    if (compTimer.current) clearTimeout(compTimer.current);
+    setMarks(START()); setSolved(false); setThinking(false); setDragId(null); setOff({ x: 0, y: 0 });
+  };
+
+  const S = "clamp(72px, 25vw, 108px)";
   const cell = (i: number) => {
-    const isX = marks[i] === "X";
+    const v = marks[i];
     const active = dragId === i;
     return (
       <div
         key={i}
         ref={(el) => { cellRefs.current[i] = el; }}
-        className="relative flex items-center justify-center border border-white/15"
-        style={{ width: "clamp(70px, 24vw, 104px)", height: "clamp(70px, 24vw, 104px)" }}
+        onClick={() => { if (!v && !moved.current) place(i); }}
+        className="relative flex items-center justify-center"
+        style={{ width: S, height: S, cursor: v ? "default" : solved || thinking ? "default" : "pointer" }}
       >
-        {isX && (
+        {v && (
           <div
             onPointerDown={onDown(i)}
             onPointerMove={onMove}
             onPointerUp={onUp}
             onPointerCancel={onUp}
-            className="touch-none cursor-grab active:cursor-grabbing select-none font-p95 text-[#A6FF00]"
+            className="touch-none cursor-grab active:cursor-grabbing select-none font-p95"
             style={{
-              fontSize: "clamp(36px, 11vw, 54px)", lineHeight: 1,
+              fontSize: "clamp(38px, 11vw, 56px)", lineHeight: 1,
+              color: v === "X" ? "#A6FF00" : "#C9A66B",
               transform: active ? `translate(${off.x}px, ${off.y}px)` : "none",
               transition: active ? "none" : "transform .15s ease",
               zIndex: active ? 30 : 1,
-              filter: "drop-shadow(0 0 10px rgba(166,255,0,0.5))",
+              filter: v === "X" ? "drop-shadow(0 0 10px rgba(166,255,0,0.45))" : "none",
             }}
           >
-            ✕
+            {v === "X" ? "✕" : "◯"}
           </div>
         )}
       </div>
@@ -121,24 +172,26 @@ export default function Dalshe3() {
 
       {!solved ? (
         <div className="relative z-[1] w-full max-w-[480px] mx-auto flex flex-col items-center text-center">
-          <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-5">Крестики · Загадка №2 · ур. 3</p>
+          <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-5">Крестики-нолики · Загадка №2</p>
 
-          {/* фраза с целью «НЕ» */}
           <h1 className="font-p95 leading-[1.05] uppercase tracking-tight mb-10" style={{ fontSize: "clamp(26px, 5vw, 48px)" }}>
-            Этого{" "}
-            <span ref={neRef} className="inline-block px-2 rounded text-[#C9A66B] border border-dashed border-[#C9A66B]/40">
-              не
-            </span>{" "}
-            достаточно
+            Этого <span ref={neRef}>не</span> достаточно
           </h1>
 
-          <div className="grid" style={{ gridTemplateColumns: "repeat(3, max-content)" }}>
-            {Array.from({ length: 9 }).map((_, i) => cell(i))}
+          <div className="relative" style={{ width: `calc(${S} * 3)`, height: `calc(${S} * 3)` }}>
+            <div className="grid" style={{ gridTemplateColumns: `repeat(3, ${S})`, gridTemplateRows: `repeat(3, ${S})` }}>
+              {Array.from({ length: 9 }).map((_, i) => cell(i))}
+            </div>
+            <div aria-hidden className="absolute top-0 bottom-0 bg-white/15" style={{ left: `calc(${S})`, width: 1 }} />
+            <div aria-hidden className="absolute top-0 bottom-0 bg-white/15" style={{ left: `calc(${S} * 2)`, width: 1 }} />
+            <div aria-hidden className="absolute left-0 right-0 bg-white/15" style={{ top: `calc(${S})`, height: 1 }} />
+            <div aria-hidden className="absolute left-0 right-0 bg-white/15" style={{ top: `calc(${S} * 2)`, height: 1 }} />
           </div>
 
-          <p className="mt-8 text-[13px] text-[#C9A66B]/85 transition-opacity duration-700 min-h-[20px]" style={{ opacity: hint ? 1 : 0 }}>
-            Слово «не» мешает. У тебя в руках есть, чем его убрать.
-          </p>
+          <button type="button" onClick={reset}
+            className="mt-8 inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white/70 font-p95 text-[14px] tracking-[0.12em] uppercase hover:border-white/40 hover:text-white transition-colors">
+            <span className="leading-none translate-y-[1px]">Начать заново</span>
+          </button>
         </div>
       ) : (
         <div className="relative z-[1] w-full max-w-[420px] mx-auto flex flex-col items-center text-center">
@@ -146,10 +199,9 @@ export default function Dalshe3() {
           <h1 className="font-p95 leading-none uppercase tracking-tight text-[#A6FF00] mb-5" style={{ fontSize: "clamp(36px, 10vw, 68px)" }}>
             Достаточно
           </h1>
-          <p className="text-sm text-white/60 mb-8 max-w-xs">Ты закрыл «не» — и условие сменилось. Дальше — терминал.</p>
+          <p className="text-sm text-white/60 mb-8 max-w-xs">Ты закрыл «не» — и условие сменилось.</p>
           <Link href="/secret/lab/kod" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[14px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
-            <span className="leading-none translate-y-[1px]">К терминалу</span>
-            <span className="leading-none">→</span>
+            <span className="leading-none translate-y-[1px]">К терминалу</span><span className="leading-none">→</span>
           </Link>
           <Link href="/" className="mt-5 inline-flex items-center gap-1.5 text-[13px] text-white/40 hover:text-white/70 transition-colors no-underline">
             <ArrowLeft className="w-3 h-3" strokeWidth={2.2} /> На главную

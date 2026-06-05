@@ -137,10 +137,8 @@ export default function SecretPage() {
               </h1>
             ) : (
               <h1
-                className={`font-p95 leading-[1.05] uppercase tracking-tight transition-colors duration-300 break-words ${
-                  isSolved ? "text-[#A6FF00]" : "text-white"
-                }`}
-                style={{ fontSize: "clamp(28px, 5.2vw, 76px)" }}
+                className="font-p95 leading-[1.05] uppercase tracking-tight break-words"
+                style={{ fontSize: "clamp(28px, 5.2vw, 76px)", color: isSolved ? "#A6FF00" : "#ffffff", transition: "color .3s ease" }}
               >
                 {isSolved && decoded.includes("61")
                   ? (() => {
