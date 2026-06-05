@@ -5,9 +5,6 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import confetti from "canvas-confetti";
 
-// Дата следующего шага квеста — показывается в тизере после победы.
-const NEXT_DATE = "7 июня";
-
 // Игровое поле — решётка 5×5 (координаты 0..4).
 // «Официальное» поле 3×3 — это центральные клетки (1..3, 1..3).
 // Компьютер (нолики, O) ходит ТОЛЬКО внутри 3×3 и играет идеально —
@@ -580,6 +577,14 @@ export default function SecretDalshePage() {
             ) : null}
 
             <div className="flex flex-wrap items-center justify-center gap-3">
+              <Link
+                href="/secret/dalshe2"
+                data-ym-goal="quest2_solved"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[14px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
+              >
+                <span className="leading-none translate-y-[1px]">Следующая загадка</span>
+                <span className="leading-none">→</span>
+              </Link>
               <button
                 type="button"
                 onClick={reset}
@@ -587,19 +592,14 @@ export default function SecretDalshePage() {
               >
                 <span className="leading-none translate-y-[1px]">Сыграть снова</span>
               </button>
-              <Link
-                href="/"
-                data-ym-goal="quest2_solved"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[14px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2.2} />
-                <span className="leading-none translate-y-[1px]">На главную</span>
-              </Link>
             </div>
 
-            <p className="mt-6 text-[13px] text-[#C9A66B]/80">
-              Продолжение — {NEXT_DATE}.
-            </p>
+            <Link
+              href="/"
+              className="mt-4 inline-flex items-center gap-1.5 text-[13px] text-white/40 hover:text-white/70 transition-colors no-underline"
+            >
+              <ArrowLeft className="w-3 h-3" strokeWidth={2.2} /> На главную
+            </Link>
           </div>
         ) : (
           /* ─── Игра (ход / момент победы) ─── */
