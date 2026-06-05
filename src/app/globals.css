@@ -76,6 +76,12 @@ button:focus-visible {
   font-weight: 700;
 }
 
+/* Принудительный лаймовый цвет (перебивает наследование color/-webkit-text-fill-color) */
+.lime-force {
+  color: #a6ff00 !important;
+  -webkit-text-fill-color: #a6ff00 !important;
+}
+
 /* === HERO GRADIENT TEXT === */
 .gradient-text {
   background: linear-gradient(

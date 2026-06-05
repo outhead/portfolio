@@ -130,28 +130,34 @@ export default function SecretPage() {
           >
             {isSecretFound ? (
               <h1
-                className="font-p95 leading-[1.05] uppercase tracking-tight text-[#A6FF00] break-words"
+                className="font-p95 leading-[1.05] uppercase tracking-tight lime-force break-words"
                 style={{ fontSize: "clamp(36px, 6vw, 88px)" }}
               >
                 Поздравляю
               </h1>
             ) : (
               <h1
-                className="font-p95 leading-[1.05] uppercase tracking-tight break-words"
-                style={{ fontSize: "clamp(28px, 5.2vw, 76px)", color: isSolved ? "#A6FF00" : "#ffffff", transition: "color .3s ease" }}
+                className="font-p95 leading-[1.05] uppercase tracking-tight break-words text-white"
+                style={{ fontSize: "clamp(28px, 5.2vw, 76px)" }}
               >
-                {isSolved && decoded.includes("61")
-                  ? (() => {
-                      const [pre, post] = decoded.split("61");
-                      return (
-                        <>
-                          {pre}
-                          <span className="underline decoration-[0.08em] underline-offset-[0.12em]">61</span>
-                          {post}
-                        </>
-                      );
-                    })()
-                  : decoded}
+                {isSolved ? (
+                  <span className="lime-force">
+                    {decoded.includes("61")
+                      ? (() => {
+                          const [pre, post] = decoded.split("61");
+                          return (
+                            <>
+                              {pre}
+                              <span className="underline decoration-[0.08em] underline-offset-[0.12em]">61</span>
+                              {post}
+                            </>
+                          );
+                        })()
+                      : decoded}
+                  </span>
+                ) : (
+                  decoded
+                )}
               </h1>
             )}
           </div>
