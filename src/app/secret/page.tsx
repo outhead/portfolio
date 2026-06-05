@@ -92,6 +92,13 @@ export default function SecretPage() {
     return () => clearTimeout(t);
   }, []);
 
+  // Подсказка про ручной ввод по счётчику — только если человек на странице >1 минуты
+  const [showCounterHint, setShowCounterHint] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setShowCounterHint(true), 60000);
+    return () => clearTimeout(t);
+  }, []);
+
   return (
     <main
       className="relative bg-black text-white overflow-hidden flex flex-col"
@@ -135,7 +142,18 @@ export default function SecretPage() {
                 }`}
                 style={{ fontSize: "clamp(28px, 5.2vw, 76px)" }}
               >
-                {decoded}
+                {isSolved && decoded.includes("61")
+                  ? (() => {
+                      const [pre, post] = decoded.split("61");
+                      return (
+                        <>
+                          {pre}
+                          <span className="underline decoration-[0.08em] underline-offset-[0.12em]">61</span>
+                          {post}
+                        </>
+                      );
+                    })()
+                  : decoded}
               </h1>
             )}
           </div>
@@ -159,7 +177,7 @@ export default function SecretPage() {
                 }}
                 onFocus={(e) => e.currentTarget.select()}
                 aria-label="Ввести сдвиг вручную"
-                className="w-[2.5em] bg-transparent text-right font-p95 text-[clamp(18px,2vw,28px)] tabular-nums text-white outline-none border-b border-dashed border-white/35 focus:border-[#A6FF00]/80 cursor-text"
+                className="w-[2.5em] bg-transparent text-right font-p95 text-[clamp(18px,2vw,28px)] tabular-nums text-white outline-none cursor-text"
               />
             </div>
 
@@ -185,14 +203,14 @@ export default function SecretPage() {
                 showHint && !isSolved && !isSecretFound ? "opacity-100" : "opacity-0"
               }`}
             >
-              Подсказка: настоящий сдвиг — двузначное число. А по счётчику можно кликнуть и вписать число вручную.
+              Подсказка: настоящий сдвиг — двузначное число.{showCounterHint ? " А по счётчику можно кликнуть и вписать число вручную." : ""}
             </p>
 
             {/* Сообщение после разгадки */}
             {isSolved ? (
               <div className="mt-8 md:mt-10 flex flex-col items-center text-center">
                 <p className="text-sm md:text-[15px] text-white/65 max-w-lg">
-                  Я очень люблю пасхалки. Особенно когда они ведут ещё куда-то.
+                  Это ещё не конец, скорее самое начало. Ну разве что ты не решишь сдаться.
                 </p>
                 <Link
                   href="/"
