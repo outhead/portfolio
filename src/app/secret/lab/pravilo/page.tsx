@@ -5,48 +5,67 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 /**
- * Прототип B — «Перепиши правило» (Baba Is You: двигаешь не героя, а правило).
- * На экране правило из чипов: «ВЫХОД — ЗАКРЫТ». Рядом лежит чип «ОТКРЫТ».
- * Решение: перетащить «ОТКРЫТ» на «ЗАКРЫТ» — правило меняется, выход открыт.
+ * Прототип B-v2 — «Перепиши правило» (Baba Is You, усложнённый).
+ * Правило: «ВЫХОД НЕ ОТКРЫТ». Перетасовки внутри ничего не дают (чип снапается
+ * назад). Решение неочевидно: лишнее слово «НЕ» нужно ВЫБРОСИТЬ ЗА КРАЙ экрана —
+ * тогда останется «ВЫХОД ОТКРЫТ». Перекликается с «ходи за рамкой» из крестиков.
  */
+type Chip = { id: string; word: string };
+const INITIAL: Chip[] = [
+  { id: "a", word: "Выход" },
+  { id: "b", word: "Не" },
+  { id: "c", word: "Открыт" },
+];
+
 export default function PraviloProto() {
+  const [chips, setChips] = useState<Chip[]>(INITIAL);
   const [won, setWon] = useState(false);
   const [hint, setHint] = useState(false);
-  const [drag, setDrag] = useState<{ x: number; y: number } | null>(null);
-  const [placed, setPlaced] = useState(false);
+  const [flash, setFlash] = useState<string | null>(null);
 
-  const slotRef = useRef<HTMLSpanElement>(null);
-  const chipRef = useRef<HTMLDivElement>(null);
-  const startRef = useRef<{ px: number; py: number; ox: number; oy: number } | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [off, setOff] = useState({ x: 0, y: 0 });
+  const startRef = useRef<{ px: number; py: number } | null>(null);
 
   useEffect(() => {
-    const id = setTimeout(() => setHint(true), 6000);
+    const id = setTimeout(() => setHint(true), 8000);
     return () => clearTimeout(id);
   }, []);
 
-  const onDown = (e: React.PointerEvent) => {
-    if (placed) return;
+  const open = chips.length === 2 && chips[0].word === "Выход" && chips[1].word === "Открыт";
+  useEffect(() => {
+    if (open) { const t = setTimeout(() => setWon(true), 700); return () => clearTimeout(t); }
+  }, [open]);
+
+  const onDown = (id: string) => (e: React.PointerEvent) => {
+    if (won || open) return;
     (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
-    startRef.current = { px: e.clientX, py: e.clientY, ox: drag?.x ?? 0, oy: drag?.y ?? 0 };
+    setActiveId(id);
+    setOff({ x: 0, y: 0 });
+    startRef.current = { px: e.clientX, py: e.clientY };
   };
   const onMove = (e: React.PointerEvent) => {
-    if (!startRef.current) return;
-    setDrag({ x: startRef.current.ox + (e.clientX - startRef.current.px), y: startRef.current.oy + (e.clientY - startRef.current.py) });
+    if (!startRef.current || !activeId) return;
+    setOff({ x: e.clientX - startRef.current.px, y: e.clientY - startRef.current.py });
   };
-  const onUp = (e: React.PointerEvent) => {
+  const onUp = (id: string) => (e: React.PointerEvent) => {
     if (!startRef.current) return;
     startRef.current = null;
-    const slot = slotRef.current?.getBoundingClientRect();
-    if (slot) {
-      const m = 28; // запас на промах
-      const over = e.clientX > slot.left - m && e.clientX < slot.right + m && e.clientY > slot.top - m && e.clientY < slot.bottom + m;
-      if (over) {
-        setPlaced(true);
-        setTimeout(() => setWon(true), 700);
-        return;
-      }
+    const m = 36;
+    const offscreen = e.clientX < m || e.clientX > window.innerWidth - m || e.clientY < m || e.clientY > window.innerHeight - m;
+    setActiveId(null);
+    setOff({ x: 0, y: 0 });
+    if (!offscreen) return; // перетасовка внутри — снап назад
+
+    const removed = chips.find((c) => c.id === id);
+    const rest = chips.filter((c) => c.id !== id);
+    if (removed?.word === "Не") {
+      setChips(rest); // останется «ВЫХОД ОТКРЫТ» → откроется
+    } else {
+      // выкинул нужное слово — так выход не собрать, вернуть всё
+      setFlash("Так выход не собрать.");
+      setTimeout(() => { setChips(INITIAL); setFlash(null); }, 900);
     }
-    setDrag({ x: 0, y: 0 }); // снап обратно
   };
 
   return (
@@ -56,60 +75,46 @@ export default function PraviloProto() {
       }} />
 
       {!won ? (
-        <div className="relative z-[1] w-full max-w-[460px] mx-auto flex flex-col items-center text-center select-none">
+        <div className="relative z-[1] w-full max-w-[520px] mx-auto flex flex-col items-center text-center select-none">
           <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-3">Прототип · B</p>
           <h1 className="font-p95 leading-[0.95] uppercase tracking-tight mb-8" style={{ fontSize: "clamp(28px, 5vw, 46px)" }}>
             Найди выход
           </h1>
 
-          {/* дверь */}
-          <div className={`w-24 h-32 rounded-lg border-2 mb-10 transition-all duration-500 ${placed ? "border-[#A6FF00] bg-[#A6FF00]/15 shadow-[0_0_50px_-8px_rgba(166,255,0,0.7)]" : "border-white/25 bg-white/[0.03]"}`} />
+          <div className={`w-24 h-32 rounded-lg border-2 mb-12 transition-all duration-500 ${open ? "border-[#A6FF00] bg-[#A6FF00]/15 shadow-[0_0_50px_-8px_rgba(166,255,0,0.7)]" : "border-white/25 bg-white/[0.03]"}`} />
 
           {/* правило из чипов */}
-          <div className="flex items-center gap-2.5 mb-12">
-            <Chip>Выход</Chip>
-            <span className="text-white/40 font-p95">—</span>
-            <span ref={slotRef} className="inline-block">
-              {placed ? <Chip accent>Открыт</Chip> : <Chip muted>Закрыт</Chip>}
-            </span>
+          <div className="flex items-center justify-center gap-2.5 flex-wrap min-h-[56px]">
+            {chips.map((c) => {
+              const active = c.id === activeId;
+              const accent = c.word === "Открыт";
+              const cls = accent
+                ? "border-[#A6FF00]/60 bg-[#A6FF00]/15 text-[#A6FF00]"
+                : "border-white/20 bg-white/[0.06] text-white/85";
+              return (
+                <div
+                  key={c.id}
+                  onPointerDown={onDown(c.id)}
+                  onPointerMove={onMove}
+                  onPointerUp={onUp(c.id)}
+                  onPointerCancel={onUp(c.id)}
+                  className={`touch-none cursor-grab active:cursor-grabbing inline-flex items-center px-4 py-2.5 rounded-md border font-p95 text-[15px] md:text-base tracking-[0.08em] uppercase ${cls} ${active ? "z-10 shadow-lg" : ""}`}
+                  style={active ? { transform: `translate(${off.x}px, ${off.y}px)`, transition: "none" } : { transition: "transform .2s ease" }}
+                >
+                  {c.word}
+                </div>
+              );
+            })}
           </div>
 
-          {/* свободный чип «ОТКРЫТ» */}
-          {!placed && (
-            <div
-              ref={chipRef}
-              onPointerDown={onDown}
-              onPointerMove={onMove}
-              onPointerUp={onUp}
-              onPointerCancel={onUp}
-              className="touch-none cursor-grab active:cursor-grabbing"
-              style={{ transform: `translate(${drag?.x ?? 0}px, ${drag?.y ?? 0}px)` }}
-            >
-              <Chip accent>Открыт</Chip>
-            </div>
-          )}
-
-          <p className="mt-10 text-[13px] text-[#C9A66B]/85 transition-opacity duration-700" style={{ opacity: hint && !placed ? 1 : 0 }}>
-            Правило можно переписать. Перетащи слово.
+          <p className="mt-10 text-[13px] text-[#C9A66B]/85 transition-opacity duration-700 min-h-[20px]" style={{ opacity: hint || flash ? 1 : 0 }}>
+            {flash ?? "Перетасовки тут не помогут. Лишнее — за край."}
           </p>
         </div>
       ) : (
-        <Won note="Ты переписал правило, а не стал ему подчиняться." />
+        <Won note="Ты не переставил слова, а выбросил лишнее за край." />
       )}
     </main>
-  );
-}
-
-function Chip({ children, accent, muted }: { children: React.ReactNode; accent?: boolean; muted?: boolean }) {
-  const cls = accent
-    ? "border-[#A6FF00]/60 bg-[#A6FF00]/15 text-[#A6FF00]"
-    : muted
-    ? "border-white/15 bg-white/[0.05] text-white/55"
-    : "border-white/20 bg-white/[0.06] text-white/85";
-  return (
-    <span className={`inline-flex items-center px-4 py-2.5 rounded-md border font-p95 text-[15px] md:text-base tracking-[0.08em] uppercase ${cls}`}>
-      {children}
-    </span>
   );
 }
 

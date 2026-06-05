@@ -5,9 +5,10 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 /**
- * Прототип C — «Код на виду» (ответ в «обвязке»; в духе Notpron).
- * Нужен 4-значный код. Перебором не взять, но он уже на экране — огромным
- * блёклым водяным знаком за клавиатурой. Трюк: заметить то, что игнорируешь.
+ * Прототип C-v2 — «Код на виду» (Notpron, усложнённый).
+ * Гигантского водяного знака больше нет. Код спрятан в «системной шапке»,
+ * которая выглядит как декоративная техничка: СЕКТОР 4 · УЗЕЛ 7 · ШЛЮЗ 1 · КЛЮЧ 9.
+ * Числа по порядку = 4719. Плюс заметный декой-номер, чтобы сбить.
  */
 const CODE = "4719";
 
@@ -18,7 +19,7 @@ export default function KodProto() {
   const [hint, setHint] = useState(false);
 
   useEffect(() => {
-    const id = setTimeout(() => setHint(true), 8000);
+    const id = setTimeout(() => setHint(true), 12000);
     return () => clearTimeout(id);
   }, []);
 
@@ -39,12 +40,12 @@ export default function KodProto() {
         background: "radial-gradient(ellipse 50% 40% at 50% 40%, rgba(166,255,0,0.06), transparent 60%)",
       }} />
 
-      {/* КОД НА ВИДУ — гигантский блёклый водяной знак за клавиатурой */}
+      {/* «системная шапка» — выглядит как декор, но числа по порядку и есть код */}
       {!won && (
-        <div aria-hidden className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none select-none">
-          <span className="font-p95 tracking-[0.2em] text-[#A6FF00]" style={{ fontSize: "min(42vw, 360px)", opacity: 0.05, lineHeight: 1 }}>
-            {CODE}
-          </span>
+        <div className="absolute top-[76px] left-0 right-0 z-[1] flex justify-center pointer-events-none">
+          <div className="font-mono text-[11px] md:text-[12px] tracking-[0.18em] uppercase text-white/30">
+            Сектор 4 · Узел 7 · Шлюз 1 · Ключ 9
+          </div>
         </div>
       )}
 
@@ -54,9 +55,9 @@ export default function KodProto() {
           <h1 className="font-p95 leading-[0.95] uppercase tracking-tight mb-2" style={{ fontSize: "clamp(26px, 5vw, 44px)" }}>
             Введи код
           </h1>
-          <p className="text-[13px] text-white/45 mb-8">Доступ закрыт · 4 цифры</p>
+          {/* декой — большой заметный номер, который НЕ код */}
+          <p className="text-[13px] text-white/40 mb-8">Терминал #0000 · доступ закрыт</p>
 
-          {/* дисплей */}
           <div className={`flex gap-3 mb-8 transition-transform ${wrong ? "translate-x-1" : ""}`} style={wrong ? { color: "#C9A66B" } : undefined}>
             {[0, 1, 2, 3].map((i) => (
               <div key={i} className={`w-12 h-14 rounded-md border flex items-center justify-center font-p95 text-2xl ${wrong ? "border-[#C9A66B]/60" : "border-white/20"} ${entry[i] ? "text-white" : "text-white/20"}`}>
@@ -65,7 +66,6 @@ export default function KodProto() {
             ))}
           </div>
 
-          {/* клавиатура */}
           <div className="grid grid-cols-3 gap-2.5">
             {["1","2","3","4","5","6","7","8","9"].map((d) => (
               <button key={d} type="button" onClick={() => push(d)}
@@ -75,17 +75,17 @@ export default function KodProto() {
             ))}
             <button type="button" onClick={back}
               className="w-16 h-16 rounded-md border border-white/12 bg-white/[0.03] text-white/45 text-sm hover:border-white/30 transition-colors">←</button>
-            <button key="0" type="button" onClick={() => push("0")}
+            <button type="button" onClick={() => push("0")}
               className="w-16 h-16 rounded-md border border-white/12 bg-white/[0.03] text-white/85 font-p95 text-xl hover:border-white/30 hover:bg-white/[0.07] transition-colors">0</button>
             <span className="w-16 h-16" />
           </div>
 
-          <p className="mt-8 text-[13px] text-[#C9A66B]/85 transition-opacity duration-700" style={{ opacity: hint ? 1 : 0 }}>
-            Код подбирать не нужно. Он уже на экране.
+          <p className="mt-8 text-[13px] text-[#C9A66B]/85 transition-opacity duration-700 min-h-[20px]" style={{ opacity: hint ? 1 : 0 }}>
+            Код подбирать не нужно. Прочитай шапку.
           </p>
         </div>
       ) : (
-        <Won note="Код был на виду — за клавиатурой. Ты просто его не замечал." />
+        <Won note="Код был в системной шапке: 4-7-1-9. Просто читался как декор." />
       )}
     </main>
   );
