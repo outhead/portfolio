@@ -3,6 +3,14 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import confetti from "canvas-confetti";
+
+function celebrate() {
+  const colors = ["#A6FF00", "#D9FF66", "#ECFFB3", "#FFFFFF"];
+  confetti({ particleCount: 130, spread: 100, startVelocity: 45, origin: { y: 0.6 }, colors, disableForReducedMotion: true });
+  setTimeout(() => confetti({ particleCount: 80, spread: 120, origin: { x: 0.25, y: 0.5 }, colors, disableForReducedMotion: true }), 200);
+  setTimeout(() => confetti({ particleCount: 80, spread: 120, origin: { x: 0.75, y: 0.5 }, colors, disableForReducedMotion: true }), 360);
+}
 
 // Шифр Цезаря на русском (33 буквы, ё включена).
 const ALPHABET = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя";
@@ -25,8 +33,9 @@ const ORIGINAL = "я очень люблю пасхалки. осо61енно к
 const CIPHER_SHIFT = 22; // зашифровали с +22 — правильный «дешифрующий» сдвиг тоже 22
 const ENCRYPTED = caesarShift(ORIGINAL, CIPHER_SHIFT);
 
-// Слайдер 0..SHIFT_MAX. Цифры в ORIGINAL (61) проходят через caesarShift как есть.
-const SHIFT_MAX = 70;
+// Слайдер 0..SHIFT_MAX. До 61 ползунком НЕ доехать — его вводят вручную
+// (клик по счётчику). Подсказка «61» спрятана в расшифрованной фразе: «осо61енно».
+const SHIFT_MAX = 46;
 
 // На особой позиции SECRET_SHIFT показываем бонусную фразу с буквами наоборот.
 const SECRET_SHIFT = 61;
@@ -71,6 +80,11 @@ export default function SecretPage() {
     return () => clearTimeout(t);
   }, [isAtSolution]);
 
+  // Конфети при попадании на 61 (вышел за рамки)
+  useEffect(() => {
+    if (isSecretFound) celebrate();
+  }, [isSecretFound]);
+
   // Подсказка появляется через 8 секунд, если пользователь не двигал слайдер
   const [showHint, setShowHint] = useState(false);
   useEffect(() => {
@@ -108,26 +122,16 @@ export default function SecretPage() {
             style={{ minHeight: "clamp(120px, 14vw, 240px)" }}
           >
             {isSecretFound ? (
-              <span className="block">
-                <Link
-                  href={QUEST2_HREF}
-                  data-ym-goal="quest2_open"
-                  className="group font-p95 leading-[1.05] uppercase tracking-tight inline no-underline cursor-pointer text-[#C9A66B] hover:text-[#A6FF00] transition-colors"
-                  style={{ fontSize: "clamp(28px, 5.2vw, 76px)" }}
-                >
-                  <span className="border-b-2 border-[#A6FF00]/70 group-hover:border-[#A6FF00] pb-1">
-                    {decoded}
-                  </span>
-                </Link>
-              </span>
+              <h1
+                className="font-p95 leading-[1.05] uppercase tracking-tight text-[#A6FF00] break-words"
+                style={{ fontSize: "clamp(36px, 6vw, 88px)" }}
+              >
+                Поздравляю
+              </h1>
             ) : (
               <h1
                 className={`font-p95 leading-[1.05] uppercase tracking-tight transition-colors duration-300 break-words ${
-                  isSolved
-                    ? "text-[#A6FF00]"
-                    : isSecretFound
-                    ? "text-[#C9A66B]"
-                    : "text-white"
+                  isSolved ? "text-[#A6FF00]" : "text-white"
                 }`}
                 style={{ fontSize: "clamp(28px, 5.2vw, 76px)" }}
               >
@@ -137,14 +141,26 @@ export default function SecretPage() {
           </div>
 
           {/* Слайдер */}
+          {!isSecretFound && (
           <div className="mt-10 md:mt-14 w-full max-w-2xl mx-auto">
             <div className="flex items-baseline justify-between mb-3">
               <span className="font-p95 text-[12px] md:text-[13px] tracking-[0.25em] uppercase text-white/40">
                 Сдвиг
               </span>
-              <span className="font-p95 text-[clamp(18px,2vw,28px)] tabular-nums text-white">
-                {decryptShift}
-              </span>
+              {/* Счётчик редактируемый: можно ввести число вручную (в т.ч. больше 46) */}
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={decryptShift}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/[^0-9]/g, "");
+                  setDecryptShift(Math.max(0, Math.min(99, Number(v || 0))));
+                }}
+                onFocus={(e) => e.currentTarget.select()}
+                aria-label="Ввести сдвиг вручную"
+                className="w-[2.5em] bg-transparent text-right font-p95 text-[clamp(18px,2vw,28px)] tabular-nums text-white outline-none border-b border-dashed border-white/35 focus:border-[#A6FF00]/80 cursor-text"
+              />
             </div>
 
             <input
@@ -169,7 +185,7 @@ export default function SecretPage() {
                 showHint && !isSolved && !isSecretFound ? "opacity-100" : "opacity-0"
               }`}
             >
-              Подсказка: настоящий сдвиг — двузначное число. Но если поедешь дальше, может, что-то найдёшь.
+              Подсказка: настоящий сдвиг — двузначное число. А по счётчику можно кликнуть и вписать число вручную.
             </p>
 
             {/* Сообщение после разгадки */}
@@ -189,6 +205,24 @@ export default function SecretPage() {
             ) : null}
 
           </div>
+          )}
+
+          {/* Празднование на 61 — вышел за рамки */}
+          {isSecretFound && (
+            <div className="mt-10 md:mt-12 flex flex-col items-center text-center">
+              <p className="text-base md:text-lg text-white/70 max-w-lg leading-relaxed">
+                Ты вышел за рамки. Но сможешь ли повторить свой успех?
+              </p>
+              <Link
+                href={QUEST2_HREF}
+                data-ym-goal="quest2_open"
+                className="mt-7 inline-flex items-center gap-2 px-7 py-3.5 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
+              >
+                <span className="leading-none translate-y-[1px]">Дальше</span>
+                <span className="leading-none">→</span>
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 
