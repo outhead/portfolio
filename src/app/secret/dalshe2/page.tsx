@@ -139,7 +139,7 @@ export default function Dalshe2() {
       <div
         key={i}
         ref={(el) => { cellRefs.current[i] = el; }}
-        onClick={() => { if (!v && !moved.current) place(i); }}
+        onClick={() => { if (moved.current) { moved.current = false; return; } if (!v) place(i); }}
         className="relative flex items-center justify-center"
         style={{ width: S, height: S, cursor: v ? "default" : over || thinking ? "default" : "pointer" }}
       >
