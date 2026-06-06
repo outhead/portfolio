@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import confetti from "canvas-confetti";
+import { markQuestStart } from "./leaderboard";
 
 function celebrate() {
   const colors = ["#A6FF00", "#D9FF66", "#ECFFB3", "#FFFFFF"];
@@ -79,6 +80,9 @@ export default function SecretPage() {
     const t = setTimeout(() => setIsSolved(true), SOLVE_CONFIRM_MS);
     return () => clearTimeout(t);
   }, [isAtSolution]);
+
+  // Старт квеста — фиксируем время входа в шифр (для финального лидерборда).
+  useEffect(() => { markQuestStart(); }, []);
 
   // Конфети при попадании на 61 (вышел за рамки)
   useEffect(() => {

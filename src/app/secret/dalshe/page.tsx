@@ -13,7 +13,6 @@ import confetti from "canvas-confetti";
 
 type Cell = "X" | "O";
 type Marks = Record<string, Cell>;
-type LbEntry = { name: string; timeMs: number; at: number };
 
 const X_COLOR = "#FF4040"; // крестики — красные
 const O_COLOR = "#A6FF00"; // нолики — зелёные
@@ -127,112 +126,6 @@ function humanWin(marks: Marks): string[] | null {
   return null;
 }
 
-// Дата и время разгадки — для таблицы «кто разгадал первым».
-function formatDateTime(ms: number): string {
-  try {
-    return new Date(ms).toLocaleString("ru-RU", {
-      day: "numeric",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return "";
-  }
-}
-
-// Общий лидерборд — Supabase (PostgREST) по публичному anon-ключу + RLS.
-// Сайт статический (output: "export"), поэтому пишем прямо из браузера.
-// Если env не задан или Supabase недоступен — фолбэк на localStorage,
-// чтобы флоу работал и без бэкенда.
-const LB_KEY = "secret_dalshe_leaderboard_v1";
-// Публичный anon-ключ Supabase — по дизайну безопасен в браузере (доступ ограничен
-// политиками RLS: читать всем, вставлять валидную запись, править/удалять нельзя).
-// env имеет приоритет, если когда-нибудь захочется переопределить.
-const SB_URL =
-  process.env.NEXT_PUBLIC_SUPABASE_URL ||
-  "https://hvkygaghhxgaolxemndr.supabase.co";
-const SB_KEY =
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2a3lnYWdoaHhnYW9seGVtbmRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzMDYwNjAsImV4cCI6MjA5NDg4MjA2MH0.IoRNKO3Jb51k1XA2y7-Q-PSaxpPhBj56G1SZJaKKau4";
-const hasSupabase = Boolean(SB_URL && SB_KEY);
-const SB_TABLE = "leaderboard";
-
-type SbRow = { name: string; time_ms: number; created_at: string };
-const rowToEntry = (r: SbRow): LbEntry => ({
-  name: r.name,
-  timeMs: r.time_ms,
-  at: Date.parse(r.created_at) || 0,
-});
-
-function loadLocal(): LbEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(LB_KEY);
-    const arr = raw ? (JSON.parse(raw) as LbEntry[]) : [];
-    if (!Array.isArray(arr)) return [];
-    return [...arr].sort((a, b) => a.at - b.at).slice(0, 10);
-  } catch {
-    return [];
-  }
-}
-
-function saveLocal(entry: LbEntry): LbEntry[] {
-  if (typeof window === "undefined") return [entry];
-  try {
-    const raw = window.localStorage.getItem(LB_KEY);
-    const arr = raw ? (JSON.parse(raw) as LbEntry[]) : [];
-    const next = [...(Array.isArray(arr) ? arr : []), entry]
-      .sort((a, b) => a.at - b.at)
-      .slice(0, 50);
-    window.localStorage.setItem(LB_KEY, JSON.stringify(next));
-    return next.slice(0, 10);
-  } catch {
-    return [entry];
-  }
-}
-
-async function loadBoard(): Promise<LbEntry[]> {
-  if (!hasSupabase) return loadLocal();
-  try {
-    const res = await fetch(
-      `${SB_URL}/rest/v1/${SB_TABLE}?select=name,time_ms,created_at&order=created_at.asc&limit=10`,
-      { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }, cache: "no-store" }
-    );
-    if (!res.ok) throw new Error("sb");
-    const rows = (await res.json()) as SbRow[];
-    return rows.map(rowToEntry);
-  } catch {
-    return loadLocal();
-  }
-}
-
-async function saveScore(
-  entry: LbEntry
-): Promise<{ entries: LbEntry[]; atKey: number }> {
-  if (!hasSupabase) return { entries: saveLocal(entry), atKey: entry.at };
-  try {
-    const res = await fetch(`${SB_URL}/rest/v1/${SB_TABLE}`, {
-      method: "POST",
-      headers: {
-        apikey: SB_KEY,
-        Authorization: `Bearer ${SB_KEY}`,
-        "Content-Type": "application/json",
-        Prefer: "return=representation",
-      },
-      body: JSON.stringify({ name: entry.name, time_ms: entry.timeMs }),
-    });
-    if (!res.ok) throw new Error("sb");
-    const inserted = (await res.json()) as SbRow[];
-    const atKey = inserted[0]?.created_at
-      ? Date.parse(inserted[0].created_at)
-      : entry.at;
-    return { entries: await loadBoard(), atKey };
-  } catch {
-    return { entries: saveLocal(entry), atKey: entry.at };
-  }
-}
-
 const FIRST_MOVE: Marks = { "2,2": "O" };
 
 // Прорисовка штрихом.
@@ -334,14 +227,6 @@ export default function SecretDalshePage() {
   const [winLine, setWinLine] = useState<{ cells: string[]; color: string } | null>(null);
   const [round, setRound] = useState(0);
   const [phase, setPhase] = useState<Phase>("play");
-  const [winMs, setWinMs] = useState<number | null>(null);
-
-  // Лидерборд
-  const [entries, setEntries] = useState<LbEntry[]>([]);
-  const [name, setName] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [youAt, setYouAt] = useState<number | null>(null);
 
   const startRef = useRef<number | null>(null);
   const compTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -355,15 +240,12 @@ export default function SecretDalshePage() {
   }, []);
 
   function triggerWin(cells: string[]) {
-    const ms = Date.now() - (startRef.current ?? Date.now());
-    setWinMs(ms);
     setOver(true);
     setWon(true);
     setWinLine({ cells, color: WIN_COLOR });
     setStatus("Победа");
     setPhase("celebrate");
     celebrate();
-    loadBoard().then(setEntries);
     phaseTimer.current = setTimeout(() => setPhase("score"), 1500);
   }
 
@@ -416,21 +298,6 @@ export default function SecretDalshePage() {
     }, 520);
   }
 
-  async function submitScore() {
-    if (submitting || submitted || winMs == null) return;
-    setSubmitting(true);
-    const entry: LbEntry = {
-      name: (name.trim() || "Гость").slice(0, 20),
-      timeMs: winMs,
-      at: Date.now(),
-    };
-    const { entries: top, atKey } = await saveScore(entry);
-    setEntries(top);
-    setYouAt(atKey);
-    setSubmitted(true);
-    setSubmitting(false);
-  }
-
   function reset() {
     if (compTimer.current) clearTimeout(compTimer.current);
     if (phaseTimer.current) clearTimeout(phaseTimer.current);
@@ -443,11 +310,6 @@ export default function SecretDalshePage() {
     setStatus("");
     setRound((x) => x + 1);
     setPhase("play");
-    setWinMs(null);
-    setName("");
-    setSubmitting(false);
-    setSubmitted(false);
-    setYouAt(null);
   }
 
   const board = (
@@ -518,63 +380,9 @@ export default function SecretDalshePage() {
               Победа
             </h1>
 
-            {!submitted ? (
-              <div className="w-full flex flex-col sm:flex-row items-stretch gap-2.5 mb-8">
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") submitScore();
-                  }}
-                  maxLength={20}
-                  placeholder="Твоё имя"
-                  aria-label="Твоё имя для таблицы лидеров"
-                  className="flex-1 bg-white/[0.06] border border-white/15 rounded-full px-5 py-3 text-[15px] text-white text-center sm:text-left placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors"
-                />
-                <button
-                  type="button"
-                  onClick={submitScore}
-                  disabled={submitting}
-                  className="inline-flex items-center justify-center px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[14px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors disabled:opacity-50"
-                >
-                  <span className="leading-none translate-y-[1px]">
-                    {submitting ? "..." : "Отправить"}
-                  </span>
-                </button>
-              </div>
-            ) : null}
-
-            {entries.length > 0 ? (
-              <div className="w-full max-w-[360px] mx-auto mb-8">
-                <p className="font-p95 text-[11px] tracking-[0.25em] uppercase text-white/35 mb-3 text-center">
-                  Кто разгадал первым
-                </p>
-                <ol className="text-left">
-                  {entries.map((e, i) => {
-                    const mine = youAt != null && e.at === youAt;
-                    return (
-                      <li
-                        key={`${e.at}-${i}`}
-                        className={`flex items-center gap-3 py-2 border-b border-white/[0.05] ${
-                          mine ? "text-[#A6FF00]" : "text-white/80"
-                        }`}
-                      >
-                        <span className="font-p95 tabular-nums text-[13px] w-5 text-white/35">
-                          {i + 1}
-                        </span>
-                        <span className="flex-1 text-[15px] truncate">{e.name}</span>
-                        <span className="text-[12px] text-white/45 whitespace-nowrap">
-                          {formatDateTime(e.at)}
-                        </span>
-                      </li>
-                    );
-                  })}
-                </ol>
-              </div>
-            ) : !submitted ? (
-              <p className="text-sm text-white/40 mb-8">Разгадай первым.</p>
-            ) : null}
+            <p className="text-sm md:text-[15px] text-white/60 mb-8 max-w-xs">
+              Ты выиграл там, где выиграть нельзя. Дальше — сложнее.
+            </p>
 
             <div className="flex flex-wrap items-center justify-center gap-3">
               <Link

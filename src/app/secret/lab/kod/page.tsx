@@ -3,20 +3,43 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import confetti from "canvas-confetti";
+import {
+  loadBoard,
+  saveScore,
+  fmtQuestTime,
+  questElapsed,
+  clearQuestStart,
+  type LbEntry,
+} from "../../leaderboard";
 
 /**
- * Прототип C-v2 — «Код на виду» (Notpron, усложнённый).
- * Гигантского водяного знака больше нет. Код спрятан в «системной шапке»,
- * которая выглядит как декоративная техничка: СЕКТОР 4 · УЗЕЛ 7 · ШЛЮЗ 1 · КЛЮЧ 9.
- * Числа по порядку = 4719. Плюс заметный декой-номер, чтобы сбить.
+ * Финал квеста — «Код на виду» (Notpron). Код 4688 спрятан в заголовке вкладки.
+ * После ввода — финальный лидерборд по ВРЕМЕНИ ПРОХОЖДЕНИЯ ВСЕГО КВЕСТА.
+ * Текущие записи помечены как друзья/тестировщики (можно скрыть и увидеть остальных).
  */
 const CODE = "4688";
 
-export default function KodProto() {
+function celebrate() {
+  const colors = ["#A6FF00", "#D9FF66", "#ECFFB3", "#FFFFFF"];
+  confetti({ particleCount: 140, spread: 110, startVelocity: 45, origin: { y: 0.6 }, colors, disableForReducedMotion: true });
+  setTimeout(() => confetti({ particleCount: 80, spread: 120, origin: { x: 0.25, y: 0.5 }, colors, disableForReducedMotion: true }), 200);
+  setTimeout(() => confetti({ particleCount: 80, spread: 120, origin: { x: 0.75, y: 0.5 }, colors, disableForReducedMotion: true }), 360);
+}
+
+export default function KodFinal() {
   const [entry, setEntry] = useState("");
   const [won, setWon] = useState(false);
   const [wrong, setWrong] = useState(false);
   const [hint, setHint] = useState(false);
+
+  const [winMs, setWinMs] = useState<number | null>(null);
+  const [entries, setEntries] = useState<LbEntry[]>([]);
+  const [name, setName] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [youAt, setYouAt] = useState<number | null>(null);
+  const [othersOnly, setOthersOnly] = useState(false);
 
   useEffect(() => {
     const id = setTimeout(() => setHint(true), 12000);
@@ -28,11 +51,33 @@ export default function KodProto() {
     const next = entry + d;
     setEntry(next);
     if (next.length === 4) {
-      if (next === CODE) setTimeout(() => setWon(true), 150);
-      else { setWrong(true); setTimeout(() => { setWrong(false); setEntry(""); }, 600); }
+      if (next === CODE) {
+        setTimeout(() => {
+          setWinMs(questElapsed());
+          setWon(true);
+          celebrate();
+          loadBoard().then(setEntries);
+        }, 150);
+      } else {
+        setWrong(true);
+        setTimeout(() => { setWrong(false); setEntry(""); }, 600);
+      }
     }
   };
   const back = () => setEntry((e) => e.slice(0, -1));
+
+  async function submit() {
+    if (submitting || submitted || winMs == null) return;
+    setSubmitting(true);
+    const { entries: top, at } = await saveScore(name.trim() || "Гость", winMs);
+    setEntries(top);
+    setYouAt(at);
+    setSubmitted(true);
+    setSubmitting(false);
+    clearQuestStart(); // следующий заход — новый отсчёт
+  }
+
+  const shown = othersOnly ? entries.filter((e) => !e.tester) : entries;
 
   return (
     <main className="relative bg-black text-white overflow-y-auto flex flex-col items-center px-5 pt-[88px] pb-16" style={{ minHeight: "100dvh" }}>
@@ -42,11 +87,10 @@ export default function KodProto() {
 
       {!won ? (
         <div className="relative z-[1] w-full max-w-[320px] mx-auto flex flex-col items-center text-center select-none">
-          <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-3">Прототип · C</p>
+          <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-3">Загадка №3 · финал</p>
           <h1 className="font-p95 leading-[0.95] uppercase tracking-tight mb-2" style={{ fontSize: "clamp(26px, 5vw, 44px)" }}>
             Введи код
           </h1>
-          {/* декой — большой заметный номер, который НЕ код */}
           <p className="text-[13px] text-white/40 mb-8">Терминал #0000 · доступ закрыт</p>
 
           <div className={`flex gap-3 mb-8 transition-transform ${wrong ? "translate-x-1" : ""}`} style={wrong ? { color: "#C9A66B" } : undefined}>
@@ -76,24 +120,68 @@ export default function KodProto() {
           </p>
         </div>
       ) : (
-        <Won note="Код был в заголовке вкладки: Сектор 4 · Узел 6 · Шлюз 8 · Ключ 8 → 4688." />
+        <div className="relative z-[1] w-full max-w-[440px] mx-auto flex flex-col items-center text-center">
+          <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-3">Квест пройден</p>
+          <h1 className="font-p95 leading-none uppercase tracking-tight text-[#A6FF00] mb-4" style={{ fontSize: "clamp(40px, 11vw, 76px)" }}>
+            Доступ
+          </h1>
+          {winMs != null ? (
+            <p className="text-[15px] text-white/80 mb-8">
+              Весь квест за <span className="text-[#A6FF00] tabular-nums">{fmtQuestTime(winMs)}</span>
+            </p>
+          ) : (
+            <p className="text-sm text-white/50 mb-8">Код был в заголовке вкладки. (Время не засчитано — квест начат не с шифра.)</p>
+          )}
+
+          {winMs != null && !submitted ? (
+            <div className="w-full flex flex-col sm:flex-row items-stretch gap-2.5 mb-8">
+              <input
+                type="text" value={name} onChange={(e) => setName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") submit(); }}
+                maxLength={20} placeholder="Твоё имя" aria-label="Имя для таблицы лидеров"
+                className="flex-1 bg-white/[0.06] border border-white/15 rounded-full px-5 py-3 text-[15px] text-white text-center sm:text-left placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors"
+              />
+              <button type="button" onClick={submit} disabled={submitting}
+                className="inline-flex items-center justify-center px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[14px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors disabled:opacity-50">
+                <span className="leading-none translate-y-[1px]">{submitting ? "..." : "В таблицу"}</span>
+              </button>
+            </div>
+          ) : null}
+
+          {entries.length > 0 ? (
+            <div className="w-full max-w-[380px] mx-auto mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <p className="font-p95 text-[11px] tracking-[0.22em] uppercase text-white/35">Быстрее всех</p>
+                <button type="button" onClick={() => setOthersOnly((v) => !v)}
+                  className="text-[11px] tracking-[0.08em] uppercase text-white/40 hover:text-[#A6FF00] transition-colors">
+                  {othersOnly ? "показать всех" : "скрыть друзей/тест."}
+                </button>
+              </div>
+              <ol className="text-left">
+                {shown.map((e, i) => {
+                  const mine = youAt != null && e.at === youAt;
+                  return (
+                    <li key={`${e.at}-${i}`} className={`flex items-center gap-3 py-2 border-b border-white/[0.05] ${mine ? "text-[#A6FF00]" : "text-white/80"}`}>
+                      <span className="font-p95 tabular-nums text-[13px] w-5 text-white/35">{i + 1}</span>
+                      <span className="flex-1 text-[15px] truncate">
+                        {e.name}
+                        {e.tester ? <span className="ml-2 text-[10px] tracking-[0.1em] uppercase text-[#C9A66B]/70 align-middle">друг/тест</span> : null}
+                      </span>
+                      <span className="text-[12px] text-white/45 whitespace-nowrap tabular-nums">{fmtQuestTime(e.timeMs)}</span>
+                    </li>
+                  );
+                })}
+                {shown.length === 0 ? <li className="py-2 text-sm text-white/35">Пока только друзья/тестировщики. Будь первым из остальных.</li> : null}
+              </ol>
+            </div>
+          ) : null}
+
+          <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[14px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
+            <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2.2} />
+            <span className="leading-none translate-y-[1px]">На главную</span>
+          </Link>
+        </div>
       )}
     </main>
-  );
-}
-
-function Won({ note }: { note: string }) {
-  return (
-    <div className="relative z-[1] w-full max-w-[420px] mx-auto flex flex-col items-center text-center">
-      <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-4">Разгадал</p>
-      <h1 className="font-p95 leading-none uppercase tracking-tight text-[#A6FF00] mb-5" style={{ fontSize: "clamp(40px, 11vw, 76px)" }}>
-        Доступ
-      </h1>
-      <p className="text-sm text-white/60 mb-8 max-w-xs">{note}</p>
-      <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[14px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
-        <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2.2} />
-        <span className="leading-none translate-y-[1px]">На главную</span>
-      </Link>
-    </div>
   );
 }
