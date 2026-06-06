@@ -50,7 +50,9 @@ function celebrate() {
 export default function Dalshe3() {
   const [marks, setMarks] = useState<M[]>(START);
   const [solved, setSolved] = useState(false);
+  const [lost, setLost] = useState(false);
   const [thinking, setThinking] = useState(false);
+  const over = solved || lost;
 
   const [dragId, setDragId] = useState<number | null>(null);
   const [off, setOff] = useState({ x: 0, y: 0 });
@@ -62,22 +64,30 @@ export default function Dalshe3() {
 
   useEffect(() => () => { if (compTimer.current) clearTimeout(compTimer.current); }, []);
 
+  // победа компьютера (3 O) = проигрыш
+  useEffect(() => {
+    if (over) return;
+    if (win9(marks) === "O") setLost(true);
+  }, [marks, over]);
+
   const place = (i: number) => {
-    if (solved || thinking || marks[i]) return;
-    const next = [...marks]; next[i] = "X"; setMarks(next);
-    if (win9(next) || next.every((x) => x)) return;
+    if (over || thinking || marks[i]) return;
+    setMarks((prev) => { const n = [...prev]; n[i] = "X"; return n; });
     setThinking(true);
     compTimer.current = setTimeout(() => {
-      const mv = minimax([...next], true);
-      const after = [...next];
-      if (mv.i != null) after[mv.i] = "O";
-      setMarks(after);
+      setMarks((prev) => {
+        if (win9(prev) || prev.every((x) => x)) return prev;
+        const mv = minimax([...prev], true);
+        const after = [...prev];
+        if (mv.i != null) after[mv.i] = "O";
+        return after;
+      });
       setThinking(false);
     }, 460);
   };
 
   const onDown = (i: number) => (e: React.PointerEvent) => {
-    if (solved || !marks[i]) return;
+    if (over || thinking || !marks[i]) return;
     (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
     setDragId(i); setOff({ x: 0, y: 0 }); moved.current = false;
     dragStart.current = { px: e.clientX, py: e.clientY };
@@ -126,7 +136,7 @@ export default function Dalshe3() {
 
   const reset = () => {
     if (compTimer.current) clearTimeout(compTimer.current);
-    setMarks(START()); setSolved(false); setThinking(false); setDragId(null); setOff({ x: 0, y: 0 });
+    setMarks(START()); setSolved(false); setLost(false); setThinking(false); setDragId(null); setOff({ x: 0, y: 0 });
   };
 
   const S = "min(18vw, 10.4vh, 92px)";
@@ -139,7 +149,7 @@ export default function Dalshe3() {
         ref={(el) => { cellRefs.current[i] = el; }}
         onClick={() => { if (!v && !moved.current) place(i); }}
         className="relative flex items-center justify-center"
-        style={{ width: S, height: S, cursor: v ? "default" : solved || thinking ? "default" : "pointer" }}
+        style={{ width: S, height: S, cursor: v ? "default" : over || thinking ? "default" : "pointer" }}
       >
         {v && (
           <div
@@ -196,8 +206,12 @@ export default function Dalshe3() {
             <div aria-hidden className="absolute left-0 right-0 bg-white/20" style={{ top: `calc(${S} * 2 - 1px)`, height: 2 }} />
           </div>
 
+          {lost ? (
+            <p className="mt-5 text-sm text-[#C9A66B]">Компьютер собрал свою линию. Начни заново.</p>
+          ) : null}
+
           <button type="button" onClick={reset}
-            className="mt-8 inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white/70 font-p95 text-[14px] tracking-[0.12em] uppercase hover:border-white/40 hover:text-white transition-colors">
+            className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white/70 font-p95 text-[14px] tracking-[0.12em] uppercase hover:border-white/40 hover:text-white transition-colors">
             <span className="leading-none translate-y-[1px]">Начать заново</span>
           </button>
         </div>

@@ -92,13 +92,6 @@ export default function SecretPage() {
     return () => clearTimeout(t);
   }, []);
 
-  // Подсказка про ручной ввод по счётчику — только если человек на странице >1 минуты
-  const [showCounterHint, setShowCounterHint] = useState(false);
-  useEffect(() => {
-    const t = setTimeout(() => setShowCounterHint(true), 60000);
-    return () => clearTimeout(t);
-  }, []);
-
   return (
     <main
       className="relative bg-black text-white overflow-hidden flex flex-col"
@@ -207,7 +200,7 @@ export default function SecretPage() {
                 showHint && !isSolved && !isSecretFound ? "opacity-100" : "opacity-0"
               }`}
             >
-              Подсказка: настоящий сдвиг — двузначное число.{showCounterHint ? " А по счётчику можно кликнуть и вписать число вручную." : ""}
+              Подсказка: настоящий сдвиг — двузначное число.
             </p>
 
             {/* Сообщение после разгадки */}
@@ -215,6 +208,9 @@ export default function SecretPage() {
               <div className="mt-8 md:mt-10 flex flex-col items-center text-center">
                 <p className="text-sm md:text-[15px] text-white/65 max-w-lg">
                   Это ещё не конец, скорее самое начало. Ну разве что ты не решишь сдаться.
+                </p>
+                <p className="mt-3 text-[13px] md:text-sm text-[#C9A66B]/90 max-w-lg">
+                  Видишь число в строке? Впиши его в счётчик сдвига.
                 </p>
                 <Link
                   href="/"
