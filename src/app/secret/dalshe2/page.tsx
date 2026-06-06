@@ -182,7 +182,7 @@ export default function Dalshe2() {
 
       {!won ? (
         <div className="relative z-[1] w-full max-w-[460px] mx-auto flex flex-col items-center text-center">
-          <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-3">Крестики-нолики · Загадка №2</p>
+          <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-3">Крестики-нолики · Загадка №3</p>
           <h1 className="font-p95 leading-[0.95] uppercase tracking-tight mb-3" style={{ fontSize: "clamp(26px, 5vw, 46px)" }}>
             Обыграй компьютер
           </h1>

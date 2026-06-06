@@ -6,12 +6,17 @@ import { ArrowLeft } from "lucide-react";
 import confetti from "canvas-confetti";
 import {
   loadBoard,
+  loadFeedback,
   saveScore,
   fmtQuestTime,
   questElapsed,
   clearQuestStart,
   type LbEntry,
+  type FbEntry,
 } from "../../leaderboard";
+
+// Телеграм-канал для кнопки «подписаться» и вейтлиста. Пусто → кнопка скрыта.
+const TG_CHANNEL = "";
 
 /**
  * Финал квеста — «Код на виду» (Notpron). Код 4688 спрятан в заголовке вкладки.
@@ -35,7 +40,11 @@ export default function KodFinal() {
 
   const [winMs, setWinMs] = useState<number | null>(null);
   const [entries, setEntries] = useState<LbEntry[]>([]);
+  const [fb, setFb] = useState<FbEntry[]>([]);
   const [name, setName] = useState("");
+  const [telegram, setTelegram] = useState("");
+  const [feedback, setFeedback] = useState("");
+  const [publish, setPublish] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [youAt, setYouAt] = useState<number | null>(null);
@@ -57,6 +66,7 @@ export default function KodFinal() {
           setWon(true);
           celebrate();
           loadBoard().then(setEntries);
+          loadFeedback().then(setFb);
         }, 150);
       } else {
         setWrong(true);
@@ -69,11 +79,16 @@ export default function KodFinal() {
   async function submit() {
     if (submitting || submitted || winMs == null) return;
     setSubmitting(true);
-    const { entries: top, at } = await saveScore(name.trim() || "Гость", winMs);
+    const { entries: top, at } = await saveScore(name.trim() || "Гость", winMs, {
+      telegram: telegram.trim(),
+      feedback: feedback.trim(),
+      published: publish,
+    });
     setEntries(top);
     setYouAt(at);
     setSubmitted(true);
     setSubmitting(false);
+    if (feedback.trim() && publish) loadFeedback().then(setFb); // обновить доску своим отзывом
     clearQuestStart(); // следующий заход — новый отсчёт
   }
 
@@ -87,7 +102,7 @@ export default function KodFinal() {
 
       {!won ? (
         <div className="relative z-[1] w-full max-w-[320px] mx-auto flex flex-col items-center text-center select-none">
-          <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-3">Загадка №3 · финал</p>
+          <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-3">Загадка №5 · финал</p>
           <h1 className="font-p95 leading-[0.95] uppercase tracking-tight mb-2" style={{ fontSize: "clamp(26px, 5vw, 44px)" }}>
             Введи код
           </h1>
@@ -134,17 +149,44 @@ export default function KodFinal() {
           )}
 
           {winMs != null && !submitted ? (
-            <div className="w-full flex flex-col sm:flex-row items-stretch gap-2.5 mb-8">
+            <div className="w-full max-w-[420px] mx-auto flex flex-col gap-2.5 mb-8 text-left">
               <input
                 type="text" value={name} onChange={(e) => setName(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") submit(); }}
                 maxLength={20} placeholder="Твоё имя" aria-label="Имя для таблицы лидеров"
-                className="flex-1 bg-white/[0.06] border border-white/15 rounded-full px-5 py-3 text-[15px] text-white text-center sm:text-left placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors"
+                className="bg-white/[0.06] border border-white/15 rounded-full px-5 py-3 text-[15px] text-white placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors"
               />
+              <input
+                type="text" value={telegram} onChange={(e) => setTelegram(e.target.value)}
+                maxLength={80} placeholder="Телеграм для вейтлиста (необязательно)" aria-label="Телеграм для вейтлиста"
+                className="bg-white/[0.06] border border-white/15 rounded-full px-5 py-3 text-[15px] text-white placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors"
+              />
+              <p className="text-[12px] text-white/35 px-1 -mt-1">Напишу туда, когда выйдут новые игры. Прошедшим — тесты и приятные штуки.</p>
+              <textarea
+                value={feedback} onChange={(e) => setFeedback(e.target.value)}
+                maxLength={500} rows={3} placeholder="Пожелание или фидбэк (необязательно)" aria-label="Фидбэк"
+                className="bg-white/[0.06] border border-white/15 rounded-2xl px-5 py-3 text-[15px] text-white placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors resize-none"
+              />
+              <label className="flex items-center gap-2.5 px-1 text-[13px] text-white/55 cursor-pointer select-none">
+                <input type="checkbox" checked={publish} onChange={(e) => setPublish(e.target.checked)}
+                  className="w-4 h-4 accent-[#A6FF00] cursor-pointer" />
+                Опубликовать на доске прошедших
+              </label>
               <button type="button" onClick={submit} disabled={submitting}
-                className="inline-flex items-center justify-center px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[14px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors disabled:opacity-50">
-                <span className="leading-none translate-y-[1px]">{submitting ? "..." : "В таблицу"}</span>
+                className="mt-1 inline-flex items-center justify-center px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[14px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors disabled:opacity-50">
+                <span className="leading-none translate-y-[1px]">{submitting ? "..." : "Отправить"}</span>
               </button>
+            </div>
+          ) : null}
+
+          {submitted ? (
+            <div className="w-full max-w-[420px] mx-auto mb-8 flex flex-col items-center text-center gap-3">
+              <p className="text-[15px] text-white/75">Записал. {telegram.trim() ? "Добавлю в вейтлист." : ""} Спасибо, что дошёл.</p>
+              {TG_CHANNEL ? (
+                <a href={TG_CHANNEL} target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[13px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
+                  <span className="leading-none translate-y-[1px]">Подписаться на канал</span>
+                </a>
+              ) : null}
             </div>
           ) : null}
 
@@ -173,6 +215,20 @@ export default function KodFinal() {
                 })}
                 {shown.length === 0 ? <li className="py-2 text-sm text-white/35">Пока только друзья/тестировщики. Будь первым из остальных.</li> : null}
               </ol>
+            </div>
+          ) : null}
+
+          {fb.length > 0 ? (
+            <div className="w-full max-w-[420px] mx-auto mb-8 text-left">
+              <p className="font-p95 text-[11px] tracking-[0.22em] uppercase text-white/35 mb-3">Стена прошедших</p>
+              <div className="flex flex-col gap-2.5">
+                {fb.map((f, i) => (
+                  <div key={`${f.at}-${i}`} className="rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-3">
+                    <p className="text-[14px] text-white/80 leading-snug break-words">{f.feedback}</p>
+                    <p className="mt-1.5 text-[11px] text-white/35">— {f.name}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           ) : null}
 

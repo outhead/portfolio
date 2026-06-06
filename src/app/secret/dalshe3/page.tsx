@@ -52,7 +52,13 @@ export default function Dalshe3() {
   const [solved, setSolved] = useState(false);
   const [lost, setLost] = useState(false);
   const [thinking, setThinking] = useState(false);
+  const [hint, setHint] = useState(false);
   const over = solved || lost;
+
+  useEffect(() => {
+    const t = setTimeout(() => setHint(true), 9000);
+    return () => clearTimeout(t);
+  }, []);
 
   const [dragId, setDragId] = useState<number | null>(null);
   const [off, setOff] = useState({ x: 0, y: 0 });
@@ -190,10 +196,10 @@ export default function Dalshe3() {
 
       {!solved ? (
         <div className="relative z-[1] w-full max-w-[480px] mx-auto flex flex-col items-center text-center">
-          <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-5">Крестики-нолики · Загадка №2</p>
+          <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-5">Крестики-нолики · Загадка №4</p>
 
           <h1 className="font-p95 leading-[1.05] uppercase tracking-tight mb-10" style={{ fontSize: "clamp(26px, 5vw, 48px)" }}>
-            Этого <span ref={neRef}>не</span> достаточно
+            Это <span ref={neRef}>не</span> решение
           </h1>
 
           <div className="relative" style={{ width: `calc(${S} * 3)`, height: `calc(${S} * 3)` }}>
@@ -210,6 +216,10 @@ export default function Dalshe3() {
             <p className="mt-5 text-sm text-[#C9A66B]">Компьютер собрал свою линию. Начни заново.</p>
           ) : null}
 
+          <p className="mt-5 text-[13px] text-[#C9A66B]/85 max-w-xs transition-opacity duration-700" style={{ opacity: hint && !over ? 1 : 0 }}>
+            Условия менять нельзя. Это было бы нечестно.
+          </p>
+
           <button type="button" onClick={reset}
             className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white/70 font-p95 text-[14px] tracking-[0.12em] uppercase hover:border-white/40 hover:text-white transition-colors">
             <span className="leading-none translate-y-[1px]">Начать заново</span>
@@ -217,11 +227,11 @@ export default function Dalshe3() {
         </div>
       ) : (
         <div className="relative z-[1] w-full max-w-[420px] mx-auto flex flex-col items-center text-center">
-          <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-4">Этого достаточно</p>
+          <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-4">Это решение</p>
           <h1 className="font-p95 leading-none uppercase tracking-tight text-[#A6FF00] mb-5" style={{ fontSize: "clamp(36px, 10vw, 68px)" }}>
-            Достаточно
+            Решение
           </h1>
-          <p className="text-sm text-white/60 mb-8 max-w-xs">Ты закрыл «не» — и условие сменилось.</p>
+          <p className="text-sm text-white/60 mb-8 max-w-xs">Ты убрал «не» — и это стало решением.</p>
           <Link href="/secret/lab/kod" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[14px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
             <span className="leading-none translate-y-[1px]">К терминалу</span><span className="leading-none">→</span>
           </Link>

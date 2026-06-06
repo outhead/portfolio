@@ -227,6 +227,7 @@ export default function SecretDalshePage() {
   const [winLine, setWinLine] = useState<{ cells: string[]; color: string } | null>(null);
   const [round, setRound] = useState(0);
   const [phase, setPhase] = useState<Phase>("play");
+  const [lostOnce, setLostOnce] = useState(false); // проиграл/ничья хотя бы раз → показать «за пределами поля»
 
   const startRef = useRef<number | null>(null);
   const compTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -238,6 +239,11 @@ export default function SecretDalshePage() {
       if (phaseTimer.current) clearTimeout(phaseTimer.current);
     };
   }, []);
+
+  // После первого проигрыша/ничьи — намёк, что играть нужно не по правилам поля.
+  useEffect(() => {
+    if (over && !won) setLostOnce(true);
+  }, [over, won]);
 
   function triggerWin(cells: string[]) {
     setOver(true);
@@ -439,6 +445,11 @@ export default function SecretDalshePage() {
                 {status ? (
                   <p className={`mt-5 text-sm md:text-[15px] ${won ? "text-[#A6FF00]" : "text-white/70"}`}>
                     {status}
+                  </p>
+                ) : null}
+                {lostOnce && !won ? (
+                  <p className="mt-3 text-[13px] md:text-sm text-[#C9A66B]/90 max-w-xs">
+                    Честно его не обыграть. Думай за пределами поля.
                   </p>
                 ) : null}
                 <button
