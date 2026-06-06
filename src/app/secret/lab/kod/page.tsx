@@ -116,7 +116,7 @@ export default function KodFinal() {
           </div>
 
           <p className="mt-8 text-[13px] text-[#C9A66B]/85 transition-opacity duration-700 min-h-[20px]" style={{ opacity: hint ? 1 : 0 }}>
-            Код подбирать не нужно. Посмотри на заголовок вкладки.
+            Код подбирать не нужно. Разгадка под носом.
           </p>
         </div>
       ) : (
