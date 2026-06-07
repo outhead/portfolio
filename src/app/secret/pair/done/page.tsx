@@ -24,7 +24,14 @@ export default function PairDone() {
         <p className="text-[15px] text-white/70 max-w-sm leading-relaxed mb-8">
           Это нельзя было пройти одному. Спасибо вам обоим — и тому, кто видел, и тому, кто щёлкал.
         </p>
-        <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[14px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
+        <div className="mb-8 flex flex-col items-center">
+          <p className="text-[13px] text-white/45 mb-3 max-w-xs">Раз уж вы вдвоём — сыграйте.</p>
+          <Link href="/secret/pong" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[14px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
+            <span className="leading-none translate-y-[1px]">Пинг-понг</span><span className="leading-none">→</span>
+          </Link>
+        </div>
+
+        <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white/60 font-p95 text-[14px] tracking-[0.12em] uppercase hover:border-white/40 hover:text-white transition-colors no-underline">
           <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2.2} />
           <span className="leading-none translate-y-[1px]">На главную</span>
         </Link>
