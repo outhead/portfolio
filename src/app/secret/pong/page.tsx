@@ -83,6 +83,13 @@ export default function PongPage() {
     ch.on("broadcast", { event: "rematch" }, () => {
       if (roleRef.current === "host") startMatch();
     });
+    // явный хендшейк: гость объявился → хост начинает (надёжнее presence-sync)
+    ch.on("broadcast", { event: "hello" }, () => {
+      if (roleRef.current === "host") {
+        if (phaseRef.current !== "playing") startMatch();
+        ch.send({ type: "broadcast", event: "hello", payload: {} }); // ack, чтобы гость знал
+      }
+    });
     ch.on("presence", { event: "sync" }, () => {
       const n = Object.keys(ch.presenceState()).length;
       const both = n >= 2;
@@ -98,6 +105,11 @@ export default function PongPage() {
       if (status === "SUBSCRIBED") {
         ch.track({ at: Date.now() });
         setPhaseBoth("waiting");
+        if (roleRef.current === "guest") {
+          // объявляемся хосту; повторим пару раз на случай гонки подписки
+          const hi = () => chRef.current?.send({ type: "broadcast", event: "hello", payload: {} });
+          hi(); setTimeout(hi, 600); setTimeout(hi, 1500);
+        }
       }
     });
 
