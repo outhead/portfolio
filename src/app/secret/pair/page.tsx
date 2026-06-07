@@ -24,13 +24,16 @@ function celebrate() {
 
 type Phase = "loading" | "viewer" | "controller" | "same_ip" | "full" | "error" | "done";
 
-function Row({ bits, target }: { bits: string; target?: string }) {
+// bits — что показываем (цель или текущее). Если передан compare — подсвечиваем
+// зелёным совпадающие позиции (для ряда «сейчас» сравниваем с целью).
+function Row({ bits, compare }: { bits: string; compare?: string }) {
   return (
     <div className="flex gap-2.5 justify-center">
       {Array.from({ length: LEN }).map((_, i) => {
         const on = bits[i] === "1";
-        const want = target ? target[i] === "1" : null;
-        const match = want === null ? false : on === want;
+        const match = compare ? bits[i] === compare[i] : null;
+        const labelColor =
+          match === null ? "rgba(255,255,255,0.4)" : match ? "#A6FF00" : "#C9A66B";
         return (
           <div key={i} className="flex flex-col items-center gap-1.5">
             <div
@@ -41,11 +44,9 @@ function Row({ bits, target }: { bits: string; target?: string }) {
                 boxShadow: on ? "0 0 10px rgba(166,255,0,0.5)" : "none",
               }}
             />
-            {target ? (
-              <span className="text-[10px]" style={{ color: match ? "#A6FF00" : "rgba(255,255,255,0.25)" }}>
-                {want ? "вкл" : "выкл"}
-              </span>
-            ) : null}
+            <span className="text-[10px]" style={{ color: labelColor }}>
+              {on ? "вкл" : "выкл"}
+            </span>
           </div>
         );
       })}
@@ -192,10 +193,10 @@ export default function PairPage() {
             </p>
 
             <p className="font-p95 text-[11px] tracking-[0.22em] uppercase text-white/35 mb-3">Цель</p>
-            <Row bits={"1".repeat(LEN)} target={target} />
+            <Row bits={target} />
 
             <p className="font-p95 text-[11px] tracking-[0.22em] uppercase text-white/35 mt-8 mb-3">Сейчас у напарника</p>
-            <Row bits={switches} target={target} />
+            <Row bits={switches} compare={target} />
 
             {!solved ? (
               <div className="mt-10 w-full flex flex-col items-center">
