@@ -68,7 +68,7 @@ function SectionLabel({
   const isLight = tone === "light";
   return (
     <div
-      className={`inline-flex items-center gap-1.5 font-p95 text-[15px] md:text-[16px] tracking-[0.2em] uppercase ${
+      className={`inline-flex items-center gap-1.5 font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase ${
         isLight ? "text-black/65" : "text-white/75"
       }`}
     >
@@ -405,7 +405,7 @@ function SkillsAccordion({ panels }: { panels: SkillPanel[] }) {
               className="absolute top-6 right-6 md:top-8 md:right-8 h-2 w-2 rounded-full"
               style={{ backgroundColor: p.accent }}
             />
-            <div className="inline-flex items-center gap-2 font-p95 text-[15px] md:text-[16px] tracking-[0.2em] uppercase text-white/75 mb-4">
+            <div className="inline-flex items-center gap-2 font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/75 mb-4">
               <p.Icon className="w-4 h-4" strokeWidth={1.75} style={{ color: p.accent }} />
               <span>{p.label}</span>
             </div>
@@ -618,14 +618,14 @@ function CareerHoverList() {
                 }`}
                 aria-hidden
               />
-              <span className="shrink-0 font-p95 text-[15px] tracking-[0.2em] uppercase text-white/70 w-[88px]">
+              <span className="shrink-0 font-p95 text-[13px] tracking-[0.2em] uppercase text-white/70 w-[88px]">
                 {job.year}
               </span>
               <span className="flex-1 min-w-0 flex flex-col">
-                <span className="font-p95 text-[15px] text-white uppercase leading-tight">
+                <span className="font-p95 text-[16px] text-white uppercase leading-tight">
                   {job.company}
                 </span>
-                <span className="text-[16px] text-white/72 leading-tight">
+                <span className="text-[14px] text-white/72 leading-tight">
                   {job.role}
                 </span>
               </span>
@@ -645,7 +645,7 @@ function CareerHoverList() {
                 }`}
                 aria-hidden
               />
-              <span className="shrink-0 font-p95 text-[16px] tracking-[0.2em] uppercase text-white/70 w-[110px]">
+              <span className="shrink-0 font-p95 text-[14px] tracking-[0.2em] uppercase text-white/70 w-[110px]">
                 {job.year}
               </span>
               <span className="flex-1 min-w-0 flex flex-row items-baseline gap-3">
@@ -801,7 +801,7 @@ function ServiceTile({ tile }: { tile: ServiceTileData }) {
             strokeWidth={1.75}
           />
           <span
-            className="font-p95 text-[12px] md:text-[15px] tracking-[0.22em] uppercase"
+            className="font-p95 text-[13px] md:text-[14px] tracking-[0.22em] uppercase"
             style={{ color: `${accent}CC` }}
           >
             ( {label} )
@@ -1007,7 +1007,7 @@ function Toolbox() {
             className="mb-8 md:mb-10 flex items-baseline gap-3"
           >
             <SectionLabel>ИНСТРУМЕНТЫ</SectionLabel>
-            <span className="text-[15px] md:text-[16px] text-white/40 tracking-[0.06em]">
+            <span className="text-[14px] md:text-[15px] text-white/40 tracking-[0.06em]">
               которые я использую каждый день
             </span>
           </motion.div>
@@ -1026,7 +1026,7 @@ function Toolbox() {
                 <div className="w-7 h-7 md:w-8 md:h-8 text-white/72 group-hover:text-white transition-colors">
                   {t.icon}
                 </div>
-                <span className="font-p95 text-[16px] md:text-[15px] tracking-[0.18em] uppercase text-white/70 group-hover:text-white transition-colors">
+                <span className="font-p95 text-[14px] md:text-[15px] tracking-[0.18em] uppercase text-white/70 group-hover:text-white transition-colors">
                   {t.name}
                 </span>
               </motion.div>
@@ -1102,14 +1102,14 @@ export default function PreviewHome() {
                 </div>
 
                 {/* Якорь — верхний правый угол: роль (md+; на мобиле — в строке ниже) */}
-                <div className="hidden md:block absolute top-6 right-6 md:top-10 md:right-10 lg:top-12 lg:right-12 z-[2] font-p95 text-[15px] md:text-[16px] tracking-[0.2em] uppercase text-white/70">
+                <div className="hidden md:block absolute top-6 right-6 md:top-10 md:right-10 lg:top-12 lg:right-12 z-[2] font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/70">
                   <span className="text-[#A6FF00]/80">[</span>
                   <span className="mx-2">Дизайн-директор</span>
                   <span className="text-[#A6FF00]/80">]</span>
                 </div>
 
                 {/* Мобильная строка под шапкой «Егор Шугаев»: слева роль, справа город */}
-                <div className="md:hidden absolute top-9 left-6 right-6 z-[2] flex items-center justify-between font-p95 text-[15px] tracking-[0.2em] uppercase text-white/70">
+                <div className="md:hidden absolute top-9 left-6 right-6 z-[2] flex items-center justify-between font-p95 text-[13px] tracking-[0.2em] uppercase text-white/70">
                   <span className="whitespace-nowrap">
                     <span className="text-[#A6FF00]/80">[</span>
                     <span className="mx-2">Дизайн-директор</span>
@@ -1120,7 +1120,7 @@ export default function PreviewHome() {
 
                 {/* Якорь — нижний левый угол: «Работал в» + лого (md+; на мобиле — в потоке под кнопками) */}
                 <div className="hidden md:flex absolute bottom-6 left-6 md:bottom-10 md:left-10 lg:bottom-12 lg:left-12 z-[2] items-end gap-8 md:gap-12 flex-wrap">
-                  <span className="font-p95 text-[15px] md:text-[16px] tracking-[0.2em] uppercase text-white/70 whitespace-nowrap">
+                  <span className="font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/70 whitespace-nowrap">
                     Работал в
                   </span>
                   <img src="/images/logos/ozon.svg" alt="Ozon" className="h-4 md:h-[22px] w-auto self-center brightness-0 invert opacity-55 hover:opacity-100 transition-opacity duration-200" />
@@ -1130,7 +1130,7 @@ export default function PreviewHome() {
                 </div>
 
                 {/* Якорь — нижний правый угол: город (md+; на мобиле — в строке под шапкой) */}
-                <div className="hidden md:block absolute bottom-6 right-6 md:bottom-10 md:right-10 lg:bottom-12 lg:right-12 z-[2] font-p95 text-[16px] md:text-[15px] tracking-[0.2em] uppercase text-white/70 whitespace-nowrap">
+                <div className="hidden md:block absolute bottom-6 right-6 md:bottom-10 md:right-10 lg:bottom-12 lg:right-12 z-[2] font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/70 whitespace-nowrap">
                   Москва
                 </div>
 
@@ -1177,7 +1177,7 @@ export default function PreviewHome() {
 
                     {/* Mobile-only: «Работал в» в потоке под кнопками — без перекрытия */}
                     <div className="md:hidden mt-2 flex flex-col gap-3">
-                      <span className="font-p95 text-[14px] tracking-[0.2em] uppercase text-white/70">
+                      <span className="font-p95 text-[13px] tracking-[0.2em] uppercase text-white/70">
                         Работал в
                       </span>
                       <div className="flex items-center gap-5 flex-wrap">
@@ -1230,7 +1230,7 @@ export default function PreviewHome() {
 
                   {/* Топ-метка */}
                   <div className="relative z-[1]">
-                    <span className="inline-flex items-center gap-2 font-p95 text-[16px] md:text-[15px] tracking-[0.2em] uppercase text-[#C9A66B] leading-none">
+                    <span className="inline-flex items-center gap-2 font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-[#C9A66B] leading-none">
                       <Trophy className="w-4 h-4 shrink-0" strokeWidth={1.75} />
                       Награда · 2024
                     </span>
@@ -1241,13 +1241,13 @@ export default function PreviewHome() {
                     <div className="font-p95 text-[clamp(40px,4.6vw,68px)] uppercase tracking-tight text-[#C9A66B] leading-[0.9]">
                       CX&apos;24
                     </div>
-                    <div className="text-[16px] md:text-[15px] tracking-[0.14em] uppercase text-white/75 mt-3 font-light">
+                    <div className="text-[13px] md:text-[14px] tracking-[0.14em] uppercase text-white/75 mt-3 font-light">
                       Customer Experience Awards
                     </div>
                   </div>
 
                   {/* Футер: победитель в сегменте, без стрелки */}
-                  <div className="relative z-[1] font-p95 text-[16px] md:text-[15px] tracking-[0.2em] uppercase text-[#C9A66B]/85 leading-none pt-3.5 border-t border-[#C9A66B]/15">
+                  <div className="relative z-[1] font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-[#C9A66B]/85 leading-none pt-3.5 border-t border-[#C9A66B]/15">
                     Победитель в сегменте B2E
                   </div>
                 </div>
@@ -1268,7 +1268,7 @@ export default function PreviewHome() {
                 <div className="relative h-full min-h-[260px] md:min-h-[280px] rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5 md:p-6 flex flex-col justify-between gap-5 overflow-hidden transition-all duration-300 group-hover:border-[#A6FF00]/40 group-hover:bg-white/[0.04]">
                   {/* Топ-метка */}
                   <div className="relative z-[1]">
-                    <span className="inline-flex items-center gap-2 font-p95 text-[16px] md:text-[15px] tracking-[0.2em] uppercase text-[#A6FF00] leading-none">
+                    <span className="inline-flex items-center gap-2 font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-[#A6FF00] leading-none">
                       <Compass className="w-4 h-4 shrink-0" strokeWidth={1.75} />
                       Экспертиза
                     </span>
@@ -1285,14 +1285,14 @@ export default function PreviewHome() {
                         key={item.num}
                         className="flex items-baseline gap-3"
                       >
-                        <span className="font-p95 text-[14px] md:text-[15px] tabular-nums tracking-[0.1em] text-white/45 leading-none w-6 shrink-0">
+                        <span className="font-p95 text-[13px] md:text-[14px] tabular-nums tracking-[0.1em] text-white/45 leading-none w-6 shrink-0">
                           {item.num}
                         </span>
                         <span className="flex-1 leading-tight">
                           <span className="font-p95 text-[16px] md:text-[17px] tracking-[0.18em] uppercase text-white">
                             {item.label}
                           </span>
-                          <span className="block text-[12px] md:text-[13px] tracking-[0.06em] uppercase text-white/72 font-light leading-snug mt-1">
+                          <span className="block text-[13px] tracking-[0.06em] uppercase text-white/72 font-light leading-snug mt-1">
                             {item.note}
                           </span>
                         </span>
@@ -1312,7 +1312,7 @@ export default function PreviewHome() {
                 {/* Топ-метка */}
                 <div className="flex items-center gap-2">
                   <BarChart3 className="w-4 h-4 shrink-0 text-white/70" strokeWidth={1.75} />
-                  <span className="font-p95 text-[15px] md:text-[16px] tracking-[0.2em] uppercase text-white/70 leading-none">
+                  <span className="font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/70 leading-none">
                     В цифрах
                   </span>
                 </div>
@@ -1333,7 +1333,7 @@ export default function PreviewHome() {
                       <div className="font-p95 text-[clamp(32px,3.6vw,52px)] uppercase tracking-tight text-white leading-none">
                         {item.value}
                       </div>
-                      <div className="text-[11px] md:text-[12px] tracking-[0.04em] uppercase text-white/72 leading-[1.4] font-light">
+                      <div className="text-[12px] md:text-[13px] tracking-[0.04em] uppercase text-white/72 leading-[1.4] font-light">
                         {item.label}
                       </div>
                     </div>
@@ -1380,14 +1380,14 @@ export default function PreviewHome() {
                 <div className="relative h-full min-h-[280px] md:min-h-[340px] rounded-2xl overflow-hidden border-2 border-white/[0.06] group-hover:border-[#A6FF00]/40 bg-[#0a0a0a] transition-colors duration-300 p-6 md:p-7 flex flex-col justify-between">
                   <PillsBackdrop />
                   <div className="relative z-[2]">
-                    <div className="font-p95 text-[16px] md:text-[15px] tracking-[0.2em] uppercase text-white/70 mb-3">
+                    <div className="font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/70 mb-3">
                       ЭКСПЕРИМЕНТЫ
                     </div>
                     <h3 className="font-p95 text-[clamp(22px,3vw,36px)] uppercase leading-[0.95] text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
                       Код,<br />WebGL,<br />шейдеры.
                     </h3>
                   </div>
-                  <span className="relative z-[2] inline-flex items-center gap-2 text-sm tracking-[0.1em] uppercase text-white/74 group-hover:text-[#A6FF00] transition-colors mt-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
+                  <span className="relative z-[2] inline-flex items-center gap-2 text-[13px] tracking-[0.1em] uppercase text-white/74 group-hover:text-[#A6FF00] transition-colors mt-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
                     Смотреть
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" strokeWidth={2} />
                   </span>
@@ -1603,8 +1603,8 @@ export default function PreviewHome() {
                     />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-sm text-white font-medium leading-tight">{t.name}</div>
-                    <div className="text-[15px] text-white/40 mt-1 leading-snug">{t.role}</div>
+                    <div className="text-[16px] text-white font-medium leading-tight">{t.name}</div>
+                    <div className="text-[13px] text-white/50 mt-1 leading-snug">{t.role}</div>
                   </div>
                 </div>
               </motion.div>
@@ -1656,17 +1656,17 @@ export default function PreviewHome() {
                       style={{ backgroundColor: t.accent }}
                     />
                     <div>
-                      <div className="inline-flex items-center font-p95 text-[15px] md:text-[16px] tracking-[0.2em] uppercase text-white/75 mb-4">
+                      <div className="inline-flex items-center font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/75 mb-4">
                         {t.label}
                       </div>
                       <h3 className="font-p95 text-[clamp(20px,2.6vw,32px)] uppercase leading-[1] text-white mb-4 max-w-sm">
                         {t.title}
                       </h3>
-                      <p className="text-sm md:text-[15px] text-white/72 leading-relaxed max-w-md">
+                      <p className="text-[15px] md:text-[16px] text-white/72 leading-relaxed max-w-md">
                         {t.body}
                       </p>
                     </div>
-                    <span className="inline-flex items-center gap-2 text-xs tracking-[0.1em] uppercase text-white/72 group-hover:text-white transition-colors mt-6 pt-5 border-t border-white/[0.06]">
+                    <span className="inline-flex items-center gap-2 text-[13px] tracking-[0.1em] uppercase text-white/72 group-hover:text-white transition-colors mt-6 pt-5 border-t border-white/[0.06]">
                       {t.cta}
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" strokeWidth={2} />
                     </span>
@@ -1710,7 +1710,7 @@ export default function PreviewHome() {
                   className="object-cover grayscale contrast-[1.05]"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4 flex items-center gap-1.5 text-[11px] tracking-[0.2em] uppercase text-white/74">
+                <div className="absolute bottom-4 left-4 right-4 flex items-center gap-1.5 text-[12px] tracking-[0.2em] uppercase text-white/74">
                   <span className="relative flex h-1.5 w-1.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
                     <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#A6FF00]" />
@@ -1722,13 +1722,13 @@ export default function PreviewHome() {
 
             <motion.div variants={fadeUp} className="flex flex-col">
               <div className="space-y-4 md:space-y-5 max-w-2xl">
-                <p className="text-sm md:text-[15px] text-white/70 leading-relaxed">
+                <p className="text-[15px] md:text-[16px] text-white/70 leading-relaxed">
                   Пришёл в дизайн из&nbsp;полиграфии и&nbsp;остался в&nbsp;нём по простой причине: мне нравится узнавать первопричины потребностей пользователей и&nbsp;решений бизнеса, искать провалы, растить людей и&nbsp;цифры. В&nbsp;какой-то момент это оказалось не побочным интересом, а&nbsp;рабочей профессией.
                 </p>
-                <p className="text-sm md:text-[15px] text-white/70 leading-relaxed">
+                <p className="text-[15px] md:text-[16px] text-white/70 leading-relaxed">
                   Сейчас мне интересна связка «дизайн и&nbsp;AI». Менторю дизайнеров и&nbsp;лидов, экспериментирую сам, пишу код. Иногда поделки получаются криво, но это часть процесса.
                 </p>
-                <p className="text-sm md:text-[15px] text-white/70 leading-relaxed">
+                <p className="text-[15px] md:text-[16px] text-white/70 leading-relaxed">
                   Работаю от&nbsp;задачи: строю и&nbsp;автоматизирую процессы, влезаю глубоко — от&nbsp;стратегии до&nbsp;ревью макетов. Задача руководителя, как я&nbsp;её вижу, — дать команде ясность: кто чем занят и&nbsp;зачем. Тогда люди действуют увереннее, а&nbsp;не на&nbsp;ощупь.
                 </p>
               </div>
@@ -1765,7 +1765,7 @@ export default function PreviewHome() {
               >
                 <div className="relative h-full min-h-[180px] md:min-h-[260px] rounded-2xl overflow-hidden border border-[#A6FF00]/30 bg-[#A6FF00] hover:bg-[#B8FF33] transition-colors p-6 md:p-8 flex flex-col justify-between">
                   <div className="flex items-start justify-between">
-                    <div className="font-p95 text-[15px] md:text-[16px] tracking-[0.2em] uppercase text-black/60">
+                    <div className="font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-black/60">
                       TELEGRAM
                     </div>
                     <Send className="w-5 h-5 md:w-6 md:h-6 text-black" strokeWidth={2} />
@@ -1774,7 +1774,7 @@ export default function PreviewHome() {
                     <div className="font-p95 text-[clamp(28px,4.5vw,56px)] uppercase leading-[0.95] text-black">
                       @egoradi
                     </div>
-                    <div className="mt-3 inline-flex items-center gap-2 text-[16px] md:text-[15px] tracking-[0.12em] uppercase text-black/70 group-hover:text-black transition-colors">
+                    <div className="mt-3 inline-flex items-center gap-2 text-[14px] md:text-[15px] tracking-[0.12em] uppercase text-black/70 group-hover:text-black transition-colors">
                       Написать
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" strokeWidth={2.2} />
                     </div>
@@ -1800,7 +1800,7 @@ export default function PreviewHome() {
                 >
                   <div className="relative h-full min-h-[120px] md:min-h-[130px] rounded-2xl overflow-hidden border border-white/[0.08] bg-white/[0.015] hover:border-white/[0.2] hover:bg-white/[0.035] transition-colors p-5 flex flex-col justify-between">
                     <div className="flex items-start justify-between">
-                      <div className="font-p95 text-[12px] md:text-[15px] tracking-[0.2em] uppercase text-white/70">
+                      <div className="font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/70">
                         {link.label.toUpperCase()}
                       </div>
                       <link.Icon className="w-4 h-4 text-white/45 group-hover:text-white transition-colors" strokeWidth={1.75} />
@@ -1821,7 +1821,7 @@ export default function PreviewHome() {
                   <h4 className="font-p95 text-[clamp(20px,2.4vw,30px)] uppercase tracking-[0.02em] text-white leading-none">
                     Москва, Россия
                   </h4>
-                  <div className="inline-flex items-center gap-2.5 font-p95 text-[12px] md:text-[15px] tracking-[0.22em] uppercase text-white/72">
+                  <div className="inline-flex items-center gap-2.5 font-p95 text-[13px] md:text-[14px] tracking-[0.22em] uppercase text-white/72">
                     <span className="relative inline-flex items-center justify-center w-3 h-3 shrink-0">
                       <span className="absolute inset-0 rounded-full bg-[#A6FF00]/30 animate-ping" />
                       <span className="relative w-2 h-2 rounded-full bg-[#A6FF00] shadow-[0_0_10px_#A6FF00]" />

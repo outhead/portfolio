@@ -2,12 +2,6 @@
 
 /* === FONTS === */
 @font-face {
-  font-family: "P95";
-  src: url("/fonts/P95-CYR-Regular.woff2") format("woff2");
-  font-display: swap;
-}
-
-@font-face {
   font-family: "Bebas Neue";
   src: url("/fonts/BebasNeue-Bold.woff2") format("woff2");
   font-weight: 700;
