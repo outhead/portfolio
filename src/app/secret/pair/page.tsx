@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import confetti from "canvas-confetti";
 import { pairCall, pairState } from "./pairApi";
 
@@ -282,10 +281,6 @@ export default function PairPage() {
             )}
           </>
         ) : null}
-
-        <Link href="/" className="mt-12 inline-flex items-center gap-1.5 text-[13px] text-white/30 hover:text-white/60 transition-colors no-underline">
-          <ArrowLeft className="w-3 h-3" strokeWidth={2.2} /> На главную
-        </Link>
       </div>
     </main>
   );

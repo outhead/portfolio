@@ -145,7 +145,7 @@ export default function SecretPage() {
                           return (
                             <>
                               {pre}
-                              <span className="underline decoration-[0.08em] underline-offset-[0.12em]">61</span>
+                              <span className="fill61 underline decoration-[0.08em] underline-offset-[0.12em]" style={{ textDecorationColor: "#A6FF00" }}>61</span>
                               {post}
                             </>
                           );

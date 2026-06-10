@@ -245,3 +245,29 @@ main {
 @media (max-width: 640px) {
   body.pong-immersive footer { display: none; }
 }
+
+/* Шифр: число 61 заполняется слева направо — то белым, то зелёным (раз в 2с),
+   чтобы притянуть внимание. Базовый цвет лайм, поверх по очереди сметаются
+   белая и зелёная заливки (background-clip:text). */
+.fill61 {
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  background-clip: text;
+  -webkit-background-clip: text;
+  background-repeat: no-repeat;
+  background-image:
+    linear-gradient(#a6ff00, #a6ff00),
+    linear-gradient(#ffffff, #ffffff),
+    linear-gradient(#a6ff00, #a6ff00);
+  background-position: left, left, left;
+  background-size: 0% 100%, 0% 100%, 100% 100%;
+  animation: fill61sweep 4s linear infinite;
+}
+@keyframes fill61sweep {
+  0%   { background-size: 0% 100%, 0% 100%, 100% 100%; }
+  50%  { background-size: 0% 100%, 100% 100%, 100% 100%; }
+  100% { background-size: 100% 100%, 100% 100%, 100% 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fill61 { animation: none; background-size: 0% 100%, 100% 100%, 100% 100%; }
+}

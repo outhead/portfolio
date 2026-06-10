@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import confetti from "canvas-confetti";
 import QuestBackground from "@/components/QuestBackground";
 
@@ -412,13 +411,6 @@ export default function SecretDalshePage() {
                 <span className="leading-none translate-y-[1px]">Сыграть снова</span>
               </button>
             </div>
-
-            <Link
-              href="/"
-              className="mt-4 inline-flex items-center gap-1.5 text-[13px] text-white/40 hover:text-white/70 transition-colors no-underline"
-            >
-              <ArrowLeft className="w-3 h-3" strokeWidth={2.2} /> На главную
-            </Link>
           </div>
         ) : (
           /* ─── Игра (ход / момент победы) ─── */
@@ -437,12 +429,12 @@ export default function SecretDalshePage() {
             ) : (
               <>
                 {/* Шапка фикс-высоты (плашка №2 — снаружи) → поле на одной высоте с L2/L3 */}
-                <div className="flex flex-col items-center" style={{ minHeight: "clamp(120px, 18vw, 170px)" }}>
+                <div className="flex flex-col items-center" style={{ minHeight: "clamp(78px, 12vw, 118px)" }}>
                   <h1 className="font-p95 leading-[0.95] uppercase tracking-tight mb-3" style={{ fontSize: "clamp(26px, 5vw, 46px)" }}>
                     Обыграй компьютер
                   </h1>
                   <p className="text-[13px] md:text-sm text-white/55 leading-relaxed max-w-sm">
-                    Играешь за крестики.<br />Собери три в ряд или по диагонали.<br />Компьютер ходит первым и не любит проигрывать.
+                    Компьютер ходит первым и не любит проигрывать.
                   </p>
                 </div>
                 {board}
@@ -455,7 +447,7 @@ export default function SecretDalshePage() {
                   <p className="mt-3 text-[13px] md:text-sm text-[#C9A66B]/90 max-w-xs">
                     {lossCount >= 2
                       ? "Поле не заканчивается на рамке. Кликни по клеткам снаружи и собери ряд там."
-                      : "Честно его не обыграть. Думай за пределами поля."}
+                      : "Честно его не обыграть. Мысли «out of the box»."}
                   </p>
                 ) : null}
                 <button

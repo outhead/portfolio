@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import confetti from "canvas-confetti";
 import QuestBackground from "@/components/QuestBackground";
 
@@ -185,13 +184,13 @@ export default function Dalshe2() {
       {!won ? (
         <div className="relative z-[1] w-full max-w-[460px] mx-auto flex flex-col items-center text-center">
           {/* Шапка фикс-высоты — чтобы поле во всех уровнях было на одной высоте */}
-          <div className="flex flex-col items-center" style={{ minHeight: "clamp(150px, 22vw, 200px)" }}>
+          <div className="flex flex-col items-center" style={{ minHeight: "clamp(108px, 17vw, 150px)" }}>
             <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-3">Крестики-нолики · Загадка №3</p>
             <h1 className="font-p95 leading-[0.95] uppercase tracking-tight mb-3" style={{ fontSize: "clamp(26px, 5vw, 46px)" }}>
               Обыграй компьютер
             </h1>
             <p className="text-[13px] md:text-sm text-white/55 leading-relaxed max-w-sm">
-              Играешь за крестики.<br />Собери три в ряд или по диагонали.<br />Компьютер ходит первым и не любит проигрывать.
+              Компьютер ходит первым и не любит проигрывать.
             </p>
           </div>
 
@@ -232,9 +231,6 @@ export default function Dalshe2() {
               <span className="leading-none translate-y-[1px]">Ещё раз</span>
             </button>
           </div>
-          <Link href="/" className="mt-5 inline-flex items-center gap-1.5 text-[13px] text-white/40 hover:text-white/70 transition-colors no-underline">
-            <ArrowLeft className="w-3 h-3" strokeWidth={2.2} /> На главную
-          </Link>
         </div>
       )}
     </main>

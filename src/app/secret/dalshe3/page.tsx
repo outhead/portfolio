@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import confetti from "canvas-confetti";
 import QuestBackground from "@/components/QuestBackground";
 
@@ -201,7 +200,7 @@ export default function Dalshe3() {
       {!solved ? (
         <div className="relative z-[1] w-full max-w-[460px] mx-auto flex flex-col items-center text-center">
           {/* Шапка фикс-высоты — одна высота поля во всех уровнях */}
-          <div className="flex flex-col items-center justify-center" style={{ minHeight: "clamp(150px, 22vw, 200px)" }}>
+          <div className="flex flex-col items-center justify-center" style={{ minHeight: "clamp(108px, 17vw, 150px)" }}>
             <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-3">Крестики-нолики · Загадка №4</p>
             <h1 className="font-p95 leading-[1.05] uppercase tracking-tight" style={{ fontSize: "clamp(26px, 5vw, 46px)" }}>
               Это <span ref={neRef}>не</span> решение
@@ -242,9 +241,6 @@ export default function Dalshe3() {
           <p className="text-sm text-white/60 mb-8 max-w-xs">Ты убрал «не» — и это стало решением.</p>
           <Link href="/secret/lab/kod" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[14px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
             <span className="leading-none translate-y-[1px]">К терминалу</span><span className="leading-none">→</span>
-          </Link>
-          <Link href="/" className="mt-5 inline-flex items-center gap-1.5 text-[13px] text-white/40 hover:text-white/70 transition-colors no-underline">
-            <ArrowLeft className="w-3 h-3" strokeWidth={2.2} /> На главную
           </Link>
         </div>
       )}

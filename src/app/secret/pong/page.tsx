@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { createClient, type RealtimeChannel } from "@supabase/supabase-js";
 
 /**
@@ -304,7 +302,7 @@ export default function PongPage() {
   const iWon = winner === (role === "host" ? 0 : 1);
 
   return (
-    <main className="pong-page relative bg-black text-white overflow-hidden flex flex-col items-center justify-center px-4 pt-[44px] sm:pt-[56px] pb-4 sm:pb-8" style={{ minHeight: "100dvh" }}>
+    <main className="pong-page relative bg-black text-white overflow-hidden flex flex-col items-center px-4 pt-[60px] sm:pt-[68px] pb-4" style={{ minHeight: "100dvh" }}>
       <div className="relative z-[1] w-full max-w-[440px] mx-auto flex flex-col items-center text-center">
         <p className="font-p95 text-[11px] sm:text-[12px] tracking-[0.25em] uppercase text-white/40 mb-1.5">Пинг-понг · вдвоём</p>
         <div className="flex items-center justify-center gap-2.5 sm:gap-5 mb-2 font-p95 tabular-nums" style={{ fontSize: "clamp(20px,5vw,30px)" }}>
@@ -366,10 +364,6 @@ export default function PongPage() {
         </div>
 
         <p className="hidden sm:block mt-3 text-[12px] text-white/40 max-w-xs">Двигай ракетку (внизу) пальцем или ←→. Мяч летит — отбивай. До {WIN_SCORE}.</p>
-
-        <Link href="/" className="mt-3 sm:mt-5 inline-flex items-center gap-1.5 text-[12px] text-white/30 hover:text-white/60 transition-colors no-underline">
-          <ArrowLeft className="w-3 h-3" strokeWidth={2.2} /> На главную
-        </Link>
       </div>
     </main>
   );

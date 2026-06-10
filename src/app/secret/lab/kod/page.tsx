@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import confetti from "canvas-confetti";
 import {
   loadBoard,
@@ -244,11 +243,6 @@ export default function KodFinal() {
               <span className="leading-none translate-y-[1px]">Кооп-загадка</span><span className="leading-none">→</span>
             </Link>
           </div>
-
-          <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white/60 font-p95 text-[14px] tracking-[0.12em] uppercase hover:border-white/40 hover:text-white transition-colors no-underline">
-            <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2.2} />
-            <span className="leading-none translate-y-[1px]">На главную</span>
-          </Link>
         </div>
       )}
     </main>
