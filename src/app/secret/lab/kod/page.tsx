@@ -14,6 +14,7 @@ import {
   type LbEntry,
   type FbEntry,
 } from "../../leaderboard";
+import QuestBackground from "@/components/QuestBackground";
 
 // Телеграм-канал для кнопки «подписаться» и вейтлиста. Пусто → кнопка скрыта.
 const TG_CHANNEL = "https://t.me/aiegorka";
@@ -98,6 +99,7 @@ export default function KodFinal() {
 
   return (
     <main className="relative bg-black text-white overflow-y-auto flex flex-col items-center px-5 pt-[88px] pb-16" style={{ minHeight: "100dvh" }}>
+      <QuestBackground palette="cyan" opacity={0.3} />
       <div aria-hidden className="absolute inset-0 pointer-events-none opacity-60" style={{
         background: "radial-gradient(ellipse 50% 40% at 50% 40%, rgba(166,255,0,0.06), transparent 60%)",
       }} />

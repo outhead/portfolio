@@ -66,6 +66,12 @@ export default function PongPage() {
     ball.current = { x: FW / 2, y: FH / 2, vx: (Math.random() * 2 - 1) * 2.2, vy: dir * BASE };
   }
 
+  // на мобиле прячем глобальный подвал/шапку, чтобы понг влезал и был выше
+  useEffect(() => {
+    document.body.classList.add("pong-immersive");
+    return () => document.body.classList.remove("pong-immersive");
+  }, []);
+
   // ─── подключение ───
   useEffect(() => {
     const sb = createClient(SB_URL, SB_KEY, { realtime: { params: { eventsPerSecond: 60 } } });
@@ -298,21 +304,22 @@ export default function PongPage() {
   const iWon = winner === (role === "host" ? 0 : 1);
 
   return (
-    <main className="relative bg-black text-white overflow-y-auto flex flex-col items-center px-4 pt-[64px] pb-10" style={{ minHeight: "100dvh" }}>
+    <main className="pong-page relative bg-black text-white overflow-hidden flex flex-col items-center justify-center px-4 pt-[44px] sm:pt-[56px] pb-4 sm:pb-8" style={{ minHeight: "100dvh" }}>
       <div className="relative z-[1] w-full max-w-[440px] mx-auto flex flex-col items-center text-center">
-        <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-2">Пинг-понг · вдвоём</p>
-        <div className="flex items-center justify-center gap-6 mb-2 font-p95 tabular-nums" style={{ fontSize: "clamp(22px,5vw,34px)" }}>
-          <span className="text-white/40 text-sm uppercase tracking-[0.15em]">соперник</span>
+        <p className="font-p95 text-[11px] sm:text-[12px] tracking-[0.25em] uppercase text-white/40 mb-1.5">Пинг-понг · вдвоём</p>
+        <div className="flex items-center justify-center gap-2.5 sm:gap-5 mb-2 font-p95 tabular-nums" style={{ fontSize: "clamp(20px,5vw,30px)" }}>
+          <span className="text-white/40 text-[10px] sm:text-xs uppercase tracking-[0.12em]">соперник</span>
           <span className="text-white/80">{theirs}</span>
           <span className="text-white/20">:</span>
           <span className="text-[#A6FF00]">{mine}</span>
-          <span className="text-white/40 text-sm uppercase tracking-[0.15em]">ты</span>
+          <span className="text-white/40 text-[10px] sm:text-xs uppercase tracking-[0.12em]">ты</span>
         </div>
 
-        <div className="relative w-full" style={{ maxWidth: 380 }}>
+        {/* высотная посадка — канвас всегда влезает по вертикали и центрирован */}
+        <div className="relative mx-auto" style={{ height: "min(62dvh, 600px)", aspectRatio: `${FW}/${FH}` }}>
           <canvas ref={canvasRef} width={FW} height={FH}
-            className="w-full h-auto rounded-lg border border-white/10 touch-none select-none"
-            style={{ aspectRatio: `${FW}/${FH}`, background: "#000" }} />
+            className="block w-full h-full rounded-lg border border-white/10 touch-none select-none"
+            style={{ background: "#000" }} />
 
           {count > 0 && phase === "count" ? (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -358,9 +365,9 @@ export default function PongPage() {
           ) : null}
         </div>
 
-        <p className="mt-3 text-[12px] text-white/40 max-w-xs">Двигай ракетку (внизу) пальцем или ←→. Мяч летит — отбивай. До {WIN_SCORE}.</p>
+        <p className="hidden sm:block mt-3 text-[12px] text-white/40 max-w-xs">Двигай ракетку (внизу) пальцем или ←→. Мяч летит — отбивай. До {WIN_SCORE}.</p>
 
-        <Link href="/" className="mt-6 inline-flex items-center gap-1.5 text-[13px] text-white/30 hover:text-white/60 transition-colors no-underline">
+        <Link href="/" className="mt-3 sm:mt-5 inline-flex items-center gap-1.5 text-[12px] text-white/30 hover:text-white/60 transition-colors no-underline">
           <ArrowLeft className="w-3 h-3" strokeWidth={2.2} /> На главную
         </Link>
       </div>

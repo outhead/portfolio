@@ -240,3 +240,8 @@ main {
   .decrypt-word { animation: none; opacity: 1; }
   .decrypt-fadeswap { animation: none; }
 }
+
+/* Пинг-понг: на мобиле прячем глобальный подвал, чтобы игра влезала и была выше */
+@media (max-width: 640px) {
+  body.pong-immersive footer { display: none; }
+}
