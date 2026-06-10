@@ -45,6 +45,8 @@ export default function PongPage() {
   const p2pRef = useRef<P2PHandle | null>(null);
   const useP2P = useRef(false);
   const [transport, setTransport] = useState<"relay" | "p2p">("relay");
+  const relayPeers = useRef(false); // на релее видно соперника (count>=2)
+  const waitTimer = useRef<ReturnType<typeof setTimeout> | null>(null); // дебаунс ухода в «ожидание»
 
   type Ball = { x: number; y: number; vx: number; vy: number; last: 0 | 1 };
   type Boost = { x: number; y: number; type: "x2" | "size" | "stick"; t?: number }; // t: остаток жизни 0..1 (для таймер-дуги у гостя)
@@ -185,6 +187,27 @@ export default function PongPage() {
       }
     });
 
+    // Связь есть, если жив P2P ИЛИ на релее виден соперник. «Ожидание» показываем
+    // только когда нет НИ того, ни другого, и с дебаунсом 3с — иначе мобильные
+    // реконнекты мигали надписью «Готов, начинаем» прямо во время игры.
+    const cancelWaiting = () => { if (waitTimer.current) { clearTimeout(waitTimer.current); waitTimer.current = null; } };
+    const scheduleWaiting = () => {
+      if (waitTimer.current) return;
+      waitTimer.current = setTimeout(() => {
+        waitTimer.current = null;
+        if (!useP2P.current && !relayPeers.current &&
+            (phaseRef.current === "playing" || phaseRef.current === "count")) setPhaseBoth("waiting");
+      }, 3000);
+    };
+    const evalConn = () => {
+      if (useP2P.current || relayPeers.current) {
+        cancelWaiting();
+        if (roleRef.current === "host" && (phaseRef.current === "waiting" || phaseRef.current === "connecting")) resumeOrStart();
+      } else {
+        scheduleWaiting();
+      }
+    };
+
     // ─── P2P поверх: если DataChannel собрался — он становится основным транспортом ───
     p2pRef.current = connectP2P({
       room: code,
@@ -200,33 +223,30 @@ export default function PongPage() {
       onOpen: () => {
         useP2P.current = true;
         setTransport("p2p");
-        // гость стучится — хост стартует матч, даже если Realtime так и не соединился
         if (roleRef.current === "guest") p2pRef.current?.sendCtl({ event: "hello", payload: {} });
+        evalConn();
       },
       onClose: () => {
+        // P2P отвалился — НЕ роняем игру, если релей ещё держит соперника
         useP2P.current = false;
         setTransport("relay");
-        if (phaseRef.current === "playing" || phaseRef.current === "count") setPhaseBoth("waiting");
+        evalConn();
       },
     });
 
-    // Realtime может не соединиться вовсе (РФ без VPN) — не зависаем на «Подключаюсь…»,
-    // показываем ожидание/ссылку, дальше всё сделает P2P
+    // Если за 2.5с вообще ничего не поднялось — выходим из «Подключаюсь…» в ожидание
     const connT = setTimeout(() => {
       if (phaseRef.current === "connecting") setPhaseBoth("waiting");
     }, 2500);
+
     ch.onPeers((count) => {
-      if (useP2P.current) return; // при живом P2P уход соперника ловим по закрытию канала
-      const both = count >= 2;
-      if (!both && phaseRef.current !== "waiting" && phaseRef.current !== "connecting") {
-        // соперник ушёл
-        setPhaseBoth("waiting");
-      }
-      if (both && roleRef.current === "host" && (phaseRef.current === "waiting" || phaseRef.current === "connecting")) resumeOrStart();
+      relayPeers.current = count >= 2;
+      evalConn();
     });
 
     ch.onOpen(() => {
-      setPhaseBoth("waiting");
+      // на (ре)коннекте релея активную игру НЕ сбрасываем; ожидание — только на старте
+      if (phaseRef.current === "connecting") setPhaseBoth("waiting");
       if (roleRef.current === "guest") {
         const hi = () => chRef.current?.send("hello", {});
         hi(); setTimeout(hi, 500); setTimeout(hi, 1400);
@@ -235,6 +255,7 @@ export default function PongPage() {
 
     return () => {
       clearTimeout(connT);
+      cancelWaiting();
       if (countTimer.current) clearInterval(countTimer.current);
       p2pRef.current?.close(); p2pRef.current = null;
       ch.close();
