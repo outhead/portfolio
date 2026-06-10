@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { FileDown, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import LedLogo from "@/components/LedLogo";
 
 const navLinks: Array<{ href: string; label: string; goal: string }> = [
   { href: "/#portfolio", label: "Работы", goal: "nav_portfolio" },
@@ -88,11 +89,9 @@ export default function Header() {
         <Link
           href="/"
           aria-label="Главная"
-          className="inline-flex items-center gap-3 md:gap-3.5 no-underline hover:opacity-80 transition-opacity"
+          className="inline-flex items-center gap-3 md:gap-3.5 no-underline"
         >
-          <span className="font-p95 text-[16px] md:text-[15px] uppercase tracking-[0.14em] text-white">
-            Егор Шугаев
-          </span>
+          <LedLogo className="h-[24px] md:h-[26px] w-auto" />
         </Link>
 
         <nav aria-label="Основная навигация" className="hidden md:flex gap-6 absolute left-1/2 -translate-x-1/2">
