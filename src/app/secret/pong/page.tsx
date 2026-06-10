@@ -64,6 +64,12 @@ export default function PongPage() {
   const countRef = useRef(0);
   const myX = useRef((FW - PW) / 2);
   const winnerRef = useRef<0 | 1 | null>(null);
+  // ─── сглаживание сети ───
+  const px2Vel = useRef(0);            // скорость ракетки гостя (px/кадр), приходит в пакете
+  const px2At = useRef(0);             // когда пришёл последний пакет ракетки
+  const px2Eff = useRef((FW - PW) / 2); // экстраполированная позиция ракетки гостя (для физики и отрисовки)
+  const prevMyX = useRef((FW - PW) / 2);
+  const myVel = useRef(0);             // своя скорость ракетки (сглаженная) — шлём хосту
   // ─── визуальные эффекты (живут только на клиенте, в физику не лезут) ───
   type Spark = { x: number; y: number; vx: number; vy: number; life: number; color: string; size: number };
   const fxRef = useRef<Spark[]>([]);                                  // искры
@@ -118,8 +124,17 @@ export default function PongPage() {
 
     ch.on("broadcast", { event: "state" }, ({ payload }) => {
       if (roleRef.current !== "guest") return;
-      const bs = payload.balls as [number, number][];
-      balls.current = bs.map(([x, y]) => ({ x, y, vx: 0, vy: 0, last: 0 as const }));
+      // Мяч у гостя живёт локально (dead reckoning по vx/vy), пакет хоста — авторитетная
+      // коррекция: близко — мягко подтягиваем (без дёрганья), далеко — снапаем.
+      const bs = payload.balls as [number, number, number, number][];
+      const prev = balls.current;
+      balls.current = bs.map(([x, y, vx, vy], i) => {
+        const loc = prev[i];
+        if (loc && Math.hypot(x - loc.x, y - loc.y) < 48) {
+          return { x: loc.x + (x - loc.x) * 0.35, y: loc.y + (y - loc.y) * 0.35, vx, vy, last: 0 as const };
+        }
+        return { x, y, vx, vy, last: 0 as const };
+      });
       px1.current = payload.px1;
       pw1.current = payload.pw1; pw2.current = payload.pw2;
       boost.current = payload.boost || null;
@@ -132,7 +147,11 @@ export default function PongPage() {
       if ((w === 0 || w === 1) && w !== winnerRef.current) { winnerRef.current = w; setWinner(w); }
     });
     ch.on("broadcast", { event: "paddle" }, ({ payload }) => {
-      if (roleRef.current === "host") px2.current = payload.x;
+      if (roleRef.current === "host") {
+        px2.current = payload.x;
+        px2Vel.current = typeof payload.v === "number" ? payload.v : 0;
+        px2At.current = performance.now();
+      }
     });
     ch.on("broadcast", { event: "rematch" }, () => { if (roleRef.current === "host") startMatch(); });
     ch.on("broadcast", { event: "hello" }, () => {
@@ -288,7 +307,7 @@ export default function PongPage() {
       for (let x = 8; x < FW; x += 30) ctx.fillRect(x, FH / 2 - 2, 18, 4);
       const host = roleRef.current === "host";
       const meX = host ? px1.current : px2.current, meW = host ? pw1.current : pw2.current;
-      const opX = host ? px2.current : px1.current, opW = host ? pw2.current : pw1.current;
+      const opX = host ? px2Eff.current : px1.current, opW = host ? pw2.current : pw1.current;
       ctx.fillStyle = "#A6FF00"; ctx.fillRect(meX, FH - MARGIN - PH, meW, PH);
       ctx.fillStyle = "rgba(255,255,255,0.55)"; ctx.fillRect(opX, MARGIN, opW, PH);
 
@@ -407,6 +426,27 @@ export default function PongPage() {
       if (Math.abs(myX.current - ownRef.current) > 0.5) me = myX.current;
       me = clamp(me, 0, FW - ownPw);
       ownRef.current = me; myX.current = me;
+      // своя скорость (px/кадр), сглаженная — гость шлёт её хосту для экстраполяции
+      myVel.current = myVel.current * 0.7 + (me - prevMyX.current) * 0.3;
+      prevMyX.current = me;
+
+      // хост: экстраполируем ракетку гостя на возраст последнего пакета (до ~4 кадров),
+      // чтобы коллизии считались по тому, где палец гостя СЕЙЧАС, а не RTT/2 назад
+      if (host) {
+        const age = px2At.current ? Math.min((now - px2At.current) / 16.7, 4) : 0;
+        px2Eff.current = clamp(px2.current + px2Vel.current * age, 0, FW - pw2.current);
+      }
+
+      // гость: мяч летит локально по последним известным скоростям (dead reckoning),
+      // стены отбиваем сами — авторитетные пакеты хоста мягко корректируют
+      if (!host && phaseRef.current === "playing") {
+        for (const b of balls.current) {
+          b.x += b.vx; b.y += b.vy;
+          if (b.x < R) { b.x = R; b.vx = Math.abs(b.vx); }
+          if (b.x > FW - R) { b.x = FW - R; b.vx = -Math.abs(b.vx); }
+          b.y = clamp(b.y, -30, FH + 30);
+        }
+      }
 
       if (host && phaseRef.current === "playing") {
         // истечение бустов
@@ -421,24 +461,31 @@ export default function PongPage() {
         if (boost.current && now > boostGoneAt.current) { boost.current = null; nextBoostAt.current = now + 8000 + Math.random() * 6000; }
 
         const W1 = pw1.current, W2 = pw2.current;
+        const p2x = px2Eff.current; // ракетка гостя с компенсацией лага
         for (const b of balls.current) {
-          const oldY = b.y;
-          b.x += b.vx; b.y += b.vy;
-          if (b.x < R) { b.x = R; b.vx = Math.abs(b.vx); }
-          if (b.x > FW - R) { b.x = FW - R; b.vx = -Math.abs(b.vx); }
-          // нижняя ракетка (p1) — свёрнутая проверка пересечения плоскости
-          if (b.vy > 0 && oldY + R <= BOTTOM_Y + 2 && b.y + R >= BOTTOM_Y &&
-              b.x >= px1.current - R && b.x <= px1.current + W1 + R) {
-            b.y = BOTTOM_Y - R; b.vy = -Math.abs(b.vy) * ACC;
-            b.vx += ((b.x - (px1.current + W1 / 2)) / (W1 / 2)) * 2.6; b.last = 0;
+          // подшаги: на высокой скорости двигаем мяч кусками ≤ ~6px,
+          // чтобы он физически не мог проскочить плоскость ракетки за кадр
+          const sp = Math.max(Math.abs(b.vx), Math.abs(b.vy));
+          const steps = sp > 12 ? 3 : sp > 6 ? 2 : 1;
+          for (let s = 0; s < steps; s++) {
+            const oldY = b.y;
+            b.x += b.vx / steps; b.y += b.vy / steps;
+            if (b.x < R) { b.x = R; b.vx = Math.abs(b.vx); }
+            if (b.x > FW - R) { b.x = FW - R; b.vx = -Math.abs(b.vx); }
+            // нижняя ракетка (p1) — проверка пересечения плоскости за подшаг
+            if (b.vy > 0 && oldY + R <= BOTTOM_Y + 2 && b.y + R >= BOTTOM_Y &&
+                b.x >= px1.current - R && b.x <= px1.current + W1 + R) {
+              b.y = BOTTOM_Y - R; b.vy = -Math.abs(b.vy) * ACC;
+              b.vx += ((b.x - (px1.current + W1 / 2)) / (W1 / 2)) * 2.6; b.last = 0;
+            }
+            // верхняя ракетка (p2) — по экстраполированной позиции
+            else if (b.vy < 0 && oldY - R >= TOP_Y + PH - 2 && b.y - R <= TOP_Y + PH &&
+                b.x >= p2x - R && b.x <= p2x + W2 + R) {
+              b.y = TOP_Y + PH + R; b.vy = Math.abs(b.vy) * ACC;
+              b.vx += ((b.x - (p2x + W2 / 2)) / (W2 / 2)) * 2.6; b.last = 1;
+            }
+            b.vy = clamp(b.vy, -MAXV, MAXV); b.vx = clamp(b.vx, -MAXV, MAXV);
           }
-          // верхняя ракетка (p2)
-          else if (b.vy < 0 && oldY - R >= TOP_Y + PH - 2 && b.y - R <= TOP_Y + PH &&
-              b.x >= px2.current - R && b.x <= px2.current + W2 + R) {
-            b.y = TOP_Y + PH + R; b.vy = Math.abs(b.vy) * ACC;
-            b.vx += ((b.x - (px2.current + W2 / 2)) / (W2 / 2)) * 2.6; b.last = 1;
-          }
-          b.vy = clamp(b.vy, -MAXV, MAXV); b.vx = clamp(b.vx, -MAXV, MAXV);
           // сбор буста
           if (boost.current && Math.hypot(b.x - boost.current.x, b.y - boost.current.y) < 26) {
             activate(boost.current.type, b.last); boost.current = null;
@@ -470,14 +517,17 @@ export default function PongPage() {
         lastSend = t;
         if (host) {
           ch.send({ type: "broadcast", event: "state", payload: {
-            balls: balls.current.map((b) => [Math.round(b.x), Math.round(b.y)]),
+            balls: balls.current.map((b) => [
+              Math.round(b.x), Math.round(b.y),
+              Math.round(b.vx * 100) / 100, Math.round(b.vy * 100) / 100,
+            ]),
             px1: px1.current, pw1: pw1.current, pw2: pw2.current,
             boost: boost.current ? { x: Math.round(boost.current.x), y: Math.round(boost.current.y), type: boost.current.type } : null,
             s1: sc.current[0], s2: sc.current[1], phase: phaseRef.current, count: countRef.current,
             winner: phaseRef.current === "over" ? (sc.current[0] > sc.current[1] ? 0 : 1) : null,
           }});
         } else {
-          ch.send({ type: "broadcast", event: "paddle", payload: { x: px2.current } });
+          ch.send({ type: "broadcast", event: "paddle", payload: { x: px2.current, v: Math.round(myVel.current * 100) / 100 } });
         }
       }
       draw();

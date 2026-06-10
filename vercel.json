@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/sb/functions/:path*",
+      "destination": "https://hvkygaghhxgaolxemndr.supabase.co/functions/v1/:path*"
+    },
+    {
+      "source": "/sb/rest/:path*",
+      "destination": "https://hvkygaghhxgaolxemndr.supabase.co/rest/v1/:path*"
+    }
+  ]
+}
