@@ -107,6 +107,7 @@ export default function KodFinal() {
       }} />
 
       {!won ? (
+        <>
         <div className="relative z-[1] w-full max-w-[320px] mx-auto flex flex-col items-center text-center select-none">
           <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-3">Загадка №5 · финал</p>
           <h1 className="font-p95 leading-[0.95] uppercase tracking-tight mb-2" style={{ fontSize: "clamp(26px, 5vw, 44px)" }}>
@@ -138,10 +139,20 @@ export default function KodFinal() {
 
           <p className="mt-8 text-[13px] text-[#C9A66B]/85 transition-opacity duration-700 min-h-[20px] max-w-[280px]" style={{ opacity: hint ? 1 : 0 }}>
             {hint2
-              ? "Загляни в заголовок вкладки браузера — цифры там."
-              : "Код подбирать не нужно. Разгадка под носом."}
+              ? "Пролистай в самый низ — загляни в подвал."
+              : "Подбирать не нужно. Цифры спрятаны где-то на странице."}
           </p>
         </div>
+
+        {/* Разгадка — в самом «подвале»: надо пролистать вниз (на телефоне — пара экранов) */}
+        <div aria-hidden style={{ height: "128vh" }} />
+        <div className="relative z-[1] w-full max-w-[440px] mx-auto text-center pb-4">
+          <p className="font-p95 text-[12px] sm:text-[13px] tracking-[0.3em] uppercase text-white/25">
+            Сектор 4 · Узел 6 · Шлюз 8 · Ключ 8
+          </p>
+          <p className="mt-2 text-[10px] tracking-[0.2em] uppercase text-white/12">Терминал #0000 · служебная метка</p>
+        </div>
+        </>
       ) : (
         <div className="relative z-[1] w-full max-w-[440px] mx-auto flex flex-col items-center text-center">
           <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-3">Квест пройден</p>

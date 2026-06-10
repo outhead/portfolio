@@ -68,6 +68,8 @@ export default function Dalshe3() {
   const moved = useRef(false);
   const cellRefs = useRef<(HTMLDivElement | null)[]>([]);
   const neRef = useRef<HTMLSpanElement>(null);
+  const headRef = useRef<HTMLHeadingElement>(null);   // вся строка-заголовок = щедрая зона дропа на мобиле
+  const [nearNe, setNearNe] = useState(false);        // крестик над фразой — подсвечиваем «не»
   const compTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => () => { if (compTimer.current) clearTimeout(compTimer.current); }, []);
@@ -94,10 +96,16 @@ export default function Dalshe3() {
     }, 460);
   };
 
+  // вся строка-заголовок — щедрая зона дропа (на мобиле точно попасть в «не» пальцем нельзя)
+  const overHead = (cx: number, cy: number, pad: number) => {
+    const h = headRef.current?.getBoundingClientRect();
+    return !!h && cx > h.left - pad && cx < h.right + pad && cy > h.top - pad && cy < h.bottom + pad;
+  };
+
   const onDown = (i: number) => (e: React.PointerEvent) => {
     if (over || thinking || !marks[i]) return;
     (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
-    setDragId(i); setOff({ x: 0, y: 0 }); moved.current = false;
+    setDragId(i); setOff({ x: 0, y: 0 }); moved.current = false; setNearNe(false);
     dragStart.current = { px: e.clientX, py: e.clientY };
   };
   const onMove = (e: React.PointerEvent) => {
@@ -105,25 +113,20 @@ export default function Dalshe3() {
     const dx = e.clientX - dragStart.current.px, dy = e.clientY - dragStart.current.py;
     if (Math.hypot(dx, dy) > 4) moved.current = true;
     setOff({ x: dx, y: dy });
+    if (marks[dragId] === "X") setNearNe(overHead(e.clientX, e.clientY, 28));
   };
   const onUp = (e: React.PointerEvent) => {
     if (dragStart.current === null || dragId === null) return;
     const from = dragId;
     const wasMoved = moved.current;
     const draggedVal = marks[from];
-    dragStart.current = null; setDragId(null); setOff({ x: 0, y: 0 });
+    dragStart.current = null; setDragId(null); setOff({ x: 0, y: 0 }); setNearNe(false);
     if (!wasMoved) return;
 
-    // перетащили X на слово «не»?
-    if (draggedVal === "X") {
-      const ne = neRef.current?.getBoundingClientRect();
-      if (ne) {
-        const pad = 18;
-        if (e.clientX > ne.left - pad && e.clientX < ne.right + pad && e.clientY > ne.top - pad && e.clientY < ne.bottom + pad) {
-          setMarks((p) => { const n = [...p]; n[from] = ""; return n; });
-          setSolved(true); celebrate(); return;
-        }
-      }
+    // перетащили X на фразу (засчитываем дроп на ВСЮ строку-заголовок — мобайл-дружелюбно)
+    if (draggedVal === "X" && overHead(e.clientX, e.clientY, 30)) {
+      setMarks((p) => { const n = [...p]; n[from] = ""; return n; });
+      setSolved(true); celebrate(); return;
     }
     // иначе — переставить по ячейкам / за край
     const m = 40;
@@ -202,8 +205,10 @@ export default function Dalshe3() {
           {/* Шапка фикс-высоты — одна высота поля во всех уровнях */}
           <div className="flex flex-col items-center justify-center" style={{ minHeight: "clamp(108px, 17vw, 150px)" }}>
             <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-3">Крестики-нолики · Загадка №4</p>
-            <h1 className="font-p95 leading-[1.05] uppercase tracking-tight" style={{ fontSize: "clamp(26px, 5vw, 46px)" }}>
-              Это <span ref={neRef}>не</span> решение
+            <h1 ref={headRef} className="font-p95 leading-[1.05] uppercase tracking-tight transition-colors" style={{ fontSize: "clamp(26px, 5vw, 46px)" }}>
+              Это{" "}
+              <span ref={neRef} className="transition-all" style={nearNe ? { color: "#FF4040", textShadow: "0 0 16px rgba(255,64,64,0.9)" } : undefined}>не</span>{" "}
+              решение
             </h1>
           </div>
 
