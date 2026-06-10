@@ -46,9 +46,19 @@ export default function PongPage() {
   const chRef = useRef<RealtimeChannel | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  type Ball = { x: number; y: number; vx: number; vy: number; last: 0 | 1 };
+  type Boost = { x: number; y: number; type: "x2" | "size" };
+
   const px1 = useRef((FW - PW) / 2); // нижняя ракетка (host)
   const px2 = useRef((FW - PW) / 2); // верхняя ракетка (guest)
-  const ball = useRef({ x: FW / 2, y: FH / 2, vx: 0, vy: 0 });
+  const pw1 = useRef(PW);            // ширина нижней ракетки (буст size)
+  const pw2 = useRef(PW);            // ширина верхней ракетки
+  const balls = useRef<Ball[]>([{ x: FW / 2, y: FH / 2, vx: 0, vy: 0, last: 0 }]);
+  const boost = useRef<Boost | null>(null);
+  const x2Until = useRef(0);
+  const sizeUntil = useRef<[number, number]>([0, 0]); // [p1,p2] expiry
+  const nextBoostAt = useRef(0);
+  const boostGoneAt = useRef(0);
   const sc = useRef<[number, number]>([0, 0]);
   const phaseRef = useRef<Phase>("connecting");
   const countRef = useRef(0);
@@ -61,7 +71,11 @@ export default function PongPage() {
   const setCountBoth = (c: number) => { countRef.current = c; setCount(c); };
 
   function serve(dir: number) {
-    ball.current = { x: FW / 2, y: FH / 2, vx: (Math.random() * 2 - 1) * 2.2, vy: dir * BASE };
+    balls.current = [{ x: FW / 2, y: FH / 2, vx: (Math.random() * 2 - 1) * 2.2, vy: dir * BASE, last: dir > 0 ? 1 : 0 }];
+    boost.current = null;
+    x2Until.current = 0; sizeUntil.current = [0, 0];
+    pw1.current = PW; pw2.current = PW;
+    nextBoostAt.current = performance.now() + 6000 + Math.random() * 6000;
   }
 
   // на мобиле прячем глобальный подвал/шапку, чтобы понг влезал и был выше
@@ -89,8 +103,11 @@ export default function PongPage() {
 
     ch.on("broadcast", { event: "state" }, ({ payload }) => {
       if (roleRef.current !== "guest") return;
-      ball.current.x = payload.bx; ball.current.y = payload.by;
+      const bs = payload.balls as [number, number][];
+      balls.current = bs.map(([x, y]) => ({ x, y, vx: 0, vy: 0, last: 0 as const }));
       px1.current = payload.px1;
+      pw1.current = payload.pw1; pw2.current = payload.pw2;
+      boost.current = payload.boost || null;
       if (payload.s1 !== sc.current[0] || payload.s2 !== sc.current[1]) {
         sc.current = [payload.s1, payload.s2]; setScore([payload.s1, payload.s2]);
       }
@@ -140,7 +157,8 @@ export default function PongPage() {
   // обратный отсчёт 3-2-1 (только хост), затем подача
   function startCountdown(dir: number) {
     if (countTimer.current) clearInterval(countTimer.current);
-    ball.current = { x: FW / 2, y: FH / 2, vx: 0, vy: 0 };
+    balls.current = [{ x: FW / 2, y: FH / 2, vx: 0, vy: 0, last: 0 }];
+    boost.current = null;
     setCountBoth(3);
     setPhaseBoth("count");
     countTimer.current = setInterval(() => {
@@ -178,87 +196,146 @@ export default function PongPage() {
     const ku = (e: KeyboardEvent) => onKey(e, false);
     window.addEventListener("keydown", kd); window.addEventListener("keyup", ku);
 
+    // палец/мышь — ловим на ВСЁМ окне, чтобы можно было водить и ниже ракетки
+    // (не перекрывая поле). Берём только X, маппим через прямоугольник канваса.
     const pointer = (e: PointerEvent) => {
       const rect = canvas.getBoundingClientRect();
+      if (!rect.width) return;
+      const ownPw = roleRef.current === "host" ? pw1.current : pw2.current;
       const x = ((e.clientX - rect.left) / rect.width) * FW;
-      myX.current = clamp(x - PW / 2, 0, FW - PW);
+      myX.current = clamp(x - ownPw / 2, 0, FW - ownPw);
     };
-    canvas.addEventListener("pointermove", pointer);
-    canvas.addEventListener("pointerdown", pointer);
+    window.addEventListener("pointermove", pointer);
+    window.addEventListener("pointerdown", pointer);
+
+    const drawBoost = (b: Boost, yv: (n: number) => number) => {
+      const bw = 48, bh = 30, x = b.x - bw / 2, y = yv(b.y) - bh / 2;
+      ctx.fillStyle = "rgba(0,0,0,0.55)";
+      ctx.strokeStyle = b.type === "x2" ? "#FFD60A" : "#33C7FF";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(x, y, bw, bh, 8); else ctx.rect(x, y, bw, bh);
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = ctx.strokeStyle as string;
+      ctx.font = "700 14px system-ui, sans-serif";
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText(b.type === "x2" ? "x2" : "+SIZE", b.x, yv(b.y) + 1);
+    };
 
     const draw = () => {
       const mirror = roleRef.current === "guest";
       const yv = (cy: number) => (mirror ? FH - cy : cy);
       ctx.fillStyle = "#000"; ctx.fillRect(0, 0, FW, FH);
-      // центральная пунктирная линия
       ctx.fillStyle = "rgba(255,255,255,0.22)";
       for (let x = 8; x < FW; x += 30) ctx.fillRect(x, FH / 2 - 2, 18, 4);
-      // ракетки: моя — лайм, соперника — белёсая
-      const myIsP1 = !mirror; // host рисует себя внизу (p1); guest зеркалит, его p2 уходит вниз
-      // нижняя ракетка на экране = «моя»
-      const meX = mirror ? px2.current : px1.current;
-      const oppX = mirror ? px1.current : px2.current;
-      // моя (низ экрана)
-      ctx.fillStyle = "#A6FF00";
-      ctx.fillRect(meX, FH - MARGIN - PH, PW, PH);
-      // соперник (верх экрана)
-      ctx.fillStyle = "rgba(255,255,255,0.55)";
-      ctx.fillRect(oppX, MARGIN, PW, PH);
-      void myIsP1;
-      // круглый мяч
-      ctx.beginPath();
-      ctx.arc(ball.current.x, yv(ball.current.y), R, 0, Math.PI * 2);
+      const host = roleRef.current === "host";
+      const meX = host ? px1.current : px2.current, meW = host ? pw1.current : pw2.current;
+      const opX = host ? px2.current : px1.current, opW = host ? pw2.current : pw1.current;
+      ctx.fillStyle = "#A6FF00"; ctx.fillRect(meX, FH - MARGIN - PH, meW, PH);
+      ctx.fillStyle = "rgba(255,255,255,0.55)"; ctx.fillRect(opX, MARGIN, opW, PH);
+      if (boost.current) drawBoost(boost.current, yv);
       ctx.fillStyle = "#fff";
-      ctx.fill();
+      for (const b of balls.current) { ctx.beginPath(); ctx.arc(b.x, yv(b.y), R, 0, Math.PI * 2); ctx.fill(); }
+    };
+
+    const activate = (type: "x2" | "size", owner: 0 | 1) => {
+      const now = performance.now();
+      if (type === "x2") {
+        const cur = balls.current.length;
+        const add = Math.min(cur, 4 - cur);
+        for (let i = 0; i < add; i++) {
+          const s = balls.current[i % cur];
+          balls.current.push({ x: s.x, y: s.y, vx: -(s.vx || 2), vy: s.vy, last: s.last });
+        }
+        x2Until.current = now + 10000;
+      } else {
+        if (owner === 0) { pw1.current = PW * 1.5; sizeUntil.current[0] = now + 10000; }
+        else { pw2.current = PW * 1.5; sizeUntil.current[1] = now + 10000; }
+      }
     };
 
     const loop = (t: number) => {
       raf = requestAnimationFrame(loop);
       const host = roleRef.current === "host";
+      const now = performance.now();
 
-      // ввод — двигаем СВОЮ ракетку по X
-      const speed = 8;
+      // ввод — своя ракетка по X (с учётом текущей ширины)
       const ownRef = host ? px1 : px2;
+      const ownPw = host ? pw1.current : pw2.current;
+      const speed = 9;
       let me = ownRef.current;
       if (keys["arrowleft"] || keys["a"]) me -= speed;
       if (keys["arrowright"] || keys["d"]) me += speed;
       if (Math.abs(myX.current - ownRef.current) > 0.5) me = myX.current;
-      me = clamp(me, 0, FW - PW);
+      me = clamp(me, 0, FW - ownPw);
       ownRef.current = me; myX.current = me;
 
       if (host && phaseRef.current === "playing") {
-        const b = ball.current;
-        b.x += b.vx; b.y += b.vy;
-        // боковые стены
-        if (b.x < R) { b.x = R; b.vx = Math.abs(b.vx); }
-        if (b.x > FW - R) { b.x = FW - R; b.vx = -Math.abs(b.vx); }
-        // нижняя ракетка (host, p1)
-        if (b.vy > 0 && b.y + R >= BOTTOM_Y && b.y + R <= BOTTOM_Y + PH + 10 &&
-            b.x >= px1.current - R && b.x <= px1.current + PW + R) {
-          b.y = BOTTOM_Y - R; b.vy = -Math.abs(b.vy) * ACC;
-          b.vx += ((b.x - (px1.current + PW / 2)) / (PW / 2)) * 2.4;
+        // истечение бустов
+        if (x2Until.current && now > x2Until.current && balls.current.length > 1) { balls.current = [balls.current[0]]; x2Until.current = 0; }
+        if (sizeUntil.current[0] && now > sizeUntil.current[0]) { pw1.current = PW; sizeUntil.current[0] = 0; }
+        if (sizeUntil.current[1] && now > sizeUntil.current[1]) { pw2.current = PW; sizeUntil.current[1] = 0; }
+        // спавн/деспавн буста
+        if (!boost.current && now > nextBoostAt.current) {
+          boost.current = { x: 60 + Math.random() * (FW - 120), y: FH * 0.32 + Math.random() * FH * 0.36, type: Math.random() < 0.5 ? "x2" : "size" };
+          boostGoneAt.current = now + 9000;
         }
-        // верхняя ракетка (guest, p2)
-        if (b.vy < 0 && b.y - R <= TOP_Y + PH && b.y - R >= TOP_Y - 10 &&
-            b.x >= px2.current - R && b.x <= px2.current + PW + R) {
-          b.y = TOP_Y + PH + R; b.vy = Math.abs(b.vy) * ACC;
-          b.vx += ((b.x - (px2.current + PW / 2)) / (PW / 2)) * 2.4;
+        if (boost.current && now > boostGoneAt.current) { boost.current = null; nextBoostAt.current = now + 8000 + Math.random() * 6000; }
+
+        const W1 = pw1.current, W2 = pw2.current;
+        for (const b of balls.current) {
+          const oldY = b.y;
+          b.x += b.vx; b.y += b.vy;
+          if (b.x < R) { b.x = R; b.vx = Math.abs(b.vx); }
+          if (b.x > FW - R) { b.x = FW - R; b.vx = -Math.abs(b.vx); }
+          // нижняя ракетка (p1) — свёрнутая проверка пересечения плоскости
+          if (b.vy > 0 && oldY + R <= BOTTOM_Y + 2 && b.y + R >= BOTTOM_Y &&
+              b.x >= px1.current - R && b.x <= px1.current + W1 + R) {
+            b.y = BOTTOM_Y - R; b.vy = -Math.abs(b.vy) * ACC;
+            b.vx += ((b.x - (px1.current + W1 / 2)) / (W1 / 2)) * 2.6; b.last = 0;
+          }
+          // верхняя ракетка (p2)
+          else if (b.vy < 0 && oldY - R >= TOP_Y + PH - 2 && b.y - R <= TOP_Y + PH &&
+              b.x >= px2.current - R && b.x <= px2.current + W2 + R) {
+            b.y = TOP_Y + PH + R; b.vy = Math.abs(b.vy) * ACC;
+            b.vx += ((b.x - (px2.current + W2 / 2)) / (W2 / 2)) * 2.6; b.last = 1;
+          }
+          b.vy = clamp(b.vy, -MAXV, MAXV); b.vx = clamp(b.vx, -MAXV, MAXV);
+          // сбор буста
+          if (boost.current && Math.hypot(b.x - boost.current.x, b.y - boost.current.y) < 26) {
+            activate(boost.current.type, b.last); boost.current = null;
+            nextBoostAt.current = now + 8000 + Math.random() * 6000;
+          }
         }
-        b.vy = clamp(b.vy, -MAXV, MAXV); b.vx = clamp(b.vx, -MAXV, MAXV);
-        // голы
-        if (b.y > FH + R) { sc.current[1]++; setScore([sc.current[0], sc.current[1]]); afterPoint(1); }
-        else if (b.y < -R) { sc.current[0]++; setScore([sc.current[0], sc.current[1]]); afterPoint(-1); }
+        // голы — убираем вылетевшие мячи
+        let scored = false;
+        balls.current = balls.current.filter((b) => {
+          if (b.y > FH + R) { sc.current[1]++; scored = true; return false; }
+          if (b.y < -R) { sc.current[0]++; scored = true; return false; }
+          return true;
+        });
+        if (scored) {
+          setScore([sc.current[0], sc.current[1]]);
+          if (sc.current[0] >= WIN_SCORE || sc.current[1] >= WIN_SCORE) {
+            const w = sc.current[0] > sc.current[1] ? 0 : 1;
+            winnerRef.current = w; setWinner(w); setPhaseBoth("over");
+            balls.current = []; boost.current = null;
+          } else if (balls.current.length === 0) {
+            startCountdown(Math.random() < 0.5 ? 1 : -1);
+          }
+        }
       }
 
-      // сеть ~30 Гц
+      // сеть ~50 Гц для отзывчивости
       const ch = chRef.current;
-      if (ch && t - lastSend > 33) {
+      if (ch && t - lastSend > 20) {
         lastSend = t;
         if (host) {
           ch.send({ type: "broadcast", event: "state", payload: {
-            bx: ball.current.x, by: ball.current.y, px1: px1.current,
-            s1: sc.current[0], s2: sc.current[1], phase: phaseRef.current,
-            count: countRef.current,
+            balls: balls.current.map((b) => [Math.round(b.x), Math.round(b.y)]),
+            px1: px1.current, pw1: pw1.current, pw2: pw2.current,
+            boost: boost.current ? { x: Math.round(boost.current.x), y: Math.round(boost.current.y), type: boost.current.type } : null,
+            s1: sc.current[0], s2: sc.current[1], phase: phaseRef.current, count: countRef.current,
             winner: phaseRef.current === "over" ? (sc.current[0] > sc.current[1] ? 0 : 1) : null,
           }});
         } else {
@@ -268,23 +345,12 @@ export default function PongPage() {
       draw();
     };
 
-    function afterPoint(dir: number) {
-      if (sc.current[0] >= WIN_SCORE || sc.current[1] >= WIN_SCORE) {
-        const w = sc.current[0] > sc.current[1] ? 0 : 1;
-        winnerRef.current = w; setWinner(w); setPhaseBoth("over");
-        ball.current = { x: FW / 2, y: FH / 2, vx: 0, vy: 0 };
-        return;
-      }
-      // пауза-перезапуск с коротким отсчётом в сторону проигравшего очко
-      startCountdown(dir);
-    }
-
     raf = requestAnimationFrame(loop);
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("keydown", kd); window.removeEventListener("keyup", ku);
-      canvas.removeEventListener("pointermove", pointer);
-      canvas.removeEventListener("pointerdown", pointer);
+      window.removeEventListener("pointermove", pointer);
+      window.removeEventListener("pointerdown", pointer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
