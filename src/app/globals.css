@@ -277,15 +277,13 @@ body.pong-immersive {
   body.pong-immersive footer { display: none; }
 }
 
-/* Шифр: цифры 61 — статично зелёные, а ПОЛОСА под ними бежит слева направо,
-   по очереди белым и зелёным (2с на цвет), чтобы притянуть внимание. */
-.u61 { position: relative; }
-.u61::after {
-  content: "";
-  position: absolute;
-  left: 0; right: 0;
-  bottom: -0.06em;
-  height: 0.09em;
+/* Шифр: САМИ цифры 61 переливаются — заливка слева направо по очереди белым и
+   зелёным (2с на цвет). Через background-clip:text; !important перебивает .lime-force. */
+.fill61 {
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  background-clip: text;
+  -webkit-background-clip: text;
   background-repeat: no-repeat;
   background-image:
     linear-gradient(#a6ff00, #a6ff00),
@@ -301,5 +299,5 @@ body.pong-immersive {
   100% { background-size: 100% 100%, 100% 100%, 100% 100%; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .u61::after { animation: none; background-size: 0% 100%, 100% 100%, 100% 100%; }
+  .fill61 { animation: none; background-size: 0% 100%, 100% 100%, 100% 100%; }
 }
