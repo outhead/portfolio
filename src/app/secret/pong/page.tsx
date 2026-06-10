@@ -85,7 +85,7 @@ export default function PongPage() {
   const prevScoreFx = useRef<[number, number]>([0, 0]);
   // ─── буст-липучка ───
   const stickArmed = useRef<[number, number]>([0, 0]);  // expiry «взведённости» по игрокам [host, guest]
-  const stuck = useRef<{ b: Ball; owner: 0 | 1; off: number; until: number; since: number } | null>(null); // у хоста
+  const stuck = useRef<{ b: Ball; owner: 0 | 1; off: number; until: number; since: number; spd: number } | null>(null); // у хоста (spd — скорость на входе, с ней же отлипнет)
   const guestDown = useRef(false); // палец гостя на экране (из paddle-пакетов) — для запуска липучки
   const stuckNet = useRef<{ i: number; owner: 0 | 1; off: number } | null>(null);           // у гостя, из пакетов
   const onReleaseRef = useRef<(owner: 0 | 1) => void>(() => {});      // запуск прилипшего мяча
@@ -675,8 +675,14 @@ export default function PongPage() {
       const W = st.owner === 0 ? pw1.current : pw2.current;
       const px = st.owner === 0 ? px1.current : px2Eff.current;
       const c = px + W / 2;
-      st.b.vy = (st.owner === 0 ? -1 : 1) * BASE * 1.6;
-      st.b.vx = clamp(((st.b.x - c) / (W / 2)) * 3, -4, 4);
+      // отлипаем с той же скоростью, с которой прилипли (а не фиксированной):
+      // vy в сторону соперника, vx — от точки на ракетке, |v| ≈ скорости входа.
+      const dirY = st.owner === 0 ? -1 : 1;
+      const spd = Math.max(st.spd || BASE * 1.6, BASE);
+      const vxCap = Math.min(4, spd * 0.7);
+      const vx = clamp(((st.b.x - c) / (W / 2)) * 3, -vxCap, vxCap);
+      st.b.vx = vx;
+      st.b.vy = dirY * Math.sqrt(Math.max(spd * spd - vx * vx, (spd * 0.5) ** 2));
       st.b.last = st.owner;
       paddleHitAt.current[st.owner] = performance.now();
       sparks(st.b.x, st.b.y, "#FF6EC7", 16, 3, st.b.vx, st.b.vy);
@@ -700,7 +706,8 @@ export default function PongPage() {
       const now = performance.now();
       if (stickArmed.current[1] > now && !stuck.current) {
         stickArmed.current[1] = 0;
-        stuck.current = { b: best, owner: 1, off: clamp(cx, R, FW - R) - px2Eff.current, until: now + 2500, since: now };
+        const spdIn = Math.max(Math.hypot(best.vx, best.vy), Number(p.vx) ? Math.abs(Number(p.vx)) : 0);
+        stuck.current = { b: best, owner: 1, off: clamp(cx, R, FW - R) - px2Eff.current, until: now + 2500, since: now, spd: spdIn || BASE * 1.6 };
         best.x = clamp(cx, R, FW - R); best.y = TOP_Y + PH + R; best.vx = 0; best.vy = 0; best.last = 1;
         sparks(best.x, best.y, "#FF6EC7", 14, 2.6);
         return;
@@ -836,7 +843,7 @@ export default function PongPage() {
                 b.x >= px1.current - R && b.x <= px1.current + W1 + R) {
               if (stickArmed.current[0] > now && !stuck.current) {
                 stickArmed.current[0] = 0;
-                stuck.current = { b, owner: 0, off: b.x - px1.current, until: now + 2500, since: now };
+                stuck.current = { b, owner: 0, off: b.x - px1.current, until: now + 2500, since: now, spd: Math.hypot(b.vx, b.vy) };
                 b.y = BOTTOM_Y - R; b.vx = 0; b.vy = 0; b.last = 0;
                 sparks(b.x, b.y, "#FF6EC7", 14, 2.6);
                 break;
@@ -851,7 +858,7 @@ export default function PongPage() {
                 b.x >= p2x - R && b.x <= p2x + W2 + R) {
               if (stickArmed.current[1] > now && !stuck.current) {
                 stickArmed.current[1] = 0;
-                stuck.current = { b, owner: 1, off: b.x - p2x, until: now + 2500, since: now };
+                stuck.current = { b, owner: 1, off: b.x - p2x, until: now + 2500, since: now, spd: Math.hypot(b.vx, b.vy) };
                 b.y = TOP_Y + PH + R; b.vx = 0; b.vy = 0; b.last = 1;
                 sparks(b.x, b.y, "#FF6EC7", 14, 2.6);
                 break;
