@@ -6,6 +6,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { FileDown, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import LedLogo from "@/components/LedLogo";
+import LedText from "@/components/LedText";
 
 const navLinks: Array<{ href: string; label: string; goal: string }> = [
   { href: "/#portfolio", label: "Работы", goal: "nav_portfolio" },
@@ -107,11 +108,12 @@ export default function Header() {
                 key={link.href}
                 href={link.href}
                 data-ym-goal={link.goal}
-                className={`relative text-[13px] 2xl:text-[14px] font-normal tracking-[0.12em] uppercase no-underline transition-colors duration-200 group min-h-[44px] flex items-center ${
+                aria-label={link.label}
+                className={`relative no-underline transition-colors duration-200 group min-h-[44px] flex items-center ${
                   isActive ? "text-white" : "text-white/65 hover:text-white"
                 }`}
               >
-                {link.label}
+                <LedText text={link.label} className="h-[11px] 2xl:h-[12px] w-auto" />
                 <span className={`absolute -bottom-1 left-0 h-px bg-[#A6FF00] transition-all duration-300 ${
                   isActive ? "w-full" : "w-0 group-hover:w-full"
                 }`} />
@@ -126,10 +128,11 @@ export default function Header() {
             target="_blank"
             data-ym-goal="cta_cv"
             data-ym-goal-params='{"placement":"header"}'
-            className="inline-flex items-center gap-1.5 text-[13px] tracking-[0.12em] uppercase text-white/65 no-underline hover:text-white transition-colors border border-white/[0.08] hover:border-white/25 rounded px-3 py-2 min-h-[44px]"
+            aria-label="Скачать CV"
+            className="inline-flex items-center gap-1.5 text-white/65 no-underline hover:text-white transition-colors border border-white/[0.08] hover:border-white/25 rounded px-3 py-2 min-h-[44px]"
           >
             <FileDown className="w-3.5 h-3.5 text-[#A6FF00]" strokeWidth={2} />
-            CV
+            <LedText text="CV" className="h-[11px] w-auto" />
           </Link>
         </div>
 
@@ -166,10 +169,11 @@ export default function Header() {
                     href={link.href}
                     data-ym-goal={link.goal}
                     data-ym-goal-params='{"placement":"mobile_menu"}'
-                    className="text-sm tracking-[0.1em] uppercase text-white/65 no-underline hover:text-[#A6FF00] transition-colors min-h-[44px] flex items-center"
+                    aria-label={link.label}
+                    className="text-white/65 no-underline hover:text-[#A6FF00] transition-colors min-h-[44px] flex items-center"
                     onClick={() => setMenuOpen(false)}
                   >
-                    {link.label}
+                    <LedText text={link.label} className="h-[12px] w-auto" />
                   </Link>
                 ))}
                 <Link
@@ -177,10 +181,11 @@ export default function Header() {
                   target="_blank"
                   data-ym-goal="cta_cv"
                   data-ym-goal-params='{"placement":"mobile_menu"}'
-                  className="inline-flex items-center gap-2 text-sm tracking-[0.1em] uppercase text-white/40 no-underline hover:text-white/60 transition-colors mt-2 pt-4 border-t border-white/[0.06] min-h-[44px]"
+                  aria-label="Скачать CV"
+                  className="inline-flex items-center gap-2 text-white/40 no-underline hover:text-white/60 transition-colors mt-2 pt-4 border-t border-white/[0.06] min-h-[44px]"
                 >
                   <FileDown className="w-4 h-4 text-[#A6FF00]" strokeWidth={2} />
-                  Скачать CV
+                  <LedText text="Скачать CV" className="h-[12px] w-auto" />
                 </Link>
               </nav>
             </motion.div>
