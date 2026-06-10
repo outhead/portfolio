@@ -94,7 +94,7 @@ export default function Header() {
           <LedLogo className="h-4 md:h-[18px] w-auto" />
         </Link>
 
-        <nav aria-label="Основная навигация" className="hidden md:flex gap-6 absolute left-1/2 -translate-x-1/2">
+        <nav aria-label="Основная навигация" className="hidden md:flex gap-4 lg:gap-6 lg:absolute lg:left-1/2 lg:-translate-x-1/2">
           {navLinks.map((link) => {
             // Определяем активный пункт: для якорей — по активной секции на главной,
             // для внешних страниц (/experiments, /speaking, /mentoring) — по pathname
