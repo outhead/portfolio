@@ -54,6 +54,8 @@ type Stage = {
   bonus?: { label: string; href: string };
 };
 
+// Порог = число нажатий до фразы. Сколько фраз — столько и кликов до секрета:
+// секрет открывается на 5-м нажатии (последняя фраза).
 const STAGES: Stage[] = [
   {
     id: "0",
@@ -74,20 +76,20 @@ const STAGES: Stage[] = [
     accent: ".",
   },
   {
-    id: "15",
-    threshold: 15,
+    id: "3",
+    threshold: 3,
     headline: "Привет, СДВГ. Помни: слабости всегда можно обратить в силу",
     accent: ".",
   },
   {
-    id: "30",
-    threshold: 30,
+    id: "4",
+    threshold: 4,
     headline: "Можно остановиться. Но зачем",
     accent: ".",
   },
   {
-    id: "46",
-    threshold: 46,
+    id: "5",
+    threshold: 5,
     headline: "Я рад, что тебе нравится эта кнопка. Возможно тебе понравится и это",
     accent: ".",
     bonus: {
@@ -444,7 +446,7 @@ export default function FinalCTA() {
                   Grid-стек (оба состояния в одной ячейке): контейнер сам тянется
                   под текущий заголовок. Без фиксированной min-h — иначе длинные
                   заголовки на узких экранах вылезали и перекрывали кнопки. */}
-              <div className="grid">
+              <div className="grid" style={{ minHeight: "clamp(120px, 15vw, 215px)" }}>
                 <AnimatePresence>
                   <motion.h2
                     key={stage.id}

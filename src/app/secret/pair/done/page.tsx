@@ -1,14 +1,19 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import confetti from "canvas-confetti";
 
 export default function PairDone() {
+  // переносим комнату/роль в пинг-понг — играем тем же составом, без новой ссылки
+  const [pongHref, setPongHref] = useState("/secret/pong");
   useEffect(() => {
     const colors = ["#A6FF00", "#D9FF66", "#ECFFB3", "#FFFFFF"];
     confetti({ particleCount: 150, spread: 120, startVelocity: 45, origin: { y: 0.6 }, colors, disableForReducedMotion: true });
+    const p = new URLSearchParams(window.location.search);
+    const room = p.get("room");
+    if (room) setPongHref(`/secret/pong?room=${room}${p.get("host") === "1" ? "&host=1" : ""}`);
   }, []);
 
   return (

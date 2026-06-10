@@ -68,6 +68,7 @@ export default function PairPage() {
   const [keyInput, setKeyInput] = useState("");
   const [keyWrong, setKeyWrong] = useState(false);
   const [ctrlDone, setCtrlDone] = useState(false);
+  const [token, setToken] = useState(""); // код пары — переиспользуем как комнату для пинг-понга
 
   const targetRef = useRef("");
   const claimedRef = useRef(false);
@@ -85,6 +86,7 @@ export default function PairPage() {
         if (r.error === "full") return setPhase("full");
         if (r.error || !r.id) return setPhase("error");
         setId(String(r.id));
+        setToken(s);
         setSwitches(String(r.switches || "0".repeat(LEN)));
         setSolved(!!r.solved);
         setPhase("controller");
@@ -95,6 +97,7 @@ export default function PairPage() {
         setTarget(String(r.target));
         targetRef.current = String(r.target);
         setSwitches(String(r.switches || "0".repeat(LEN)));
+        setToken(String(r.token));
         setShareUrl(`${window.location.origin}/secret/pair?s=${r.token}`);
         setPhase("viewer");
       }
@@ -218,7 +221,7 @@ export default function PairPage() {
                 <p className="text-[14px] text-white/70 mb-2">Сошлось. Ключ:</p>
                 <p className="font-p95 text-[#A6FF00] tracking-[0.2em]" style={{ fontSize: "clamp(34px,9vw,56px)" }}>{reward}</p>
                 <p className="mt-3 text-[13px] text-white/55 max-w-xs">Продиктуй его напарнику — он введёт и откроет финал.</p>
-                <Link href="/secret/pair/done" className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[13px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
+                <Link href={`/secret/pair/done?room=${token}&host=1`} className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[13px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
                   <span className="leading-none translate-y-[1px]">Дальше</span><span className="leading-none">→</span>
                 </Link>
               </div>
@@ -258,7 +261,7 @@ export default function PairPage() {
             ) : ctrlDone ? (
               <div className="mt-10 flex flex-col items-center">
                 <p className="text-[15px] text-[#A6FF00] mb-4">Ключ принят.</p>
-                <Link href="/secret/pair/done" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[13px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
+                <Link href={`/secret/pair/done?room=${token}`} className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[13px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
                   <span className="leading-none translate-y-[1px]">Дальше</span><span className="leading-none">→</span>
                 </Link>
               </div>

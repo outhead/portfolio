@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
+import { Onest } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
+
+const bodyFont = Onest({
+  subsets: ["latin", "cyrillic"],
+  display: "swap",
+  variable: "--font-body",
+});
 import Footer from "@/components/Footer";
 import YandexMetrika from "@/components/YandexMetrika";
 import ScrollGoals from "@/components/ScrollGoals";
@@ -163,7 +170,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased">
+      <body className={`antialiased ${bodyFont.variable}`}>
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[300] focus:bg-[#A6FF00] focus:text-black focus:px-4 focus:py-2 focus:rounded focus:text-sm focus:font-semibold"

@@ -1,4 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap");
 @import "tailwindcss";
 
 /* === FONTS === */
@@ -31,7 +30,7 @@ html.js-scroll-smooth {
 body {
   background: #000;
   color: #fff;
-  font-family: "Inter", -apple-system, sans-serif;
+  font-family: var(--font-body), "Onest", -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -62,7 +61,7 @@ button:focus-visible {
 
 /* === SECTION LABELS (legacy — used by some components) === */
 .section-label {
-  font-family: "Inter", monospace;
+  font-family: var(--font-body), monospace;
   font-size: 10px;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -80,19 +79,6 @@ button:focus-visible {
 .lime-force {
   color: #a6ff00 !important;
   -webkit-text-fill-color: #a6ff00 !important;
-}
-
-/* === HERO GRADIENT TEXT === */
-.gradient-text {
-  background: linear-gradient(
-    135deg,
-    #fff 0%,
-    rgba(166, 255, 0, 0.8) 50%,
-    #fff 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 /* === SCROLL PROGRESS BAR === */
@@ -150,6 +136,29 @@ button:focus-visible {
 
 main {
   animation: pageEntrance 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* === MOTION TOKENS (Emil Kowalski lens) === */
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+/* Press feedback: всё нажимаемое физически отзывается на нажатие.
+   :where() — нулевая специфичность, ничего не перебивает. */
+:where(button, [role="button"], a.cta, .btn-press) {
+  transition: transform 160ms var(--ease-out);
+}
+:where(button, [role="button"], a.cta, .btn-press):active:not(:disabled) {
+  transform: scale(0.97);
+}
+@media (prefers-reduced-motion: reduce) {
+  :where(button, [role="button"], a.cta, .btn-press) {
+    transition: none;
+  }
+  :where(button, [role="button"], a.cta, .btn-press):active:not(:disabled) {
+    transform: none;
+  }
 }
 
 /* === SCREEN READER ONLY === */

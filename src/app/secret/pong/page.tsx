@@ -45,6 +45,7 @@ export default function PongPage() {
   const phaseRef = useRef<Phase>("connecting");
   const myY = useRef(H / 2 - PADDLE_H / 2);
   const bothRef = useRef(false);
+  const winnerRef = useRef<0 | 1 | null>(null);
 
   const setPhaseBoth = (p: Phase) => { phaseRef.current = p; setPhase(p); };
 
@@ -54,12 +55,19 @@ export default function PongPage() {
 
   // подключение
   useEffect(() => {
-    const sb = createClient(SB_URL, SB_KEY, { realtime: { params: { eventsPerSecond: 40 } } });
+    const sb = createClient(SB_URL, SB_KEY, { realtime: { params: { eventsPerSecond: 60 } } });
     const params = new URLSearchParams(window.location.search);
-    let code = params.get("s") || "";
-    const r: "host" | "guest" = code ? "guest" : "host";
+    // room+host — вход из пары (без новой ссылки); s — самостоятельный гость; иначе хост.
+    const room = params.get("room");
+    const sParam = params.get("s");
+    let code = room || sParam || "";
+    const r: "host" | "guest" = room
+      ? (params.get("host") === "1" ? "host" : "guest")
+      : (sParam ? "guest" : "host");
     roleRef.current = r; setRole(r);
-    if (!code) { code = rndCode(); setShareUrl(`${window.location.origin}/secret/pong?s=${code}`); }
+    if (!code) code = rndCode();
+    // ссылку для шеринга показываем только самостоятельному хосту (не в паре)
+    if (r === "host" && !room) setShareUrl(`${window.location.origin}/secret/pong?s=${code}`);
 
     const ch = sb.channel(`pong-${code}`, {
       config: { broadcast: { self: false }, presence: { key: r } },
@@ -67,14 +75,20 @@ export default function PongPage() {
     chRef.current = ch;
 
     ch.on("broadcast", { event: "state" }, ({ payload }) => {
-      // гость принимает авторитетное состояние
+      // гость принимает авторитетное состояние. ВАЖНО: setState только при
+      // реальном изменении — иначе поток 30-60 сообщений/с вызывал ре-рендеры
+      // и подвешивал вкладку (особенно мобильную). Мяч/ракетка живут в ref'ах
+      // и рисуются в rAF без ре-рендера.
       if (roleRef.current !== "guest") return;
       ball.current.x = payload.bx; ball.current.y = payload.by;
       p1y.current = payload.p1y;
-      sc.current = [payload.s1, payload.s2];
-      setScore([payload.s1, payload.s2]);
-      if (payload.phase) setPhaseBoth(payload.phase);
-      if (payload.winner === 0 || payload.winner === 1) setWinner(payload.winner);
+      if (payload.s1 !== sc.current[0] || payload.s2 !== sc.current[1]) {
+        sc.current = [payload.s1, payload.s2];
+        setScore([payload.s1, payload.s2]);
+      }
+      if (payload.phase && payload.phase !== phaseRef.current) setPhaseBoth(payload.phase);
+      const w = payload.winner;
+      if ((w === 0 || w === 1) && w !== winnerRef.current) { winnerRef.current = w; setWinner(w); }
     });
     ch.on("broadcast", { event: "paddle" }, ({ payload }) => {
       if (roleRef.current !== "host") return;
@@ -118,7 +132,7 @@ export default function PongPage() {
   }, []);
 
   function startMatch() {
-    sc.current = [0, 0]; setScore([0, 0]); setWinner(null);
+    sc.current = [0, 0]; setScore([0, 0]); winnerRef.current = null; setWinner(null);
     p1y.current = H / 2 - PADDLE_H / 2; p2y.current = H / 2 - PADDLE_H / 2;
     serve(Math.random() < 0.5 ? 1 : -1);
     setPhaseBoth("playing");
@@ -217,7 +231,7 @@ export default function PongPage() {
     function goalReset(lastDir: number) {
       if (sc.current[0] >= WIN_SCORE || sc.current[1] >= WIN_SCORE) {
         const w = sc.current[0] > sc.current[1] ? 0 : 1;
-        setWinner(w); setPhaseBoth("over");
+        winnerRef.current = w; setWinner(w); setPhaseBoth("over");
         ball.current.vx = 0; ball.current.vy = 0;
         return;
       }
@@ -266,15 +280,19 @@ export default function PongPage() {
 
               {phase === "waiting" ? (
                 role === "host" ? (
-                  <>
-                    <p className="text-[15px] text-white/80 mb-1">Жду соперника</p>
-                    <p className="text-[13px] text-white/45 mb-5 max-w-xs">Кинь ссылку другу — игра начнётся, когда он откроет.</p>
-                    <button type="button" onClick={copy}
-                      className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[13px] tracking-[0.1em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors">
-                      <span className="leading-none translate-y-[1px]">{copied ? "скопировано" : "копировать ссылку"}</span>
-                    </button>
-                    {shareUrl ? <p className="mt-3 text-[11px] text-white/30 break-all max-w-xs">{shareUrl}</p> : null}
-                  </>
+                  shareUrl ? (
+                    <>
+                      <p className="text-[15px] text-white/80 mb-1">Жду соперника</p>
+                      <p className="text-[13px] text-white/45 mb-5 max-w-xs">Кинь ссылку другу — игра начнётся, когда он откроет.</p>
+                      <button type="button" onClick={copy}
+                        className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[13px] tracking-[0.1em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors">
+                        <span className="leading-none translate-y-[1px]">{copied ? "скопировано" : "копировать ссылку"}</span>
+                      </button>
+                      <p className="mt-3 text-[11px] text-white/30 break-all max-w-xs">{shareUrl}</p>
+                    </>
+                  ) : (
+                    <p className="text-white/70 text-sm">Жду, пока напарник откроет пинг-понг…</p>
+                  )
                 ) : (
                   <p className="text-white/70 text-sm">Готов. Ждём, пока хост начнёт…</p>
                 )

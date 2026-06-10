@@ -412,7 +412,7 @@ function SkillsAccordion({ panels }: { panels: SkillPanel[] }) {
             <h3 className="font-p95 text-[clamp(22px,2.6vw,36px)] leading-[0.98] uppercase text-white mb-4">
               {p.title}
             </h3>
-            <p className="text-sm md:text-[15px] text-white/60 leading-relaxed mb-6">{p.body}</p>
+            <p className="text-sm md:text-[15px] text-white/74 leading-relaxed mb-6">{p.body}</p>
             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 mt-auto">
               {p.items.map((item) => (
                 <li
@@ -453,7 +453,7 @@ function SkillsAccordion({ panels }: { panels: SkillPanel[] }) {
             >
               <p.Icon className="w-5 h-5 text-white/40 group-hover:text-white/70 transition-colors" strokeWidth={1.5} />
               <div
-                className="font-p95 text-[15px] tracking-[0.2em] uppercase text-white/55 group-hover:text-white/85 transition-colors whitespace-nowrap"
+                className="font-p95 text-[15px] tracking-[0.2em] uppercase text-white/72 group-hover:text-white/85 transition-colors whitespace-nowrap"
                 style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
               >
                 {p.label}
@@ -467,7 +467,7 @@ function SkillsAccordion({ panels }: { panels: SkillPanel[] }) {
             {/* Mobile свёрнутый */}
             <div className={`md:hidden ${isActive ? "hidden" : "flex"} items-center justify-between px-5 py-4`}>
               <div className="flex items-center gap-3">
-                <p.Icon className="w-4 h-4 text-white/50" strokeWidth={1.5} />
+                <p.Icon className="w-4 h-4 text-white/70" strokeWidth={1.5} />
                 <div className="font-p95 text-[15px] tracking-[0.2em] uppercase text-white/75">
                   {p.label}
                 </div>
@@ -618,14 +618,14 @@ function CareerHoverList() {
                 }`}
                 aria-hidden
               />
-              <span className="shrink-0 font-p95 text-[15px] tracking-[0.2em] uppercase text-white/50 w-[88px]">
+              <span className="shrink-0 font-p95 text-[15px] tracking-[0.2em] uppercase text-white/70 w-[88px]">
                 {job.year}
               </span>
               <span className="flex-1 min-w-0 flex flex-col">
                 <span className="font-p95 text-[15px] text-white uppercase leading-tight">
                   {job.company}
                 </span>
-                <span className="text-[16px] text-white/55 leading-tight">
+                <span className="text-[16px] text-white/72 leading-tight">
                   {job.role}
                 </span>
               </span>
@@ -645,14 +645,14 @@ function CareerHoverList() {
                 }`}
                 aria-hidden
               />
-              <span className="shrink-0 font-p95 text-[16px] tracking-[0.2em] uppercase text-white/50 w-[110px]">
+              <span className="shrink-0 font-p95 text-[16px] tracking-[0.2em] uppercase text-white/70 w-[110px]">
                 {job.year}
               </span>
               <span className="flex-1 min-w-0 flex flex-row items-baseline gap-3">
                 <span className="font-p95 text-[17px] text-white uppercase leading-tight truncate">
                   {job.company}
                 </span>
-                <span className="text-[15px] text-white/55 leading-tight truncate">
+                <span className="text-[15px] text-white/72 leading-tight truncate">
                   {job.role}
                 </span>
               </span>
@@ -666,14 +666,14 @@ function CareerHoverList() {
               >
                 <div className="overflow-hidden">
                   <div className="px-7 pb-6 pl-[calc(28px+8px+24px+110px)]">
-                    <p className="text-[16px] text-white/65 leading-relaxed mb-3">
+                    <p className="text-[16px] text-white/78 leading-relaxed mb-3">
                       {job.scope}
                     </p>
                     <ul className="space-y-1.5">
                       {job.details.map((d) => (
                         <li
                           key={d}
-                          className="flex items-start gap-2 text-[15px] text-white/55 leading-snug"
+                          className="flex items-start gap-2 text-[15px] text-white/72 leading-snug"
                         >
                           <span className="mt-[7px] h-px w-2 shrink-0 bg-white/30" />
                           <span>{d}</span>
@@ -697,14 +697,14 @@ function CareerHoverList() {
                   transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
                 >
                   <div className="px-5 pb-4 pl-[calc(20px+8px+16px+88px)]">
-                    <p className="text-[16px] text-white/65 leading-relaxed mb-3">
+                    <p className="text-[16px] text-white/78 leading-relaxed mb-3">
                       {job.scope}
                     </p>
                     <ul className="space-y-1.5">
                       {job.details.map((d) => (
                         <li
                           key={d}
-                          className="flex items-start gap-2 text-[16px] text-white/55 leading-snug"
+                          className="flex items-start gap-2 text-[16px] text-white/72 leading-snug"
                         >
                           <span className="mt-[7px] h-px w-2 shrink-0 bg-white/30" />
                           <span>{d}</span>
@@ -830,7 +830,7 @@ function ServiceTile({ tile }: { tile: ServiceTileData }) {
 
       {/* Описание — прижато к низу карточки (на место бывших items),
           mt-auto выравнивает низ всех 3 карточек по горизонтали. */}
-      <p className="mt-auto text-[15px] md:text-[16px] leading-relaxed text-white/60">
+      <p className="mt-auto text-[15px] md:text-[16px] leading-relaxed text-white/74">
         {body}
       </p>
     </motion.div>
@@ -1023,7 +1023,7 @@ function Toolbox() {
                 title={t.name}
                 className="group relative rounded-xl border border-white/[0.06] bg-white/[0.02] hover:border-[#A6FF00]/30 hover:bg-white/[0.035] transition-colors p-5 md:p-6 flex flex-col items-start justify-between min-h-[130px] md:min-h-[150px] overflow-hidden"
               >
-                <div className="w-7 h-7 md:w-8 md:h-8 text-white/55 group-hover:text-white transition-colors">
+                <div className="w-7 h-7 md:w-8 md:h-8 text-white/72 group-hover:text-white transition-colors">
                   {t.icon}
                 </div>
                 <span className="font-p95 text-[16px] md:text-[15px] tracking-[0.18em] uppercase text-white/70 group-hover:text-white transition-colors">
@@ -1177,7 +1177,7 @@ export default function PreviewHome() {
 
                     {/* Mobile-only: «Работал в» в потоке под кнопками — без перекрытия */}
                     <div className="md:hidden mt-2 flex flex-col gap-3">
-                      <span className="font-p95 text-[14px] tracking-[0.2em] uppercase text-white/50">
+                      <span className="font-p95 text-[14px] tracking-[0.2em] uppercase text-white/70">
                         Работал в
                       </span>
                       <div className="flex items-center gap-5 flex-wrap">
@@ -1292,7 +1292,7 @@ export default function PreviewHome() {
                           <span className="font-p95 text-[16px] md:text-[17px] tracking-[0.18em] uppercase text-white">
                             {item.label}
                           </span>
-                          <span className="block text-[12px] md:text-[13px] tracking-[0.06em] uppercase text-white/55 font-light leading-snug mt-1">
+                          <span className="block text-[12px] md:text-[13px] tracking-[0.06em] uppercase text-white/72 font-light leading-snug mt-1">
                             {item.note}
                           </span>
                         </span>
@@ -1333,7 +1333,7 @@ export default function PreviewHome() {
                       <div className="font-p95 text-[clamp(32px,3.6vw,52px)] uppercase tracking-tight text-white leading-none">
                         {item.value}
                       </div>
-                      <div className="text-[11px] md:text-[12px] tracking-[0.04em] uppercase text-white/55 leading-[1.4] font-light">
+                      <div className="text-[11px] md:text-[12px] tracking-[0.04em] uppercase text-white/72 leading-[1.4] font-light">
                         {item.label}
                       </div>
                     </div>
@@ -1380,14 +1380,14 @@ export default function PreviewHome() {
                 <div className="relative h-full min-h-[280px] md:min-h-[340px] rounded-2xl overflow-hidden border-2 border-white/[0.06] group-hover:border-[#A6FF00]/40 bg-[#0a0a0a] transition-colors duration-300 p-6 md:p-7 flex flex-col justify-between">
                   <PillsBackdrop />
                   <div className="relative z-[2]">
-                    <div className="font-p95 text-[16px] md:text-[15px] tracking-[0.2em] uppercase text-white/50 mb-3">
+                    <div className="font-p95 text-[16px] md:text-[15px] tracking-[0.2em] uppercase text-white/70 mb-3">
                       ЭКСПЕРИМЕНТЫ
                     </div>
                     <h3 className="font-p95 text-[clamp(22px,3vw,36px)] uppercase leading-[0.95] text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
                       Код,<br />WebGL,<br />шейдеры.
                     </h3>
                   </div>
-                  <span className="relative z-[2] inline-flex items-center gap-2 text-sm tracking-[0.1em] uppercase text-white/60 group-hover:text-[#A6FF00] transition-colors mt-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
+                  <span className="relative z-[2] inline-flex items-center gap-2 text-sm tracking-[0.1em] uppercase text-white/74 group-hover:text-[#A6FF00] transition-colors mt-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
                     Смотреть
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" strokeWidth={2} />
                   </span>
@@ -1413,7 +1413,7 @@ export default function PreviewHome() {
                     }}
                     className="group inline-flex items-center gap-3 px-6 md:px-8 py-3 md:py-4 rounded-full border border-white/[0.12] bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/25 transition-colors"
                   >
-                    <Plus className="w-4 h-4 text-white/60 group-hover:text-[#A6FF00] transition-colors" strokeWidth={2} />
+                    <Plus className="w-4 h-4 text-white/74 group-hover:text-[#A6FF00] transition-colors" strokeWidth={2} />
                     <span className="font-p95 text-[15px] md:text-[16px] tracking-[0.18em] uppercase text-white/80 group-hover:text-white transition-colors">
                       Показать ещё {extraProjects.length} кейса
                     </span>
@@ -1662,11 +1662,11 @@ export default function PreviewHome() {
                       <h3 className="font-p95 text-[clamp(20px,2.6vw,32px)] uppercase leading-[1] text-white mb-4 max-w-sm">
                         {t.title}
                       </h3>
-                      <p className="text-sm md:text-[15px] text-white/55 leading-relaxed max-w-md">
+                      <p className="text-sm md:text-[15px] text-white/72 leading-relaxed max-w-md">
                         {t.body}
                       </p>
                     </div>
-                    <span className="inline-flex items-center gap-2 text-xs tracking-[0.1em] uppercase text-white/55 group-hover:text-white transition-colors mt-6 pt-5 border-t border-white/[0.06]">
+                    <span className="inline-flex items-center gap-2 text-xs tracking-[0.1em] uppercase text-white/72 group-hover:text-white transition-colors mt-6 pt-5 border-t border-white/[0.06]">
                       {t.cta}
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" strokeWidth={2} />
                     </span>
@@ -1710,7 +1710,7 @@ export default function PreviewHome() {
                   className="object-cover grayscale contrast-[1.05]"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4 flex items-center gap-1.5 text-[11px] tracking-[0.2em] uppercase text-white/60">
+                <div className="absolute bottom-4 left-4 right-4 flex items-center gap-1.5 text-[11px] tracking-[0.2em] uppercase text-white/74">
                   <span className="relative flex h-1.5 w-1.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
                     <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#A6FF00]" />
@@ -1800,7 +1800,7 @@ export default function PreviewHome() {
                 >
                   <div className="relative h-full min-h-[120px] md:min-h-[130px] rounded-2xl overflow-hidden border border-white/[0.08] bg-white/[0.015] hover:border-white/[0.2] hover:bg-white/[0.035] transition-colors p-5 flex flex-col justify-between">
                     <div className="flex items-start justify-between">
-                      <div className="font-p95 text-[12px] md:text-[15px] tracking-[0.2em] uppercase text-white/50">
+                      <div className="font-p95 text-[12px] md:text-[15px] tracking-[0.2em] uppercase text-white/70">
                         {link.label.toUpperCase()}
                       </div>
                       <link.Icon className="w-4 h-4 text-white/45 group-hover:text-white transition-colors" strokeWidth={1.75} />
@@ -1821,7 +1821,7 @@ export default function PreviewHome() {
                   <h4 className="font-p95 text-[clamp(20px,2.4vw,30px)] uppercase tracking-[0.02em] text-white leading-none">
                     Москва, Россия
                   </h4>
-                  <div className="inline-flex items-center gap-2.5 font-p95 text-[12px] md:text-[15px] tracking-[0.22em] uppercase text-white/55">
+                  <div className="inline-flex items-center gap-2.5 font-p95 text-[12px] md:text-[15px] tracking-[0.22em] uppercase text-white/72">
                     <span className="relative inline-flex items-center justify-center w-3 h-3 shrink-0">
                       <span className="absolute inset-0 rounded-full bg-[#A6FF00]/30 animate-ping" />
                       <span className="relative w-2 h-2 rounded-full bg-[#A6FF00] shadow-[0_0_10px_#A6FF00]" />
