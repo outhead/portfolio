@@ -420,7 +420,11 @@ export default function ParticleSphere({
       canvas.addEventListener("pointerup", onPointerUp);
       canvas.addEventListener("pointercancel", onPointerUp);
       canvas.style.cursor = "grab";
-      canvas.style.touchAction = "none";
+      // На таче оставляем вертикальный скролл страницы (pan-y): тап и
+      // горизонтальный drag работают, свайп вверх/вниз прокручивает сайт.
+      canvas.style.touchAction = window.matchMedia("(pointer: coarse)").matches
+        ? "pan-y"
+        : "none";
       // Родительская обёртка hero часто имеет pointer-events:none (декор);
       // явно включаем события на canvas, чтобы драг доходил до шара.
       canvas.style.pointerEvents = "auto";

@@ -1081,7 +1081,7 @@ export default function PreviewHome() {
                 {/* Сфера — на десктопе абсолютно справа, на мобилке банером сверху */}
                 <div
                   aria-hidden
-                  className="absolute inset-x-0 top-0 h-[208px] md:inset-y-0 md:left-auto md:right-0 md:h-auto md:w-[40%] pointer-events-none"
+                  className="absolute inset-x-0 top-0 h-[208px] md:inset-y-0 md:left-auto md:right-0 md:h-auto md:w-[40%] pointer-events-none z-[2]"
                 >
                   <div
                     className="absolute inset-0"
