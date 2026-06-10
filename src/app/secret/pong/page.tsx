@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { createClient, type RealtimeChannel } from "@supabase/supabase-js";
 import confetti from "canvas-confetti";
 import { connectP2P, type P2PHandle } from "./rtc";
+import { connectRelay, type Relay } from "./pongRelay";
 
 /**
  * Сетевой ретро-пинг-понг (двое, по ссылке или сразу из кооп-пары через ?room=).
@@ -11,12 +11,6 @@ import { connectP2P, type P2PHandle } from "./rtc";
  * Хост авторитетно считает физику и шлёт состояние через Supabase Realtime (~30 Гц);
  * гость шлёт только X своей ракетки. Перед подачей — обратный отсчёт 3-2-1.
  */
-const SB_URL =
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://hvkygaghhxgaolxemndr.supabase.co";
-const SB_KEY =
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2a3lnYWdoaHhnYW9seGVtbmRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzMDYwNjAsImV4cCI6MjA5NDg4MjA2MH0.IoRNKO3Jb51k1XA2y7-Q-PSaxpPhBj56G1SZJaKKau4";
-
 // Канонические координаты поля (портрет). Низ = host (p1), верх = guest (p2).
 const FW = 420, FH = 640;
 const R = 9;                 // радиус мяча
@@ -45,7 +39,7 @@ export default function PongPage() {
   const [count, setCount] = useState(0); // число обратного отсчёта (3..1, 0=скрыт)
 
   const roleRef = useRef<"host" | "guest">("host");
-  const chRef = useRef<RealtimeChannel | null>(null);
+  const chRef = useRef<Relay | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   // P2P: основной транспорт — WebRTC DataChannel; Supabase Realtime остаётся фолбэком
   const p2pRef = useRef<P2PHandle | null>(null);
@@ -123,7 +117,6 @@ export default function PongPage() {
 
   // ─── подключение ───
   useEffect(() => {
-    const sb = createClient(SB_URL, SB_KEY, { realtime: { params: { eventsPerSecond: 60 } } });
     const params = new URLSearchParams(window.location.search);
     const room = params.get("room");
     const sParam = params.get("s");
@@ -135,7 +128,9 @@ export default function PongPage() {
     if (!code) code = rndCode();
     if (r === "host" && !room) setShareUrl(`${window.location.origin}/secret/pong?s=${code}`);
 
-    const ch = sb.channel(`pong-${code}`, { config: { broadcast: { self: false }, presence: { key: r } } });
+    // Запасной транспорт — Cloudflare WS-релей (свой домен, доступен в РФ без VPN).
+    // Основной — P2P ниже; релей используется, пока/если P2P не собрался.
+    const ch = connectRelay(code);
     chRef.current = ch;
 
     // ─── общие обработчики для обоих транспортов (P2P и Realtime) ───
@@ -178,21 +173,15 @@ export default function PongPage() {
           (phaseRef.current === "waiting" || phaseRef.current === "connecting")) resumeOrStart();
     };
 
-    ch.on("broadcast", { event: "state" }, ({ payload }) => {
-      if (useP2P.current) return; // P2P активен — relay-дубли игнорим
-      applyState(payload);
-    });
-    ch.on("broadcast", { event: "paddle" }, ({ payload }) => {
-      if (useP2P.current) return;
-      applyPaddle(payload);
-    });
-    ch.on("broadcast", { event: "rematch" }, () => { if (roleRef.current === "host") startMatch(); });
-    ch.on("broadcast", { event: "hit" }, ({ payload }) => { applyHitRef.current(payload); });
-    ch.on("broadcast", { event: "release" }, () => { onReleaseRef.current(1); });
-    ch.on("broadcast", { event: "hello" }, () => {
+    ch.on("state", (payload) => { if (useP2P.current) return; applyState(payload); });
+    ch.on("paddle", (payload) => { if (useP2P.current) return; applyPaddle(payload); });
+    ch.on("rematch", () => { if (roleRef.current === "host") startMatch(); });
+    ch.on("hit", (payload) => { applyHitRef.current(payload as Record<string, unknown>); });
+    ch.on("release", () => { onReleaseRef.current(1); });
+    ch.on("hello", () => {
       if (roleRef.current === "host") {
         onHelloMsg();
-        ch.send({ type: "broadcast", event: "hello", payload: {} });
+        ch.send("hello", {});
       }
     });
 
@@ -226,9 +215,9 @@ export default function PongPage() {
     const connT = setTimeout(() => {
       if (phaseRef.current === "connecting") setPhaseBoth("waiting");
     }, 2500);
-    ch.on("presence", { event: "sync" }, () => {
+    ch.onPeers((count) => {
       if (useP2P.current) return; // при живом P2P уход соперника ловим по закрытию канала
-      const both = Object.keys(ch.presenceState()).length >= 2;
+      const both = count >= 2;
       if (!both && phaseRef.current !== "waiting" && phaseRef.current !== "connecting") {
         // соперник ушёл
         setPhaseBoth("waiting");
@@ -236,14 +225,11 @@ export default function PongPage() {
       if (both && roleRef.current === "host" && (phaseRef.current === "waiting" || phaseRef.current === "connecting")) resumeOrStart();
     });
 
-    ch.subscribe((status) => {
-      if (status === "SUBSCRIBED") {
-        ch.track({ at: Date.now() });
-        setPhaseBoth("waiting");
-        if (roleRef.current === "guest") {
-          const hi = () => chRef.current?.send({ type: "broadcast", event: "hello", payload: {} });
-          hi(); setTimeout(hi, 500); setTimeout(hi, 1400);
-        }
+    ch.onOpen(() => {
+      setPhaseBoth("waiting");
+      if (roleRef.current === "guest") {
+        const hi = () => chRef.current?.send("hello", {});
+        hi(); setTimeout(hi, 500); setTimeout(hi, 1400);
       }
     });
 
@@ -251,7 +237,7 @@ export default function PongPage() {
       clearTimeout(connT);
       if (countTimer.current) clearInterval(countTimer.current);
       p2pRef.current?.close(); p2pRef.current = null;
-      ch.unsubscribe(); sb.removeChannel(ch);
+      ch.close();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -327,7 +313,7 @@ export default function PongPage() {
       } else if (useP2P.current) {
         p2pRef.current?.sendCtl({ event: "release", payload: {} });
       } else {
-        chRef.current?.send({ type: "broadcast", event: "release", payload: {} });
+        chRef.current?.send("release", {});
       }
     };
     window.addEventListener("pointerup", up);
@@ -773,7 +759,7 @@ export default function PongPage() {
               lastClaim.current = nowMs;
               const claim = { x: Math.round(b.x), vx: Math.round(b.vx * 100) / 100 };
               if (useP2P.current) p2pRef.current?.sendCtl({ event: "hit", payload: claim });
-              else chRef.current?.send({ type: "broadcast", event: "hit", payload: claim });
+              else chRef.current?.send("hit", claim);
             }
           }
           b.y = clamp(b.y, -30, FH + 30);
@@ -914,11 +900,11 @@ export default function PongPage() {
             winner: phaseRef.current === "over" ? (sc.current[0] > sc.current[1] ? 0 : 1) : null,
           };
           if (p2p) p2pRef.current?.sendFast({ event: "state", payload: statePayload });
-          else ch?.send({ type: "broadcast", event: "state", payload: statePayload });
+          else ch?.send("state", statePayload);
         } else {
           const pp = { x: px2.current, v: Math.round(myVel.current * 100) / 100, d: pressed ? 1 : 0 };
           if (p2p) p2pRef.current?.sendFast({ event: "paddle", payload: pp });
-          else ch?.send({ type: "broadcast", event: "paddle", payload: pp });
+          else ch?.send("paddle", pp);
         }
       }
       draw();
@@ -942,7 +928,7 @@ export default function PongPage() {
   function rematch() {
     if (roleRef.current === "host") startMatch();
     else if (useP2P.current) p2pRef.current?.sendCtl({ event: "rematch", payload: {} });
-    else chRef.current?.send({ type: "broadcast", event: "rematch", payload: {} });
+    else chRef.current?.send("rematch", {});
   }
 
   const mine = role === "host" ? score[0] : score[1];

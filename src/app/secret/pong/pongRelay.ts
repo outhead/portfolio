@@ -8,12 +8,13 @@
 //
 // URL релея задаётся в Vercel: NEXT_PUBLIC_RELAY_URL = wss://pong-relay.<...>.workers.dev
 
-const RELAY = process.env.NEXT_PUBLIC_RELAY_URL || "";
+const RELAY = process.env.NEXT_PUBLIC_RELAY_URL || "wss://pong-relay.egor-outhead.workers.dev";
 
 export type Relay = {
   send: (event: string, payload?: unknown) => void;
   on: (event: string, cb: (payload: unknown) => void) => void;
   onPeers: (cb: (count: number) => void) => void;
+  onOpen: (cb: () => void) => void;
   close: () => void;
   readonly available: boolean;
 };
@@ -21,6 +22,7 @@ export type Relay = {
 export function connectRelay(code: string): Relay {
   const handlers: Record<string, ((p: unknown) => void)[]> = {};
   let peersCb: ((n: number) => void) | null = null;
+  let openCb: (() => void) | null = null;
   let ws: WebSocket | null = null;
   let closed = false;
   let retry = 0;
@@ -28,7 +30,7 @@ export function connectRelay(code: string): Relay {
   const open = () => {
     if (closed || !RELAY) return;
     ws = new WebSocket(`${RELAY}/room/${code}`);
-    ws.addEventListener("open", () => { retry = 0; });
+    ws.addEventListener("open", () => { retry = 0; openCb?.(); });
     ws.addEventListener("message", (ev: MessageEvent) => {
       let m: { event?: string; payload?: unknown };
       try { m = JSON.parse(ev.data as string); } catch { return; }
@@ -53,6 +55,7 @@ export function connectRelay(code: string): Relay {
     },
     on: (event, cb) => { (handlers[event] || (handlers[event] = [])).push(cb); },
     onPeers: (cb) => { peersCb = cb; },
+    onOpen: (cb) => { openCb = cb; },
     close: () => { closed = true; try { ws?.close(); } catch { /* */ } },
   };
 }
