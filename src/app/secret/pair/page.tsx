@@ -75,13 +75,15 @@ export default function PairPage() {
   const [switches, setSwitches] = useState("0".repeat(LEN));
   const [joined, setJoined] = useState(false);
   const [solved, setSolved] = useState(false);
-  const [flipping, setFlipping] = useState(false);
   const [copied, setCopied] = useState(false);
   const [token, setToken] = useState(""); // код пары — переиспользуем как комнату для пинг-понга
 
   const targetRef = useRef("");
   const claimedRef = useRef(false);
   const solvedRef = useRef(false);
+  const pendingFlips = useRef(0);  // сколько flip-запросов в полёте — пока >0, поллинг не перетирает switches
+  const switchesRef = useRef("0".repeat(LEN));
+  const setSw = (s: string) => { switchesRef.current = s; setSwitches(s); };
   const initRef = useRef(false);
 
   // init: создаём или присоединяемся
@@ -97,7 +99,7 @@ export default function PairPage() {
         if (r.error || !r.id) return setPhase("error");
         setId(String(r.id));
         setToken(s);
-        setSwitches(String(r.switches || "0".repeat(LEN)));
+        setSw(String(r.switches || "0".repeat(LEN)));
         setSolved(!!r.solved);
         setPhase("controller");
       } else {
@@ -106,7 +108,7 @@ export default function PairPage() {
         setId(String(r.id));
         setTarget(String(r.target));
         targetRef.current = String(r.target);
-        setSwitches(String(r.switches || "0".repeat(LEN)));
+        setSw(String(r.switches || "0".repeat(LEN)));
         setToken(String(r.token));
         setShareUrl(`${window.location.origin}/secret/pair?s=${r.token}`);
         setPhase("viewer");
@@ -120,7 +122,8 @@ export default function PairPage() {
     const iv = setInterval(async () => {
       const st = await pairState(id);
       if (!st) return;
-      setSwitches(st.switches);
+      // не перетираем локальное состояние, пока наши flip-и ещё в полёте
+      if (pendingFlips.current === 0) setSw(st.switches);
       setJoined(st.joined);
       if (st.solved && !solvedRef.current) {
         solvedRef.current = true;
@@ -142,11 +145,21 @@ export default function PairPage() {
   }, [id, solved]);
 
   async function flip(i: number) {
-    if (flipping || solved) return;
-    setFlipping(true);
-    const r = await pairCall("flip", { id, index: i });
-    if (typeof r.switches === "string") setSwitches(r.switches);
-    setFlipping(false);
+    if (solved) return;
+    // Оптимистично: переключаем мгновенно, сервер подтверждает в фоне.
+    // Шлём ЦЕЛЕВОЕ значение (не toggle) — повторы и гонки идемпотентны.
+    const next = switchesRef.current.split("");
+    const want = next[i] === "1" ? "0" : "1";
+    next[i] = want;
+    setSw(next.join(""));
+    pendingFlips.current++;
+    try {
+      const r = await pairCall("flip", { id, index: i, value: want });
+      // применяем ответ сервера только если это последний запрос в полёте
+      if (typeof r.switches === "string" && pendingFlips.current === 1) setSw(r.switches);
+    } finally {
+      pendingFlips.current--;
+    }
   }
 
   async function copy() {
@@ -250,7 +263,7 @@ export default function PairPage() {
               {Array.from({ length: LEN }).map((_, i) => {
                 const on = switches[i] === "1";
                 return (
-                  <button key={i} type="button" onClick={() => flip(i)} disabled={flipping || solved}
+                  <button key={i} type="button" onClick={() => flip(i)} disabled={solved}
                     aria-label={`Тумблер ${i + 1}: ${on ? "вкл" : "выкл"}`} aria-pressed={on}
                     className="flex flex-col items-center gap-2 group disabled:opacity-60">
                     <div className="w-12 h-[72px] rounded-full border flex justify-center p-1.5 transition-all duration-300 group-active:scale-95 group-hover:border-white/40"
