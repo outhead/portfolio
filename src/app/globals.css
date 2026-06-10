@@ -246,14 +246,15 @@ main {
   body.pong-immersive footer { display: none; }
 }
 
-/* Шифр: число 61 заполняется слева направо — то белым, то зелёным (раз в 2с),
-   чтобы притянуть внимание. Базовый цвет лайм, поверх по очереди сметаются
-   белая и зелёная заливки (background-clip:text). */
-.fill61 {
-  -webkit-text-fill-color: transparent !important;
-  color: transparent !important;
-  background-clip: text;
-  -webkit-background-clip: text;
+/* Шифр: цифры 61 — статично зелёные, а ПОЛОСА под ними бежит слева направо,
+   по очереди белым и зелёным (2с на цвет), чтобы притянуть внимание. */
+.u61 { position: relative; }
+.u61::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0;
+  bottom: -0.06em;
+  height: 0.09em;
   background-repeat: no-repeat;
   background-image:
     linear-gradient(#a6ff00, #a6ff00),
@@ -269,5 +270,5 @@ main {
   100% { background-size: 100% 100%, 100% 100%, 100% 100%; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .fill61 { animation: none; background-size: 0% 100%, 100% 100%, 100% 100%; }
+  .u61::after { animation: none; background-size: 0% 100%, 100% 100%, 100% 100%; }
 }
