@@ -9,7 +9,7 @@ import { pairCall, pairState } from "./pairApi";
  * Кооп-загадка. Двое, разные IP.
  * Смотрящий (создатель) видит нужный порядок тумблеров, но двигать не может.
  * Контроллер (зашёл по ссылке с другого IP) двигает тумблеры, но цели не видит.
- * Совпало → смотрящему открывается ключ; он диктует напарнику, тот вводит → дальше.
+ * Совпало → у обоих сразу открывается финал, без кодов.
  * Тот же IP, что у создателя → блок с намёком про «вторую руку».
  */
 const LEN = 6;
@@ -33,16 +33,30 @@ function Row({ bits, compare }: { bits: string; compare?: string }) {
         const match = compare ? bits[i] === compare[i] : null;
         const labelColor =
           match === null ? "rgba(255,255,255,0.4)" : match ? "#A6FF00" : "#C9A66B";
+        const borderColor =
+          match === null
+            ? on ? "rgba(166,255,0,0.7)" : "rgba(255,255,255,0.18)"
+            : match ? "rgba(166,255,0,0.7)" : "rgba(201,166,107,0.7)";
         return (
           <div key={i} className="flex flex-col items-center gap-1.5">
             <div
-              className="w-9 h-9 rounded-full border transition-colors"
+              className="w-7 h-12 rounded-full border flex justify-center p-[3px] transition-colors duration-300"
               style={{
-                background: on ? "#A6FF00" : "rgba(255,255,255,0.05)",
-                borderColor: on ? "#A6FF00" : "rgba(255,255,255,0.18)",
-                boxShadow: on ? "0 0 10px rgba(166,255,0,0.5)" : "none",
+                borderColor,
+                background: on ? "rgba(166,255,0,0.10)" : "rgba(255,255,255,0.04)",
+                boxShadow: on ? "0 0 14px rgba(166,255,0,0.18)" : "inset 0 1px 4px rgba(0,0,0,0.5)",
               }}
-            />
+            >
+              <div
+                className="w-5 h-5 rounded-full"
+                style={{
+                  background: on ? "#A6FF00" : "rgba(255,255,255,0.22)",
+                  transform: on ? "translateY(0)" : "translateY(22px)",
+                  transition: "transform 300ms cubic-bezier(0.34,1.56,0.64,1), background 200ms, box-shadow 200ms",
+                  boxShadow: on ? "0 0 10px rgba(166,255,0,0.55)" : "none",
+                }}
+              />
+            </div>
             <span className="text-[10px]" style={{ color: labelColor }}>
               {on ? "вкл" : "выкл"}
             </span>
@@ -61,16 +75,13 @@ export default function PairPage() {
   const [switches, setSwitches] = useState("0".repeat(LEN));
   const [joined, setJoined] = useState(false);
   const [solved, setSolved] = useState(false);
-  const [reward, setReward] = useState("");
   const [flipping, setFlipping] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [keyInput, setKeyInput] = useState("");
-  const [keyWrong, setKeyWrong] = useState(false);
-  const [ctrlDone, setCtrlDone] = useState(false);
   const [token, setToken] = useState(""); // код пары — переиспользуем как комнату для пинг-понга
 
   const targetRef = useRef("");
   const claimedRef = useRef(false);
+  const solvedRef = useRef(false);
   const initRef = useRef(false);
 
   // init: создаём или присоединяемся
@@ -111,13 +122,17 @@ export default function PairPage() {
       if (!st) return;
       setSwitches(st.switches);
       setJoined(st.joined);
-      if (st.solved) setSolved(true);
+      if (st.solved && !solvedRef.current) {
+        solvedRef.current = true;
+        setSolved(true);
+        celebrate();
+      }
       // смотрящий знает target → как только совпало, забирает ключ
       if (!claimedRef.current && targetRef.current && st.switches === targetRef.current) {
         claimedRef.current = true;
         const r = await pairCall("claim", { id });
-        if (r.ok) {
-          setReward(String(r.reward));
+        if (r.ok && !solvedRef.current) {
+          solvedRef.current = true;
           setSolved(true);
           celebrate();
         }
@@ -140,12 +155,6 @@ export default function PairPage() {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch { /* ignore */ }
-  }
-
-  async function submitKey() {
-    const r = await pairCall("unlock", { id, key: keyInput.trim() });
-    if (r.ok) { setCtrlDone(true); celebrate(); }
-    else { setKeyWrong(true); setTimeout(() => setKeyWrong(false), 700); }
   }
 
   return (
@@ -217,9 +226,8 @@ export default function PairPage() {
               </div>
             ) : (
               <div className="mt-10 flex flex-col items-center">
-                <p className="text-[14px] text-white/70 mb-2">Сошлось. Ключ:</p>
-                <p className="font-p95 text-[#A6FF00] tracking-[0.2em]" style={{ fontSize: "clamp(34px,9vw,56px)" }}>{reward}</p>
-                <p className="mt-3 text-[13px] text-white/55 max-w-xs">Продиктуй его напарнику — он введёт и откроет финал.</p>
+                <p className="font-p95 uppercase tracking-tight text-[#A6FF00] mb-2" style={{ fontSize: "clamp(28px,7vw,44px)" }}>Сошлось!</p>
+                <p className="text-[13px] text-white/55 max-w-xs">Вы сделали это вдвоём. Финал открыт у обоих.</p>
                 <Link href={`/secret/pair/done?room=${token}&host=1`} className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[13px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
                   <span className="leading-none translate-y-[1px]">Дальше</span><span className="leading-none">→</span>
                 </Link>
@@ -243,13 +251,29 @@ export default function PairPage() {
                 const on = switches[i] === "1";
                 return (
                   <button key={i} type="button" onClick={() => flip(i)} disabled={flipping || solved}
+                    aria-label={`Тумблер ${i + 1}: ${on ? "вкл" : "выкл"}`} aria-pressed={on}
                     className="flex flex-col items-center gap-2 group disabled:opacity-60">
-                    <div className="w-11 h-16 rounded-full border flex items-start justify-center p-1 transition-colors"
-                      style={{ borderColor: on ? "#A6FF00" : "rgba(255,255,255,0.2)", background: on ? "rgba(166,255,0,0.12)" : "rgba(255,255,255,0.03)" }}>
-                      <div className="w-9 h-9 rounded-full transition-transform"
-                        style={{ background: on ? "#A6FF00" : "rgba(255,255,255,0.25)", transform: on ? "translateY(0)" : "translateY(28px)", boxShadow: on ? "0 0 10px rgba(166,255,0,0.5)" : "none" }} />
+                    <div className="w-12 h-[72px] rounded-full border flex justify-center p-1.5 transition-all duration-300 group-active:scale-95 group-hover:border-white/40"
+                      style={{
+                        borderColor: on ? "rgba(166,255,0,0.8)" : "rgba(255,255,255,0.18)",
+                        background: on ? "rgba(166,255,0,0.10)" : "rgba(255,255,255,0.03)",
+                        boxShadow: on
+                          ? "0 0 20px rgba(166,255,0,0.22), inset 0 0 10px rgba(166,255,0,0.10)"
+                          : "inset 0 2px 6px rgba(0,0,0,0.55)",
+                      }}>
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center"
+                        style={{
+                          background: on ? "#A6FF00" : "rgba(255,255,255,0.22)",
+                          transform: on ? "translateY(0)" : "translateY(24px)",
+                          transition: "transform 320ms cubic-bezier(0.34,1.56,0.64,1), background 200ms, box-shadow 200ms",
+                          boxShadow: on ? "0 0 16px rgba(166,255,0,0.6)" : "none",
+                        }}>
+                        <div className="w-1.5 h-1.5 rounded-full"
+                          style={{ background: on ? "rgba(0,0,0,0.35)" : "rgba(255,255,255,0.35)", transition: "background 200ms" }} />
+                      </div>
                     </div>
-                    <span className="text-[10px] text-white/35">{i + 1}</span>
+                    <span className="text-[10px] transition-colors duration-300"
+                      style={{ color: on ? "rgba(166,255,0,0.75)" : "rgba(255,255,255,0.35)" }}>{i + 1}</span>
                   </button>
                 );
               })}
@@ -257,26 +281,13 @@ export default function PairPage() {
 
             {!solved ? (
               <p className="mt-10 text-[13px] text-white/40">Напарник скажет, когда сойдётся.</p>
-            ) : ctrlDone ? (
+            ) : (
               <div className="mt-10 flex flex-col items-center">
-                <p className="text-[15px] text-[#A6FF00] mb-4">Ключ принят.</p>
-                <Link href={`/secret/pair/done?room=${token}`} className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[13px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
+                <p className="font-p95 uppercase tracking-tight text-[#A6FF00] mb-2" style={{ fontSize: "clamp(28px,7vw,44px)" }}>Сошлось!</p>
+                <p className="text-[13px] text-white/55 max-w-xs">Вы сделали это вдвоём. Финал открыт у обоих.</p>
+                <Link href={`/secret/pair/done?room=${token}`} className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[13px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
                   <span className="leading-none translate-y-[1px]">Дальше</span><span className="leading-none">→</span>
                 </Link>
-              </div>
-            ) : (
-              <div className="mt-10 w-full max-w-[280px] mx-auto flex flex-col items-center">
-                <p className="text-[14px] text-white/70 mb-3">Сошлось! Напарник назовёт ключ — введи его.</p>
-                <input
-                  value={keyInput} onChange={(e) => setKeyInput(e.target.value.replace(/[^0-9]/g, "").slice(0, 4))}
-                  onKeyDown={(e) => { if (e.key === "Enter") submitKey(); }}
-                  inputMode="numeric" placeholder="••••" aria-label="Ключ от напарника"
-                  className={`w-full text-center tracking-[0.4em] font-p95 text-2xl bg-white/[0.06] border rounded-full px-5 py-3 text-white outline-none transition-colors ${keyWrong ? "border-[#C9A66B]" : "border-white/15 focus:border-[#A6FF00]/60"}`}
-                />
-                <button type="button" onClick={submitKey}
-                  className="mt-3 inline-flex items-center justify-center px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[13px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors">
-                  <span className="leading-none translate-y-[1px]">Ввести</span>
-                </button>
               </div>
             )}
           </>

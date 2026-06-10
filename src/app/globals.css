@@ -241,7 +241,14 @@ main {
   .decrypt-fadeswap { animation: none; }
 }
 
-/* Пинг-понг: на мобиле прячем глобальный подвал, чтобы игра влезала и была выше */
+/* Пинг-понг: на мобиле прячем глобальный подвал, чтобы игра влезала и была выше.
+   Плюс полный скролл-лок: палец двигает ракетку, а не страницу. */
+body.pong-immersive {
+  overflow: hidden;
+  height: 100dvh;
+  overscroll-behavior: none;
+  touch-action: none;
+}
 @media (max-width: 640px) {
   body.pong-immersive footer { display: none; }
 }

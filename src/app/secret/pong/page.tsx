@@ -64,6 +64,15 @@ export default function PongPage() {
   const countRef = useRef(0);
   const myX = useRef((FW - PW) / 2);
   const winnerRef = useRef<0 | 1 | null>(null);
+  // ─── визуальные эффекты (живут только на клиенте, в физику не лезут) ───
+  type Spark = { x: number; y: number; vx: number; vy: number; life: number; color: string; size: number };
+  const fxRef = useRef<Spark[]>([]);                                  // искры
+  const trailRef = useRef<{ x: number; y: number }[][]>([]);          // шлейф мяча (по индексу)
+  const lastPosRef = useRef<{ x: number; y: number; dx: number; dy: number }[]>([]); // для детекта отскоков
+  const prevBoostRef = useRef<Boost | null>(null);                    // появление буста
+  const flashRef = useRef(0);                                         // вспышка на гол
+  const shakeRef = useRef(0);                                         // тряска поля
+  const prevScoreFx = useRef<[number, number]>([0, 0]);
   const serveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const countTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -78,10 +87,16 @@ export default function PongPage() {
     nextBoostAt.current = performance.now() + 6000 + Math.random() * 6000;
   }
 
-  // на мобиле прячем глобальный подвал/шапку, чтобы понг влезал и был выше
+  // на мобиле прячем глобальный подвал/шапку, чтобы понг влезал и был выше.
+  // Плюс блокируем скролл/pull-to-refresh: палец = ракетка, страница не едет.
   useEffect(() => {
     document.body.classList.add("pong-immersive");
-    return () => document.body.classList.remove("pong-immersive");
+    const tm = (e: TouchEvent) => e.preventDefault();
+    document.addEventListener("touchmove", tm, { passive: false });
+    return () => {
+      document.body.classList.remove("pong-immersive");
+      document.removeEventListener("touchmove", tm);
+    };
   }, []);
 
   // ─── подключение ───
@@ -222,10 +237,53 @@ export default function PongPage() {
       ctx.fillText(b.type === "x2" ? "x2" : "+SIZE", b.x, yv(b.y) + 1);
     };
 
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // искры в ЭКРАННЫХ координатах (yv уже применён при спавне)
+    const sparks = (x: number, y: number, color: string, n = 10, spread = 2.6) => {
+      if (reducedMotion) return;
+      for (let i = 0; i < n; i++) {
+        const a = Math.random() * Math.PI * 2;
+        const v = 0.8 + Math.random() * spread;
+        fxRef.current.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 1, color, size: 1 + Math.random() * 2 });
+      }
+      if (fxRef.current.length > 220) fxRef.current.splice(0, fxRef.current.length - 220);
+    };
+
+    // короткий зигзаг-разряд от точки (экранные координаты)
+    const bolt = (x: number, y: number, color: string) => {
+      ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.globalAlpha = 0.7;
+      ctx.beginPath();
+      let bx = x, by = y;
+      ctx.moveTo(bx, by);
+      const a = Math.random() * Math.PI * 2;
+      const segs = 3 + Math.floor(Math.random() * 3);
+      for (let s = 0; s < segs; s++) {
+        bx += Math.cos(a) * (5 + Math.random() * 7) + (Math.random() - 0.5) * 8;
+        by += Math.sin(a) * (5 + Math.random() * 7) + (Math.random() - 0.5) * 8;
+        ctx.lineTo(bx, by);
+      }
+      ctx.stroke(); ctx.globalAlpha = 1;
+    };
+
     const draw = () => {
       const mirror = roleRef.current === "guest";
       const yv = (cy: number) => (mirror ? FH - cy : cy);
+      const playing = phaseRef.current === "playing";
+
+      // гол → вспышка + тряска (и у хоста, и у гостя — по смене счёта)
+      if (sc.current[0] !== prevScoreFx.current[0] || sc.current[1] !== prevScoreFx.current[1]) {
+        prevScoreFx.current = [sc.current[0], sc.current[1]];
+        if (!reducedMotion) { flashRef.current = 1; shakeRef.current = 7; }
+      }
+
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.fillStyle = "#000"; ctx.fillRect(0, 0, FW, FH);
+      if (shakeRef.current > 0.3) {
+        ctx.translate((Math.random() - 0.5) * shakeRef.current, (Math.random() - 0.5) * shakeRef.current);
+        shakeRef.current *= 0.86;
+      } else shakeRef.current = 0;
+
       ctx.fillStyle = "rgba(255,255,255,0.22)";
       for (let x = 8; x < FW; x += 30) ctx.fillRect(x, FH / 2 - 2, 18, 4);
       const host = roleRef.current === "host";
@@ -233,9 +291,89 @@ export default function PongPage() {
       const opX = host ? px2.current : px1.current, opW = host ? pw2.current : pw1.current;
       ctx.fillStyle = "#A6FF00"; ctx.fillRect(meX, FH - MARGIN - PH, meW, PH);
       ctx.fillStyle = "rgba(255,255,255,0.55)"; ctx.fillRect(opX, MARGIN, opW, PH);
-      if (boost.current) drawBoost(boost.current, yv);
+
+      // буст: при появлении — электрический треск, пока висит — пульс и редкие разряды
+      const bst = boost.current;
+      if (bst && !prevBoostRef.current) {
+        sparks(bst.x, yv(bst.y), bst.type === "x2" ? "#FFD60A" : "#33C7FF", 18, 3.2);
+      }
+      prevBoostRef.current = bst;
+      if (bst) {
+        const c = bst.type === "x2" ? "#FFD60A" : "#33C7FF";
+        const pulse = 1 + Math.sin(performance.now() / 160) * 0.5;
+        ctx.strokeStyle = c; ctx.globalAlpha = 0.22 * pulse; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(bst.x, yv(bst.y), 30 + pulse * 3, 0, Math.PI * 2); ctx.stroke();
+        ctx.globalAlpha = 1;
+        if (!reducedMotion && Math.random() < 0.3) {
+          const ang = Math.random() * Math.PI * 2;
+          bolt(bst.x + Math.cos(ang) * 26, yv(bst.y) + Math.sin(ang) * 18, c);
+        }
+        drawBoost(bst, yv);
+      }
+
+      // шлейф мяча
+      if (playing && !reducedMotion) {
+        balls.current.forEach((b, i) => {
+          const tr = (trailRef.current[i] ||= []);
+          tr.push({ x: b.x, y: b.y });
+          if (tr.length > 9) tr.shift();
+        });
+        trailRef.current.length = balls.current.length;
+        for (const tr of trailRef.current) {
+          if (!tr) continue;
+          tr.forEach((p, j) => {
+            ctx.globalAlpha = (j / tr.length) * 0.22;
+            ctx.fillStyle = "#fff";
+            ctx.beginPath(); ctx.arc(p.x, yv(p.y), R * (0.35 + (j / tr.length) * 0.5), 0, Math.PI * 2); ctx.fill();
+          });
+        }
+        ctx.globalAlpha = 1;
+      } else if (!playing && trailRef.current.length) {
+        trailRef.current = [];
+      }
+
+      // отскоки: ловим смену направления по координатам — работает и у хоста, и у гостя
+      balls.current.forEach((b, i) => {
+        const lp = lastPosRef.current[i];
+        if (lp && playing) {
+          const dx = b.x - lp.x, dy = b.y - lp.y;
+          if (lp.dy !== 0 && dy !== 0 && Math.sign(dy) !== Math.sign(lp.dy) && Math.abs(lp.dy) > 1) {
+            const sy = yv(b.y);
+            sparks(b.x, sy, sy > FH / 2 ? "#A6FF00" : "rgba(255,255,255,0.85)", 12, 2.8);
+          }
+          if (lp.dx !== 0 && dx !== 0 && Math.sign(dx) !== Math.sign(lp.dx) && Math.abs(lp.dx) > 0.6) {
+            sparks(b.x, yv(b.y), "rgba(255,255,255,0.5)", 6, 1.8);
+          }
+          lastPosRef.current[i] = { x: b.x, y: b.y, dx, dy };
+        } else {
+          lastPosRef.current[i] = { x: b.x, y: b.y, dx: 0, dy: 0 };
+        }
+      });
+      lastPosRef.current.length = balls.current.length;
+
+      // искры
+      for (const p of fxRef.current) {
+        p.x += p.vx; p.y += p.vy; p.vx *= 0.96; p.vy *= 0.96; p.life -= 0.035;
+        if (p.life > 0) {
+          ctx.globalAlpha = p.life * 0.9;
+          ctx.fillStyle = p.color;
+          ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+        }
+      }
+      fxRef.current = fxRef.current.filter((p) => p.life > 0);
+      ctx.globalAlpha = 1;
+
+      // мячи
       ctx.fillStyle = "#fff";
       for (const b of balls.current) { ctx.beginPath(); ctx.arc(b.x, yv(b.y), R, 0, Math.PI * 2); ctx.fill(); }
+
+      // вспышка гола поверх всего
+      if (flashRef.current > 0.02) {
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.fillStyle = `rgba(166,255,0,${(flashRef.current * 0.16).toFixed(3)})`;
+        ctx.fillRect(0, 0, FW, FH);
+        flashRef.current *= 0.88;
+      } else flashRef.current = 0;
     };
 
     const activate = (type: "x2" | "size", owner: 0 | 1) => {
