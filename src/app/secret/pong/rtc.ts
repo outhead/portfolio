@@ -6,9 +6,11 @@
 // Сигналинг (обмен offer/answer при старте) — таблица pong_signal через /sb/rest,
 // т.е. через прокси своего домена (vercel.json) — работает без VPN.
 // Без trickle ICE: ждём полного сбора кандидатов и шлём ОДИН offer / ОДИН answer.
+// Каждая попытка имеет aid (attempt id) — answer принимается только к своему offer.
+// До 3 попыток соединения; после обрыва открытого канала — до 3 реконнектов.
 //
 // Каналы: "fast" — unordered, без ретрансмиссий (state/paddle, 60 Гц, потери не страшны);
-//         "ctl"  — надёжный (hello/rematch).
+//         "ctl"  — надёжный (hello/rematch/hit/release).
 
 const SB_URL =
   process.env.NEXT_PUBLIC_SUPABASE_URL || "https://hvkygaghhxgaolxemndr.supabase.co";
@@ -48,6 +50,8 @@ export type P2PHandle = {
   close: () => void;
 };
 
+type Sig = { aid?: string; sdp?: RTCSessionDescriptionInit };
+
 async function sigPost(room: string, sender: string, type: string, payload: unknown) {
   try {
     await fetch(`${REST}/pong_signal`, {
@@ -59,7 +63,7 @@ async function sigPost(room: string, sender: string, type: string, payload: unkn
 }
 
 // последний свежий (< 2 мин) сигнал нужного типа от другой стороны
-async function sigGet(room: string, sender: string, type: string): Promise<unknown | null> {
+async function sigGet(room: string, sender: string, type: string): Promise<Sig | null> {
   try {
     const fresh = new Date(Date.now() - 120000).toISOString();
     const res = await fetch(
@@ -67,7 +71,7 @@ async function sigGet(room: string, sender: string, type: string): Promise<unkno
         `&created_at=gt.${encodeURIComponent(fresh)}&order=id.desc&limit=1&select=payload`,
       { headers: HEADERS, cache: "no-store" }
     );
-    const rows = (await res.json()) as { payload: unknown }[];
+    const rows = (await res.json()) as { payload: Sig }[];
     return rows?.[0]?.payload ?? null;
   } catch {
     return null;
@@ -81,6 +85,15 @@ async function sigCleanup(room: string) {
       headers: HEADERS,
     });
   } catch { /* не критично */ }
+}
+
+// гигиена: сносим сигналы старше часа от брошенных сессий (любой может, таблица мусорная)
+function sigPurgeOld() {
+  const old = new Date(Date.now() - 3600000).toISOString();
+  fetch(`${REST}/pong_signal?created_at=lt.${encodeURIComponent(old)}`, {
+    method: "DELETE",
+    headers: HEADERS,
+  }).catch(() => {});
 }
 
 function waitIce(pc: RTCPeerConnection, ms = 4000): Promise<void> {
@@ -104,85 +117,112 @@ export function connectP2P(opts: {
 }): P2PHandle {
   const { room, role, onMessage, onOpen, onClose } = opts;
   let cancelled = false;
-  let opened = false;
+  let pc: RTCPeerConnection | null = null;
   let fast: RTCDataChannel | null = null;
   let ctl: RTCDataChannel | null = null;
-  let fastOpen = false;
-  let ctlOpen = false;
+  let reconnects = 0;
 
-  const pc = new RTCPeerConnection({ iceServers: ICE });
+  const runAttempt = (n: number) => {
+    if (cancelled || n > 3) return;
+    console.log(`[pong p2p] попытка ${n}${reconnects ? ` (реконнект ${reconnects})` : ""}`);
+    const aid = Math.random().toString(36).slice(2, 8);
+    const st = { settled: false, failed: false, fastOpen: false, ctlOpen: false };
+    const pcA = new RTCPeerConnection({ iceServers: ICE });
+    pc = pcA;
 
-  const maybeOpen = () => {
-    if (fastOpen && ctlOpen && !opened && !cancelled) {
-      opened = true;
-      if (role === "host") sigCleanup(room);
-      onOpen();
-    }
-  };
-
-  const wire = (dc: RTCDataChannel, isFast: boolean) => {
-    dc.onmessage = (e) => {
-      try { onMessage(JSON.parse(String(e.data))); } catch { /* мусор игнорим */ }
+    const fail = (why: string) => {
+      if (cancelled || st.failed) return;
+      st.failed = true;
+      clearTimeout(tOut);
+      console.log("[pong p2p] fail:", why);
+      try { pcA.close(); } catch { /* */ }
+      if (st.settled) {
+        // канал был открыт и умер — сообщаем и пробуем переподключиться
+        onClose();
+        if (reconnects < 3) { reconnects++; setTimeout(() => runAttempt(1), 800); }
+      } else {
+        setTimeout(() => runAttempt(n + 1), 1000);
+      }
     };
-    dc.onopen = () => { if (isFast) fastOpen = true; else ctlOpen = true; maybeOpen(); };
-    dc.onclose = () => { if (opened) onClose(); };
-  };
 
-  pc.onconnectionstatechange = () => {
-    const st = pc.connectionState;
-    console.log("[pong p2p] conn:", st);
-    if ((st === "failed" || st === "disconnected" || st === "closed") && opened) onClose();
-  };
-  pc.oniceconnectionstatechange = () => console.log("[pong p2p] ice:", pc.iceConnectionState);
+    const tOut = setTimeout(() => { if (!st.settled) fail("timeout 15s"); }, 15000);
 
-  (async () => {
-    if (role === "host") {
-      // Старые сигналы комнаты — в мусор, чтобы гость не схватил протухший offer.
-      // ВАЖНО дождаться ответа: иначе DELETE дойдёт ПОЗЖЕ нашего offer и стерёт его.
-      await sigCleanup(room);
-      fast = pc.createDataChannel("fast", { ordered: false, maxRetransmits: 0 });
-      ctl = pc.createDataChannel("ctl");
-      wire(fast, true); wire(ctl, false);
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-      await waitIce(pc);
-      if (cancelled) return;
-      await sigPost(room, "host", "offer", pc.localDescription);
-      console.log("[pong p2p] offer posted");
-      // ждём answer до ~3 минут (гость может открыть ссылку не сразу)
-      for (let i = 0; i < 180 && !cancelled && !opened; i++) {
-        const ans = await sigGet(room, "guest", "answer");
-        if (ans) {
-          console.log("[pong p2p] answer received");
-          await pc.setRemoteDescription(ans as RTCSessionDescriptionInit).catch(() => {});
-          return;
+    const wireA = (dc: RTCDataChannel, isFast: boolean) => {
+      dc.onmessage = (e) => { try { onMessage(JSON.parse(String(e.data))); } catch { /* */ } };
+      dc.onopen = () => {
+        if (isFast) st.fastOpen = true; else st.ctlOpen = true;
+        if (st.fastOpen && st.ctlOpen && !st.settled) {
+          st.settled = true;
+          clearTimeout(tOut);
+          if (role === "host") void sigCleanup(room);
+          console.log("[pong p2p] канал открыт ✓");
+          onOpen();
         }
-        await sleep(1000);
-      }
-    } else {
-      pc.ondatachannel = (e) => {
-        if (e.channel.label === "fast") { fast = e.channel; wire(fast, true); }
-        else { ctl = e.channel; wire(ctl, false); }
       };
-      for (let i = 0; i < 180 && !cancelled && !opened; i++) {
-        const off = await sigGet(room, "host", "offer");
-        if (off) {
-          console.log("[pong p2p] offer received → answering");
-          try {
-            await pc.setRemoteDescription(off as RTCSessionDescriptionInit);
-            const answer = await pc.createAnswer();
-            await pc.setLocalDescription(answer);
-            await waitIce(pc);
-            if (cancelled) return;
-            await sigPost(room, "guest", "answer", pc.localDescription);
-          } catch { /* протухший offer — продолжаем поллить */ }
-          // дальше ждём открытия каналов; если не открылись — onConnectionState разрулит
-          return;
-        }
-        await sleep(900);
+      dc.onclose = () => { if (st.settled) fail("channel closed"); };
+    };
+
+    pcA.onconnectionstatechange = () => {
+      const s = pcA.connectionState;
+      console.log("[pong p2p] conn:", s);
+      if (s === "failed" || s === "closed") fail(s);
+      else if (s === "disconnected") {
+        // transient-обрывы у мобильных бывают — даём 3с очухаться
+        setTimeout(() => { if (pcA.connectionState === "disconnected") fail("disconnected"); }, 3000);
       }
-    }
-  })();
+    };
+    pcA.oniceconnectionstatechange = () => console.log("[pong p2p] ice:", pcA.iceConnectionState);
+
+    (async () => {
+      try {
+        if (role === "host") {
+          // Старые сигналы комнаты — в мусор, чтобы гость не схватил протухший offer.
+          // ВАЖНО дождаться: иначе DELETE дойдёт ПОЗЖЕ нашего offer и стерёт его.
+          await sigCleanup(room);
+          sigPurgeOld();
+          fast = pcA.createDataChannel("fast", { ordered: false, maxRetransmits: 0 });
+          ctl = pcA.createDataChannel("ctl");
+          wireA(fast, true); wireA(ctl, false);
+          await pcA.setLocalDescription(await pcA.createOffer());
+          await waitIce(pcA);
+          if (cancelled || st.failed) return;
+          await sigPost(room, "host", "offer", { aid, sdp: pcA.localDescription });
+          console.log("[pong p2p] offer posted", aid);
+          for (let i = 0; i < 180 && !cancelled && !st.settled && !st.failed; i++) {
+            const ans = await sigGet(room, "guest", "answer");
+            if (ans?.sdp && ans.aid === aid) {
+              console.log("[pong p2p] answer received");
+              await pcA.setRemoteDescription(ans.sdp).catch(() => fail("bad answer"));
+              break;
+            }
+            await sleep(1000);
+          }
+        } else {
+          pcA.ondatachannel = (e) => {
+            if (e.channel.label === "fast") { fast = e.channel; wireA(fast, true); }
+            else { ctl = e.channel; wireA(ctl, false); }
+          };
+          for (let i = 0; i < 180 && !cancelled && !st.failed; i++) {
+            const off = await sigGet(room, "host", "offer");
+            if (off?.sdp) {
+              console.log("[pong p2p] offer received → answering", off.aid);
+              await pcA.setRemoteDescription(off.sdp);
+              await pcA.setLocalDescription(await pcA.createAnswer());
+              await waitIce(pcA);
+              if (cancelled || st.failed) return;
+              await sigPost(room, "guest", "answer", { aid: off.aid, sdp: pcA.localDescription });
+              break;
+            }
+            await sleep(900);
+          }
+        }
+      } catch (e) {
+        fail(String(e));
+      }
+    })();
+  };
+
+  runAttempt(1);
 
   return {
     sendFast: (m: NetMsg) => {
@@ -197,7 +237,7 @@ export function connectP2P(opts: {
     },
     close: () => {
       cancelled = true;
-      try { fast?.close(); ctl?.close(); pc.close(); } catch { /* */ }
+      try { fast?.close(); ctl?.close(); pc?.close(); } catch { /* */ }
     },
   };
 }

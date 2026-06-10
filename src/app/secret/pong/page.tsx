@@ -85,12 +85,12 @@ export default function PongPage() {
   const prevScoreFx = useRef<[number, number]>([0, 0]);
   // ─── буст-липучка ───
   const stickArmed = useRef<[number, number]>([0, 0]);  // expiry «взведённости» по игрокам [host, guest]
-  const stuck = useRef<{ b: Ball; owner: 0 | 1; off: number; until: number } | null>(null); // у хоста
+  const stuck = useRef<{ b: Ball; owner: 0 | 1; off: number; until: number; since: number } | null>(null); // у хоста
+  const guestDown = useRef(false); // палец гостя на экране (из paddle-пакетов) — для запуска липучки
   const stuckNet = useRef<{ i: number; owner: 0 | 1; off: number } | null>(null);           // у гостя, из пакетов
   const onReleaseRef = useRef<(owner: 0 | 1) => void>(() => {});      // запуск прилипшего мяча
   const applyHitRef = useRef<(p: Record<string, unknown>) => void>(() => {}); // лаг-компенсация отскока гостя
   const lastClaim = useRef(0);
-  const serveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const countTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const setPhaseBoth = (p: Phase) => { phaseRef.current = p; setPhase(p); };
@@ -165,12 +165,13 @@ export default function PongPage() {
       if (roleRef.current !== "host") return;
       px2.current = payload.x;
       px2Vel.current = typeof payload.v === "number" ? payload.v : 0;
+      guestDown.current = payload.d === 1;
       px2At.current = performance.now();
     };
     /* eslint-enable @typescript-eslint/no-explicit-any */
     const onHelloMsg = () => {
       if (roleRef.current === "host" &&
-          (phaseRef.current === "waiting" || phaseRef.current === "connecting")) startMatch();
+          (phaseRef.current === "waiting" || phaseRef.current === "connecting")) resumeOrStart();
     };
 
     ch.on("broadcast", { event: "state" }, ({ payload }) => {
@@ -228,7 +229,7 @@ export default function PongPage() {
         // соперник ушёл
         setPhaseBoth("waiting");
       }
-      if (both && roleRef.current === "host" && (phaseRef.current === "waiting" || phaseRef.current === "connecting")) startMatch();
+      if (both && roleRef.current === "host" && (phaseRef.current === "waiting" || phaseRef.current === "connecting")) resumeOrStart();
     });
 
     ch.subscribe((status) => {
@@ -244,7 +245,6 @@ export default function PongPage() {
 
     return () => {
       clearTimeout(connT);
-      if (serveTimer.current) clearTimeout(serveTimer.current);
       if (countTimer.current) clearInterval(countTimer.current);
       p2pRef.current?.close(); p2pRef.current = null;
       ch.unsubscribe(); sb.removeChannel(ch);
@@ -272,10 +272,15 @@ export default function PongPage() {
     }, 800);
   }
 
-  function startMatch() {
-    sc.current = [0, 0]; setScore([0, 0]); winnerRef.current = null; setWinner(null);
+  function startMatch(keepScore = false) {
+    if (!keepScore) { sc.current = [0, 0]; setScore([0, 0]); }
+    winnerRef.current = null; setWinner(null);
     px1.current = (FW - PW) / 2; px2.current = (FW - PW) / 2;
     startCountdown(Math.random() < 0.5 ? 1 : -1);
+  }
+  // реконнект/перезаход посреди матча продолжает игру со счётом, а не обнуляет его
+  function resumeOrStart() {
+    startMatch(sc.current[0] + sc.current[1] > 0 && winnerRef.current === null);
   }
 
   // ─── игровой цикл + ввод + отрисовка ───
@@ -283,6 +288,9 @@ export default function PongPage() {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d")!;
+    // ретина: рендерим в физические пиксели, иначе на телефонах канвас мыльный
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = FW * dpr; canvas.height = FH * dpr;
     let raf = 0, lastSend = 0;
     const keys: Record<string, boolean> = {};
 
@@ -303,10 +311,13 @@ export default function PongPage() {
       const x = ((e.clientX - rect.left) / rect.width) * FW;
       myX.current = clamp(x - ownPw / 2, 0, FW - ownPw);
     };
+    let pressed = false; // палец/кнопка сейчас зажаты (для липучки)
+    const down = (e: PointerEvent) => { pressed = true; pointer(e); };
     window.addEventListener("pointermove", pointer);
-    window.addEventListener("pointerdown", pointer);
+    window.addEventListener("pointerdown", down);
     // отпустил палец — запуск прилипшего мяча (хост сразу, гость событием хосту)
     const up = () => {
+      pressed = false;
       if (roleRef.current === "host") {
         if (stuck.current?.owner === 0) onReleaseRef.current(0);
       } else if (useP2P.current) {
@@ -372,7 +383,7 @@ export default function PongPage() {
         if (!reducedMotion) { flashRef.current = 1; shakeRef.current = 7; }
       }
 
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.fillStyle = "#000"; ctx.fillRect(0, 0, FW, FH);
       if (shakeRef.current > 0.3) {
         ctx.translate((Math.random() - 0.5) * shakeRef.current, (Math.random() - 0.5) * shakeRef.current);
@@ -457,7 +468,7 @@ export default function PongPage() {
 
       // вспышка гола поверх всего
       if (flashRef.current > 0.02) {
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.fillStyle = `rgba(166,255,0,${(flashRef.current * 0.16).toFixed(3)})`;
         ctx.fillRect(0, 0, FW, FH);
         flashRef.current *= 0.88;
@@ -471,6 +482,7 @@ export default function PongPage() {
         const add = Math.min(cur, 4 - cur);
         for (let i = 0; i < add; i++) {
           const s = balls.current[i % cur];
+          if (stuck.current?.b === s) continue; // от прилипшего не клонируем
           // новый мяч — «свежая подача»: стартовая скорость и свой случайный вектор,
           // а не зеркальная копия разогнанного
           balls.current.push({
@@ -517,14 +529,14 @@ export default function PongPage() {
       for (const b of balls.current) {
         if (stuck.current?.b === b) continue;
         if (b.vy >= 0) continue;            // уже отбит
-        if (b.y - R > TOP_Y + PH + 110 || b.y < -R) continue; // слишком далеко от ракетки
+        if (b.y - R > TOP_Y + PH + 110 || b.y < -R - 40) continue; // слишком далеко от ракетки
         if (!best || b.y < best.y) best = b;
       }
       if (!best) return;
       const now = performance.now();
       if (stickArmed.current[1] > now && !stuck.current) {
         stickArmed.current[1] = 0;
-        stuck.current = { b: best, owner: 1, off: clamp(cx, R, FW - R) - px2Eff.current, until: now + 2500 };
+        stuck.current = { b: best, owner: 1, off: clamp(cx, R, FW - R) - px2Eff.current, until: now + 2500, since: now };
         best.x = clamp(cx, R, FW - R); best.y = TOP_Y + PH + R; best.vx = 0; best.vy = 0; best.last = 1;
         sparks(best.x, best.y, "#FF6EC7", 14, 2.6);
         return;
@@ -629,12 +641,14 @@ export default function PongPage() {
         }
         if (boost.current && now > boostGoneAt.current) { boost.current = null; nextBoostAt.current = now + 8000 + Math.random() * 6000; }
 
-        // прилипший мяч следует за ракеткой владельца; по таймауту — автозапуск
+        // прилипший мяч следует за ракеткой владельца.
+        // Запуск: владелец отпустил палец (живой флаг из ввода/пакетов) или таймаут 2.5с
         if (stuck.current) {
           const st = stuck.current;
           if (st.owner === 0) { st.b.x = clamp(px1.current + st.off, R, FW - R); st.b.y = BOTTOM_Y - R; }
           else { st.b.x = clamp(px2Eff.current + st.off, R, FW - R); st.b.y = TOP_Y + PH + R; }
-          if (now > st.until) onReleaseRef.current(st.owner);
+          const holderDown = st.owner === 0 ? pressed : guestDown.current;
+          if (now > st.until || (!holderDown && now > st.since + 220)) onReleaseRef.current(st.owner);
         }
 
         const W1 = pw1.current, W2 = pw2.current;
@@ -655,7 +669,7 @@ export default function PongPage() {
                 b.x >= px1.current - R && b.x <= px1.current + W1 + R) {
               if (stickArmed.current[0] > now && !stuck.current) {
                 stickArmed.current[0] = 0;
-                stuck.current = { b, owner: 0, off: b.x - px1.current, until: now + 2500 };
+                stuck.current = { b, owner: 0, off: b.x - px1.current, until: now + 2500, since: now };
                 b.y = BOTTOM_Y - R; b.vx = 0; b.vy = 0; b.last = 0;
                 sparks(b.x, b.y, "#FF6EC7", 14, 2.6);
                 break;
@@ -669,7 +683,7 @@ export default function PongPage() {
                 b.x >= p2x - R && b.x <= p2x + W2 + R) {
               if (stickArmed.current[1] > now && !stuck.current) {
                 stickArmed.current[1] = 0;
-                stuck.current = { b, owner: 1, off: b.x - p2x, until: now + 2500 };
+                stuck.current = { b, owner: 1, off: b.x - p2x, until: now + 2500, since: now };
                 b.y = TOP_Y + PH + R; b.vx = 0; b.vy = 0; b.last = 1;
                 sparks(b.x, b.y, "#FF6EC7", 14, 2.6);
                 break;
@@ -690,7 +704,9 @@ export default function PongPage() {
         let scored = false;
         balls.current = balls.current.filter((b) => {
           if (b.y > FH + R) { sc.current[1]++; scored = true; return false; }
-          if (b.y < -R) { sc.current[0]++; scored = true; return false; }
+          // верхний гол — с запасом ~5 кадров: даём hit-claim гостя долететь,
+          // прежде чем засчитать (мяч в это время уже за краем экрана, не видно)
+          if (b.y < -R - 40) { sc.current[0]++; scored = true; return false; }
           return true;
         });
         if (scored) {
@@ -714,10 +730,11 @@ export default function PongPage() {
       while (acc >= STEP) { acc -= STEP; step(); }
       const host = roleRef.current === "host";
 
-      // сеть: P2P — 60 Гц (дёшево, напрямую), relay — ~50 Гц
+      // сеть: P2P — 60 Гц (дёшево, напрямую), relay — 30 Гц (бережём квоты Supabase,
+      // dead reckoning гостя гладко заполняет промежутки)
       const ch = chRef.current;
       const p2p = useP2P.current;
-      if (t - lastSend > (p2p ? 15 : 20)) {
+      if (t - lastSend > (p2p ? 15 : 33)) {
         lastSend = t;
         if (host) {
           const statePayload = {
@@ -734,7 +751,7 @@ export default function PongPage() {
           if (p2p) p2pRef.current?.sendFast({ event: "state", payload: statePayload });
           else ch?.send({ type: "broadcast", event: "state", payload: statePayload });
         } else {
-          const pp = { x: px2.current, v: Math.round(myVel.current * 100) / 100 };
+          const pp = { x: px2.current, v: Math.round(myVel.current * 100) / 100, d: pressed ? 1 : 0 };
           if (p2p) p2pRef.current?.sendFast({ event: "paddle", payload: pp });
           else ch?.send({ type: "broadcast", event: "paddle", payload: pp });
         }
@@ -747,7 +764,7 @@ export default function PongPage() {
       cancelAnimationFrame(raf);
       window.removeEventListener("keydown", kd); window.removeEventListener("keyup", ku);
       window.removeEventListener("pointermove", pointer);
-      window.removeEventListener("pointerdown", pointer);
+      window.removeEventListener("pointerdown", down);
       window.removeEventListener("pointerup", up);
       window.removeEventListener("pointercancel", up);
     };
