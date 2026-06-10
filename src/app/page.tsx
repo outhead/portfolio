@@ -1068,7 +1068,7 @@ export default function PreviewHome() {
           initial="hidden"
           animate="show"
           variants={stagger}
-          className="relative z-[2] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pt-6 md:pt-12 pb-10 md:pb-14"
+          className="relative z-[2] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pt-2 md:pt-12 pb-10 md:pb-14"
         >
           {/* Bento: 12-колоночный грид с разными размерами */}
           <div className="grid grid-cols-12 gap-3 md:gap-4">
@@ -1081,7 +1081,7 @@ export default function PreviewHome() {
                 {/* Сфера — на десктопе абсолютно справа, на мобилке банером сверху */}
                 <div
                   aria-hidden
-                  className="absolute inset-x-0 top-0 h-[260px] md:inset-y-0 md:left-auto md:right-0 md:h-auto md:w-[40%] pointer-events-none"
+                  className="absolute inset-x-0 top-0 h-[208px] md:inset-y-0 md:left-auto md:right-0 md:h-auto md:w-[40%] pointer-events-none"
                 >
                   <div
                     className="absolute inset-0"
@@ -1109,7 +1109,7 @@ export default function PreviewHome() {
                 </div>
 
                 {/* Мобильная строка под шапкой «Егор Шугаев»: слева роль, справа город */}
-                <div className="md:hidden absolute top-12 left-6 right-6 z-[2] flex items-center justify-between font-p95 text-[15px] tracking-[0.2em] uppercase text-white/70">
+                <div className="md:hidden absolute top-9 left-6 right-6 z-[2] flex items-center justify-between font-p95 text-[15px] tracking-[0.2em] uppercase text-white/70">
                   <span className="whitespace-nowrap">
                     <span className="text-[#A6FF00]/80">[</span>
                     <span className="mx-2">Дизайн-директор</span>
@@ -1137,7 +1137,7 @@ export default function PreviewHome() {
                 {/* Центральный контент — ограничен слева, чтобы не наезжать на сферу.
                     На мобиле justify-start — содержимое сидит сразу под сферой, без огромного gap.
                     На десктопе justify-center — текст ровно центрирован внутри tile. */}
-                <div className="relative z-[1] flex flex-col justify-start md:justify-center p-7 md:p-10 lg:p-12 pt-[280px] md:pt-24 pb-12 md:pb-32 md:min-h-[600px] lg:min-h-[720px]">
+                <div className="relative z-[1] flex flex-col justify-start md:justify-center p-7 md:p-10 lg:p-12 pt-[216px] md:pt-24 pb-12 md:pb-32 md:min-h-[600px] lg:min-h-[720px]">
                   <div className="flex flex-col gap-6 md:gap-8 md:max-w-[58%]">
                     <h1 className="font-p95 text-[clamp(64px,9vw,128px)] leading-[0.92] uppercase tracking-tight text-white">
                       <span className="block text-white">7 лет</span>
