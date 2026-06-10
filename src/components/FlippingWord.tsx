@@ -90,7 +90,7 @@ export default function FlippingWord({
           {words.map((w, idx) => (
             <span
               key={idx}
-              className="block whitespace-nowrap"
+              className="block whitespace-nowrap max-md:text-center"
               style={{ lineHeight: STEP_EM }}
             >
               {w}

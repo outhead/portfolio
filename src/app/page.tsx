@@ -1135,10 +1135,11 @@ export default function PreviewHome() {
                     На мобиле justify-start — содержимое сидит сразу под сферой, без огромного gap.
                     На десктопе justify-center — текст ровно центрирован внутри tile. */}
                 <div className="relative z-[1] flex flex-col justify-start md:justify-center p-7 md:p-10 lg:p-12 pt-[216px] md:pt-24 pb-12 md:pb-32 md:min-h-[600px] lg:min-h-[720px]">
-                  <div className="flex flex-col gap-6 md:gap-8 md:max-w-[58%]">
-                    <h1 className="font-p95 text-[clamp(64px,9vw,128px)] leading-[0.92] uppercase tracking-tight text-white">
-                      <span className="block text-white">7 лет</span>
-                      <span className="block text-white">РАЗВИВАЮ</span>
+                  <div className="flex flex-col gap-6 md:gap-8 md:max-w-[58%] max-md:items-center max-md:text-center">
+                    <h1 className="font-p95 text-[clamp(44px,calc(20vw_-_21px),128px)] md:text-[clamp(64px,9vw,128px)] leading-[0.92] uppercase tracking-tight text-white">
+                      {/* Мобайл: «7 лет развиваю» одной строкой (inline), md+ — двумя (block) */}
+                      <span className="inline md:block text-white">7 лет </span>
+                      <span className="inline md:block text-white">РАЗВИВАЮ</span>
                       <span className="block">
                         <FlippingWord
                           words={["ЛЮДЕЙ", "КОМАНДЫ", "ВИЗУАЛ", "СЕРВИСЫ", "ИНТЕРЕС"]}
@@ -1151,7 +1152,7 @@ export default function PreviewHome() {
                       От стратегии и культуры до AI и цифровых продуктов.
                     </p>
 
-                    <div className="flex flex-wrap items-center gap-3 mt-2">
+                    <div className="flex flex-wrap items-center gap-3 mt-2 max-md:justify-center">
                       <Link
                         href="https://t.me/egoradi"
                         target="_blank"
@@ -1174,7 +1175,7 @@ export default function PreviewHome() {
 
                     {/* Mobile-only: логотипы компаний в потоке под кнопками — без перекрытия */}
                     <div className="md:hidden mt-2 flex flex-col gap-3">
-                      <div className="flex items-center gap-5 flex-wrap">
+                      <div className="flex items-center gap-5 flex-wrap justify-center">
                         <img src="/images/logos/ozon.svg" alt="Ozon" className="h-4 w-auto self-center brightness-0 invert opacity-55" />
                         <img src="/images/logos/mts.svg" alt="МТС" className="h-6 w-auto brightness-0 invert opacity-55" />
                         <img src="/images/logos/gazpromneft.svg" alt="Газпром нефть" className="h-6 w-auto brightness-0 invert opacity-55" />
