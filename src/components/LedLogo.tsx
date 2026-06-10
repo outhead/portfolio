@@ -113,7 +113,7 @@ export default function LedLogo({ className }: { className?: string }) {
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const canHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-    const HOLD = canHover ? 9 : 5;
+    const HOLD = canHover ? 25 : 12;
 
     const dOut = DOTS.map(() => Math.random() * 0.45);
     const dIn = DOTS.map(() => Math.random() * 0.5);
