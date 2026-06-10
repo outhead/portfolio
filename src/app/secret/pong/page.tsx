@@ -24,8 +24,8 @@ const BOTTOM_Y = FH - MARGIN - PH; // верхняя грань нижней р�
 const TOP_Y = MARGIN;              // верхняя грань верхней ракетки
 const WIN_SCORE = 7;
 const BASE = 3.4;            // стартовая скорость (в ~1.5 раза медленнее прежней)
-const MAXV = 9;             // потолок скорости
-const ACC = 1.05;          // ускорение на каждом отскоке
+const MAXV = 8;              // потолок скорости (px за шаг 60 Гц)
+const ACC = 1.04;            // ускорение на каждом отскоке
 
 type Phase = "connecting" | "waiting" | "count" | "playing" | "over";
 
@@ -411,8 +411,13 @@ export default function PongPage() {
       }
     };
 
-    const loop = (t: number) => {
-      raf = requestAnimationFrame(loop);
+    // ФИКСИРОВАННЫЙ шаг физики 60 Гц: rAF на 120Гц-экранах тикает вдвое чаще,
+    // и без аккумулятора игра на таких телефонах шла в 2 раза быстрее задуманного
+    // (и мяч за кадр проходил дальше — отсюда и «пролетает сквозь ракетку»).
+    const STEP = 1000 / 60;
+    let lastT = 0, acc = 0;
+
+    const step = () => {
       const host = roleRef.current === "host";
       const now = performance.now();
 
@@ -437,13 +442,23 @@ export default function PongPage() {
         px2Eff.current = clamp(px2.current + px2Vel.current * age, 0, FW - pw2.current);
       }
 
-      // гость: мяч летит локально по последним известным скоростям (dead reckoning),
-      // стены отбиваем сами — авторитетные пакеты хоста мягко корректируют
+      // гость: мяч летит локально по последним известным скоростям (dead reckoning).
+      // Стены И ракетки отбиваем предсказательно (без ACC) — иначе между пакетами мяч
+      // визуально проходит сквозь ракетку, а потом телепортируется. Хост скорректирует.
       if (!host && phaseRef.current === "playing") {
+        const W1 = pw1.current, W2 = pw2.current;
         for (const b of balls.current) {
+          const oldY = b.y;
           b.x += b.vx; b.y += b.vy;
           if (b.x < R) { b.x = R; b.vx = Math.abs(b.vx); }
           if (b.x > FW - R) { b.x = FW - R; b.vx = -Math.abs(b.vx); }
+          if (b.vy > 0 && oldY + R <= BOTTOM_Y + 2 && b.y + R >= BOTTOM_Y &&
+              b.x >= px1.current - R && b.x <= px1.current + W1 + R) {
+            b.y = BOTTOM_Y - R; b.vy = -Math.abs(b.vy);
+          } else if (b.vy < 0 && oldY - R >= TOP_Y + PH - 2 && b.y - R <= TOP_Y + PH &&
+              b.x >= px2.current - R && b.x <= px2.current + W2 + R) {
+            b.y = TOP_Y + PH + R; b.vy = Math.abs(b.vy);
+          }
           b.y = clamp(b.y, -30, FH + 30);
         }
       }
@@ -510,6 +525,15 @@ export default function PongPage() {
           }
         }
       }
+    };
+
+    const loop = (t: number) => {
+      raf = requestAnimationFrame(loop);
+      if (!lastT) lastT = t;
+      acc += Math.min(t - lastT, 100); // кап: фоновая вкладка не догоняет махом
+      lastT = t;
+      while (acc >= STEP) { acc -= STEP; step(); }
+      const host = roleRef.current === "host";
 
       // сеть ~50 Гц для отзывчивости
       const ch = chRef.current;
