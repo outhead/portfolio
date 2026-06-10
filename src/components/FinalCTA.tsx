@@ -398,7 +398,7 @@ export default function FinalCTA() {
 
   return (
     <section ref={sectionRef} className="relative z-[1] bg-black border-t border-white/[0.06]">
-      <div className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-10 md:py-14">
+      <div className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-10 md:py-14">
         <motion.div
           initial="hidden"
           whileInView="show"

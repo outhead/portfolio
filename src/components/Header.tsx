@@ -80,7 +80,7 @@ export default function Header() {
       />
       <header
         role="banner"
-        className={`fixed top-0 left-0 right-0 z-[100] flex justify-between items-center px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-4 md:py-5 backdrop-blur-xl border-b transition-all duration-300 relative ${
+        className={`fixed top-0 left-0 right-0 z-[100] flex justify-between items-center px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-4 md:py-5 backdrop-blur-xl border-b transition-all duration-300 relative ${
           headerSolid
             ? "bg-black/85 border-white/[0.06]"
             : "bg-black/50 border-transparent"
@@ -107,8 +107,8 @@ export default function Header() {
                 key={link.href}
                 href={link.href}
                 data-ym-goal={link.goal}
-                className={`relative text-[13px] font-normal tracking-[0.12em] uppercase no-underline transition-colors duration-200 group min-h-[44px] flex items-center ${
-                  isActive ? "text-white" : "text-white/55 hover:text-white"
+                className={`relative text-[13px] 2xl:text-[14px] font-normal tracking-[0.12em] uppercase no-underline transition-colors duration-200 group min-h-[44px] flex items-center ${
+                  isActive ? "text-white" : "text-white/65 hover:text-white"
                 }`}
               >
                 {link.label}
@@ -126,7 +126,7 @@ export default function Header() {
             target="_blank"
             data-ym-goal="cta_cv"
             data-ym-goal-params='{"placement":"header"}'
-            className="inline-flex items-center gap-1.5 text-[12px] tracking-[0.12em] uppercase text-white/55 no-underline hover:text-white transition-colors border border-white/[0.08] hover:border-white/25 rounded px-3 py-2 min-h-[44px]"
+            className="inline-flex items-center gap-1.5 text-[13px] tracking-[0.12em] uppercase text-white/65 no-underline hover:text-white transition-colors border border-white/[0.08] hover:border-white/25 rounded px-3 py-2 min-h-[44px]"
           >
             <FileDown className="w-3.5 h-3.5 text-[#A6FF00]" strokeWidth={2} />
             CV

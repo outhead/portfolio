@@ -101,7 +101,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
         {/* Градиент уравновешивает контраст под текст hero, но не должен забивать обложку */}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-transparent" />
 
-        <div className="relative z-[5] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pb-10 md:pb-16 w-full animate-fade-in-up">
+        <div className="relative z-[5] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] pb-10 md:pb-16 w-full animate-fade-in-up">
           {/* Breadcrumb */}
           <Link
             href="/#portfolio"
@@ -124,7 +124,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
 
       {/* Results bar */}
       {project.results && project.results.length > 0 && (
-        <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] bg-black border-t border-white/[0.06]">
+        <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] bg-black border-t border-white/[0.06]">
           {(() => {
             const len = project.results.length;
             // 3 → 1 row of 3, 4 → 1 row of 4, 6 → 2 rows of 3, иначе → 4 в ряд
@@ -153,7 +153,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
       )}
 
       {/* Content */}
-      <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-16 md:py-24 bg-black border-t border-white/[0.06]">
+      <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-16 md:py-24 bg-black border-t border-white/[0.06]">
         <div className="lg:flex lg:gap-x-12 xl:gap-x-16">
         <div className="max-w-4xl flex-1 min-w-0">
           {(() => {
@@ -539,7 +539,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
       </section>
 
       {/* CTA — связаться */}
-      <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-12 md:py-16 bg-black border-t border-white/[0.06]">
+      <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-12 md:py-16 bg-black border-t border-white/[0.06]">
         <div className="max-w-3xl">
           <div className="text-[12px] tracking-[0.12em] uppercase text-white/30 mb-4">Открыт к офферам</div>
           <h3 className="font-p95 text-[clamp(24px,3vw,40px)] uppercase leading-[1] mb-6 text-white/90">
@@ -565,7 +565,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
       </section>
 
       {/* Next / Prev navigation */}
-      <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] bg-black border-t border-white/[0.06]">
+      <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] bg-black border-t border-white/[0.06]">
         <div className="grid grid-cols-2 gap-px">
           {prev ? (
             <Link

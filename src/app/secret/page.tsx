@@ -114,7 +114,7 @@ export default function SecretPage() {
       />
 
       {/* Контент — по центру, как на странице крестиков */}
-      <section className="relative z-[1] flex-1 flex items-start justify-center px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pt-[64px] md:pt-[88px] pb-12">
+      <section className="relative z-[1] flex-1 flex items-start justify-center px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] pt-[64px] md:pt-[88px] pb-12">
         <div className="w-full max-w-[860px] mx-auto flex flex-col items-center text-center">
           <p className="font-p95 text-[12px] md:text-[13px] tracking-[0.25em] uppercase text-white/40 mb-4 md:mb-8">
             Шифр Цезаря · Загадка №1

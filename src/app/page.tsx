@@ -860,7 +860,7 @@ function SplitSection({
   return (
     <section
       id={id}
-      className={`relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-24 bg-black ${
+      className={`relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-24 bg-black ${
         borderTop ? "border-t border-white/[0.06]" : ""
       } ${className}`}
     >
@@ -995,7 +995,7 @@ function Toolbox() {
   // Подзаголовок «без ритуалов и ярлыков» — лёгкая ирония к шаблонным «my stack» секциям.
   return (
     <section className="relative z-[1] bg-black border-t border-white/[0.06]">
-      <div className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-20">
+      <div className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20">
         <motion.div
           initial="hidden"
           whileInView="show"
@@ -1068,7 +1068,7 @@ export default function PreviewHome() {
           initial="hidden"
           animate="show"
           variants={stagger}
-          className="relative z-[2] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pt-2 md:pt-12 pb-10 md:pb-14"
+          className="relative z-[2] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] pt-2 md:pt-12 pb-10 md:pb-14"
         >
           {/* Bento: 12-колоночный грид с разными размерами */}
           <div className="grid grid-cols-12 gap-3 md:gap-4">
@@ -1118,12 +1118,9 @@ export default function PreviewHome() {
                   <span className="whitespace-nowrap">Москва</span>
                 </div>
 
-                {/* Якорь — нижний левый угол: «Работал в» + лого (md+; на мобиле — в потоке под кнопками) */}
+                {/* Якорь — нижний левый угол: лого компаний (md+; на мобиле — в потоке под кнопками) */}
                 <div className="hidden md:flex absolute bottom-6 left-6 md:bottom-10 md:left-10 lg:bottom-12 lg:left-12 z-[2] items-end gap-8 md:gap-12 flex-wrap">
-                  <span className="font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/70 whitespace-nowrap">
-                    Работал в
-                  </span>
-                  <img src="/images/logos/ozon.svg" alt="Ozon" className="h-4 md:h-[22px] w-auto self-center brightness-0 invert opacity-55 hover:opacity-100 transition-opacity duration-200" />
+                  <img src="/images/logos/ozon.svg" alt="Ozon" className="h-4 md:h-5 w-auto self-center brightness-0 invert opacity-55 hover:opacity-100 transition-opacity duration-200" />
                   <img src="/images/logos/mts.svg" alt="МТС" className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity duration-200" />
                   <img src="/images/logos/gazpromneft.svg" alt="Газпром нефть" className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity duration-200" />
                   <img src="/images/logos/hse.svg" alt="ВШЭ" className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity duration-200" />
@@ -1175,11 +1172,8 @@ export default function PreviewHome() {
                       </Link>
                     </div>
 
-                    {/* Mobile-only: «Работал в» в потоке под кнопками — без перекрытия */}
+                    {/* Mobile-only: логотипы компаний в потоке под кнопками — без перекрытия */}
                     <div className="md:hidden mt-2 flex flex-col gap-3">
-                      <span className="font-p95 text-[13px] tracking-[0.2em] uppercase text-white/70">
-                        Работал в
-                      </span>
                       <div className="flex items-center gap-5 flex-wrap">
                         <img src="/images/logos/ozon.svg" alt="Ozon" className="h-4 w-auto self-center brightness-0 invert opacity-55" />
                         <img src="/images/logos/mts.svg" alt="МТС" className="h-6 w-auto brightness-0 invert opacity-55" />
@@ -1349,7 +1343,7 @@ export default function PreviewHome() {
       {/* ═══════ PROJECTS — полноширинный асимметричный бенто ═══════ */}
       <section
         id="portfolio"
-        className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-20"
+        className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20"
       >
         <motion.div
           initial="hidden"
@@ -1437,7 +1431,7 @@ export default function PreviewHome() {
       </section>
 
       {/* ═══════ CAREER — hover-list с историей ролей, сразу после кейсов ═══════ */}
-      <section className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-20">
+      <section className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20">
         <motion.div
           initial="hidden"
           whileInView="show"
@@ -1456,7 +1450,7 @@ export default function PreviewHome() {
       {/* ═══════ SERVICES / EXPERTISE — 3-колоночный бенто по мотивам Stokt ═══════ */}
       <section
         id="skills"
-        className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-20"
+        className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20"
       >
         <motion.div
           initial="hidden"
@@ -1537,7 +1531,7 @@ export default function PreviewHome() {
       </section>
 
       {/* ═══════ TESTIMONIALS — с астериксом * (stokt) ═══════ */}
-      <section className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-20">
+      <section className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20">
         <motion.div
           initial="hidden"
           whileInView="show"
@@ -1620,7 +1614,7 @@ export default function PreviewHome() {
           whileInView="show"
           viewport={viewport}
           variants={stagger}
-          className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-20"
+          className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20"
         >
           <div className="grid md:grid-cols-2 gap-4 md:gap-5">
             {[
@@ -1687,7 +1681,7 @@ export default function PreviewHome() {
       {/* ═══════ ABOUT — о себе, последняя секция перед глобальным футером ═══════ */}
       <section
         id="about"
-        className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-20"
+        className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20"
       >
         <motion.div
           initial="hidden"
@@ -1740,7 +1734,7 @@ export default function PreviewHome() {
       {/* ═══════ CONTACTS — bento-грид из action-тайлов ═══════ */}
       <section
         id="contacts"
-        className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-14 md:py-20"
+        className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20"
       >
         <motion.div
           initial="hidden"

@@ -22,7 +22,7 @@ export default function ExperimentsPage() {
   return (
     <>
       {/* ===== HERO ===== */}
-      <section className="relative px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pt-28 md:pt-36 pb-12 md:pb-20 bg-black border-t border-white/[0.04]">
+      <section className="relative px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] pt-28 md:pt-36 pb-12 md:pb-20 bg-black border-t border-white/[0.04]">
         <motion.div
           initial="hidden"
           animate="show"
@@ -59,7 +59,7 @@ export default function ExperimentsPage() {
         whileInView="show"
         viewport={viewport}
         variants={stagger}
-        className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pb-24 md:pb-32 bg-black"
+        className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] pb-24 md:pb-32 bg-black"
       >
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {experimentProjects.map((project, i) => (

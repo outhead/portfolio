@@ -84,7 +84,7 @@ export default function SpeakingPage() {
   return (
     <>
       {/* ===== HERO ===== */}
-      <section className="relative px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pt-28 md:pt-36 pb-12 md:pb-16 bg-black border-t border-white/[0.04]">
+      <section className="relative px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] pt-28 md:pt-36 pb-12 md:pb-16 bg-black border-t border-white/[0.04]">
         <motion.div
           initial="hidden"
           animate="show"
@@ -120,7 +120,7 @@ export default function SpeakingPage() {
         whileInView="show"
         viewport={viewport}
         variants={stagger}
-        className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pb-14 md:pb-20 bg-black"
+        className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] pb-14 md:pb-20 bg-black"
       >
         <motion.div variants={fadeUp} className="mb-8 md:mb-10 flex items-center gap-3">
           <Mic2 className="w-4 h-4 text-white/40" strokeWidth={1.75} />
@@ -182,7 +182,7 @@ export default function SpeakingPage() {
         whileInView="show"
         viewport={viewport}
         variants={stagger}
-        className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-12 md:py-16 bg-black border-t border-white/[0.06]"
+        className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-12 md:py-16 bg-black border-t border-white/[0.06]"
       >
         <div className="grid md:grid-cols-2 gap-6 md:gap-10">
           {/* Mentorship */}
@@ -234,7 +234,7 @@ export default function SpeakingPage() {
         whileInView="show"
         viewport={viewport}
         variants={stagger}
-        className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pb-24 md:pb-32 bg-black"
+        className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] pb-24 md:pb-32 bg-black"
       >
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
           {[

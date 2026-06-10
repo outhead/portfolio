@@ -31,7 +31,7 @@ const links: Array<{ href: string; label: string; Icon: React.ComponentType<Reac
 
 export default function Footer() {
   return (
-    <footer className="relative z-[1] border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-6 md:py-8 bg-black">
+    <footer className="relative z-[1] border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-6 md:py-8 bg-black">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex items-center gap-5">
           {links.map((l) => (

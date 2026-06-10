@@ -25,7 +25,7 @@ export default function MentoringPage() {
       <div className="blur-md select-none pointer-events-none" aria-hidden>
 
       {/* ===== HERO ===== */}
-      <section className="relative px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-20 md:py-32 border-t border-white/[0.04] bg-black/75">
+      <section className="relative px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-20 md:py-32 border-t border-white/[0.04] bg-black/75">
         <div className="max-w-5xl">
           <div className="animate-fade-in-up">
             <h1 className="font-p95 text-[clamp(48px,10vw,100px)] leading-[0.92] uppercase tracking-tight mb-4 md:mb-6">
@@ -41,7 +41,7 @@ export default function MentoringPage() {
       </section>
 
       {/* ===== FORMATS ===== */}
-      <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-20 md:py-32 border-t border-white/[0.04] bg-black/75">
+      <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-20 md:py-32 border-t border-white/[0.04] bg-black/75">
         <div className="max-w-5xl">
           <ScrollReveal>
             <div className="section-label mb-6">Форматы</div>
@@ -90,7 +90,7 @@ export default function MentoringPage() {
       </section>
 
       {/* ===== FOR WHOM ===== */}
-      <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-20 md:py-32 border-t border-white/[0.04] bg-black/75">
+      <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-20 md:py-32 border-t border-white/[0.04] bg-black/75">
         <div className="max-w-5xl">
           <ScrollReveal>
             <div className="section-label mb-6">Для кого</div>
@@ -134,7 +134,7 @@ export default function MentoringPage() {
       </section>
 
       {/* ===== BOOKING ===== */}
-      <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-20 md:py-32 border-t border-white/[0.04] bg-black/75">
+      <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-20 md:py-32 border-t border-white/[0.04] bg-black/75">
         <div className="max-w-5xl">
           <ScrollReveal>
             <div className="section-label mb-6">Запись</div>
@@ -231,7 +231,7 @@ export default function MentoringPage() {
       </section>
 
       {/* ===== PRINCIPLES ===== */}
-      <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-20 md:py-32 border-t border-white/[0.04] bg-black/75">
+      <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-20 md:py-32 border-t border-white/[0.04] bg-black/75">
         <div className="max-w-5xl">
           <ScrollReveal>
             <div className="font-p95 text-[15px] md:text-[16px] tracking-[0.2em] uppercase text-white/70 mb-6">
@@ -296,7 +296,7 @@ export default function MentoringPage() {
       </section>
 
       {/* ===== BACK LINK ===== */}
-      <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] py-12 md:py-16 border-t border-white/[0.06] bg-black">
+      <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-12 md:py-16 border-t border-white/[0.06] bg-black">
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-sm text-white/40 hover:text-white/70 hover:gap-3 transition-all duration-200 no-underline"
