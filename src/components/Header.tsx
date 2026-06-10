@@ -91,7 +91,7 @@ export default function Header() {
           aria-label="Главная"
           className="inline-flex items-center gap-3 md:gap-3.5 no-underline"
         >
-          <LedLogo className="h-[24px] md:h-[26px] w-auto" />
+          <LedLogo className="h-4 md:h-[18px] w-auto" />
         </Link>
 
         <nav aria-label="Основная навигация" className="hidden md:flex gap-6 absolute left-1/2 -translate-x-1/2">
