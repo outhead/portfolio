@@ -37,6 +37,7 @@ export default function KodFinal() {
   const [won, setWon] = useState(false);
   const [wrong, setWrong] = useState(false);
   const [hint, setHint] = useState(false);
+  const [hint2, setHint2] = useState(false);
 
   const [winMs, setWinMs] = useState<number | null>(null);
   const [entries, setEntries] = useState<LbEntry[]>([]);
@@ -51,8 +52,9 @@ export default function KodFinal() {
   const [othersOnly, setOthersOnly] = useState(false);
 
   useEffect(() => {
-    const id = setTimeout(() => setHint(true), 12000);
-    return () => clearTimeout(id);
+    const id = setTimeout(() => setHint(true), 10000);
+    const id2 = setTimeout(() => setHint2(true), 22000);
+    return () => { clearTimeout(id); clearTimeout(id2); };
   }, []);
 
   const push = (d: string) => {
@@ -130,8 +132,10 @@ export default function KodFinal() {
             <span className="w-16 h-16" />
           </div>
 
-          <p className="mt-8 text-[13px] text-[#C9A66B]/85 transition-opacity duration-700 min-h-[20px]" style={{ opacity: hint ? 1 : 0 }}>
-            Код подбирать не нужно. Разгадка под носом.
+          <p className="mt-8 text-[13px] text-[#C9A66B]/85 transition-opacity duration-700 min-h-[20px] max-w-[280px]" style={{ opacity: hint ? 1 : 0 }}>
+            {hint2
+              ? "Загляни в заголовок вкладки браузера — цифры там."
+              : "Код подбирать не нужно. Разгадка под носом."}
           </p>
         </div>
       ) : (

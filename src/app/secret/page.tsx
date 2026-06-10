@@ -123,7 +123,7 @@ export default function SecretPage() {
               ползунка layout под шифром не «прыгал» вверх-вниз. */}
           <div
             className="relative w-full"
-            style={{ minHeight: "clamp(120px, 14vw, 240px)" }}
+            style={{ minHeight: isSecretFound ? undefined : "clamp(120px, 14vw, 240px)" }}
           >
             {isSecretFound ? (
               <h1

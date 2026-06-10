@@ -53,11 +53,13 @@ export default function Dalshe3() {
   const [lost, setLost] = useState(false);
   const [thinking, setThinking] = useState(false);
   const [hint, setHint] = useState(false);
+  const [hint2, setHint2] = useState(false);
   const over = solved || lost;
 
   useEffect(() => {
-    const t = setTimeout(() => setHint(true), 9000);
-    return () => clearTimeout(t);
+    const t = setTimeout(() => setHint(true), 8000);
+    const t2 = setTimeout(() => setHint2(true), 18000);
+    return () => { clearTimeout(t); clearTimeout(t2); };
   }, []);
 
   const [dragId, setDragId] = useState<number | null>(null);
@@ -195,12 +197,14 @@ export default function Dalshe3() {
       }} />
 
       {!solved ? (
-        <div className="relative z-[1] w-full max-w-[480px] mx-auto flex flex-col items-center text-center">
-          <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-5">Крестики-нолики · Загадка №4</p>
-
-          <h1 className="font-p95 leading-[1.05] uppercase tracking-tight mb-10" style={{ fontSize: "clamp(26px, 5vw, 48px)" }}>
-            Это <span ref={neRef}>не</span> решение
-          </h1>
+        <div className="relative z-[1] w-full max-w-[460px] mx-auto flex flex-col items-center text-center">
+          {/* Шапка фикс-высоты — одна высота поля во всех уровнях */}
+          <div className="flex flex-col items-center justify-center" style={{ minHeight: "clamp(150px, 22vw, 200px)" }}>
+            <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-3">Крестики-нолики · Загадка №4</p>
+            <h1 className="font-p95 leading-[1.05] uppercase tracking-tight" style={{ fontSize: "clamp(26px, 5vw, 46px)" }}>
+              Это <span ref={neRef}>не</span> решение
+            </h1>
+          </div>
 
           <div className="relative" style={{ width: `calc(${S} * 3)`, height: `calc(${S} * 3)` }}>
             <div className="grid" style={{ gridTemplateColumns: `repeat(3, ${S})`, gridTemplateRows: `repeat(3, ${S})` }}>
@@ -217,7 +221,9 @@ export default function Dalshe3() {
           ) : null}
 
           <p className="mt-5 text-[13px] text-[#C9A66B]/85 max-w-xs transition-opacity duration-700" style={{ opacity: hint && !over ? 1 : 0 }}>
-            Условия менять нельзя. Это было бы нечестно.
+            {hint2
+              ? "Фигуры можно перетаскивать. Перетащи крестик прямо на слово «не»."
+              : "А кто сказал, что играть надо по правилам? Условие можно изменить."}
           </p>
 
           <button type="button" onClick={reset}

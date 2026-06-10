@@ -182,13 +182,16 @@ export default function Dalshe2() {
 
       {!won ? (
         <div className="relative z-[1] w-full max-w-[460px] mx-auto flex flex-col items-center text-center">
-          <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-3">Крестики-нолики · Загадка №3</p>
-          <h1 className="font-p95 leading-[0.95] uppercase tracking-tight mb-3" style={{ fontSize: "clamp(26px, 5vw, 46px)" }}>
-            Обыграй компьютер
-          </h1>
-          <p className="text-[13px] md:text-sm text-white/55 leading-relaxed max-w-sm mb-8">
-            Играешь за крестики.<br />Собери три в ряд или по диагонали.<br />Компьютер ходит первым и не любит проигрывать.
-          </p>
+          {/* Шапка фикс-высоты — чтобы поле во всех уровнях было на одной высоте */}
+          <div className="flex flex-col items-center" style={{ minHeight: "clamp(150px, 22vw, 200px)" }}>
+            <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-3">Крестики-нолики · Загадка №3</p>
+            <h1 className="font-p95 leading-[0.95] uppercase tracking-tight mb-3" style={{ fontSize: "clamp(26px, 5vw, 46px)" }}>
+              Обыграй компьютер
+            </h1>
+            <p className="text-[13px] md:text-sm text-white/55 leading-relaxed max-w-sm">
+              Играешь за крестики.<br />Собери три в ряд или по диагонали.<br />Компьютер ходит первым и не любит проигрывать.
+            </p>
+          </div>
 
           {/* сетка без граней — только линии # */}
           <div className="relative" style={{ width: `calc(${S} * 3)`, height: `calc(${S} * 3)` }}>

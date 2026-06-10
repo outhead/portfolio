@@ -227,7 +227,7 @@ export default function SecretDalshePage() {
   const [winLine, setWinLine] = useState<{ cells: string[]; color: string } | null>(null);
   const [round, setRound] = useState(0);
   const [phase, setPhase] = useState<Phase>("play");
-  const [lostOnce, setLostOnce] = useState(false); // проиграл/ничья хотя бы раз → показать «за пределами поля»
+  const [lossCount, setLossCount] = useState(0); // число проигрышей/ничьих → эскалация подсказки «за рамкой»
 
   const startRef = useRef<number | null>(null);
   const compTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -240,9 +240,12 @@ export default function SecretDalshePage() {
     };
   }, []);
 
-  // После первого проигрыша/ничьи — намёк, что играть нужно не по правилам поля.
+  // После проигрыша/ничьи — намёк, что играть нужно не по правилам поля.
+  // Считаем неудачи: 1-я → мягкий намёк, 2-я+ → прямая подсказка.
+  const countedRef = useRef(false);
   useEffect(() => {
-    if (over && !won) setLostOnce(true);
+    if (over && !won && !countedRef.current) { countedRef.current = true; setLossCount((n) => n + 1); }
+    if (!over) countedRef.current = false;
   }, [over, won]);
 
   function triggerWin(cells: string[]) {
@@ -366,7 +369,7 @@ export default function SecretDalshePage() {
 
   return (
     <main
-      className="relative bg-black text-white overflow-hidden flex flex-col"
+      className="relative bg-black text-white overflow-y-auto flex flex-col"
       style={{ minHeight: "100dvh" }}
     >
       <div
@@ -378,7 +381,7 @@ export default function SecretDalshePage() {
         }}
       />
 
-      <section className="relative z-[1] flex-1 flex items-start justify-center px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] pt-[88px] pb-12">
+      <section className="relative z-[1] w-full flex flex-col items-center px-5 pt-[88px] pb-16">
         {phase === "score" ? (
           /* ─── Экран победы с таблицей лидеров ─── */
           <div className="w-full max-w-[420px] mx-auto flex flex-col items-center text-center">
@@ -417,7 +420,7 @@ export default function SecretDalshePage() {
           </div>
         ) : (
           /* ─── Игра (ход / момент победы) ─── */
-          <div className="w-full max-w-[440px] mx-auto flex flex-col items-center text-center">
+          <div className="w-full max-w-[460px] mx-auto flex flex-col items-center text-center">
             <p className="font-p95 text-[12px] md:text-[13px] tracking-[0.25em] uppercase text-white/40 mb-3">
               Крестики-нолики · Загадка №2
             </p>
@@ -431,25 +434,26 @@ export default function SecretDalshePage() {
               </>
             ) : (
               <>
-                <h1 className="font-p95 leading-[0.95] uppercase tracking-tight mb-3" style={{ fontSize: "clamp(30px, 5vw, 52px)" }}>
-                  Обыграй компьютер
-                </h1>
-                <p className="text-[13px] md:text-sm text-white/55 leading-relaxed max-w-md mb-4">
-                  Играешь за крестики
-                  <br />
-                  Собери три в ряд или по диагонали
-                  <br />
-                  Компьютер ходит первым и не любит проигрывать
-                </p>
+                {/* Шапка фикс-высоты (плашка №2 — снаружи) → поле на одной высоте с L2/L3 */}
+                <div className="flex flex-col items-center" style={{ minHeight: "clamp(120px, 18vw, 170px)" }}>
+                  <h1 className="font-p95 leading-[0.95] uppercase tracking-tight mb-3" style={{ fontSize: "clamp(26px, 5vw, 46px)" }}>
+                    Обыграй компьютер
+                  </h1>
+                  <p className="text-[13px] md:text-sm text-white/55 leading-relaxed max-w-sm">
+                    Играешь за крестики.<br />Собери три в ряд или по диагонали.<br />Компьютер ходит первым и не любит проигрывать.
+                  </p>
+                </div>
                 {board}
                 {status ? (
                   <p className={`mt-5 text-sm md:text-[15px] ${won ? "text-[#A6FF00]" : "text-white/70"}`}>
                     {status}
                   </p>
                 ) : null}
-                {lostOnce && !won ? (
+                {lossCount > 0 && !won ? (
                   <p className="mt-3 text-[13px] md:text-sm text-[#C9A66B]/90 max-w-xs">
-                    Честно его не обыграть. Думай за пределами поля.
+                    {lossCount >= 2
+                      ? "Поле не заканчивается на рамке. Кликни по клеткам снаружи и собери ряд там."
+                      : "Честно его не обыграть. Думай за пределами поля."}
                   </p>
                 ) : null}
                 <button
