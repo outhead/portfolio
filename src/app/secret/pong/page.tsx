@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import confetti from "canvas-confetti";
 import { connectP2P, type P2PHandle } from "./rtc";
 import { connectRelay, type Relay } from "./pongRelay";
+import MagneticWaves from "./MagneticWaves";
+import { FW, FH, FIELD_STRENGTH, FIELD_FADE_PX, flowAngle } from "./field";
 
 /**
  * Сетевой ретро-пинг-понг (двое, по ссылке или сразу из кооп-пары через ?room=).
@@ -11,8 +13,8 @@ import { connectRelay, type Relay } from "./pongRelay";
  * Хост авторитетно считает физику и шлёт состояние через Supabase Realtime (~30 Гц);
  * гость шлёт только X своей ракетки. Перед подачей — обратный отсчёт 3-2-1.
  */
-// Канонические координаты поля (портрет). Низ = host (p1), верх = guest (p2).
-const FW = 420, FH = 640;
+// Канонические координаты поля: FW/FH — в field.ts (общие с фоном и силой поля).
+// Низ = host (p1), верх = guest (p2).
 const R = 9;                 // радиус мяча
 const PW = 96, PH = 14;      // ракетка (горизонтальная)
 const MARGIN = 26;
@@ -24,6 +26,9 @@ const MAXV = 8;              // потолок скорости (px за шаг 
 const ACC = 1.04;            // ускорение на каждом отскоке
 
 type Phase = "connecting" | "waiting" | "count" | "playing" | "over";
+// Режимы: classic — обычный понг (по умолчанию), field — «магнитное поле»:
+// живой фон-течение, которое реально сносит мяч (силу считает только хост).
+type Mode = "classic" | "field";
 
 const rndCode = () =>
   Array.from({ length: 5 }, () => "abcdefghijkmnpqrstuvwxyz23456789"[Math.floor(Math.random() * 32)]).join("");
@@ -37,6 +42,8 @@ export default function PongPage() {
   const [score, setScore] = useState<[number, number]>([0, 0]); // [host, guest]
   const [winner, setWinner] = useState<0 | 1 | null>(null);
   const [count, setCount] = useState(0); // число обратного отсчёта (3..1, 0=скрыт)
+  const [mode, setMode] = useState<Mode>("classic");
+  const modeRef = useRef<Mode>("classic");
 
   const roleRef = useRef<"host" | "guest">("host");
   const chRef = useRef<Relay | null>(null);
@@ -95,6 +102,7 @@ export default function PongPage() {
 
   const setPhaseBoth = (p: Phase) => { phaseRef.current = p; setPhase(p); };
   const setCountBoth = (c: number) => { countRef.current = c; setCount(c); };
+  const setModeBoth = (m: Mode) => { modeRef.current = m; setMode(m); };
 
   function serve(dir: number) {
     balls.current = [{ x: FW / 2, y: FH / 2, vx: (Math.random() * 2 - 1) * 2.2, vy: dir * BASE, last: dir > 0 ? 1 : 0 }];
@@ -127,6 +135,8 @@ export default function PongPage() {
       ? (params.get("host") === "1" ? "host" : "guest")
       : (sParam ? "guest" : "host");
     roleRef.current = r; setRole(r);
+    // пресет режима из URL; дальше режимом владеет хост (тумблер + state-пакеты)
+    if (params.get("mode") === "field") setModeBoth("field");
     if (!code) code = rndCode();
     if (r === "host" && !room) setShareUrl(`${window.location.origin}/secret/pong?s=${code}`);
 
@@ -159,6 +169,9 @@ export default function PongPage() {
       }
       if (payload.phase && payload.phase !== phaseRef.current) setPhaseBoth(payload.phase);
       if (payload.count !== countRef.current) setCountBoth(payload.count);
+      // режим задаёт хост; гостю поле — только картинка (физика всё равно приходит)
+      const md: Mode = payload.mode === 1 ? "field" : "classic";
+      if (md !== modeRef.current) setModeBoth(md);
       const w = payload.winner;
       if ((w === 0 || w === 1) && w !== winnerRef.current) { winnerRef.current = w; setWinner(w); }
     };
@@ -437,7 +450,14 @@ export default function PongPage() {
       }
 
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.fillStyle = "#000"; ctx.fillRect(0, 0, FW, FH);
+      // в режиме поля канвас полупрозрачный — сквозь него читаются волны фона
+      if (modeRef.current === "field") {
+        ctx.clearRect(0, 0, FW, FH);
+        ctx.fillStyle = "rgba(0,0,0,0.5)";
+      } else {
+        ctx.fillStyle = "#000";
+      }
+      ctx.fillRect(0, 0, FW, FH);
       if (shakeRef.current > 0.3) {
         ctx.translate((Math.random() - 0.5) * shakeRef.current, (Math.random() - 0.5) * shakeRef.current);
         shakeRef.current *= 0.86;
@@ -829,6 +849,20 @@ export default function PongPage() {
         const p2x = px2Eff.current; // ракетка гостя с компенсацией лага
         for (const b of balls.current) {
           if (stuck.current?.b === b) continue; // прилип — физика не нужна
+          // ─── режим «магнитное поле»: снос мяча по линиям течения ───
+          // Силу считает ТОЛЬКО хост (авторитетная физика) — гость получит
+          // готовые vx/vy в state-пакетах, dead reckoning сгладит между ними.
+          if (modeRef.current === "field") {
+            const a = flowAngle(b.x, b.y, now);
+            // у ракеток поле гаснет — без «нечестных» промахов у самой палки
+            let k = clamp(Math.min(b.y - (TOP_Y + PH), BOTTOM_Y - b.y) / FIELD_FADE_PX, 0, 1);
+            k = k * k * (3 - 2 * k);
+            b.vx += Math.cos(a) * FIELD_STRENGTH * k;
+            b.vy += Math.sin(a) * FIELD_STRENGTH * 0.8 * k; // поперёк поля сносит чуть слабее
+            // страховка: поле не должно «подвесить» мяч поперёк поля навсегда
+            if (Math.abs(b.vy) < 0.9) b.vy = 0.9 * (b.vy !== 0 ? Math.sign(b.vy) : (b.last === 0 ? -1 : 1));
+            b.vx = clamp(b.vx, -MAXV, MAXV); b.vy = clamp(b.vy, -MAXV, MAXV);
+          }
           // подшаги: на высокой скорости двигаем мяч кусками ≤ ~6px,
           // чтобы он физически не мог проскочить плоскость ракетки за кадр
           const sp = Math.max(Math.abs(b.vx), Math.abs(b.vy));
@@ -925,6 +959,7 @@ export default function PongPage() {
             } : null,
             stuck: stuck.current ? { i: balls.current.indexOf(stuck.current.b), owner: stuck.current.owner, off: Math.round(stuck.current.off) } : null,
             s1: sc.current[0], s2: sc.current[1], phase: phaseRef.current, count: countRef.current,
+            mode: modeRef.current === "field" ? 1 : 0,
             winner: phaseRef.current === "over" ? (sc.current[0] > sc.current[1] ? 0 : 1) : null,
           };
           if (p2p) p2pRef.current?.sendFast({ event: "state", payload: statePayload });
@@ -958,6 +993,10 @@ export default function PongPage() {
     else if (useP2P.current) p2pRef.current?.sendCtl({ event: "rematch", payload: {} });
     else chRef.current?.send("rematch", {});
   }
+  // тумблер режима — только хост, на экранах ожидания/конца матча
+  function toggleMode() {
+    setModeBoth(modeRef.current === "field" ? "classic" : "field");
+  }
 
   const mine = role === "host" ? score[0] : score[1];
   const theirs = role === "host" ? score[1] : score[0];
@@ -976,6 +1015,10 @@ export default function PongPage() {
 
   return (
     <main className="pong-page relative bg-black text-white overflow-hidden flex flex-col items-center px-4 pt-[60px] sm:pt-[68px] pb-4" style={{ minHeight: "100dvh" }}>
+      {/* режим «магнитное поле»: живой фон-течение (сквозь полупрозрачный канвас) */}
+      {mode === "field" ? (
+        <MagneticWaves anchor={canvasRef} mirror={role === "guest"} opacity={0.5} />
+      ) : null}
       {/* лёгкое лаймовое свечение — как на остальных страницах квеста */}
       <div aria-hidden className="absolute inset-0 pointer-events-none opacity-60" style={{
         background: "radial-gradient(ellipse 55% 45% at 50% 38%, rgba(166,255,0,0.05), transparent 62%)",
@@ -986,6 +1029,9 @@ export default function PongPage() {
           <span className="ml-2 normal-case tracking-normal" style={{ color: transport === "p2p" ? "rgba(166,255,0,0.65)" : "rgba(255,255,255,0.25)" }}>
             <span className={transport === "p2p" ? "animate-pulse" : ""}>●</span> {transport === "p2p" ? "p2p" : "сервер"}
           </span>
+          {mode === "field" ? (
+            <span className="ml-2 normal-case tracking-normal text-[#A6FF00]/65">⌁ поле</span>
+          ) : null}
         </p>
         <div className="flex items-center justify-center gap-2.5 sm:gap-5 mb-2 font-p95 tabular-nums" style={{ fontSize: "clamp(20px,5vw,30px)" }}>
           <span className="text-white/40 text-[10px] sm:text-xs uppercase tracking-[0.12em]">соперник</span>
@@ -999,7 +1045,7 @@ export default function PongPage() {
         <div className="relative mx-auto" style={{ height: "min(62dvh, 600px)", aspectRatio: `${FW}/${FH}` }}>
           <canvas ref={canvasRef} width={FW} height={FH}
             className="block w-full h-full rounded-lg border border-white/10 touch-none select-none"
-            style={{ background: "#000" }} />
+            style={{ background: mode === "field" ? "transparent" : "#000" }} />
 
           {count > 0 && phase === "count" ? (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -1041,11 +1087,25 @@ export default function PongPage() {
                   </button>
                 </>
               ) : null}
+
+              {/* выбор режима — хост, пока игра не идёт; второй режим, не дефолт */}
+              {role === "host" && (phase === "waiting" || phase === "over") ? (
+                <button type="button" onClick={toggleMode}
+                  className="mt-5 font-p95 text-[11px] tracking-[0.15em] uppercase text-white/35 hover:text-white/70 transition-colors">
+                  режим:{" "}
+                  <span className={mode === "field" ? "text-[#A6FF00]" : "text-white/70"}>
+                    {mode === "field" ? "⌁ магнитное поле" : "классика"}
+                  </span>
+                </button>
+              ) : null}
             </div>
           ) : null}
         </div>
 
         <p className="hidden sm:block mt-3 text-[12px] text-white/40 max-w-xs">Двигай ракетку (внизу) пальцем или ←→. Мяч летит — отбивай. До {WIN_SCORE}.</p>
+        {mode === "field" ? (
+          <p className="mt-2 text-[12px] text-[#A6FF00]/55 max-w-xs">Магнитное поле сносит мяч — читай течение по линиям фона.</p>
+        ) : null}
       </div>
     </main>
   );
