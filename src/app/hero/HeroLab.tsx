@@ -82,7 +82,7 @@ function V1() {
             className="absolute inset-0 pointer-events-none"
             style={{
               background:
-                "radial-gradient(ellipse 62% 52% at 50% 54%, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.45) 55%, transparent 78%)",
+                "radial-gradient(ellipse 58% 48% at 50% 54%, rgba(0,0,0,0.66) 0%, rgba(0,0,0,0.32) 55%, transparent 78%)",
             }}
           />
         </div>
@@ -120,7 +120,7 @@ function V1() {
 function V2() {
   const ref = useRef<HTMLDivElement>(null);
   return (
-    <section ref={ref} className="relative min-h-[100vh] bg-black overflow-hidden px-5 md:px-[4%] pt-28 md:pt-36 pb-10 flex flex-col">
+    <section ref={ref} className="relative min-h-[100vh] bg-black overflow-hidden px-5 md:px-[4%] pt-24 md:pt-28 pb-8 flex flex-col">
       {/* Сфера — справа, пересекается с заголовком, уходит за край */}
       <div aria-hidden className="absolute top-[6%] right-[-14%] md:right-[-8%] w-[80%] md:w-[48%] h-[70%] pointer-events-none md:pointer-events-auto">
         <ParticleSphere className="absolute inset-0 w-full h-full" trackingRef={ref} />
@@ -129,7 +129,7 @@ function V2() {
       <RoleTag className="absolute top-24 right-5 md:top-28 md:right-[4%] z-[2]" />
 
       <div className="relative z-[1] flex-1 flex flex-col justify-center">
-        <h1 className="font-p95 text-[clamp(64px,16vw,230px)] leading-[0.88] uppercase tracking-tight text-white">
+        <h1 className="font-p95 text-[clamp(56px,12vw,184px)] leading-[0.88] uppercase tracking-tight text-white">
           <span className="block">7 лет</span>
           <span className="block">Развиваю</span>
           <span className="block">
@@ -219,7 +219,7 @@ function V4() {
       <RoleTag className="self-end mb-5 md:mb-7" />
 
       {/* Заголовок одной строкой во всю ширину */}
-      <h1 className="relative z-[1] font-p95 text-[clamp(30px,8vw,118px)] xl:text-[clamp(30px,6.2vw,118px)] leading-[0.92] uppercase tracking-tight text-white whitespace-nowrap max-md:text-center">
+      <h1 className="relative z-[1] font-p95 text-[clamp(30px,8vw,150px)] xl:text-[clamp(30px,7.6vw,150px)] leading-[0.92] uppercase tracking-tight text-white whitespace-nowrap max-md:text-center">
         7 лет развиваю{" "}
         <FlippingWord words={WORDS} className="text-[#A6FF00]" />
       </h1>
