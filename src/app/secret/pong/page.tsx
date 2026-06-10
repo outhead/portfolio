@@ -18,7 +18,7 @@ const PW = 96, PH = 14;      // ракетка (горизонтальная)
 const MARGIN = 26;
 const BOTTOM_Y = FH - MARGIN - PH; // верхняя грань нижней ракетки
 const TOP_Y = MARGIN;              // верхняя грань верхней ракетки
-const WIN_SCORE = 7;
+const WIN_SCORE = 5;
 const BASE = 3.4;            // стартовая скорость (в ~1.5 раза медленнее прежней)
 const MAXV = 8;              // потолок скорости (px за шаг 60 Гц)
 const ACC = 1.04;            // ускорение на каждом отскоке

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import confetti from "canvas-confetti";
 import { markQuestStart } from "./leaderboard";
+import QuestBackground from "@/components/QuestBackground";
 
 function celebrate() {
   const colors = ["#A6FF00", "#D9FF66", "#ECFFB3", "#FFFFFF"];
@@ -101,6 +102,7 @@ export default function SecretPage() {
       className="relative bg-black text-white overflow-hidden flex flex-col"
       style={{ minHeight: "100dvh" }}
     >
+      <QuestBackground palette="green" opacity={0.32} />
       {/* Мягкое свечение */}
       <div
         aria-hidden

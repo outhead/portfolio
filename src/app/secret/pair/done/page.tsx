@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import confetti from "canvas-confetti";
+import QuestBackground from "@/components/QuestBackground";
 
 export default function PairDone() {
   // переносим комнату/роль в пинг-понг — играем тем же составом, без новой ссылки
@@ -17,6 +18,7 @@ export default function PairDone() {
 
   return (
     <main className="relative bg-black text-white overflow-y-auto flex flex-col items-center px-5 pt-[88px] pb-16" style={{ minHeight: "100dvh" }}>
+      <QuestBackground palette="violet" opacity={0.34} />
       <div aria-hidden className="absolute inset-0 pointer-events-none opacity-60" style={{
         background: "radial-gradient(ellipse 55% 45% at 50% 38%, rgba(166,255,0,0.08), transparent 60%)",
       }} />
