@@ -234,13 +234,12 @@ export default function Dalshe3() {
         </div>
       ) : (
         <div className="relative z-[1] w-full max-w-[420px] mx-auto flex flex-col items-center text-center">
-          <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-4">Это решение</p>
-          <h1 className="font-p95 leading-none uppercase tracking-tight text-[#A6FF00] mb-5" style={{ fontSize: "clamp(36px, 10vw, 68px)" }}>
-            Решение
+          <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-4">Решено</p>
+          <h1 className="font-p95 leading-none uppercase tracking-tight text-[#A6FF00] mb-8" style={{ fontSize: "clamp(34px, 9vw, 64px)" }}>
+            Это решение
           </h1>
-          <p className="text-sm text-white/60 mb-8 max-w-xs">Ты убрал «не» — и это стало решением.</p>
           <Link href="/secret/lab/kod" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[14px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
-            <span className="leading-none translate-y-[1px]">К терминалу</span><span className="leading-none">→</span>
+            <span className="leading-none translate-y-[1px]">Дальше</span><span className="leading-none">→</span>
           </Link>
         </div>
       )}
