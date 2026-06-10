@@ -87,6 +87,7 @@ export default function PairPage() {
   const claimedRef = useRef(false);
   const solvedRef = useRef(false);
   const pendingFlips = useRef(0);  // сколько flip-запросов в полёте — пока >0, поллинг не перетирает switches
+  const lastFlipAt = useRef(0);    // когда контроллер последний раз щёлкал — чтобы поллинг не «отскакивал» тумблеры
   const switchesRef = useRef("0".repeat(LEN));
   const setSw = (s: string) => { switchesRef.current = s; setSwitches(s); };
   const initRef = useRef(false);
@@ -127,8 +128,13 @@ export default function PairPage() {
     const iv = setInterval(async () => {
       const st = await pairState(id);
       if (!st) return;
-      // не перетираем локальное состояние, пока наши flip-и ещё в полёте
-      if (pendingFlips.current === 0) setSw(st.switches);
+      // Смотрящий (есть target) всегда берёт switches с сервера. Контроллер — только
+      // когда не в полёте flip И не щёлкал ~1.8с: иначе поллинг, стартовавший ДО флипа,
+      // возвращается ПОСЛЕ и «отскакивает» тумблер назад. Простой больше 1.8с — самовосстановление.
+      const canApply = targetRef.current
+        ? pendingFlips.current === 0
+        : pendingFlips.current === 0 && performance.now() - lastFlipAt.current > 1800;
+      if (canApply) setSw(st.switches);
       setJoined(st.joined);
       if (st.solved && !solvedRef.current) {
         solvedRef.current = true;
@@ -158,6 +164,7 @@ export default function PairPage() {
     const want = next[i] === "1" ? "0" : "1";
     next[i] = want;
     setSw(next.join(""));
+    lastFlipAt.current = performance.now();
     pendingFlips.current++;
     try {
       const r = await pairCall("flip", { id, index: i, value: want });
