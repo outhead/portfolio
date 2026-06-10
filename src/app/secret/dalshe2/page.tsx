@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import confetti from "canvas-confetti";
+import QuestBackground from "@/components/QuestBackground";
 
 /**
  * Крестики L2 — «Собери три в ряд».
@@ -176,6 +177,7 @@ export default function Dalshe2() {
 
   return (
     <main className="relative bg-black text-white overflow-y-auto flex flex-col items-center px-5 pt-[88px] pb-16" style={{ minHeight: "100dvh" }}>
+      <QuestBackground palette="yellow" />
       <div aria-hidden className="absolute inset-0 pointer-events-none opacity-60" style={{
         background: "radial-gradient(ellipse 55% 45% at 50% 38%, rgba(166,255,0,0.07), transparent 60%)",
       }} />

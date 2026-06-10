@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import confetti from "canvas-confetti";
+import QuestBackground from "@/components/QuestBackground";
 
 // Игровое поле — решётка 5×5 (координаты 0..4).
 // «Официальное» поле 3×3 — это центральные клетки (1..3, 1..3).
@@ -372,6 +373,7 @@ export default function SecretDalshePage() {
       className="relative bg-black text-white overflow-y-auto flex flex-col"
       style={{ minHeight: "100dvh" }}
     >
+      <QuestBackground palette="green" />
       <div
         aria-hidden
         className="absolute inset-0 pointer-events-none opacity-70"
