@@ -6,9 +6,10 @@ import { ArrowLeft } from "lucide-react";
 import { createClient, type RealtimeChannel } from "@supabase/supabase-js";
 
 /**
- * Сетевой ретро-пинг-понг (двое, по ссылке).
- * Хост авторитетно считает физику мяча и шлёт состояние через Supabase Realtime
- * broadcast (~30 Гц). Гость шлёт только свою ракетку. Без таблиц — чистый канал по коду.
+ * Сетевой ретро-пинг-понг (двое, по ссылке или сразу из кооп-пары через ?room=).
+ * Вертикальная ориентация: ТЫ всегда снизу, соперник сверху (у гостя поле зеркалится).
+ * Хост авторитетно считает физику и шлёт состояние через Supabase Realtime (~30 Гц);
+ * гость шлёт только X своей ракетки. Перед подачей — обратный отсчёт 3-2-1.
  */
 const SB_URL =
   process.env.NEXT_PUBLIC_SUPABASE_URL || "https://hvkygaghhxgaolxemndr.supabase.co";
@@ -16,48 +17,59 @@ const SB_KEY =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2a3lnYWdoaHhnYW9seGVtbmRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzMDYwNjAsImV4cCI6MjA5NDg4MjA2MH0.IoRNKO3Jb51k1XA2y7-Q-PSaxpPhBj56G1SZJaKKau4";
 
-const W = 800, H = 480;
-const PADDLE_H = 88, PADDLE_W = 12, BALL = 12, MARGIN = 24;
+// Канонические координаты поля (портрет). Низ = host (p1), верх = guest (p2).
+const FW = 420, FH = 640;
+const R = 9;                 // радиус мяча
+const PW = 96, PH = 14;      // ракетка (горизонтальная)
+const MARGIN = 26;
+const BOTTOM_Y = FH - MARGIN - PH; // верхняя грань нижней ракетки
+const TOP_Y = MARGIN;              // верхняя грань верхней ракетки
 const WIN_SCORE = 7;
+const BASE = 3.4;            // стартовая скорость (в ~1.5 раза медленнее прежней)
+const MAXV = 9;             // потолок скорости
+const ACC = 1.05;          // ускорение на каждом отскоке
 
-type Phase = "connecting" | "waiting" | "playing" | "over";
+type Phase = "connecting" | "waiting" | "count" | "playing" | "over";
 
 const rndCode = () =>
   Array.from({ length: 5 }, () => "abcdefghijkmnpqrstuvwxyz23456789"[Math.floor(Math.random() * 32)]).join("");
+const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
 
 export default function PongPage() {
   const [phase, setPhase] = useState<Phase>("connecting");
   const [role, setRole] = useState<"host" | "guest">("host");
   const [shareUrl, setShareUrl] = useState("");
   const [copied, setCopied] = useState(false);
-  const [score, setScore] = useState<[number, number]>([0, 0]);
+  const [score, setScore] = useState<[number, number]>([0, 0]); // [host, guest]
   const [winner, setWinner] = useState<0 | 1 | null>(null);
+  const [count, setCount] = useState(0); // число обратного отсчёта (3..1, 0=скрыт)
 
   const roleRef = useRef<"host" | "guest">("host");
   const chRef = useRef<RealtimeChannel | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // игровое состояние в ref'ах (без ре-рендера на кадр)
-  const p1y = useRef(H / 2 - PADDLE_H / 2); // левая (хост)
-  const p2y = useRef(H / 2 - PADDLE_H / 2); // правая (гость)
-  const ball = useRef({ x: W / 2, y: H / 2, vx: 0, vy: 0 });
+  const px1 = useRef((FW - PW) / 2); // нижняя ракетка (host)
+  const px2 = useRef((FW - PW) / 2); // верхняя ракетка (guest)
+  const ball = useRef({ x: FW / 2, y: FH / 2, vx: 0, vy: 0 });
   const sc = useRef<[number, number]>([0, 0]);
   const phaseRef = useRef<Phase>("connecting");
-  const myY = useRef(H / 2 - PADDLE_H / 2);
-  const bothRef = useRef(false);
+  const countRef = useRef(0);
+  const myX = useRef((FW - PW) / 2);
   const winnerRef = useRef<0 | 1 | null>(null);
+  const serveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const countTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const setPhaseBoth = (p: Phase) => { phaseRef.current = p; setPhase(p); };
+  const setCountBoth = (c: number) => { countRef.current = c; setCount(c); };
 
   function serve(dir: number) {
-    ball.current = { x: W / 2, y: H / 2, vx: dir * 5, vy: (Math.random() * 2 - 1) * 3.2 };
+    ball.current = { x: FW / 2, y: FH / 2, vx: (Math.random() * 2 - 1) * 2.2, vy: dir * BASE };
   }
 
-  // подключение
+  // ─── подключение ───
   useEffect(() => {
     const sb = createClient(SB_URL, SB_KEY, { realtime: { params: { eventsPerSecond: 60 } } });
     const params = new URLSearchParams(window.location.search);
-    // room+host — вход из пары (без новой ссылки); s — самостоятельный гость; иначе хост.
     const room = params.get("room");
     const sParam = params.get("s");
     let code = room || sParam || "";
@@ -66,53 +78,40 @@ export default function PongPage() {
       : (sParam ? "guest" : "host");
     roleRef.current = r; setRole(r);
     if (!code) code = rndCode();
-    // ссылку для шеринга показываем только самостоятельному хосту (не в паре)
     if (r === "host" && !room) setShareUrl(`${window.location.origin}/secret/pong?s=${code}`);
 
-    const ch = sb.channel(`pong-${code}`, {
-      config: { broadcast: { self: false }, presence: { key: r } },
-    });
+    const ch = sb.channel(`pong-${code}`, { config: { broadcast: { self: false }, presence: { key: r } } });
     chRef.current = ch;
 
     ch.on("broadcast", { event: "state" }, ({ payload }) => {
-      // гость принимает авторитетное состояние. ВАЖНО: setState только при
-      // реальном изменении — иначе поток 30-60 сообщений/с вызывал ре-рендеры
-      // и подвешивал вкладку (особенно мобильную). Мяч/ракетка живут в ref'ах
-      // и рисуются в rAF без ре-рендера.
       if (roleRef.current !== "guest") return;
       ball.current.x = payload.bx; ball.current.y = payload.by;
-      p1y.current = payload.p1y;
+      px1.current = payload.px1;
       if (payload.s1 !== sc.current[0] || payload.s2 !== sc.current[1]) {
-        sc.current = [payload.s1, payload.s2];
-        setScore([payload.s1, payload.s2]);
+        sc.current = [payload.s1, payload.s2]; setScore([payload.s1, payload.s2]);
       }
       if (payload.phase && payload.phase !== phaseRef.current) setPhaseBoth(payload.phase);
+      if (payload.count !== countRef.current) setCountBoth(payload.count);
       const w = payload.winner;
       if ((w === 0 || w === 1) && w !== winnerRef.current) { winnerRef.current = w; setWinner(w); }
     });
     ch.on("broadcast", { event: "paddle" }, ({ payload }) => {
-      if (roleRef.current !== "host") return;
-      p2y.current = payload.y;
+      if (roleRef.current === "host") px2.current = payload.x;
     });
-    ch.on("broadcast", { event: "rematch" }, () => {
-      if (roleRef.current === "host") startMatch();
-    });
-    // явный хендшейк: гость объявился → хост начинает (надёжнее presence-sync)
+    ch.on("broadcast", { event: "rematch" }, () => { if (roleRef.current === "host") startMatch(); });
     ch.on("broadcast", { event: "hello" }, () => {
       if (roleRef.current === "host") {
-        if (phaseRef.current !== "playing") startMatch();
-        ch.send({ type: "broadcast", event: "hello", payload: {} }); // ack, чтобы гость знал
+        if (phaseRef.current === "waiting" || phaseRef.current === "connecting") startMatch();
+        ch.send({ type: "broadcast", event: "hello", payload: {} });
       }
     });
     ch.on("presence", { event: "sync" }, () => {
-      const n = Object.keys(ch.presenceState()).length;
-      const both = n >= 2;
-      bothRef.current = both;
-      if (!both && phaseRef.current === "playing") setPhaseBoth("waiting");
-      if (both && roleRef.current === "host" && (phaseRef.current === "waiting" || phaseRef.current === "connecting")) {
-        startMatch();
+      const both = Object.keys(ch.presenceState()).length >= 2;
+      if (!both && phaseRef.current !== "waiting" && phaseRef.current !== "connecting") {
+        // соперник ушёл
+        setPhaseBoth("waiting");
       }
-      if (both && roleRef.current === "guest" && phaseRef.current === "connecting") setPhaseBoth("waiting");
+      if (both && roleRef.current === "host" && (phaseRef.current === "waiting" || phaseRef.current === "connecting")) startMatch();
     });
 
     ch.subscribe((status) => {
@@ -120,25 +119,46 @@ export default function PongPage() {
         ch.track({ at: Date.now() });
         setPhaseBoth("waiting");
         if (roleRef.current === "guest") {
-          // объявляемся хосту; повторим пару раз на случай гонки подписки
           const hi = () => chRef.current?.send({ type: "broadcast", event: "hello", payload: {} });
-          hi(); setTimeout(hi, 600); setTimeout(hi, 1500);
+          hi(); setTimeout(hi, 500); setTimeout(hi, 1400);
         }
       }
     });
 
-    return () => { ch.unsubscribe(); sb.removeChannel(ch); };
+    return () => {
+      if (serveTimer.current) clearTimeout(serveTimer.current);
+      if (countTimer.current) clearInterval(countTimer.current);
+      ch.unsubscribe(); sb.removeChannel(ch);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function startMatch() {
-    sc.current = [0, 0]; setScore([0, 0]); winnerRef.current = null; setWinner(null);
-    p1y.current = H / 2 - PADDLE_H / 2; p2y.current = H / 2 - PADDLE_H / 2;
-    serve(Math.random() < 0.5 ? 1 : -1);
-    setPhaseBoth("playing");
+  // обратный отсчёт 3-2-1 (только хост), затем подача
+  function startCountdown(dir: number) {
+    if (countTimer.current) clearInterval(countTimer.current);
+    ball.current = { x: FW / 2, y: FH / 2, vx: 0, vy: 0 };
+    setCountBoth(3);
+    setPhaseBoth("count");
+    countTimer.current = setInterval(() => {
+      const n = countRef.current - 1;
+      if (n <= 0) {
+        if (countTimer.current) clearInterval(countTimer.current);
+        setCountBoth(0);
+        setPhaseBoth("playing");
+        serve(dir);
+      } else {
+        setCountBoth(n);
+      }
+    }, 800);
   }
 
-  // игровой цикл + ввод + отрисовка
+  function startMatch() {
+    sc.current = [0, 0]; setScore([0, 0]); winnerRef.current = null; setWinner(null);
+    px1.current = (FW - PW) / 2; px2.current = (FW - PW) / 2;
+    startCountdown(Math.random() < 0.5 ? 1 : -1);
+  }
+
+  // ─── игровой цикл + ввод + отрисовка ───
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -147,7 +167,8 @@ export default function PongPage() {
     const keys: Record<string, boolean> = {};
 
     const onKey = (e: KeyboardEvent, down: boolean) => {
-      if (["ArrowUp", "ArrowDown", "w", "s", "W", "S"].includes(e.key)) { keys[e.key.toLowerCase()] = down; e.preventDefault(); }
+      const k = e.key.toLowerCase();
+      if (["arrowleft", "arrowright", "a", "d"].includes(k)) { keys[k] = down; e.preventDefault(); }
     };
     const kd = (e: KeyboardEvent) => onKey(e, true);
     const ku = (e: KeyboardEvent) => onKey(e, false);
@@ -155,87 +176,103 @@ export default function PongPage() {
 
     const pointer = (e: PointerEvent) => {
       const rect = canvas.getBoundingClientRect();
-      const y = ((e.clientY - rect.top) / rect.height) * H;
-      myY.current = Math.max(0, Math.min(H - PADDLE_H, y - PADDLE_H / 2));
+      const x = ((e.clientX - rect.left) / rect.width) * FW;
+      myX.current = clamp(x - PW / 2, 0, FW - PW);
     };
     canvas.addEventListener("pointermove", pointer);
     canvas.addEventListener("pointerdown", pointer);
 
     const draw = () => {
-      ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+      const mirror = roleRef.current === "guest";
+      const yv = (cy: number) => (mirror ? FH - cy : cy);
+      ctx.fillStyle = "#000"; ctx.fillRect(0, 0, FW, FH);
       // центральная пунктирная линия
-      ctx.fillStyle = "rgba(255,255,255,0.25)";
-      for (let y = 8; y < H; y += 32) ctx.fillRect(W / 2 - 2, y, 4, 18);
-      // ракетки
+      ctx.fillStyle = "rgba(255,255,255,0.22)";
+      for (let x = 8; x < FW; x += 30) ctx.fillRect(x, FH / 2 - 2, 18, 4);
+      // ракетки: моя — лайм, соперника — белёсая
+      const myIsP1 = !mirror; // host рисует себя внизу (p1); guest зеркалит, его p2 уходит вниз
+      // нижняя ракетка на экране = «моя»
+      const meX = mirror ? px2.current : px1.current;
+      const oppX = mirror ? px1.current : px2.current;
+      // моя (низ экрана)
       ctx.fillStyle = "#A6FF00";
-      ctx.fillRect(MARGIN, p1y.current, PADDLE_W, PADDLE_H);
-      ctx.fillRect(W - MARGIN - PADDLE_W, p2y.current, PADDLE_W, PADDLE_H);
-      // мяч
+      ctx.fillRect(meX, FH - MARGIN - PH, PW, PH);
+      // соперник (верх экрана)
+      ctx.fillStyle = "rgba(255,255,255,0.55)";
+      ctx.fillRect(oppX, MARGIN, PW, PH);
+      void myIsP1;
+      // круглый мяч
+      ctx.beginPath();
+      ctx.arc(ball.current.x, yv(ball.current.y), R, 0, Math.PI * 2);
       ctx.fillStyle = "#fff";
-      ctx.fillRect(ball.current.x - BALL / 2, ball.current.y - BALL / 2, BALL, BALL);
+      ctx.fill();
     };
 
     const loop = (t: number) => {
       raf = requestAnimationFrame(loop);
       const host = roleRef.current === "host";
 
-      // мой ввод (клавиши)
-      const speed = 7;
-      let me = host ? p1y.current : p2y.current;
-      if (keys["arrowup"] || keys["w"]) me -= speed;
-      if (keys["arrowdown"] || keys["s"]) me += speed;
-      // указатель имеет приоритет, если двигали
-      if (Math.abs(myY.current - (host ? p1y.current : p2y.current)) > 0.5) me = myY.current;
-      me = Math.max(0, Math.min(H - PADDLE_H, me));
-      if (host) { p1y.current = me; myY.current = me; } else { p2y.current = me; myY.current = me; }
+      // ввод — двигаем СВОЮ ракетку по X
+      const speed = 8;
+      const ownRef = host ? px1 : px2;
+      let me = ownRef.current;
+      if (keys["arrowleft"] || keys["a"]) me -= speed;
+      if (keys["arrowright"] || keys["d"]) me += speed;
+      if (Math.abs(myX.current - ownRef.current) > 0.5) me = myX.current;
+      me = clamp(me, 0, FW - PW);
+      ownRef.current = me; myX.current = me;
 
       if (host && phaseRef.current === "playing") {
         const b = ball.current;
         b.x += b.vx; b.y += b.vy;
-        if (b.y < BALL / 2) { b.y = BALL / 2; b.vy *= -1; }
-        if (b.y > H - BALL / 2) { b.y = H - BALL / 2; b.vy *= -1; }
-        // левая ракетка
-        if (b.vx < 0 && b.x - BALL / 2 < MARGIN + PADDLE_W && b.x > MARGIN &&
-            b.y > p1y.current && b.y < p1y.current + PADDLE_H) {
-          b.x = MARGIN + PADDLE_W + BALL / 2; b.vx = Math.abs(b.vx) * 1.06;
-          b.vy += ((b.y - (p1y.current + PADDLE_H / 2)) / (PADDLE_H / 2)) * 2.2;
+        // боковые стены
+        if (b.x < R) { b.x = R; b.vx = Math.abs(b.vx); }
+        if (b.x > FW - R) { b.x = FW - R; b.vx = -Math.abs(b.vx); }
+        // нижняя ракетка (host, p1)
+        if (b.vy > 0 && b.y + R >= BOTTOM_Y && b.y + R <= BOTTOM_Y + PH + 10 &&
+            b.x >= px1.current - R && b.x <= px1.current + PW + R) {
+          b.y = BOTTOM_Y - R; b.vy = -Math.abs(b.vy) * ACC;
+          b.vx += ((b.x - (px1.current + PW / 2)) / (PW / 2)) * 2.4;
         }
-        // правая ракетка
-        if (b.vx > 0 && b.x + BALL / 2 > W - MARGIN - PADDLE_W && b.x < W - MARGIN &&
-            b.y > p2y.current && b.y < p2y.current + PADDLE_H) {
-          b.x = W - MARGIN - PADDLE_W - BALL / 2; b.vx = -Math.abs(b.vx) * 1.06;
-          b.vy += ((b.y - (p2y.current + PADDLE_H / 2)) / (PADDLE_H / 2)) * 2.2;
+        // верхняя ракетка (guest, p2)
+        if (b.vy < 0 && b.y - R <= TOP_Y + PH && b.y - R >= TOP_Y - 10 &&
+            b.x >= px2.current - R && b.x <= px2.current + PW + R) {
+          b.y = TOP_Y + PH + R; b.vy = Math.abs(b.vy) * ACC;
+          b.vx += ((b.x - (px2.current + PW / 2)) / (PW / 2)) * 2.4;
         }
+        b.vy = clamp(b.vy, -MAXV, MAXV); b.vx = clamp(b.vx, -MAXV, MAXV);
         // голы
-        if (b.x < -BALL) { sc.current[1]++; setScore([sc.current[0], sc.current[1]]); goalReset(-1); }
-        else if (b.x > W + BALL) { sc.current[0]++; setScore([sc.current[0], sc.current[1]]); goalReset(1); }
+        if (b.y > FH + R) { sc.current[1]++; setScore([sc.current[0], sc.current[1]]); afterPoint(1); }
+        else if (b.y < -R) { sc.current[0]++; setScore([sc.current[0], sc.current[1]]); afterPoint(-1); }
       }
 
-      // отправка по сети ~30 Гц
+      // сеть ~30 Гц
       const ch = chRef.current;
       if (ch && t - lastSend > 33) {
         lastSend = t;
         if (host) {
           ch.send({ type: "broadcast", event: "state", payload: {
-            bx: ball.current.x, by: ball.current.y, p1y: p1y.current,
+            bx: ball.current.x, by: ball.current.y, px1: px1.current,
             s1: sc.current[0], s2: sc.current[1], phase: phaseRef.current,
+            count: countRef.current,
             winner: phaseRef.current === "over" ? (sc.current[0] > sc.current[1] ? 0 : 1) : null,
           }});
         } else {
-          ch.send({ type: "broadcast", event: "paddle", payload: { y: p2y.current } });
+          ch.send({ type: "broadcast", event: "paddle", payload: { x: px2.current } });
         }
       }
       draw();
     };
 
-    function goalReset(lastDir: number) {
+    function afterPoint(dir: number) {
       if (sc.current[0] >= WIN_SCORE || sc.current[1] >= WIN_SCORE) {
         const w = sc.current[0] > sc.current[1] ? 0 : 1;
         winnerRef.current = w; setWinner(w); setPhaseBoth("over");
-        ball.current.vx = 0; ball.current.vy = 0;
+        ball.current = { x: FW / 2, y: FH / 2, vx: 0, vy: 0 };
         return;
       }
-      serve(-lastDir);
+      // пауза-перезапуск с коротким отсчётом в сторону проигравшего очко
+      startCountdown(dir);
     }
 
     raf = requestAnimationFrame(loop);
@@ -256,26 +293,35 @@ export default function PongPage() {
     else chRef.current?.send({ type: "broadcast", event: "rematch", payload: {} });
   }
 
-  const youLabel = role === "host" ? "ты слева (зелёная)" : "ты справа (зелёная справа)";
+  const mine = role === "host" ? score[0] : score[1];
+  const theirs = role === "host" ? score[1] : score[0];
+  const iWon = winner === (role === "host" ? 0 : 1);
 
   return (
-    <main className="relative bg-black text-white overflow-y-auto flex flex-col items-center px-4 pt-[72px] pb-12" style={{ minHeight: "100dvh" }}>
-      <div className="relative z-[1] w-full max-w-[840px] mx-auto flex flex-col items-center text-center">
-        <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-3">Пинг-понг · вдвоём</p>
-
-        <div className="flex items-center justify-center gap-10 mb-3 font-p95 tabular-nums" style={{ fontSize: "clamp(28px,6vw,44px)" }}>
-          <span className={winner === 0 ? "text-[#A6FF00]" : "text-white"}>{score[0]}</span>
-          <span className="text-white/20 text-2xl">:</span>
-          <span className={winner === 1 ? "text-[#A6FF00]" : "text-white"}>{score[1]}</span>
+    <main className="relative bg-black text-white overflow-y-auto flex flex-col items-center px-4 pt-[64px] pb-10" style={{ minHeight: "100dvh" }}>
+      <div className="relative z-[1] w-full max-w-[440px] mx-auto flex flex-col items-center text-center">
+        <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-2">Пинг-понг · вдвоём</p>
+        <div className="flex items-center justify-center gap-6 mb-2 font-p95 tabular-nums" style={{ fontSize: "clamp(22px,5vw,34px)" }}>
+          <span className="text-white/40 text-sm uppercase tracking-[0.15em]">соперник</span>
+          <span className="text-white/80">{theirs}</span>
+          <span className="text-white/20">:</span>
+          <span className="text-[#A6FF00]">{mine}</span>
+          <span className="text-white/40 text-sm uppercase tracking-[0.15em]">ты</span>
         </div>
 
-        <div className="relative w-full" style={{ maxWidth: W }}>
-          <canvas ref={canvasRef} width={W} height={H}
+        <div className="relative w-full" style={{ maxWidth: 380 }}>
+          <canvas ref={canvasRef} width={FW} height={FH}
             className="w-full h-auto rounded-lg border border-white/10 touch-none select-none"
-            style={{ aspectRatio: `${W}/${H}`, background: "#000" }} />
+            style={{ aspectRatio: `${FW}/${FH}`, background: "#000" }} />
 
-          {phase !== "playing" ? (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 rounded-lg px-6 text-center">
+          {count > 0 && phase === "count" ? (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <span className="font-p95 text-[#A6FF00]" style={{ fontSize: "clamp(64px,18vw,120px)" }}>{count}</span>
+            </div>
+          ) : null}
+
+          {phase !== "playing" && phase !== "count" ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/75 rounded-lg px-6 text-center">
               {phase === "connecting" ? <p className="text-white/60 text-sm">Подключаюсь…</p> : null}
 
               {phase === "waiting" ? (
@@ -288,20 +334,19 @@ export default function PongPage() {
                         className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[13px] tracking-[0.1em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors">
                         <span className="leading-none translate-y-[1px]">{copied ? "скопировано" : "копировать ссылку"}</span>
                       </button>
-                      <p className="mt-3 text-[11px] text-white/30 break-all max-w-xs">{shareUrl}</p>
                     </>
                   ) : (
                     <p className="text-white/70 text-sm">Жду, пока напарник откроет пинг-понг…</p>
                   )
                 ) : (
-                  <p className="text-white/70 text-sm">Готов. Ждём, пока хост начнёт…</p>
+                  <p className="text-white/70 text-sm">Готов. Начинаем…</p>
                 )
               ) : null}
 
               {phase === "over" ? (
                 <>
                   <p className="font-p95 uppercase tracking-tight text-[#A6FF00] mb-3" style={{ fontSize: "clamp(28px,7vw,48px)" }}>
-                    {winner === (role === "host" ? 0 : 1) ? "Ты выиграл" : "Ты проиграл"}
+                    {iWon ? "Ты выиграл" : "Ты проиграл"}
                   </p>
                   <button type="button" onClick={rematch}
                     className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[13px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors">
@@ -313,9 +358,9 @@ export default function PongPage() {
           ) : null}
         </div>
 
-        <p className="mt-4 text-[12px] text-white/40">{youLabel} · двигай мышью/пальцем или ↑↓ (W/S). До {WIN_SCORE}.</p>
+        <p className="mt-3 text-[12px] text-white/40 max-w-xs">Двигай ракетку (внизу) пальцем или ←→. Мяч летит — отбивай. До {WIN_SCORE}.</p>
 
-        <Link href="/" className="mt-8 inline-flex items-center gap-1.5 text-[13px] text-white/30 hover:text-white/60 transition-colors no-underline">
+        <Link href="/" className="mt-6 inline-flex items-center gap-1.5 text-[13px] text-white/30 hover:text-white/60 transition-colors no-underline">
           <ArrowLeft className="w-3 h-3" strokeWidth={2.2} /> На главную
         </Link>
       </div>
