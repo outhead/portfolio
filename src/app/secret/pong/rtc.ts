@@ -74,11 +74,13 @@ async function sigGet(room: string, sender: string, type: string): Promise<unkno
   }
 }
 
-function sigCleanup(room: string) {
-  fetch(`${REST}/pong_signal?room=eq.${encodeURIComponent(room)}`, {
-    method: "DELETE",
-    headers: HEADERS,
-  }).catch(() => {});
+async function sigCleanup(room: string) {
+  try {
+    await fetch(`${REST}/pong_signal?room=eq.${encodeURIComponent(room)}`, {
+      method: "DELETE",
+      headers: HEADERS,
+    });
+  } catch { /* не критично */ }
 }
 
 function waitIce(pc: RTCPeerConnection, ms = 4000): Promise<void> {
@@ -128,14 +130,16 @@ export function connectP2P(opts: {
 
   pc.onconnectionstatechange = () => {
     const st = pc.connectionState;
+    console.log("[pong p2p] conn:", st);
     if ((st === "failed" || st === "disconnected" || st === "closed") && opened) onClose();
   };
+  pc.oniceconnectionstatechange = () => console.log("[pong p2p] ice:", pc.iceConnectionState);
 
   (async () => {
     if (role === "host") {
-      // старые сигналы этой комнаты — в мусор, чтобы гость не схватил протухший offer
-      sigCleanup(room);
-      await sleep(300);
+      // Старые сигналы комнаты — в мусор, чтобы гость не схватил протухший offer.
+      // ВАЖНО дождаться ответа: иначе DELETE дойдёт ПОЗЖЕ нашего offer и стерёт его.
+      await sigCleanup(room);
       fast = pc.createDataChannel("fast", { ordered: false, maxRetransmits: 0 });
       ctl = pc.createDataChannel("ctl");
       wire(fast, true); wire(ctl, false);
@@ -144,10 +148,12 @@ export function connectP2P(opts: {
       await waitIce(pc);
       if (cancelled) return;
       await sigPost(room, "host", "offer", pc.localDescription);
+      console.log("[pong p2p] offer posted");
       // ждём answer до ~3 минут (гость может открыть ссылку не сразу)
       for (let i = 0; i < 180 && !cancelled && !opened; i++) {
         const ans = await sigGet(room, "guest", "answer");
         if (ans) {
+          console.log("[pong p2p] answer received");
           await pc.setRemoteDescription(ans as RTCSessionDescriptionInit).catch(() => {});
           return;
         }
@@ -161,6 +167,7 @@ export function connectP2P(opts: {
       for (let i = 0; i < 180 && !cancelled && !opened; i++) {
         const off = await sigGet(room, "host", "offer");
         if (off) {
+          console.log("[pong p2p] offer received → answering");
           try {
             await pc.setRemoteDescription(off as RTCSessionDescriptionInit);
             const answer = await pc.createAnswer();

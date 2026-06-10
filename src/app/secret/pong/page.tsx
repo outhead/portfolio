@@ -52,7 +52,7 @@ export default function PongPage() {
   const [transport, setTransport] = useState<"relay" | "p2p">("relay");
 
   type Ball = { x: number; y: number; vx: number; vy: number; last: 0 | 1 };
-  type Boost = { x: number; y: number; type: "x2" | "size" };
+  type Boost = { x: number; y: number; type: "x2" | "size" | "stick" };
 
   const px1 = useRef((FW - PW) / 2); // нижняя ракетка (host)
   const px2 = useRef((FW - PW) / 2); // верхняя ракетка (guest)
@@ -79,11 +79,17 @@ export default function PongPage() {
   type Spark = { x: number; y: number; vx: number; vy: number; life: number; color: string; size: number };
   const fxRef = useRef<Spark[]>([]);                                  // искры
   const trailRef = useRef<{ x: number; y: number }[][]>([]);          // шлейф мяча (по индексу)
-  const lastPosRef = useRef<{ x: number; y: number; dx: number; dy: number }[]>([]); // для детекта отскоков
   const prevBoostRef = useRef<Boost | null>(null);                    // появление буста
   const flashRef = useRef(0);                                         // вспышка на гол
   const shakeRef = useRef(0);                                         // тряска поля
   const prevScoreFx = useRef<[number, number]>([0, 0]);
+  // ─── буст-липучка ───
+  const stickArmed = useRef<[number, number]>([0, 0]);  // expiry «взведённости» по игрокам [host, guest]
+  const stuck = useRef<{ b: Ball; owner: 0 | 1; off: number; until: number } | null>(null); // у хоста
+  const stuckNet = useRef<{ i: number; owner: 0 | 1; off: number } | null>(null);           // у гостя, из пакетов
+  const onReleaseRef = useRef<(owner: 0 | 1) => void>(() => {});      // запуск прилипшего мяча
+  const applyHitRef = useRef<(p: Record<string, unknown>) => void>(() => {}); // лаг-компенсация отскока гостя
+  const lastClaim = useRef(0);
   const serveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const countTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -93,6 +99,7 @@ export default function PongPage() {
   function serve(dir: number) {
     balls.current = [{ x: FW / 2, y: FH / 2, vx: (Math.random() * 2 - 1) * 2.2, vy: dir * BASE, last: dir > 0 ? 1 : 0 }];
     boost.current = null;
+    stuck.current = null; stickArmed.current = [0, 0];
     x2Until.current = 0; sizeUntil.current = [0, 0];
     pw1.current = PW; pw2.current = PW;
     nextBoostAt.current = performance.now() + 6000 + Math.random() * 6000;
@@ -145,6 +152,7 @@ export default function PongPage() {
       px1.current = payload.px1;
       pw1.current = payload.pw1; pw2.current = payload.pw2;
       boost.current = payload.boost || null;
+      stuckNet.current = payload.stuck || null;
       if (payload.s1 !== sc.current[0] || payload.s2 !== sc.current[1]) {
         sc.current = [payload.s1, payload.s2]; setScore([payload.s1, payload.s2]);
       }
@@ -174,6 +182,8 @@ export default function PongPage() {
       applyPaddle(payload);
     });
     ch.on("broadcast", { event: "rematch" }, () => { if (roleRef.current === "host") startMatch(); });
+    ch.on("broadcast", { event: "hit" }, ({ payload }) => { applyHitRef.current(payload); });
+    ch.on("broadcast", { event: "release" }, () => { onReleaseRef.current(1); });
     ch.on("broadcast", { event: "hello" }, () => {
       if (roleRef.current === "host") {
         onHelloMsg();
@@ -190,6 +200,8 @@ export default function PongPage() {
         else if (m.event === "paddle") applyPaddle(m.payload);
         else if (m.event === "hello") onHelloMsg();
         else if (m.event === "rematch") { if (roleRef.current === "host") startMatch(); }
+        else if (m.event === "hit") applyHitRef.current(m.payload);
+        else if (m.event === "release") onReleaseRef.current(1);
       },
       onOpen: () => {
         useP2P.current = true;
@@ -293,11 +305,23 @@ export default function PongPage() {
     };
     window.addEventListener("pointermove", pointer);
     window.addEventListener("pointerdown", pointer);
+    // отпустил палец — запуск прилипшего мяча (хост сразу, гость событием хосту)
+    const up = () => {
+      if (roleRef.current === "host") {
+        if (stuck.current?.owner === 0) onReleaseRef.current(0);
+      } else if (useP2P.current) {
+        p2pRef.current?.sendCtl({ event: "release", payload: {} });
+      } else {
+        chRef.current?.send({ type: "broadcast", event: "release", payload: {} });
+      }
+    };
+    window.addEventListener("pointerup", up);
+    window.addEventListener("pointercancel", up);
 
     const drawBoost = (b: Boost, yv: (n: number) => number) => {
       const bw = 48, bh = 30, x = b.x - bw / 2, y = yv(b.y) - bh / 2;
       ctx.fillStyle = "rgba(0,0,0,0.55)";
-      ctx.strokeStyle = b.type === "x2" ? "#FFD60A" : "#33C7FF";
+      ctx.strokeStyle = b.type === "x2" ? "#FFD60A" : b.type === "size" ? "#33C7FF" : "#FF6EC7";
       ctx.lineWidth = 2;
       ctx.beginPath();
       if (ctx.roundRect) ctx.roundRect(x, y, bw, bh, 8); else ctx.rect(x, y, bw, bh);
@@ -305,7 +329,7 @@ export default function PongPage() {
       ctx.fillStyle = ctx.strokeStyle as string;
       ctx.font = "700 14px system-ui, sans-serif";
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.fillText(b.type === "x2" ? "x2" : "+SIZE", b.x, yv(b.y) + 1);
+      ctx.fillText(b.type === "x2" ? "x2" : b.type === "size" ? "+SIZE" : "STICK", b.x, yv(b.y) + 1);
     };
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -365,12 +389,13 @@ export default function PongPage() {
 
       // буст: при появлении — электрический треск, пока висит — пульс и редкие разряды
       const bst = boost.current;
+      const boostColor = (t: "x2" | "size" | "stick") => t === "x2" ? "#FFD60A" : t === "size" ? "#33C7FF" : "#FF6EC7";
       if (bst && !prevBoostRef.current) {
-        sparks(bst.x, yv(bst.y), bst.type === "x2" ? "#FFD60A" : "#33C7FF", 18, 3.2);
+        sparks(bst.x, yv(bst.y), boostColor(bst.type), 18, 3.2);
       }
       prevBoostRef.current = bst;
       if (bst) {
-        const c = bst.type === "x2" ? "#FFD60A" : "#33C7FF";
+        const c = boostColor(bst.type);
         const pulse = 1 + Math.sin(performance.now() / 160) * 0.5;
         ctx.strokeStyle = c; ctx.globalAlpha = 0.22 * pulse; ctx.lineWidth = 1.5;
         ctx.beginPath(); ctx.arc(bst.x, yv(bst.y), 30 + pulse * 3, 0, Math.PI * 2); ctx.stroke();
@@ -403,24 +428,16 @@ export default function PongPage() {
         trailRef.current = [];
       }
 
-      // отскоки: ловим смену направления по координатам — работает и у хоста, и у гостя
-      balls.current.forEach((b, i) => {
-        const lp = lastPosRef.current[i];
-        if (lp && playing) {
-          const dx = b.x - lp.x, dy = b.y - lp.y;
-          if (lp.dy !== 0 && dy !== 0 && Math.sign(dy) !== Math.sign(lp.dy) && Math.abs(lp.dy) > 1) {
-            const sy = yv(b.y);
-            sparks(b.x, sy, sy > FH / 2 ? "#A6FF00" : "rgba(255,255,255,0.85)", 12, 2.8);
-          }
-          if (lp.dx !== 0 && dx !== 0 && Math.sign(dx) !== Math.sign(lp.dx) && Math.abs(lp.dx) > 0.6) {
-            sparks(b.x, yv(b.y), "rgba(255,255,255,0.5)", 6, 1.8);
-          }
-          lastPosRef.current[i] = { x: b.x, y: b.y, dx, dy };
-        } else {
-          lastPosRef.current[i] = { x: b.x, y: b.y, dx: 0, dy: 0 };
-        }
-      });
-      lastPosRef.current.length = balls.current.length;
+      // прилипший мяч — розовое пульсирующее кольцо
+      const stBall = roleRef.current === "host"
+        ? stuck.current?.b ?? null
+        : stuckNet.current ? balls.current[stuckNet.current.i] ?? null : null;
+      if (stBall) {
+        const pulse = 1 + Math.sin(performance.now() / 120) * 0.5;
+        ctx.strokeStyle = "#FF6EC7"; ctx.globalAlpha = 0.5 * pulse; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(stBall.x, yv(stBall.y), R + 5 + pulse * 2, 0, Math.PI * 2); ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
 
       // искры
       for (const p of fxRef.current) {
@@ -447,16 +464,26 @@ export default function PongPage() {
       } else flashRef.current = 0;
     };
 
-    const activate = (type: "x2" | "size", owner: 0 | 1) => {
+    const activate = (type: "x2" | "size" | "stick", owner: 0 | 1) => {
       const now = performance.now();
       if (type === "x2") {
         const cur = balls.current.length;
         const add = Math.min(cur, 4 - cur);
         for (let i = 0; i < add; i++) {
           const s = balls.current[i % cur];
-          balls.current.push({ x: s.x, y: s.y, vx: -(s.vx || 2), vy: s.vy, last: s.last });
+          // новый мяч — «свежая подача»: стартовая скорость и свой случайный вектор,
+          // а не зеркальная копия разогнанного
+          balls.current.push({
+            x: s.x, y: s.y,
+            vx: (Math.random() * 2 - 1) * 2.6,
+            vy: Math.sign(s.vy || 1) * BASE,
+            last: s.last,
+          });
         }
         x2Until.current = now + 10000;
+      } else if (type === "stick") {
+        // взведена 12с: следующий приём этой ракеткой — прилипание
+        stickArmed.current[owner] = now + 12000;
       } else {
         if (owner === 0) { pw1.current = PW * 1.5; sizeUntil.current[0] = now + 10000; }
         else { pw2.current = PW * 1.5; sizeUntil.current[1] = now + 10000; }
@@ -466,6 +493,51 @@ export default function PongPage() {
     // ФИКСИРОВАННЫЙ шаг физики 60 Гц: rAF на 120Гц-экранах тикает вдвое чаще,
     // и без аккумулятора игра на таких телефонах шла в 2 раза быстрее задуманного
     // (и мяч за кадр проходил дальше — отсюда и «пролетает сквозь ракетку»).
+    // запуск прилипшего мяча — только хост (авторитетная физика)
+    onReleaseRef.current = (owner) => {
+      const st = stuck.current;
+      if (roleRef.current !== "host" || !st || st.owner !== owner) return;
+      const W = st.owner === 0 ? pw1.current : pw2.current;
+      const px = st.owner === 0 ? px1.current : px2Eff.current;
+      const c = px + W / 2;
+      st.b.vy = (st.owner === 0 ? -1 : 1) * BASE * 1.6;
+      st.b.vx = clamp(((st.b.x - c) / (W / 2)) * 3, -4, 4);
+      st.b.last = st.owner;
+      sparks(st.b.x, st.b.y, "#FF6EC7", 16, 3);
+      stuck.current = null;
+    };
+
+    // лаг-компенсация: гость заявил «я отбил» — хост верит, если мяч ещё летит вниз к нему
+    // и недалеко от плоскости верхней ракетки (закрывает «сквозь палку» при позднем рывке)
+    applyHitRef.current = (p) => {
+      if (roleRef.current !== "host" || phaseRef.current !== "playing") return;
+      const cx = Number(p.x);
+      if (!Number.isFinite(cx)) return;
+      let best: Ball | null = null;
+      for (const b of balls.current) {
+        if (stuck.current?.b === b) continue;
+        if (b.vy >= 0) continue;            // уже отбит
+        if (b.y - R > TOP_Y + PH + 110 || b.y < -R) continue; // слишком далеко от ракетки
+        if (!best || b.y < best.y) best = b;
+      }
+      if (!best) return;
+      const now = performance.now();
+      if (stickArmed.current[1] > now && !stuck.current) {
+        stickArmed.current[1] = 0;
+        stuck.current = { b: best, owner: 1, off: clamp(cx, R, FW - R) - px2Eff.current, until: now + 2500 };
+        best.x = clamp(cx, R, FW - R); best.y = TOP_Y + PH + R; best.vx = 0; best.vy = 0; best.last = 1;
+        sparks(best.x, best.y, "#FF6EC7", 14, 2.6);
+        return;
+      }
+      best.x = clamp(cx, R, FW - R);
+      best.y = TOP_Y + PH + R;
+      best.vy = Math.abs(best.vy) * ACC;
+      const cvx = Number(p.vx);
+      if (Number.isFinite(cvx)) best.vx = clamp(cvx, -MAXV, MAXV);
+      best.last = 1;
+      sparks(best.x, best.y, "rgba(255,255,255,0.85)", 12, 2.8);
+    };
+
     const STEP = 1000 / 60;
     let lastT = 0, acc = 0;
 
@@ -490,7 +562,9 @@ export default function PongPage() {
       // хост: экстраполируем ракетку гостя на возраст последнего пакета (до ~4 кадров),
       // чтобы коллизии считались по тому, где палец гостя СЕЙЧАС, а не RTT/2 назад
       if (host) {
-        const age = px2At.current ? Math.min((now - px2At.current) / 16.7, 4) : 0;
+        // по P2P пакеты свежие (кап 4 кадра), по relay лаг больше — экстраполируем дальше
+        const cap = useP2P.current ? 4 : 10;
+        const age = px2At.current ? Math.min((now - px2At.current) / 16.7, cap) : 0;
         px2Eff.current = clamp(px2.current + px2Vel.current * age, 0, FW - pw2.current);
       }
 
@@ -499,37 +573,74 @@ export default function PongPage() {
       // визуально проходит сквозь ракетку, а потом телепортируется. Хост скорректирует.
       if (!host && phaseRef.current === "playing") {
         const W1 = pw1.current, W2 = pw2.current;
-        for (const b of balls.current) {
+        balls.current.forEach((b, i) => {
+          // прилипший мяч едет на ракетке владельца, физику пропускаем
+          const st = stuckNet.current;
+          if (st && st.i === i) {
+            if (st.owner === 1) { b.x = clamp(px2.current + st.off, R, FW - R); b.y = TOP_Y + PH + R; }
+            else { b.x = clamp(px1.current + st.off, R, FW - R); b.y = BOTTOM_Y - R; }
+            b.vx = 0; b.vy = 0;
+            return;
+          }
           const oldY = b.y;
           b.x += b.vx; b.y += b.vy;
-          if (b.x < R) { b.x = R; b.vx = Math.abs(b.vx); }
-          if (b.x > FW - R) { b.x = FW - R; b.vx = -Math.abs(b.vx); }
+          if (b.x < R) { b.x = R; b.vx = Math.abs(b.vx); sparks(b.x, FH - b.y, "rgba(255,255,255,0.5)", 5, 1.6); }
+          if (b.x > FW - R) { b.x = FW - R; b.vx = -Math.abs(b.vx); sparks(b.x, FH - b.y, "rgba(255,255,255,0.5)", 5, 1.6); }
           if (b.vy > 0 && oldY + R <= BOTTOM_Y + 2 && b.y + R >= BOTTOM_Y &&
               b.x >= px1.current - R && b.x <= px1.current + W1 + R) {
             b.y = BOTTOM_Y - R; b.vy = -Math.abs(b.vy);
+            sparks(b.x, FH - b.y, "rgba(255,255,255,0.85)", 12, 2.8);
           } else if (b.vy < 0 && oldY - R >= TOP_Y + PH - 2 && b.y - R <= TOP_Y + PH &&
               b.x >= px2.current - R && b.x <= px2.current + W2 + R) {
             b.y = TOP_Y + PH + R; b.vy = Math.abs(b.vy);
+            sparks(b.x, FH - b.y, "#A6FF00", 12, 2.8);
+            // лаг-компенсация: заявляем хосту «я отбил» — иначе при рывке ракетки в последний
+            // момент хост (видящий её с опозданием) пропустит мяч «сквозь палку»
+            const nowMs = performance.now();
+            if (nowMs - lastClaim.current > 150) {
+              lastClaim.current = nowMs;
+              const claim = { x: Math.round(b.x), vx: Math.round(b.vx * 100) / 100 };
+              if (useP2P.current) p2pRef.current?.sendCtl({ event: "hit", payload: claim });
+              else chRef.current?.send({ type: "broadcast", event: "hit", payload: claim });
+            }
           }
           b.y = clamp(b.y, -30, FH + 30);
-        }
+        });
       }
 
       if (host && phaseRef.current === "playing") {
         // истечение бустов
-        if (x2Until.current && now > x2Until.current && balls.current.length > 1) { balls.current = [balls.current[0]]; x2Until.current = 0; }
+        if (x2Until.current && now > x2Until.current && balls.current.length > 1) {
+          balls.current = [balls.current[0]];
+          x2Until.current = 0;
+          if (stuck.current && !balls.current.includes(stuck.current.b)) stuck.current = null;
+        }
         if (sizeUntil.current[0] && now > sizeUntil.current[0]) { pw1.current = PW; sizeUntil.current[0] = 0; }
         if (sizeUntil.current[1] && now > sizeUntil.current[1]) { pw2.current = PW; sizeUntil.current[1] = 0; }
         // спавн/деспавн буста
         if (!boost.current && now > nextBoostAt.current) {
-          boost.current = { x: 60 + Math.random() * (FW - 120), y: FH * 0.32 + Math.random() * FH * 0.36, type: Math.random() < 0.5 ? "x2" : "size" };
+          const rr = Math.random();
+          boost.current = {
+            x: 60 + Math.random() * (FW - 120),
+            y: FH * 0.32 + Math.random() * FH * 0.36,
+            type: rr < 0.34 ? "x2" : rr < 0.67 ? "size" : "stick",
+          };
           boostGoneAt.current = now + 9000;
         }
         if (boost.current && now > boostGoneAt.current) { boost.current = null; nextBoostAt.current = now + 8000 + Math.random() * 6000; }
 
+        // прилипший мяч следует за ракеткой владельца; по таймауту — автозапуск
+        if (stuck.current) {
+          const st = stuck.current;
+          if (st.owner === 0) { st.b.x = clamp(px1.current + st.off, R, FW - R); st.b.y = BOTTOM_Y - R; }
+          else { st.b.x = clamp(px2Eff.current + st.off, R, FW - R); st.b.y = TOP_Y + PH + R; }
+          if (now > st.until) onReleaseRef.current(st.owner);
+        }
+
         const W1 = pw1.current, W2 = pw2.current;
         const p2x = px2Eff.current; // ракетка гостя с компенсацией лага
         for (const b of balls.current) {
+          if (stuck.current?.b === b) continue; // прилип — физика не нужна
           // подшаги: на высокой скорости двигаем мяч кусками ≤ ~6px,
           // чтобы он физически не мог проскочить плоскость ракетки за кадр
           const sp = Math.max(Math.abs(b.vx), Math.abs(b.vy));
@@ -537,19 +648,35 @@ export default function PongPage() {
           for (let s = 0; s < steps; s++) {
             const oldY = b.y;
             b.x += b.vx / steps; b.y += b.vy / steps;
-            if (b.x < R) { b.x = R; b.vx = Math.abs(b.vx); }
-            if (b.x > FW - R) { b.x = FW - R; b.vx = -Math.abs(b.vx); }
+            if (b.x < R) { b.x = R; b.vx = Math.abs(b.vx); sparks(b.x, b.y, "rgba(255,255,255,0.5)", 5, 1.6); }
+            if (b.x > FW - R) { b.x = FW - R; b.vx = -Math.abs(b.vx); sparks(b.x, b.y, "rgba(255,255,255,0.5)", 5, 1.6); }
             // нижняя ракетка (p1) — проверка пересечения плоскости за подшаг
             if (b.vy > 0 && oldY + R <= BOTTOM_Y + 2 && b.y + R >= BOTTOM_Y &&
                 b.x >= px1.current - R && b.x <= px1.current + W1 + R) {
+              if (stickArmed.current[0] > now && !stuck.current) {
+                stickArmed.current[0] = 0;
+                stuck.current = { b, owner: 0, off: b.x - px1.current, until: now + 2500 };
+                b.y = BOTTOM_Y - R; b.vx = 0; b.vy = 0; b.last = 0;
+                sparks(b.x, b.y, "#FF6EC7", 14, 2.6);
+                break;
+              }
               b.y = BOTTOM_Y - R; b.vy = -Math.abs(b.vy) * ACC;
               b.vx += ((b.x - (px1.current + W1 / 2)) / (W1 / 2)) * 2.6; b.last = 0;
+              sparks(b.x, b.y, "#A6FF00", 12, 2.8);
             }
             // верхняя ракетка (p2) — по экстраполированной позиции
             else if (b.vy < 0 && oldY - R >= TOP_Y + PH - 2 && b.y - R <= TOP_Y + PH &&
                 b.x >= p2x - R && b.x <= p2x + W2 + R) {
+              if (stickArmed.current[1] > now && !stuck.current) {
+                stickArmed.current[1] = 0;
+                stuck.current = { b, owner: 1, off: b.x - p2x, until: now + 2500 };
+                b.y = TOP_Y + PH + R; b.vx = 0; b.vy = 0; b.last = 1;
+                sparks(b.x, b.y, "#FF6EC7", 14, 2.6);
+                break;
+              }
               b.y = TOP_Y + PH + R; b.vy = Math.abs(b.vy) * ACC;
               b.vx += ((b.x - (p2x + W2 / 2)) / (W2 / 2)) * 2.6; b.last = 1;
+              sparks(b.x, b.y, "rgba(255,255,255,0.85)", 12, 2.8);
             }
             b.vy = clamp(b.vy, -MAXV, MAXV); b.vx = clamp(b.vx, -MAXV, MAXV);
           }
@@ -571,7 +698,7 @@ export default function PongPage() {
           if (sc.current[0] >= WIN_SCORE || sc.current[1] >= WIN_SCORE) {
             const w = sc.current[0] > sc.current[1] ? 0 : 1;
             winnerRef.current = w; setWinner(w); setPhaseBoth("over");
-            balls.current = []; boost.current = null;
+            balls.current = []; boost.current = null; stuck.current = null;
           } else if (balls.current.length === 0) {
             startCountdown(Math.random() < 0.5 ? 1 : -1);
           }
@@ -600,6 +727,7 @@ export default function PongPage() {
             ]),
             px1: px1.current, pw1: pw1.current, pw2: pw2.current,
             boost: boost.current ? { x: Math.round(boost.current.x), y: Math.round(boost.current.y), type: boost.current.type } : null,
+            stuck: stuck.current ? { i: balls.current.indexOf(stuck.current.b), owner: stuck.current.owner, off: Math.round(stuck.current.off) } : null,
             s1: sc.current[0], s2: sc.current[1], phase: phaseRef.current, count: countRef.current,
             winner: phaseRef.current === "over" ? (sc.current[0] > sc.current[1] ? 0 : 1) : null,
           };
@@ -620,6 +748,8 @@ export default function PongPage() {
       window.removeEventListener("keydown", kd); window.removeEventListener("keyup", ku);
       window.removeEventListener("pointermove", pointer);
       window.removeEventListener("pointerdown", pointer);
+      window.removeEventListener("pointerup", up);
+      window.removeEventListener("pointercancel", up);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
