@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createClient, type RealtimeChannel } from "@supabase/supabase-js";
+import { connectP2P, type P2PHandle } from "./rtc";
 
 /**
  * Сетевой ретро-пинг-понг (двое, по ссылке или сразу из кооп-пары через ?room=).
@@ -45,6 +46,10 @@ export default function PongPage() {
   const roleRef = useRef<"host" | "guest">("host");
   const chRef = useRef<RealtimeChannel | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  // P2P: основной транспорт — WebRTC DataChannel; Supabase Realtime остаётся фолбэком
+  const p2pRef = useRef<P2PHandle | null>(null);
+  const useP2P = useRef(false);
+  const [transport, setTransport] = useState<"relay" | "p2p">("relay");
 
   type Ball = { x: number; y: number; vx: number; vy: number; last: 0 | 1 };
   type Boost = { x: number; y: number; type: "x2" | "size" };
@@ -122,7 +127,9 @@ export default function PongPage() {
     const ch = sb.channel(`pong-${code}`, { config: { broadcast: { self: false }, presence: { key: r } } });
     chRef.current = ch;
 
-    ch.on("broadcast", { event: "state" }, ({ payload }) => {
+    // ─── общие обработчики для обоих транспортов (P2P и Realtime) ───
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    const applyState = (payload: any) => {
       if (roleRef.current !== "guest") return;
       // Мяч у гостя живёт локально (dead reckoning по vx/vy), пакет хоста — авторитетная
       // коррекция: близко — мягко подтягиваем (без дёрганья), далеко — снапаем.
@@ -145,22 +152,65 @@ export default function PongPage() {
       if (payload.count !== countRef.current) setCountBoth(payload.count);
       const w = payload.winner;
       if ((w === 0 || w === 1) && w !== winnerRef.current) { winnerRef.current = w; setWinner(w); }
+    };
+    const applyPaddle = (payload: any) => {
+      if (roleRef.current !== "host") return;
+      px2.current = payload.x;
+      px2Vel.current = typeof payload.v === "number" ? payload.v : 0;
+      px2At.current = performance.now();
+    };
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+    const onHelloMsg = () => {
+      if (roleRef.current === "host" &&
+          (phaseRef.current === "waiting" || phaseRef.current === "connecting")) startMatch();
+    };
+
+    ch.on("broadcast", { event: "state" }, ({ payload }) => {
+      if (useP2P.current) return; // P2P активен — relay-дубли игнорим
+      applyState(payload);
     });
     ch.on("broadcast", { event: "paddle" }, ({ payload }) => {
-      if (roleRef.current === "host") {
-        px2.current = payload.x;
-        px2Vel.current = typeof payload.v === "number" ? payload.v : 0;
-        px2At.current = performance.now();
-      }
+      if (useP2P.current) return;
+      applyPaddle(payload);
     });
     ch.on("broadcast", { event: "rematch" }, () => { if (roleRef.current === "host") startMatch(); });
     ch.on("broadcast", { event: "hello" }, () => {
       if (roleRef.current === "host") {
-        if (phaseRef.current === "waiting" || phaseRef.current === "connecting") startMatch();
+        onHelloMsg();
         ch.send({ type: "broadcast", event: "hello", payload: {} });
       }
     });
+
+    // ─── P2P поверх: если DataChannel собрался — он становится основным транспортом ───
+    p2pRef.current = connectP2P({
+      room: code,
+      role: r,
+      onMessage: (m) => {
+        if (m.event === "state") applyState(m.payload);
+        else if (m.event === "paddle") applyPaddle(m.payload);
+        else if (m.event === "hello") onHelloMsg();
+        else if (m.event === "rematch") { if (roleRef.current === "host") startMatch(); }
+      },
+      onOpen: () => {
+        useP2P.current = true;
+        setTransport("p2p");
+        // гость стучится — хост стартует матч, даже если Realtime так и не соединился
+        if (roleRef.current === "guest") p2pRef.current?.sendCtl({ event: "hello", payload: {} });
+      },
+      onClose: () => {
+        useP2P.current = false;
+        setTransport("relay");
+        if (phaseRef.current === "playing" || phaseRef.current === "count") setPhaseBoth("waiting");
+      },
+    });
+
+    // Realtime может не соединиться вовсе (РФ без VPN) — не зависаем на «Подключаюсь…»,
+    // показываем ожидание/ссылку, дальше всё сделает P2P
+    const connT = setTimeout(() => {
+      if (phaseRef.current === "connecting") setPhaseBoth("waiting");
+    }, 2500);
     ch.on("presence", { event: "sync" }, () => {
+      if (useP2P.current) return; // при живом P2P уход соперника ловим по закрытию канала
       const both = Object.keys(ch.presenceState()).length >= 2;
       if (!both && phaseRef.current !== "waiting" && phaseRef.current !== "connecting") {
         // соперник ушёл
@@ -181,8 +231,10 @@ export default function PongPage() {
     });
 
     return () => {
+      clearTimeout(connT);
       if (serveTimer.current) clearTimeout(serveTimer.current);
       if (countTimer.current) clearInterval(countTimer.current);
+      p2pRef.current?.close(); p2pRef.current = null;
       ch.unsubscribe(); sb.removeChannel(ch);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -535,12 +587,13 @@ export default function PongPage() {
       while (acc >= STEP) { acc -= STEP; step(); }
       const host = roleRef.current === "host";
 
-      // сеть ~50 Гц для отзывчивости
+      // сеть: P2P — 60 Гц (дёшево, напрямую), relay — ~50 Гц
       const ch = chRef.current;
-      if (ch && t - lastSend > 20) {
+      const p2p = useP2P.current;
+      if (t - lastSend > (p2p ? 15 : 20)) {
         lastSend = t;
         if (host) {
-          ch.send({ type: "broadcast", event: "state", payload: {
+          const statePayload = {
             balls: balls.current.map((b) => [
               Math.round(b.x), Math.round(b.y),
               Math.round(b.vx * 100) / 100, Math.round(b.vy * 100) / 100,
@@ -549,9 +602,13 @@ export default function PongPage() {
             boost: boost.current ? { x: Math.round(boost.current.x), y: Math.round(boost.current.y), type: boost.current.type } : null,
             s1: sc.current[0], s2: sc.current[1], phase: phaseRef.current, count: countRef.current,
             winner: phaseRef.current === "over" ? (sc.current[0] > sc.current[1] ? 0 : 1) : null,
-          }});
+          };
+          if (p2p) p2pRef.current?.sendFast({ event: "state", payload: statePayload });
+          else ch?.send({ type: "broadcast", event: "state", payload: statePayload });
         } else {
-          ch.send({ type: "broadcast", event: "paddle", payload: { x: px2.current, v: Math.round(myVel.current * 100) / 100 } });
+          const pp = { x: px2.current, v: Math.round(myVel.current * 100) / 100 };
+          if (p2p) p2pRef.current?.sendFast({ event: "paddle", payload: pp });
+          else ch?.send({ type: "broadcast", event: "paddle", payload: pp });
         }
       }
       draw();
@@ -572,6 +629,7 @@ export default function PongPage() {
   }
   function rematch() {
     if (roleRef.current === "host") startMatch();
+    else if (useP2P.current) p2pRef.current?.sendCtl({ event: "rematch", payload: {} });
     else chRef.current?.send({ type: "broadcast", event: "rematch", payload: {} });
   }
 
@@ -582,7 +640,12 @@ export default function PongPage() {
   return (
     <main className="pong-page relative bg-black text-white overflow-hidden flex flex-col items-center px-4 pt-[60px] sm:pt-[68px] pb-4" style={{ minHeight: "100dvh" }}>
       <div className="relative z-[1] w-full max-w-[440px] mx-auto flex flex-col items-center text-center">
-        <p className="font-p95 text-[11px] sm:text-[12px] tracking-[0.25em] uppercase text-white/40 mb-1.5">Пинг-понг · вдвоём</p>
+        <p className="font-p95 text-[11px] sm:text-[12px] tracking-[0.25em] uppercase text-white/40 mb-1.5">
+          Пинг-понг · вдвоём
+          <span className="ml-2 normal-case tracking-normal" style={{ color: transport === "p2p" ? "rgba(166,255,0,0.65)" : "rgba(255,255,255,0.25)" }}>
+            {transport === "p2p" ? "● p2p" : "● сервер"}
+          </span>
+        </p>
         <div className="flex items-center justify-center gap-2.5 sm:gap-5 mb-2 font-p95 tabular-nums" style={{ fontSize: "clamp(20px,5vw,30px)" }}>
           <span className="text-white/40 text-[10px] sm:text-xs uppercase tracking-[0.12em]">соперник</span>
           <span className="text-white/80">{theirs}</span>
