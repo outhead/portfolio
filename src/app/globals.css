@@ -241,6 +241,30 @@ main {
   .decrypt-fadeswap { animation: none; }
 }
 
+/* Понг: пульс цифры счёта и вход цифры отсчёта */
+.score-pop { animation: scorePop 240ms cubic-bezier(0.2, 1.6, 0.4, 1); }
+@keyframes scorePop {
+  from { transform: scale(1.45); }
+  to { transform: scale(1); }
+}
+.count-in { animation: countIn 300ms cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+@keyframes countIn {
+  from { transform: scale(1.45); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Пара: волна по тумблерам, когда комбинация сошлась (delay задаётся инлайном) */
+.tgl-wave { animation: tglWave 600ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes tglWave {
+  0% { transform: translateY(0); }
+  35% { transform: translateY(-5px); box-shadow: 0 0 26px rgba(166, 255, 0, 0.55); }
+  100% { transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .score-pop, .count-in, .tgl-wave { animation: none; }
+}
+
 /* Пинг-понг: на мобиле прячем глобальный подвал, чтобы игра влезала и была выше.
    Плюс полный скролл-лок: палец двигает ракетку, а не страницу. */
 body.pong-immersive {

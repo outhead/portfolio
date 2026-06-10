@@ -25,7 +25,7 @@ type Phase = "loading" | "viewer" | "controller" | "same_ip" | "full" | "error" 
 
 // bits — что показываем (цель или текущее). Если передан compare — подсвечиваем
 // зелёным совпадающие позиции (для ряда «сейчас» сравниваем с целью).
-function Row({ bits, compare }: { bits: string; compare?: string }) {
+function Row({ bits, compare, wave }: { bits: string; compare?: string; wave?: boolean }) {
   return (
     <div className="flex gap-2.5 justify-center">
       {Array.from({ length: LEN }).map((_, i) => {
@@ -40,20 +40,25 @@ function Row({ bits, compare }: { bits: string; compare?: string }) {
         return (
           <div key={i} className="flex flex-col items-center gap-1.5">
             <div
-              className="w-7 h-12 rounded-full border flex justify-center p-[3px] transition-colors duration-300"
+              className={`w-7 h-12 rounded-full border flex justify-center p-[3px] transition-colors duration-300 ${wave ? "tgl-wave" : ""}`}
               style={{
+                animationDelay: wave ? `${i * 60}ms` : undefined,
                 borderColor,
-                background: on ? "rgba(166,255,0,0.10)" : "rgba(255,255,255,0.04)",
-                boxShadow: on ? "0 0 14px rgba(166,255,0,0.18)" : "inset 0 1px 4px rgba(0,0,0,0.5)",
+                background: on
+                  ? "linear-gradient(180deg, rgba(166,255,0,0.14), rgba(166,255,0,0.06))"
+                  : "rgba(255,255,255,0.04)",
+                boxShadow: on
+                  ? "0 0 14px rgba(166,255,0,0.18), inset 0 1px 0 rgba(255,255,255,0.08)"
+                  : "inset 0 1px 5px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05)",
               }}
             >
               <div
                 className="w-5 h-5 rounded-full"
                 style={{
-                  background: on ? "#A6FF00" : "rgba(255,255,255,0.22)",
+                  background: on ? "linear-gradient(180deg, #C6FF4D, #8FE000)" : "rgba(255,255,255,0.22)",
                   transform: on ? "translateY(0)" : "translateY(22px)",
                   transition: "transform 300ms cubic-bezier(0.34,1.56,0.64,1), background 200ms, box-shadow 200ms",
-                  boxShadow: on ? "0 0 10px rgba(166,255,0,0.55)" : "none",
+                  boxShadow: on ? "0 1px 4px rgba(0,0,0,0.45), 0 0 10px rgba(166,255,0,0.55)" : "0 1px 3px rgba(0,0,0,0.4)",
                 }}
               />
             </div>
@@ -146,6 +151,7 @@ export default function PairPage() {
 
   async function flip(i: number) {
     if (solved) return;
+    try { navigator.vibrate?.(10); } catch { /* iOS молчит — ок */ }
     // Оптимистично: переключаем мгновенно, сервер подтверждает в фоне.
     // Шлём ЦЕЛЕВОЕ значение (не toggle) — повторы и гонки идемпотентны.
     const next = switchesRef.current.split("");
@@ -220,7 +226,7 @@ export default function PairPage() {
             <Row bits={target} />
 
             <p className="font-p95 text-[11px] tracking-[0.22em] uppercase text-white/35 mt-8 mb-3">Сейчас у напарника</p>
-            <Row bits={switches} compare={target} />
+            <Row bits={switches} compare={target} wave={solved} />
 
             {!solved ? (
               <div className="mt-10 w-full flex flex-col items-center">
@@ -266,20 +272,27 @@ export default function PairPage() {
                   <button key={i} type="button" onClick={() => flip(i)} disabled={solved}
                     aria-label={`Тумблер ${i + 1}: ${on ? "вкл" : "выкл"}`} aria-pressed={on}
                     className="flex flex-col items-center gap-2 group disabled:opacity-60">
-                    <div className="w-12 h-[72px] rounded-full border flex justify-center p-1.5 transition-all duration-300 group-active:scale-95 group-hover:border-white/40"
+                    <div className={`w-12 h-[72px] rounded-full border flex justify-center p-1.5 transition-all duration-300 group-active:scale-95 group-hover:border-white/40 ${solved ? "tgl-wave" : ""}`}
                       style={{
+                        animationDelay: solved ? `${i * 60}ms` : undefined,
                         borderColor: on ? "rgba(166,255,0,0.8)" : "rgba(255,255,255,0.18)",
-                        background: on ? "rgba(166,255,0,0.10)" : "rgba(255,255,255,0.03)",
+                        background: on
+                          ? "linear-gradient(180deg, rgba(166,255,0,0.14), rgba(166,255,0,0.06))"
+                          : "rgba(255,255,255,0.03)",
                         boxShadow: on
-                          ? "0 0 20px rgba(166,255,0,0.22), inset 0 0 10px rgba(166,255,0,0.10)"
-                          : "inset 0 2px 6px rgba(0,0,0,0.55)",
+                          ? "0 0 20px rgba(166,255,0,0.22), inset 0 0 10px rgba(166,255,0,0.10), inset 0 1px 0 rgba(255,255,255,0.10)"
+                          : "inset 0 2px 8px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.06)",
                       }}>
                       <div className="w-9 h-9 rounded-full flex items-center justify-center"
                         style={{
-                          background: on ? "#A6FF00" : "rgba(255,255,255,0.22)",
+                          background: on
+                            ? "linear-gradient(180deg, #C6FF4D, #8FE000)"
+                            : "rgba(255,255,255,0.22)",
                           transform: on ? "translateY(0)" : "translateY(24px)",
-                          transition: "transform 320ms cubic-bezier(0.34,1.56,0.64,1), background 200ms, box-shadow 200ms",
-                          boxShadow: on ? "0 0 16px rgba(166,255,0,0.6)" : "none",
+                          transition: "transform 320ms cubic-bezier(0.34,1.56,0.64,1), background 200ms, box-shadow 320ms",
+                          boxShadow: on
+                            ? "0 2px 6px rgba(0,0,0,0.5), 0 0 16px rgba(166,255,0,0.6)"
+                            : "0 2px 4px rgba(0,0,0,0.45)",
                         }}>
                         <div className="w-1.5 h-1.5 rounded-full"
                           style={{ background: on ? "rgba(0,0,0,0.35)" : "rgba(255,255,255,0.35)", transition: "background 200ms" }} />
