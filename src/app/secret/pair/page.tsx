@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import confetti from "canvas-confetti";
 import { pairCall, pairState } from "./pairApi";
+import QuestBackground from "@/components/QuestBackground";
 
 /**
  * Кооп-загадка. Двое, разные IP.
@@ -185,6 +186,7 @@ export default function PairPage() {
 
   return (
     <main className="relative bg-black text-white overflow-y-auto flex flex-col items-center px-5 pt-[88px] pb-16" style={{ minHeight: "100dvh" }}>
+      <QuestBackground palette="violet" opacity={0.34} />
       <div aria-hidden className="absolute inset-0 pointer-events-none opacity-60" style={{
         background: "radial-gradient(ellipse 55% 45% at 50% 35%, rgba(166,255,0,0.06), transparent 60%)",
       }} />

@@ -50,6 +50,8 @@ export default function KodFinal() {
   const [submitted, setSubmitted] = useState(false);
   const [youAt, setYouAt] = useState<number | null>(null);
   const [othersOnly, setOthersOnly] = useState(false);
+  const [showFb, setShowFb] = useState(false);   // панель отзыва раскрыта
+  const [showWall, setShowWall] = useState(false); // стена отзывов раскрыта
 
   useEffect(() => {
     const id = setTimeout(() => setHint(true), 10000);
@@ -90,7 +92,8 @@ export default function KodFinal() {
     setYouAt(at);
     setSubmitted(true);
     setSubmitting(false);
-    if (feedback.trim() && publish) loadFeedback().then(setFb); // обновить доску своим отзывом
+    try { localStorage.setItem("quest_name", name.trim()); } catch { /* */ } // имя → префилл в понге
+    if (feedback.trim() && publish) { setShowWall(true); loadFeedback().then(setFb); } // показать доску со своим отзывом
     clearQuestStart(); // следующий заход — новый отсчёт
   }
 
@@ -153,62 +156,84 @@ export default function KodFinal() {
             <p className="text-sm text-white/50 mb-8">Код был в заголовке вкладки. (Время не засчитано — квест начат не с шифра.)</p>
           )}
 
+          {/* ─── 1. Имя + опциональный отзыв за кнопкой ─── */}
           {winMs != null && !submitted ? (
-            <div className="w-full max-w-[420px] mx-auto flex flex-col gap-2.5 mb-8 text-left">
+            <div className="w-full max-w-[340px] mx-auto flex flex-col gap-3 mb-10">
               <input
                 type="text" value={name} onChange={(e) => setName(e.target.value)}
                 maxLength={20} placeholder="Твоё имя" aria-label="Имя для таблицы лидеров"
-                className="bg-white/[0.06] border border-white/15 rounded-full px-5 py-3 text-[15px] text-white placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors"
+                className="bg-white/[0.06] border border-white/15 rounded-full px-5 py-3.5 text-[15px] text-white text-center placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors"
               />
-              <input
-                type="text" value={telegram} onChange={(e) => setTelegram(e.target.value)}
-                maxLength={80} placeholder="Телеграм для вейтлиста (необязательно)" aria-label="Телеграм для вейтлиста"
-                className="bg-white/[0.06] border border-white/15 rounded-full px-5 py-3 text-[15px] text-white placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors"
-              />
-              <p className="text-[12px] text-white/35 px-1 -mt-1">Напишу туда, когда выйдут новые игры. Прошедшим — тесты и приятные штуки.</p>
-              <textarea
-                value={feedback} onChange={(e) => setFeedback(e.target.value)}
-                maxLength={500} rows={3} placeholder="Пожелание или фидбэк (необязательно)" aria-label="Фидбэк"
-                className="bg-white/[0.06] border border-white/15 rounded-2xl px-5 py-3 text-[15px] text-white placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors resize-none"
-              />
-              <label className="flex items-center gap-2.5 px-1 text-[13px] text-white/55 cursor-pointer select-none">
-                <input type="checkbox" checked={publish} onChange={(e) => setPublish(e.target.checked)}
-                  className="w-4 h-4 accent-[#A6FF00] cursor-pointer" />
-                Опубликовать на доске прошедших
-              </label>
-              <button type="button" onClick={submit} disabled={submitting}
-                className="mt-1 inline-flex items-center justify-center px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[14px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors disabled:opacity-50">
-                <span className="leading-none translate-y-[1px]">{submitting ? "..." : "Отправить"}</span>
-              </button>
-            </div>
-          ) : null}
 
-          {submitted ? (
-            <div className="w-full max-w-[420px] mx-auto mb-8 flex flex-col items-center text-center gap-3">
-              <p className="text-[15px] text-white/75">Записал. {telegram.trim() ? "Добавлю в вейтлист." : ""} Спасибо, что дошёл.</p>
-              {TG_CHANNEL ? (
-                <a href={TG_CHANNEL} target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[13px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
-                  <span className="leading-none translate-y-[1px]">Подписаться на канал</span>
-                </a>
+              {showFb ? (
+                <div className="flex flex-col gap-2.5 text-left animate-[fadeIn_.3s_ease]">
+                  <textarea
+                    value={feedback} onChange={(e) => setFeedback(e.target.value)}
+                    maxLength={500} rows={3} placeholder="Что понравилось, что улучшить?" aria-label="Отзыв"
+                    className="bg-white/[0.06] border border-white/15 rounded-2xl px-5 py-3 text-[15px] text-white placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors resize-none"
+                  />
+                  <label className="flex items-center gap-2.5 px-1 text-[13px] text-white/55 cursor-pointer select-none">
+                    <input type="checkbox" checked={publish} onChange={(e) => setPublish(e.target.checked)}
+                      className="w-4 h-4 accent-[#A6FF00] cursor-pointer" />
+                    Опубликовать на стене прошедших
+                  </label>
+                  <input
+                    type="text" value={telegram} onChange={(e) => setTelegram(e.target.value)}
+                    maxLength={80} placeholder="Телеграм — позову на новые игры (необязательно)" aria-label="Телеграм"
+                    className="bg-white/[0.06] border border-white/15 rounded-full px-5 py-3 text-[14px] text-white placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors"
+                  />
+                </div>
+              ) : null}
+
+              <button type="button" onClick={submit} disabled={submitting}
+                className="mt-1 inline-flex items-center justify-center px-6 py-3.5 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[14px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors disabled:opacity-50">
+                <span className="leading-none translate-y-[1px]">{submitting ? "..." : "В таблицу"}</span>
+              </button>
+              {!showFb ? (
+                <button type="button" onClick={() => setShowFb(true)}
+                  className="text-[13px] text-white/40 hover:text-[#A6FF00] transition-colors">
+                  + оставить отзыв
+                </button>
               ) : null}
             </div>
           ) : null}
 
-          {entries.length > 0 ? (
-            <div className="w-full max-w-[380px] mx-auto mb-6">
+          {/* ─── 2. После отправки: статус + действия ─── */}
+          {submitted ? (
+            <div className="w-full max-w-[420px] mx-auto mb-8 flex flex-col items-center gap-4">
+              <p className="text-[15px] text-white/75">Ты в таблице{telegram.trim() ? " · добавлю в вейтлист" : ""}. Спасибо, что дошёл.</p>
+              <div className="flex flex-wrap items-center justify-center gap-2.5">
+                {fb.length > 0 ? (
+                  <button type="button" onClick={() => setShowWall((v) => !v)}
+                    className="inline-flex items-center px-5 py-2.5 rounded-full border border-white/15 text-white/70 font-p95 text-[12px] tracking-[0.1em] uppercase hover:border-white/40 hover:text-white transition-colors">
+                    {showWall ? "скрыть отзывы" : `отзывы · ${fb.length}`}
+                  </button>
+                ) : null}
+                {TG_CHANNEL ? (
+                  <a href={TG_CHANNEL} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center px-5 py-2.5 rounded-full border border-[#A6FF00]/40 text-[#A6FF00] font-p95 text-[12px] tracking-[0.1em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
+                    Канал
+                  </a>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
+
+          {/* ─── 3. Лидерборд (после отправки) ─── */}
+          {submitted && entries.length > 0 ? (
+            <div className="w-full max-w-[380px] mx-auto mb-8 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5">
               <div className="flex items-center justify-between mb-3">
-                <p className="font-p95 text-[11px] tracking-[0.22em] uppercase text-white/35">Быстрее всех</p>
+                <p className="font-p95 text-[11px] tracking-[0.22em] uppercase text-white/40">Быстрее всех</p>
                 <button type="button" onClick={() => setOthersOnly((v) => !v)}
-                  className="text-[11px] tracking-[0.08em] uppercase text-white/40 hover:text-[#A6FF00] transition-colors">
-                  {othersOnly ? "показать всех" : "скрыть друзей/тест."}
+                  className="text-[11px] tracking-[0.08em] uppercase text-white/35 hover:text-[#A6FF00] transition-colors">
+                  {othersOnly ? "все" : "без друзей"}
                 </button>
               </div>
               <ol className="text-left">
                 {shown.map((e, i) => {
                   const mine = youAt != null && e.at === youAt;
                   return (
-                    <li key={`${e.at}-${i}`} className={`flex items-center gap-3 py-2 border-b border-white/[0.05] ${mine ? "text-[#A6FF00]" : "text-white/80"}`}>
+                    <li key={`${e.at}-${i}`} className={`flex items-center gap-3 py-2 border-b border-white/[0.05] last:border-0 ${mine ? "text-[#A6FF00]" : "text-white/80"}`}>
                       <span className="font-p95 tabular-nums text-[13px] w-5 text-white/35">{i + 1}</span>
                       <span className="flex-1 text-[15px] truncate">
                         {e.name}
@@ -218,14 +243,15 @@ export default function KodFinal() {
                     </li>
                   );
                 })}
-                {shown.length === 0 ? <li className="py-2 text-sm text-white/35">Пока только друзья/тестировщики. Будь первым из остальных.</li> : null}
+                {shown.length === 0 ? <li className="py-2 text-sm text-white/35">Будь первым из остальных.</li> : null}
               </ol>
             </div>
           ) : null}
 
-          {fb.length > 0 ? (
+          {/* ─── 4. Стена отзывов (по кнопке) ─── */}
+          {submitted && showWall && fb.length > 0 ? (
             <div className="w-full max-w-[420px] mx-auto mb-8 text-left">
-              <p className="font-p95 text-[11px] tracking-[0.22em] uppercase text-white/35 mb-3">Стена прошедших</p>
+              <p className="font-p95 text-[11px] tracking-[0.22em] uppercase text-white/40 mb-3">Стена прошедших</p>
               <div className="flex flex-col gap-2.5">
                 {fb.map((f, i) => (
                   <div key={`${f.at}-${i}`} className="rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-3">
@@ -237,7 +263,8 @@ export default function KodFinal() {
             </div>
           ) : null}
 
-          <div className="mb-8 flex flex-col items-center">
+          {/* ─── 5. Дальше ─── */}
+          <div className="mb-4 flex flex-col items-center">
             <p className="text-[13px] text-white/45 mb-3 max-w-xs">Есть ещё одна. Но в одиночку её не пройти.</p>
             <Link href="/secret/pair" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[14px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
               <span className="leading-none translate-y-[1px]">Кооп-загадка</span><span className="leading-none">→</span>

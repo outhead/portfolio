@@ -7,7 +7,7 @@ import { useEffect, useRef } from "react";
  * БЕЗ вихря (swirl убран). Цвет — параметр палитры, чтобы уровни визуально различались.
  * Полупрозрачный, pointer-events:none, тихо живёт на фоне.
  */
-type Palette = "green" | "yellow" | "red" | "cyan";
+type Palette = "green" | "yellow" | "red" | "cyan" | "violet";
 
 // mid — заливка, glow — свечение вен, hot — горячие точки (0..1 RGB)
 const PALETTES: Record<Palette, { mid: [number, number, number]; glow: [number, number, number]; hot: [number, number, number] }> = {
@@ -15,6 +15,7 @@ const PALETTES: Record<Palette, { mid: [number, number, number]; glow: [number, 
   yellow: { mid: [0.42, 0.34, 0.05], glow: [1.0, 0.82, 0.20], hot: [1.0, 0.62, 0.0] },
   red:    { mid: [0.45, 0.12, 0.08], glow: [1.0, 0.38, 0.24], hot: [1.0, 0.25, 0.12] },
   cyan:   { mid: [0.04, 0.32, 0.42], glow: [0.20, 0.85, 1.0], hot: [0.0, 0.55, 1.0] },
+  violet: { mid: [0.24, 0.06, 0.42], glow: [0.62, 0.30, 1.0], hot: [0.45, 0.0, 1.0] },
 };
 
 const FRAG = `precision highp float;uniform vec2 r;uniform float t;uniform vec3 uMid;uniform vec3 uGlow;uniform vec3 uHot;
