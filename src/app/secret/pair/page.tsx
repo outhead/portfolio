@@ -94,23 +94,36 @@ export default function PairPage() {
   const switchesRef = useRef("0".repeat(LEN));
   const setSw = (s: string) => { switchesRef.current = s; setSwitches(s); };
   const initRef = useRef(false);
+  const ctlKey = useRef("");      // ключ контроллера — авторизация flip (IP может меняться под VPN)
+  const tokenRef = useRef("");
+
+  // join: ключ из sessionStorage переживает смену IP; force обходит same_ip
+  async function joinPair(s: string, force = false) {
+    const stored = (() => { try { return sessionStorage.getItem(`pair_key_${s}`) || ""; } catch { return ""; } })();
+    const r = await pairCall("join", { token: s, key: stored, force: force ? 1 : 0 });
+    if (r.error === "same_ip") return setPhase("same_ip");
+    if (r.error === "full") return setPhase("full");
+    if (r.error || !r.id) return setPhase("error");
+    if (typeof r.key === "string" && r.key) {
+      ctlKey.current = r.key;
+      try { sessionStorage.setItem(`pair_key_${s}`, r.key); } catch { /* */ }
+    }
+    setId(String(r.id));
+    setToken(s);
+    setSw(String(r.switches || "0".repeat(LEN)));
+    setSolved(!!r.solved);
+    setPhase("controller");
+  }
 
   // init: создаём или присоединяемся
   useEffect(() => {
     if (initRef.current) return;
     initRef.current = true;
     const s = new URLSearchParams(window.location.search).get("s");
+    tokenRef.current = s || "";
     (async () => {
       if (s) {
-        const r = await pairCall("join", { token: s });
-        if (r.error === "same_ip") return setPhase("same_ip");
-        if (r.error === "full") return setPhase("full");
-        if (r.error || !r.id) return setPhase("error");
-        setId(String(r.id));
-        setToken(s);
-        setSw(String(r.switches || "0".repeat(LEN)));
-        setSolved(!!r.solved);
-        setPhase("controller");
+        await joinPair(s);
       } else {
         const r = await pairCall("create");
         if (r.error || !r.id) return setPhase("error");
@@ -136,7 +149,7 @@ export default function PairPage() {
       // возвращается ПОСЛЕ и «отскакивает» тумблер назад. Простой больше 1.8с — самовосстановление.
       const canApply = targetRef.current
         ? pendingFlips.current === 0
-        : pendingFlips.current === 0 && performance.now() - lastFlipAt.current > 1800;
+        : pendingFlips.current === 0 && performance.now() - lastFlipAt.current > 4000;
       if (canApply) setSw(st.switches);
       setJoined(st.joined);
       if (st.solved && !solvedRef.current) {
@@ -170,9 +183,21 @@ export default function PairPage() {
     lastFlipAt.current = performance.now();
     pendingFlips.current++;
     try {
-      const r = await pairCall("flip", { id, index: i, value: want });
-      // применяем ответ сервера только если это последний запрос в полёте
-      if (typeof r.switches === "string" && pendingFlips.current === 1) setSw(r.switches);
+      // до 3 попыток: сеть под VPN нестабильна, а откат тумблера поллингом
+      // выглядит как «залипшая кнопка»
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const r = await pairCall("flip", { id, index: i, value: want, key: ctlKey.current });
+        if (typeof r.switches === "string") {
+          if (pendingFlips.current === 1) setSw(r.switches);
+          lastFlipAt.current = performance.now();
+          return;
+        }
+        // forbidden после смены IP — реджойн по ключу и повтор
+        if (r.error === "forbidden" && tokenRef.current) {
+          await pairCall("join", { token: tokenRef.current, key: ctlKey.current });
+        }
+        await new Promise((res) => setTimeout(res, 450));
+      }
     } finally {
       pendingFlips.current--;
     }
@@ -215,7 +240,18 @@ export default function PairPage() {
             <p className="text-[15px] text-white/70 max-w-xs leading-relaxed mb-3">
               Я вижу, как ты пытаешься меня обмануть. Тебе нужен кто-то — дальше, чем твоя вторая рука.
             </p>
-            <p className="text-[13px] text-white/35 max-w-xs">Придётся постараться по-настоящему.</p>
+            <p className="text-[13px] text-white/35 max-w-xs mb-7">Придётся постараться по-настоящему.</p>
+            <p className="text-[12px] text-white/30 max-w-xs mb-4">
+              Вы с напарником за одним VPN или одной сетью? Тогда я обознался.
+            </p>
+            <button
+              type="button"
+              onClick={() => { setPhase("loading"); joinPair(tokenRef.current || new URLSearchParams(window.location.search).get("s") || "", true); }}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors"
+            >
+              <span className="sr-only">Мы правда вдвоём</span>
+              <LedText text="Мы правда вдвоём" className="h-[10px] w-auto" />
+            </button>
           </>
         ) : null}
 

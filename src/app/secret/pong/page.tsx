@@ -106,6 +106,10 @@ export default function PongPage() {
   const lastStateAt = useRef(0);
   const hostSeenAt = useRef(0);
   const peerGuestId = useRef<string | null>(null);
+  // P2P бывает односторонним (open у одного, у другого нет) — тогда каждый шлёт
+  // в свой транспорт и оба молчат. Лечим: пакеты дублируются в релей (реже),
+  // а relay-приём включается, как только P2P молчит дольше 700мс.
+  const lastP2pAt = useRef(0);
 
   const setPhaseBoth = (p: Phase) => { phaseRef.current = p; setPhase(p); };
   const setCountBoth = (c: number) => { countRef.current = c; setCount(c); };
@@ -196,8 +200,9 @@ export default function PongPage() {
           (phaseRef.current === "waiting" || phaseRef.current === "connecting")) resumeOrStart();
     };
 
-    ch.on("state", (payload) => { if (useP2P.current) return; applyState(payload); });
-    ch.on("paddle", (payload) => { if (useP2P.current) return; applyPaddle(payload); });
+    const p2pFresh = () => useP2P.current && performance.now() - lastP2pAt.current < 700;
+    ch.on("state", (payload) => { if (p2pFresh()) return; applyState(payload); });
+    ch.on("paddle", (payload) => { if (p2pFresh()) return; applyPaddle(payload); });
     ch.on("rematch", () => { if (roleRef.current === "host") startMatch(); });
     ch.on("hit", (payload) => { applyHitRef.current(payload as Record<string, unknown>); });
     ch.on("release", () => { onReleaseRef.current(1); });
@@ -238,8 +243,8 @@ export default function PongPage() {
       room: code,
       role: r,
       onMessage: (m) => {
-        if (m.event === "state") applyState(m.payload);
-        else if (m.event === "paddle") applyPaddle(m.payload);
+        if (m.event === "state") { lastP2pAt.current = performance.now(); applyState(m.payload); }
+        else if (m.event === "paddle") { lastP2pAt.current = performance.now(); applyPaddle(m.payload); }
         else if (m.event === "hello") handleHello(m.payload);
         else if (m.event === "rematch") { if (roleRef.current === "host") startMatch(); }
         else if (m.event === "hit") applyHitRef.current(m.payload);
@@ -351,7 +356,7 @@ export default function PongPage() {
     // ретина: рендерим в физические пиксели, иначе на телефонах канвас мыльный
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = FW * dpr; canvas.height = FH * dpr;
-    let raf = 0, lastSend = 0;
+    let raf = 0, lastSend = 0, lastMirror = 0;
     const keys: Record<string, boolean> = {};
 
     const onKey = (e: KeyboardEvent, down: boolean) => {
@@ -998,12 +1003,17 @@ export default function PongPage() {
             mode: modeRef.current === "field" ? 1 : 0,
             winner: phaseRef.current === "over" ? (sc.current[0] > sc.current[1] ? 0 : 1) : null,
           };
-          if (p2p) p2pRef.current?.sendFast({ event: "state", payload: statePayload });
-          else ch?.send("state", statePayload);
+          if (p2p) {
+            p2pRef.current?.sendFast({ event: "state", payload: statePayload });
+            // зеркало в релей пореже — спасает односторонний P2P
+            if (t - lastMirror > 100) { lastMirror = t; ch?.send("state", statePayload); }
+          } else ch?.send("state", statePayload);
         } else {
           const pp = { x: px2.current, v: Math.round(myVel.current * 100) / 100, d: pressed ? 1 : 0 };
-          if (p2p) p2pRef.current?.sendFast({ event: "paddle", payload: pp });
-          else ch?.send("paddle", pp);
+          if (p2p) {
+            p2pRef.current?.sendFast({ event: "paddle", payload: pp });
+            if (t - lastMirror > 100) { lastMirror = t; ch?.send("paddle", pp); }
+          } else ch?.send("paddle", pp);
         }
       }
       draw();
