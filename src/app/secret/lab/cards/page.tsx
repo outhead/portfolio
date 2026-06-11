@@ -165,7 +165,7 @@ export default function CardsLabPage() {
       {/* Гибрид — большие вращающиеся 3D-кубы + физика засыпания */}
       <div className="mb-16">
         <span className="block mb-4 text-[12px] tracking-[0.1em] uppercase text-white/35">
-          Гибрид · большие 3D-кубы вращаются и копятся физикой (наведи мышь)
+          Гибрид · 3D-кубы падают в объёме и копятся физикой (наведи мышь)
         </span>
         <div className="no-underline group block w-full max-w-[520px]">
           <article className="relative rounded-2xl overflow-hidden bg-[#0f0f0e] border border-white/[0.06] group-hover:border-white/20 transition-colors duration-300">

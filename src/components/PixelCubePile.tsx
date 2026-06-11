@@ -1,27 +1,60 @@
 "use client";
 
 /* ─────────────────────────────────────────────────────────────────
- * PixelCubePile — физика засыпания большими кубами со знаком.
- * Кубы НЕ вращаются сами: фиксированная изо-ориентация, угол спина в
- * плоскости заблокирован (inertia=∞), так что они падают и аккуратно
- * стекаются. Появляются только на ховере, на уходе курсора — утекают.
+ * PixelCubePile — кубы падают В ОБЪЁМЕ (настоящая 3D-сцена).
+ * Собственная лёгкая 3D-физика: гравитация, пол/стенки коробки,
+ * коллизии кубов сферо-аппроксимацией, ориентация кватернионами —
+ * кубы кувыркаются при падении и копятся с глубиной, затем замирают.
  *
- * Рендер по правилам пиксельных кубов: вся сцена (кубы, грани с flat-
- * shading, знак на гранях) рисуется в offscreen-буфер, затем буфер
- * сэмплится по фиксированной дот-сетке — зажигаем диоды по яркости,
- * фон — притушенные «погашенные» диоды. Все точки одного размера.
+ * Рендер: камера с перспективой проецирует 8 вершин каждого куба,
+ * грани с flat-shading и знаком, дальние кубы мельче/тусклее (глубина).
+ * Вся сцена рисуется в хайрес-буфер и сэмплится бокс-фильтром в дот-
+ * сетку — тот же пиксельный язык, что у вращающихся кубов.
+ *
+ * Появляются на ховере, на уходе курсора — пол убирается, утекают.
  * ──────────────────────────────────────────────────────────────── */
 
 import { useEffect, useRef } from "react";
-import type Matter from "matter-js";
 
 type V3 = [number, number, number];
+type Q = [number, number, number, number]; // x,y,z,w
 
-const VERTS: V3[] = [
-  [-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1],
-  [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1],
+const sub = (a: V3, b: V3): V3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const add = (a: V3, b: V3): V3 => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+const dot = (a: V3, b: V3) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const cross = (a: V3, b: V3): V3 => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const norm = (a: V3): V3 => { const m = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / m, a[1] / m, a[2] / m]; };
+
+function qNorm(q: Q): Q { const m = Math.hypot(q[0], q[1], q[2], q[3]) || 1; return [q[0] / m, q[1] / m, q[2] / m, q[3] / m]; }
+function qRot(q: Q, v: V3): V3 {
+  const u: V3 = [q[0], q[1], q[2]];
+  const t = cross(u, v).map((x) => x * 2) as V3;
+  return add(add(v, t.map((x) => x * q[3]) as V3), cross(u, t));
+}
+// интеграция кватерниона угловой скоростью w за dt
+function qIntegrate(q: Q, w: V3, dt: number): Q {
+  const wq: Q = [w[0] * dt * 0.5, w[1] * dt * 0.5, w[2] * dt * 0.5, 0];
+  // dq = wq ⊗ q
+  const dq: Q = [
+    wq[3] * q[0] + wq[0] * q[3] + wq[1] * q[2] - wq[2] * q[1],
+    wq[3] * q[1] - wq[0] * q[2] + wq[1] * q[3] + wq[2] * q[0],
+    wq[3] * q[2] + wq[0] * q[1] - wq[1] * q[0] + wq[2] * q[3],
+    wq[3] * q[3] - wq[0] * q[0] - wq[1] * q[1] - wq[2] * q[2],
+  ];
+  return qNorm([q[0] + dq[0], q[1] + dq[1], q[2] + dq[2], q[3] + dq[3]]);
+}
+function hexToRgb(hex: string): [number, number, number] {
+  const h = hex.replace("#", "");
+  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+}
+
+// геометрия куба (полусторона S)
+const S = 0.5;
+const CV: V3[] = [
+  [-S, -S, -S], [S, -S, -S], [S, S, -S], [-S, S, -S],
+  [-S, -S, S], [S, -S, S], [S, S, S], [-S, S, S],
 ];
-const FACES: { idx: [number, number, number, number]; n: V3 }[] = [
+const CF: { idx: [number, number, number, number]; n: V3 }[] = [
   { idx: [4, 5, 6, 7], n: [0, 0, 1] },
   { idx: [1, 0, 3, 2], n: [0, 0, -1] },
   { idx: [5, 1, 2, 6], n: [1, 0, 0] },
@@ -30,21 +63,7 @@ const FACES: { idx: [number, number, number, number]; n: V3 }[] = [
   { idx: [0, 1, 5, 4], n: [0, -1, 0] },
 ];
 
-// Фиксированная изо-ориентация (видны front/top/right со знаком)
-const AX0 = -0.5, AY0 = 0.72;
-
-function rot([x, y, z]: V3, ax: number, ay: number): V3 {
-  let c = Math.cos(ay), s = Math.sin(ay);
-  const x1 = x * c + z * s, z1 = -x * s + z * c;
-  c = Math.cos(ax); s = Math.sin(ax);
-  return [x1, y * c - z1 * s, y * s + z1 * c];
-}
-function hexToRgb(hex: string): [number, number, number] {
-  const h = hex.replace("#", "");
-  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
-}
-
-interface Cube { body: Matter.Body; }
+interface Body3 { p: V3; v: V3; q: Q; w: V3; }
 
 export default function PixelCubePile({
   color = "#FF2436",
@@ -53,7 +72,6 @@ export default function PixelCubePile({
 }: {
   color?: string;
   logoSrc?: string;
-  /** Точек по ширине дот-сетки. */
   grid?: number;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -68,11 +86,7 @@ export default function PixelCubePile({
     if (!ctx) return;
 
     const [br, bg, bb] = hexToRgb(color);
-    const light: V3 = (() => {
-      const v: V3 = [-0.35, -0.55, 0.9];
-      const m = Math.hypot(v[0], v[1], v[2]);
-      return [v[0] / m, v[1] / m, v[2] / m];
-    })();
+    const lightW = norm([-0.4, 0.78, 0.5]); // свет сверху-слева-фронта
 
     // белый знак
     const LS = 128;
@@ -83,31 +97,42 @@ export default function PixelCubePile({
       const img = new Image();
       img.onload = () => {
         const lc = logoTex.getContext("2d")!;
-        const pad = LS * 0.05, box = LS - pad * 2;
+        const pad = LS * 0.06, box = LS - pad * 2;
         const k = Math.min(box / img.width, box / img.height);
         const w = img.width * k, h = img.height * k;
         lc.drawImage(img, (LS - w) / 2, (LS - h) / 2, w, h);
         lc.globalCompositeOperation = "source-in";
-        lc.fillStyle = "#fff";
-        lc.fillRect(0, 0, LS, LS);
+        lc.fillStyle = "#fff"; lc.fillRect(0, 0, LS, LS);
         lc.globalCompositeOperation = "source-over";
         logoReady = true;
       };
       img.src = logoSrc;
     }
 
-    // offscreen-буфер сцены (хайрес) + лоурес для бокс-фильтр-сэмплинга в точки
+    // буферы
     const buf = document.createElement("canvas");
     const bctx = buf.getContext("2d", { willReadFrequently: true })!;
     const lo = document.createElement("canvas");
     const loctx = lo.getContext("2d", { willReadFrequently: true })!;
 
+    // ── Коробка (мир) ──
+    const HX = 2.3, HZ = 1.25; // полуширина / полуглубина
+    const FLOOR = 0;           // y пола (центр куба покоится на S)
+    const G = 9.2;
+    const REST = 0.16, LIN_DAMP = 0.6, ANG_DAMP = 1.4, FLOOR_FRIC = 0.72;
+    const RAD = S * 1.06;      // радиус сферы для коллизий кубов
+
+    // ── Камера ──
+    const lookAt: V3 = [0, 0.85, 0];
+    const camC: V3 = [0, 2.5, 5.2];
+    const camZ = norm(sub(camC, lookAt));       // ось «назад»
+    const camR = norm(cross([0, 1, 0], camZ));  // право
+    const camU = cross(camZ, camR);             // верх
+
     let W = 0, H = 0, outW = 0, outH = 0, dpr = 1;
-    let Sx = 0, Sy = 0, bs = 1; // буфер и масштаб панель→буфер
-    let gridY = 0;
+    let Sx = 0, Sy = 0, gridY = 0, focal = 0, cxp = 0, cyp = 0;
     const mobile = window.matchMedia("(max-width: 767px)").matches;
-    const maxN = mobile ? 9 : 13;
-    let L = 70;
+    const maxN = mobile ? 9 : 14;
 
     const measure = () => {
       const r = wrap.getBoundingClientRect();
@@ -116,209 +141,204 @@ export default function PixelCubePile({
       outW = Math.round(W * dpr); outH = Math.round(H * dpr);
       canvas.width = outW; canvas.height = outH;
       canvas.style.width = `${W}px`; canvas.style.height = `${H}px`;
-      Sx = Math.min(460, Math.max(280, Math.round(W * 0.7)));
+      Sx = Math.min(480, Math.max(300, Math.round(W * 0.72)));
       Sy = Math.round(Sx * H / W);
       buf.width = Sx; buf.height = Sy;
-      bs = Sx / W;
       gridY = Math.max(8, Math.round(grid * H / W));
       lo.width = grid; lo.height = gridY;
-      L = Math.min(86, Math.max(40, Math.round(W * 0.17)));
+      focal = Sx * 0.92;
+      cxp = Sx / 2; cyp = Sy * 0.42;
     };
+    measure();
 
-    const project = (v: V3, sc: number): [number, number] => {
-      const d = 3.9, f = d / (d - v[2]);
-      return [v[0] * sc * f, -v[1] * sc * f];
+    // мир→экран(буфер). Возвращает [sx,sy,depth] (depth = расстояние перед камерой)
+    const project = (P: V3): [number, number, number] => {
+      const d = sub(P, camC);
+      const vx = dot(d, camR), vy = dot(d, camU), vz = dot(d, camZ); // vz>0 — позади камеры
+      const front = -vz; // перед камерой положителен
+      const inv = focal / Math.max(0.05, front);
+      return [cxp + vx * inv, cyp - vy * inv, front];
     };
 
     const texTri = (s0: number[], s1: number[], s2: number[], t0: number[], t1: number[], t2: number[]) => {
-      const e1x = t1[0] - t0[0], e1y = t1[1] - t0[1];
-      const e2x = t2[0] - t0[0], e2y = t2[1] - t0[1];
-      const det = e1x * e2y - e2x * e1y;
-      if (Math.abs(det) < 1e-6) return;
-      const f1x = s1[0] - s0[0], f1y = s1[1] - s0[1];
-      const f2x = s2[0] - s0[0], f2y = s2[1] - s0[1];
+      const e1x = t1[0] - t0[0], e1y = t1[1] - t0[1], e2x = t2[0] - t0[0], e2y = t2[1] - t0[1];
+      const det = e1x * e2y - e2x * e1y; if (Math.abs(det) < 1e-6) return;
+      const f1x = s1[0] - s0[0], f1y = s1[1] - s0[1], f2x = s2[0] - s0[0], f2y = s2[1] - s0[1];
       const a = (f1x * e2y - f2x * e1y) / det, c = (-f1x * e2x + f2x * e1x) / det;
       const b = (f1y * e2y - f2y * e1y) / det, d2 = (-f1y * e2x + f2y * e1x) / det;
       bctx.save();
-      bctx.beginPath();
-      bctx.moveTo(s0[0], s0[1]); bctx.lineTo(s1[0], s1[1]); bctx.lineTo(s2[0], s2[1]); bctx.closePath();
-      bctx.clip();
+      bctx.beginPath(); bctx.moveTo(s0[0], s0[1]); bctx.lineTo(s1[0], s1[1]); bctx.lineTo(s2[0], s2[1]); bctx.closePath(); bctx.clip();
       bctx.setTransform(a, b, c, d2, s0[0] - (a * t0[0] + c * t0[1]), s0[1] - (b * t0[0] + d2 * t0[1]));
       bctx.drawImage(logoTex, 0, 0);
       bctx.setTransform(1, 0, 0, 1, 0, 0);
       bctx.restore();
     };
 
-    const drawCube = (cu: Cube) => {
-      const px = cu.body.position.x * bs;
-      const py = cu.body.position.y * bs;
-      const sc = (L * bs) * 0.34;
-      bctx.save();
-      bctx.translate(px, py);
-      bctx.rotate(cu.body.angle); // обычно ~0 (спин заблокирован)
-      const rv = VERTS.map((v) => rot(v, AX0, AY0));
-      const pv = rv.map((v) => project(v, sc));
-      const order = FACES.map((_, i) => ({ i, z: FACES[i].idx.reduce((a, k) => a + rv[k][2], 0) / 4 })).sort((a, b) => a.z - b.z);
-      for (const { i } of order) {
-        const face = FACES[i];
-        const rn = rot(face.n, AX0, AY0);
-        const lam = Math.max(0, rn[0] * light[0] + rn[1] * light[1] + rn[2] * light[2]);
-        const shade = 0.22 + 0.78 * lam;
+    const drawCube = (b: Body3) => {
+      const worldV = CV.map((lv) => add(b.p, qRot(b.q, lv)));
+      const pv = worldV.map(project);
+      // грани, видимые камере, по убыванию глубины
+      const faces = CF.map((f, i) => {
+        const wn = qRot(b.q, f.n);
+        const facing = dot(wn, camZ); // camZ к камере; >0 — грань к нам
+        const cen = f.idx.reduce((a, k) => add(a, worldV[k]), [0, 0, 0] as V3).map((x) => x / 4) as V3;
+        const depth = project(cen)[2];
+        const lam = Math.max(0, dot(wn, lightW));
+        return { i, facing, depth, shade: Math.min(1, 0.3 + 1.0 * lam) };
+      }).filter((f) => f.facing > 0).sort((a, b2) => b2.depth - a.depth);
+
+      for (const f of faces) {
+        const face = CF[f.i];
         const p = face.idx.map((k) => pv[k]);
         bctx.beginPath();
         bctx.moveTo(p[0][0], p[0][1]);
         for (let k = 1; k < 4; k++) bctx.lineTo(p[k][0], p[k][1]);
         bctx.closePath();
-        bctx.fillStyle = `rgb(${Math.round(br * shade)},${Math.round(bg * shade)},${Math.round(bb * shade)})`;
+        bctx.fillStyle = `rgb(${Math.round(br * f.shade)},${Math.round(bg * f.shade)},${Math.round(bb * f.shade)})`;
         bctx.fill();
-        if (logoReady && rn[2] > 0.04) {
-          const p0 = p[0], p1 = p[1], p2 = p[2], p3 = p[3];
-          bctx.globalAlpha = Math.min(1, rn[2] * 1.5);
-          texTri(p0, p1, p2, [0, LS], [LS, LS], [LS, 0]);
-          texTri(p0, p2, p3, [0, LS], [LS, 0], [0, 0]);
+        if (logoReady && f.facing > 0.12) {
+          bctx.globalAlpha = Math.min(1, f.facing * 1.4);
+          texTri(p[0], p[1], p[2], [0, LS], [LS, LS], [LS, 0]);
+          texTri(p[0], p[2], p[3], [0, LS], [LS, 0], [0, 0]);
           bctx.globalAlpha = 1;
         }
       }
-      bctx.restore();
     };
 
-    let engine: Matter.Engine, runner: Matter.Runner, M: typeof import("matter-js");
-    const cubes: Cube[] = [];
-    let ground: Matter.Body | null = null;
-    let leftWall: Matter.Body, rightWall: Matter.Body;
-    let raf = 0, last = performance.now();
+    const bodies: Body3[] = [];
+    let grounded = false;
 
-    import("matter-js").then((mod) => {
-      M = (mod.default ?? mod) as typeof import("matter-js");
-      const { Engine, Runner, Bodies, Composite } = M;
-      measure();
-      engine = Engine.create();
-      engine.gravity.y = 1.6;
-      runner = Runner.create();
-      Runner.run(runner, engine);
+    const spawn = () => {
+      if (bodies.length >= maxN) return;
+      const rndQ = qNorm([Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5]);
+      bodies.push({
+        p: [(Math.random() * 2 - 1) * (HX - S), 4.2 + Math.random() * 1.6, (Math.random() * 2 - 1) * (HZ - S)],
+        v: [0, 0, 0],
+        q: rndQ,
+        w: [(Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4],
+      });
+    };
 
-      const wallOpts = { isStatic: true, render: { visible: false } };
-      leftWall = Bodies.rectangle(-20, H / 2, 40, H * 3, wallOpts);
-      rightWall = Bodies.rectangle(W + 20, H / 2, 40, H * 3, wallOpts);
-      Composite.add(engine.world, [leftWall, rightWall]);
-
-      const addGround = () => {
-        if (ground) return;
-        // верх пола чуть выше нижней кромки — пила собирается внутри кадра
-        ground = Bodies.rectangle(W / 2, H + 8, W + 60, 32, wallOpts);
-        Composite.add(engine.world, ground);
-      };
-      const removeGround = () => {
-        if (!ground) return;
-        Composite.remove(engine.world, ground);
-        ground = null;
-      };
-
-      const spawn = () => {
-        if (cubes.length >= maxN) return;
-        const x = L / 2 + Math.random() * (W - L);
-        const body = Bodies.rectangle(x, -L * 0.5, L, L, {
-          inertia: Infinity, // спин заблокирован — не вращаются
-          density: 0.004, restitution: 0.06, friction: 0.85, frictionAir: 0.012,
-        });
-        cubes.push({ body });
-        Composite.add(engine.world, body);
-      };
-
-      let spawnId: number | null = null;
-      const onEnter = () => {
-        hoverRef.current = true;
-        addGround();
-        if (spawnId != null) return;
-        const burst = mobile ? 6 : 9;
-        for (let i = 0; i < burst; i++) window.setTimeout(spawn, i * 90);
-        spawnId = window.setInterval(spawn, 120);
-      };
-      const onLeave = () => {
-        hoverRef.current = false;
-        if (spawnId != null) { window.clearInterval(spawnId); spawnId = null; }
-        window.setTimeout(removeGround, 80); // пол убран — кубы утекают вниз
-      };
-      wrap.addEventListener("mouseenter", onEnter);
-      wrap.addEventListener("mouseleave", onLeave);
-
-      const isTouch = window.matchMedia("(hover: none)").matches;
-      let io: IntersectionObserver | null = null;
-      if (isTouch && typeof IntersectionObserver !== "undefined") {
-        io = new IntersectionObserver((es) => es.forEach((e) => (e.isIntersecting ? onEnter() : onLeave())), { rootMargin: "-50% 0px -35% 0px", threshold: 0 });
-        io.observe(wrap);
+    const step = (dt: number) => {
+      for (const b of bodies) {
+        b.v[1] -= G * dt;
+        b.p = add(b.p, b.v.map((x) => x * dt) as V3);
+        // демпфирование
+        const ld = Math.max(0, 1 - LIN_DAMP * dt);
+        b.v = b.v.map((x) => x * ld) as V3;
+        const adf = Math.max(0, 1 - ANG_DAMP * dt);
+        b.w = b.w.map((x) => x * adf) as V3;
+        b.q = qIntegrate(b.q, b.w, dt);
+        // стенки
+        if (b.p[0] < -HX + S) { b.p[0] = -HX + S; b.v[0] = Math.abs(b.v[0]) * REST; }
+        if (b.p[0] > HX - S) { b.p[0] = HX - S; b.v[0] = -Math.abs(b.v[0]) * REST; }
+        if (b.p[2] < -HZ + S) { b.p[2] = -HZ + S; b.v[2] = Math.abs(b.v[2]) * REST; }
+        if (b.p[2] > HZ - S) { b.p[2] = HZ - S; b.v[2] = -Math.abs(b.v[2]) * REST; }
+        // пол
+        if (grounded && b.p[1] < FLOOR + S) {
+          b.p[1] = FLOOR + S;
+          b.v[1] = -b.v[1] * REST;
+          b.v[0] *= FLOOR_FRIC; b.v[2] *= FLOOR_FRIC;
+          b.w = b.w.map((x) => x * 0.7) as V3;
+        }
       }
-
-      const sweepId = window.setInterval(() => {
-        for (let i = cubes.length - 1; i >= 0; i--) {
-          if (cubes[i].body.position.y > H + 300) {
-            Composite.remove(engine.world, cubes[i].body);
-            cubes.splice(i, 1);
+      // коллизии кубов (сферо-аппроксимация)
+      for (let i = 0; i < bodies.length; i++) {
+        for (let j = i + 1; j < bodies.length; j++) {
+          const a = bodies[i], c = bodies[j];
+          const dvec = sub(c.p, a.p);
+          const dist = Math.hypot(dvec[0], dvec[1], dvec[2]) || 0.0001;
+          const min = RAD * 2;
+          if (dist < min) {
+            const n = dvec.map((x) => x / dist) as V3;
+            const push = (min - dist) * 0.5;
+            a.p = sub(a.p, n.map((x) => x * push) as V3);
+            c.p = add(c.p, n.map((x) => x * push) as V3);
+            // обмен нормальной компонентой скорости (демпфированный)
+            const va = dot(a.v, n), vc = dot(c.v, n);
+            const da = (vc - va) * (1 + REST) * 0.5;
+            a.v = add(a.v, n.map((x) => x * da) as V3);
+            c.v = sub(c.v, n.map((x) => x * da) as V3);
+            a.w = a.w.map((x) => x * 0.85) as V3;
+            c.w = c.w.map((x) => x * 0.85) as V3;
           }
         }
-      }, 350);
+      }
+      // подмести улетевшие вниз (когда пол убран)
+      for (let i = bodies.length - 1; i >= 0; i--) {
+        if (bodies[i].p[1] < -6) bodies.splice(i, 1);
+      }
+    };
 
-      const frame = (now: number) => {
-        last = now;
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.clearRect(0, 0, outW, outH);
-        bctx.clearRect(0, 0, Sx, Sy);
-        const sorted = [...cubes].sort((a, b) => a.body.position.y - b.body.position.y);
-        for (const cu of sorted) drawCube(cu);
+    let raf = 0, last = performance.now(), spawnAcc = 0;
+    const frame = (now: number) => {
+      let dt = (now - last) / 1000; last = now;
+      dt = Math.min(0.033, dt);
+      // спавн на ховере
+      if (hoverRef.current && bodies.length < maxN) {
+        spawnAcc += dt;
+        if (spawnAcc > 0.11) { spawnAcc = 0; spawn(); }
+      }
+      // под-шаги физики для устойчивости
+      const sub2 = 2;
+      for (let k = 0; k < sub2; k++) step(dt / sub2);
 
-        // даунскейл хайрес-буфера в сетку (бокс-фильтр) — тонкий знак не теряется
-        loctx.clearRect(0, 0, grid, gridY);
-        loctx.imageSmoothingEnabled = true;
-        loctx.drawImage(buf, 0, 0, Sx, Sy, 0, 0, grid, gridY);
-        const data = loctx.getImageData(0, 0, grid, gridY).data;
-        const cell = outW / grid;
-        const rDot = cell * 0.34;
-        for (let gyi = 0; gyi < gridY; gyi++) {
-          for (let gx = 0; gx < grid; gx++) {
-            const cx = (gx + 0.5) * cell;
-            const cy = (gyi + 0.5) * cell;
-            const o = (gyi * grid + gx) * 4;
-            const rr = data[o], gg = data[o + 1], bbb = data[o + 2], aa = data[o + 3];
-            ctx.beginPath();
-            ctx.arc(cx, cy, rDot, 0, Math.PI * 2);
-            if (aa < 20) {
-              ctx.fillStyle = `rgba(${br},${bg},${bb},0.06)`;
-            } else {
-              const a = aa / 255;
-              const lum = (0.299 * rr + 0.587 * gg + 0.114 * bbb) / 255;
-              ctx.fillStyle = `rgba(${rr},${gg},${bbb},${(0.3 + 0.7 * lum) * (0.55 + 0.45 * a)})`;
-            }
-            ctx.fill();
+      // рендер сцены в буфер
+      bctx.clearRect(0, 0, Sx, Sy);
+      const sorted = [...bodies].sort((a, b) => project(b.p)[2] - project(a.p)[2]); // дальние первыми
+      for (const b of sorted) drawCube(b);
+
+      // даунскейл → точки
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, outW, outH);
+      loctx.clearRect(0, 0, grid, gridY);
+      loctx.imageSmoothingEnabled = true;
+      loctx.drawImage(buf, 0, 0, Sx, Sy, 0, 0, grid, gridY);
+      const data = loctx.getImageData(0, 0, grid, gridY).data;
+      const cell = outW / grid;
+      const rDot = cell * 0.34;
+      for (let gy = 0; gy < gridY; gy++) {
+        for (let gx = 0; gx < grid; gx++) {
+          const cx = (gx + 0.5) * cell, cy = (gy + 0.5) * cell;
+          const o = (gy * grid + gx) * 4;
+          const rr = data[o], gg = data[o + 1], bbb = data[o + 2], aa = data[o + 3];
+          ctx.beginPath();
+          ctx.arc(cx, cy, rDot, 0, Math.PI * 2);
+          if (aa < 20) {
+            ctx.fillStyle = `rgba(${br},${bg},${bb},0.06)`;
+          } else {
+            const a = aa / 255;
+            const mx = Math.max(rr, gg, bbb) / 255;
+            ctx.fillStyle = `rgba(${rr},${gg},${bbb},${(0.34 + 0.66 * mx) * (0.55 + 0.45 * a)})`;
           }
+          ctx.fill();
         }
-        raf = requestAnimationFrame(frame);
-      };
+      }
       raf = requestAnimationFrame(frame);
+    };
+    raf = requestAnimationFrame(frame);
 
-      const onResize = () => {
-        const pw = W, ph = H;
-        measure();
-        if (W === pw && H === ph) return;
-        M.Body.setPosition(rightWall, { x: W + 20, y: H / 2 });
-        if (ground) M.Body.setPosition(ground, { x: W / 2, y: H + 18 });
-      };
-      window.addEventListener("resize", onResize);
-
-      (canvas as HTMLCanvasElement & { _cleanup?: () => void })._cleanup = () => {
-        if (spawnId != null) window.clearInterval(spawnId);
-        window.clearInterval(sweepId);
-        wrap.removeEventListener("mouseenter", onEnter);
-        wrap.removeEventListener("mouseleave", onLeave);
-        io?.disconnect();
-        window.removeEventListener("resize", onResize);
-        Runner.stop(runner);
-        Engine.clear(engine);
-      };
-    });
+    const onEnter = () => { hoverRef.current = true; grounded = true; };
+    const onLeave = () => { hoverRef.current = false; grounded = false; }; // пол убран — утекают
+    wrap.addEventListener("mouseenter", onEnter);
+    wrap.addEventListener("mouseleave", onLeave);
+    const isTouch = window.matchMedia("(hover: none)").matches;
+    let io: IntersectionObserver | null = null;
+    if (isTouch && typeof IntersectionObserver !== "undefined") {
+      io = new IntersectionObserver((es) => es.forEach((e) => {
+        hoverRef.current = e.isIntersecting; grounded = e.isIntersecting;
+      }), { rootMargin: "-50% 0px -35% 0px", threshold: 0 });
+      io.observe(wrap);
+    }
+    const onResize = () => measure();
+    window.addEventListener("resize", onResize);
 
     return () => {
       cancelAnimationFrame(raf);
-      (canvas as HTMLCanvasElement & { _cleanup?: () => void })._cleanup?.();
+      wrap.removeEventListener("mouseenter", onEnter);
+      wrap.removeEventListener("mouseleave", onLeave);
+      io?.disconnect();
+      window.removeEventListener("resize", onResize);
     };
   }, [color, logoSrc, grid]);
 
