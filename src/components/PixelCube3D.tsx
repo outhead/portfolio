@@ -5,14 +5,15 @@
  * дот-матрицу (LED-панель). 2D-анимация 3D: каждый кадр вершины куба
  * вращаются матрицами, грани закрашиваются с flat-shading и painter's
  * algorithm (перекрытие по глубине) в offscreen-буфер, затем буфер
- * сэмплится по фиксированной сетке точек — зажигаем диоды по яркости.
+ * сэмплится по фиксированной сетке точек — диоды зажигаются по яркости.
  *
- * Лого — текстурой на передней грани (аффинная карта по 3 углам),
- * гаснет когда грань отворачивается от зрителя.
+ * Лого — настоящим знаком (SVG, перекрашен в белый) текстурой на КАЖДОЙ
+ * грани (аффинная карта по 3 углам), с альфой по тому, насколько грань
+ * повёрнута к зрителю.
  *
- * Покой — медленное холостое вращение, диоды притушены. Ховер —
- * вращение живее, матрица насыщается бренд-цветом. Уважает
- * prefers-reduced-motion.
+ * Все точки одного размера — яркость кодируется только цветом/альфой,
+ * как на реальной LED-панели. Покой — медленное вращение, диоды
+ * притушены. Ховер — живее и ярче. Уважает prefers-reduced-motion.
  * ──────────────────────────────────────────────────────────────── */
 
 import { useEffect, useRef } from "react";
@@ -20,26 +21,24 @@ import { useEffect, useRef } from "react";
 type V3 = [number, number, number];
 
 const VERTS: V3[] = [
-  [-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1], // задняя z=-1  (0..3)
-  [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1],     // передняя z=1 (4..7)
+  [-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1], // z=-1 (0..3)
+  [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1],     // z=1  (4..7)
 ];
 
-// Грани: индексы 4 вершин + нормаль. front=true несёт лого.
-const FACES: { idx: [number, number, number, number]; n: V3; front?: boolean }[] = [
-  { idx: [4, 5, 6, 7], n: [0, 0, 1], front: true },
-  { idx: [1, 0, 3, 2], n: [0, 0, -1] },
-  { idx: [5, 1, 2, 6], n: [1, 0, 0] },
-  { idx: [0, 4, 7, 3], n: [-1, 0, 0] },
-  { idx: [7, 6, 2, 3], n: [0, 1, 0] },
-  { idx: [4, 0, 1, 5], n: [0, -1, 0] },
+// Грани в порядке [bl, br, tr, tl] (для одинаковой ориентации лого) + нормаль.
+const FACES: { idx: [number, number, number, number]; n: V3 }[] = [
+  { idx: [4, 5, 6, 7], n: [0, 0, 1] },   // front +z
+  { idx: [1, 0, 3, 2], n: [0, 0, -1] },  // back  -z
+  { idx: [1, 5, 6, 2], n: [1, 0, 0] },   // right +x
+  { idx: [4, 0, 3, 7], n: [-1, 0, 0] },  // left  -x
+  { idx: [7, 6, 2, 3], n: [0, 1, 0] },   // top   +y
+  { idx: [0, 1, 5, 4], n: [0, -1, 0] },  // bottom -y
 ];
 
 function rotate([x, y, z]: V3, ax: number, ay: number): V3 {
-  // Y
   let c = Math.cos(ay), s = Math.sin(ay);
-  let x1 = x * c + z * s;
-  let z1 = -x * s + z * c;
-  // X
+  const x1 = x * c + z * s;
+  const z1 = -x * s + z * c;
   c = Math.cos(ax); s = Math.sin(ax);
   const y1 = y * c - z1 * s;
   const z2 = y * s + z1 * c;
@@ -53,13 +52,13 @@ function hexToRgb(hex: string): [number, number, number] {
 
 export default function PixelCube3D({
   color,
-  logoText,
-  grid = 30,
+  logoSrc,
+  grid = 44,
   className = "",
 }: {
   color: string;
-  /** Текст-лого на передней грани (МТС). Для брендов со знаком — заменить на drawImage. */
-  logoText?: string;
+  /** URL знака (SVG/PNG). Будет перекрашен в белый и наложен на каждую грань. */
+  logoSrc?: string;
   /** Точек на сторону дот-сетки. */
   grid?: number;
   className?: string;
@@ -78,24 +77,35 @@ export default function PixelCube3D({
     const [br, bg, bb] = hexToRgb(color);
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    // offscreen-буфер для software-рендера куба
-    const S = 180;
+    const S = 200;
     const buf = document.createElement("canvas");
     buf.width = S; buf.height = S;
     const bctx = buf.getContext("2d", { willReadFrequently: true })!;
 
-    // offscreen для лого (рисуем текст один раз)
-    const logo = document.createElement("canvas");
+    // белая версия знака
     const LS = 128;
-    logo.width = LS; logo.height = LS;
-    if (logoText) {
-      const lctx = logo.getContext("2d")!;
-      lctx.clearRect(0, 0, LS, LS);
-      lctx.fillStyle = "#ffffff";
-      lctx.textAlign = "center";
-      lctx.textBaseline = "middle";
-      lctx.font = `900 ${LS * 0.34}px ui-sans-serif, system-ui, sans-serif`;
-      lctx.fillText(logoText, LS / 2, LS / 2 + LS * 0.02);
+    const logoTex = document.createElement("canvas");
+    logoTex.width = LS; logoTex.height = LS;
+    let logoReady = false;
+    if (logoSrc) {
+      const img = new Image();
+      img.onload = () => {
+        const lc = logoTex.getContext("2d")!;
+        lc.clearRect(0, 0, LS, LS);
+        // вписываем знак с небольшим полем
+        const pad = LS * 0.12;
+        const box = LS - pad * 2;
+        const k = Math.min(box / img.width, box / img.height);
+        const w = img.width * k, h = img.height * k;
+        lc.drawImage(img, (LS - w) / 2, (LS - h) / 2, w, h);
+        // перекраска всех непрозрачных пикселей в белый
+        lc.globalCompositeOperation = "source-in";
+        lc.fillStyle = "#ffffff";
+        lc.fillRect(0, 0, LS, LS);
+        lc.globalCompositeOperation = "source-over";
+        logoReady = true;
+      };
+      img.src = logoSrc;
     }
 
     const light: V3 = (() => {
@@ -122,13 +132,13 @@ export default function PixelCube3D({
     let ax = -0.42, ay = 0.7;
     let raf = 0;
     let last = performance.now();
-    let lit = 0; // 0..1 — насыщение (плавно к hover)
+    let lit = 0;
 
-    const project = (v: V3): [number, number, number] => {
-      const d = 4.2;
+    const project = (v: V3): [number, number] => {
+      const d = 4.4;
       const f = d / (d - v[2]);
-      const sc = S * 0.3;
-      return [S / 2 + v[0] * sc * f, S / 2 - v[1] * sc * f, v[2]];
+      const sc = S * 0.29;
+      return [S / 2 + v[0] * sc * f, S / 2 - v[1] * sc * f];
     };
 
     const frame = (now: number) => {
@@ -137,27 +147,24 @@ export default function PixelCube3D({
       const target = hoverRef.current ? 1 : 0;
       lit += (target - lit) * Math.min(1, dt * 6);
 
-      const baseSpin = reduce ? 0 : 0.18 + lit * 0.55;
-      ay += dt * baseSpin;
+      ay += dt * (reduce ? 0 : 0.18 + lit * 0.5);
       ax = -0.42 + Math.sin(now / 2600) * 0.12;
 
-      // вращаем вершины
       const rv = VERTS.map((v) => rotate(v, ax, ay));
       const pv = rv.map(project);
 
-      // рисуем грани back→front
       bctx.clearRect(0, 0, S, S);
-      const order = FACES.map((face, i) => {
-        const z = face.idx.reduce((a, k) => a + rv[k][2], 0) / 4;
-        return { i, z };
-      }).sort((a, b) => a.z - b.z);
+      const order = FACES.map((_, i) => ({
+        i,
+        z: FACES[i].idx.reduce((a, k) => a + rv[k][2], 0) / 4,
+      })).sort((a, b) => a.z - b.z);
 
       for (const { i } of order) {
         const face = FACES[i];
         const rn = rotate(face.n, ax, ay);
         const lam = Math.max(0, rn[0] * light[0] + rn[1] * light[1] + rn[2] * light[2]);
-        const shade = 0.22 + 0.78 * lam; // ambient + diffuse
-        const facing = rn[2]; // >0 — к зрителю
+        const shade = 0.2 + 0.8 * lam;
+        const facing = rn[2];
 
         const p = face.idx.map((k) => pv[k]);
         bctx.beginPath();
@@ -167,49 +174,44 @@ export default function PixelCube3D({
         bctx.fillStyle = `rgb(${Math.round(br * shade)},${Math.round(bg * shade)},${Math.round(bb * shade)})`;
         bctx.fill();
 
-        // лого на передней грани, пока она к зрителю
-        if (face.front && logoText && facing > 0.05) {
+        // знак на каждой грани, пока она к зрителю
+        if (logoReady && facing > 0.04) {
           bctx.save();
           bctx.clip();
-          // аффинная карта лого по трём углам грани: 7=верх-лево,6=верх-право,4=низ-лево
-          const tl = pv[7], tr = pv[6], bl = pv[4];
+          const tl = p[3], tr = p[2], bl = p[0];
           const m11 = (tr[0] - tl[0]) / LS, m12 = (tr[1] - tl[1]) / LS;
           const m21 = (bl[0] - tl[0]) / LS, m22 = (bl[1] - tl[1]) / LS;
-          bctx.globalAlpha = Math.min(1, facing * 1.6);
+          bctx.globalAlpha = Math.min(1, facing * 1.5);
           bctx.setTransform(m11, m12, m21, m22, tl[0], tl[1]);
-          bctx.drawImage(logo, 0, 0);
+          bctx.drawImage(logoTex, 0, 0);
           bctx.setTransform(1, 0, 0, 1, 0, 0);
           bctx.globalAlpha = 1;
           bctx.restore();
         }
       }
 
-      const img = bctx.getImageData(0, 0, S, S).data;
+      const data = bctx.getImageData(0, 0, S, S).data;
 
-      // вывод: дот-сетка
       ctx.clearRect(0, 0, outPx, outPx);
       const cell = outPx / grid;
-      const rDim = cell * 0.15;
+      const rDot = cell * 0.34; // единый размер всех точек
+      const bright = 0.42 + 0.58 * lit;
       for (let gy = 0; gy < grid; gy++) {
         for (let gx = 0; gx < grid; gx++) {
           const sx = Math.floor(((gx + 0.5) / grid) * S);
           const sy = Math.floor(((gy + 0.5) / grid) * S);
           const o = (sy * S + sx) * 4;
-          const rr = img[o], gg = img[o + 1], bbb = img[o + 2], aa = img[o + 3];
+          const rr = data[o], gg = data[o + 1], bbb = data[o + 2], aa = data[o + 3];
           const cx = (gx + 0.5) * cell;
           const cy = (gy + 0.5) * cell;
-          // тусклый «погашенный» диод фоном
           ctx.beginPath();
-          ctx.arc(cx, cy, rDim, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(${br},${bg},${bb},0.05)`;
-          ctx.fill();
-          if (aa < 24) continue;
-          const lum = (0.299 * rr + 0.587 * gg + 0.114 * bbb) / 255; // 0..1
-          const bright = 0.35 + 0.65 * lit; // покой тусклее
-          const r = cell * (0.2 + 0.32 * lum) * (0.7 + 0.3 * lit);
-          ctx.beginPath();
-          ctx.arc(cx, cy, r, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(${rr},${gg},${bbb},${(0.25 + 0.75 * lum) * bright})`;
+          ctx.arc(cx, cy, rDot, 0, Math.PI * 2);
+          if (aa < 24) {
+            ctx.fillStyle = `rgba(${br},${bg},${bb},0.06)`; // погашенный диод
+          } else {
+            const lum = (0.299 * rr + 0.587 * gg + 0.114 * bbb) / 255;
+            ctx.fillStyle = `rgba(${rr},${gg},${bbb},${(0.3 + 0.7 * lum) * bright})`;
+          }
           ctx.fill();
         }
       }
@@ -228,7 +230,7 @@ export default function PixelCube3D({
       wrap.removeEventListener("mouseenter", onEnter);
       wrap.removeEventListener("mouseleave", onLeave);
     };
-  }, [color, logoText, grid]);
+  }, [color, logoSrc, grid]);
 
   return (
     <div ref={wrapRef} className={`relative ${className}`} style={{ aspectRatio: "1 / 1" }}>

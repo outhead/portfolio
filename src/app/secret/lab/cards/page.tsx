@@ -91,7 +91,7 @@ function PrototypeCard3D() {
                 backgroundSize: "12px 12px",
               }}
             />
-            <PixelCube3D color={MTS_RED} logoText="МТС" className="relative h-[78%]" />
+            <PixelCube3D color={MTS_RED} logoSrc="/images/logos/mts.svg" grid={44} className="relative h-[82%]" />
             <div className="absolute top-3 right-3 md:top-4 md:right-4 w-9 h-9 md:w-10 md:h-10 rounded-full border border-white/20 flex items-center justify-center bg-black/30 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0 z-[3]">
               <ArrowUpRight className="w-4 h-4 text-white/90" strokeWidth={2} />
             </div>
@@ -129,8 +129,8 @@ export default function CardsLabPage() {
         <div className="grid md:grid-cols-2 gap-10 md:gap-12 items-start">
           <PrototypeCard3D />
           <div className="flex items-center justify-center">
-            <div className="w-[260px]">
-              <PixelCube3D color={MTS_RED} logoText="МТС" grid={34} className="w-full" />
+            <div className="w-[280px]">
+              <PixelCube3D color={MTS_RED} logoSrc="/images/logos/mts.svg" grid={52} className="w-full" />
             </div>
           </div>
         </div>
