@@ -216,27 +216,35 @@ export default function ProjectCard({
   // целиком. Компания и теги — по углам окна, как лейблы у экспериментов.
   // Кадр исходника 1800×1169, но его нижняя треть пустая — окно ниже,
   // кроп от верха (object-top), кубик остаётся в кадре целиком.
+  // «Pet Project» — служебная подпись, в окне не показываем.
+  const showCompany = !/pet\s*project/i.test(project.company);
+
   const MediaWindow = (
     <div className={`relative w-full ${wide ? "aspect-[21/9]" : "aspect-[16/9]"} rounded-xl border border-white/[0.08] overflow-hidden bg-black/40`}>
       {CoverTint}
       <CoverMedia project={project} active={coverActive} onVideoPlayingChange={setVideoPlaying} />
+      {/* Затемнения для читаемости лейблов поверх яркого видео */}
+      <div aria-hidden className="absolute inset-x-0 top-0 h-14 md:h-16 bg-gradient-to-b from-black/65 to-transparent z-[1] pointer-events-none" />
+      <div aria-hidden className="absolute inset-x-0 bottom-0 h-16 md:h-20 bg-gradient-to-t from-black/75 to-transparent z-[1] pointer-events-none" />
       {HoverArrow}
       {/* Компания — верхний левый угол окна */}
-      <div className="absolute top-4 left-4 md:top-5 md:left-5 z-[2] text-white/65 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
-        <span className="sr-only">{project.company}</span>
-        <LedText text={project.company} className="h-[9px] md:h-[10px] w-auto" />
-      </div>
-      {/* Теги — нижний левый угол; метрика — нижний правый */}
-      <div className="absolute bottom-3 left-3 md:bottom-4 md:left-4 z-[2] flex flex-wrap gap-1.5 md:gap-2 max-w-[70%]">
+      {showCompany && (
+        <div className="absolute top-4 left-4 md:top-5 md:left-5 z-[2] text-white/75 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+          <span className="sr-only">{project.company}</span>
+          <LedText text={project.company} className="h-[9px] md:h-[10px] w-auto" />
+        </div>
+      )}
+      {/* Теги и метрика — один ряд снизу, переносятся вместо пересечения */}
+      <div className="absolute bottom-3 inset-x-3 md:bottom-4 md:inset-x-4 z-[2] flex flex-wrap items-center gap-1.5 md:gap-2">
         {project.tags.slice(0, featured ? 4 : wide ? 3 : 2).map((t) => (
           <TagChip key={t}>{t}</TagChip>
         ))}
+        {project.metric && (
+          <span className="ml-auto">
+            <MetricChip value={project.metric} label={project.metricLabel} />
+          </span>
+        )}
       </div>
-      {project.metric && (
-        <div className="absolute bottom-3 right-3 md:bottom-4 md:right-4 z-[2]">
-          <MetricChip value={project.metric} label={project.metricLabel} />
-        </div>
-      )}
     </div>
   );
 

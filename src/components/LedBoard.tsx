@@ -235,11 +235,11 @@ export function LedLines({
       {lines.map((l, i) =>
         i === lines.length - 1 && accent ? (
           <span key={i} className="flex items-start gap-[6px]">
-            <LedText text={l} scale={scale} dot={dot} className={`${lineClass} w-auto`} />
-            <LedText text={accent} scale={scale} dot={dot} className={`${lineClass} w-auto`} style={{ color: accentColor }} />
+            <LedText text={l} scale={scale} dot={dot} className={`${lineClass} w-auto max-w-full min-w-0`} />
+            <LedText text={accent} scale={scale} dot={dot} className={`${lineClass} w-auto shrink-0`} style={{ color: accentColor }} />
           </span>
         ) : (
-          <LedText key={i} text={l} scale={scale} dot={dot} className={`${lineClass} w-auto`} />
+          <LedText key={i} text={l} scale={scale} dot={dot} className={`${lineClass} w-auto max-w-full`} />
         ),
       )}
     </span>

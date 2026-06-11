@@ -5,7 +5,7 @@ import ParticleSphere from "@/components/ParticleSphere";
 import PulseAnimation, { type PulseVariant } from "@/components/PulseAnimation";
 import LedText from "@/components/LedText";
 import { LedBoard, LedCounter, LedLines, type LedLine } from "@/components/LedBoard";
-import { Oled, Activity } from "@/components/OledKit";
+import { Oled, PixelGlyph, GLYPH_ORG, GLYPH_GRID, GLYPH_CODE, GLYPH_TROPHY } from "@/components/OledKit";
 import FinalCTA from "@/components/FinalCTA";
 import PillsBackdrop from "@/components/PillsBackdrop";
 import { TypographyFix } from "@/components/TypographyFix";
@@ -525,7 +525,7 @@ function CareerHoverList() {
                 aria-hidden="true"
               >
                 <div className="overflow-hidden">
-                  <div className="px-7 pb-6 pl-[calc(28px+8px+24px+110px)]">
+                  <div className="px-7 pb-6 pl-[calc(28px+8px+24px+110px+24px)]">
                     <p className="text-[16px] text-white/78 leading-relaxed mb-3">
                       {job.scope}
                     </p>
@@ -650,7 +650,7 @@ function ServiceTile({ tile }: { tile: ServiceTileData }) {
     <motion.div
       ref={tileRef}
       variants={fadeUp}
-      className="group relative w-full rounded-2xl border border-white/[0.06] bg-[#0f0f0e] hover:border-white/[0.2] transition-colors p-6 md:p-8 flex flex-col gap-5 md:gap-6 min-h-[360px] md:min-h-[420px] overflow-hidden"
+      className="group relative w-full h-full rounded-2xl border border-white/[0.06] bg-[#0f0f0e] hover:border-white/[0.2] transition-colors p-6 md:p-8 flex flex-col gap-5 md:gap-6 min-h-[360px] md:min-h-[420px] overflow-hidden"
     >
       {/* Верх: index / icon / label */}
       <div className="flex items-start justify-between gap-3">
@@ -975,7 +975,7 @@ export default function PreviewHome() {
                     b={230}
                     tapMessages={[
                       "Воу. Интерактив.",
-                      "Ладно-ладно. По сайту спрятаны пасхалки и мини-задания.",
+                      "По сайту спрятаны пасхалки и мини-задания.",
                       "Долистай до конца — там кнопка с сюрпризом.",
                     ]}
                   />
@@ -1045,6 +1045,11 @@ export default function PreviewHome() {
                     <span className="sr-only">Награда · 2024</span>
                     <LedText text="Награда · 2024" className="h-[10px] w-auto" />
                   </div>
+                  {/* Пиксельный кубок — справа, поверх золотой матрицы */}
+                  <PixelGlyph
+                    rows={GLYPH_TROPHY}
+                    className="absolute right-5 md:right-8 top-1/2 -translate-y-1/2 h-[64px] md:h-[88px] w-auto text-[#C9A66B]/85 pointer-events-none"
+                  />
                   <span className="sr-only">CX Awards 2024</span>
                   <LedText
                     text="СХ·24"
@@ -1081,9 +1086,9 @@ export default function PreviewHome() {
                   </div>
                   <ul className="flex flex-col">
                     {[
-                      { num: "01", label: "Управление", note: "дизайн-функции и команды" },
-                      { num: "02", label: "Направления", note: "B2C / B2E / EdTech / E-COM" },
-                      { num: "03", label: "Ремесло", note: "процессы и применение AI" },
+                      { num: "01", label: "Управление", note: "дизайн-функции и команды", glyph: GLYPH_ORG },
+                      { num: "02", label: "Направления", note: "B2C / B2E / EdTech / E-COM", glyph: GLYPH_GRID },
+                      { num: "03", label: "Ремесло", note: "процессы и применение AI", glyph: GLYPH_CODE },
                     ].map((item, i) => (
                       <li
                         key={item.num}
@@ -1101,7 +1106,7 @@ export default function PreviewHome() {
                             {item.note}
                           </span>
                         </span>
-                        <Activity seed={i} />
+                        <PixelGlyph rows={item.glyph} className="h-[15px] w-auto shrink-0 text-[#C9A66B]/80" />
                       </li>
                     ))}
                   </ul>
@@ -1300,7 +1305,7 @@ export default function PreviewHome() {
                 ],
               },
             ].map((tile) => (
-              <div key={tile.key} className="shrink-0 w-[85vw] sm:w-[60vw] md:w-auto snap-start md:snap-align-none">
+              <div key={tile.key} className="shrink-0 w-[85vw] sm:w-[60vw] md:w-auto snap-start md:snap-align-none h-full">
                 <ServiceTile tile={tile} />
               </div>
             ))}

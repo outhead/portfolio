@@ -29,11 +29,11 @@ function LedHeadline({ text, accent }: { text: string; accent?: string }) {
       {lines.map((l, i) =>
         i === lines.length - 1 && accent ? (
           <span key={i} className="flex items-end gap-[6px]">
-            <LedText text={l} scale={2} dot={1.45} className="h-[24px] md:h-[42px] w-auto" />
+            <LedText text={l} scale={2} dot={1.45} preserve="xMinYMid meet" className="h-[24px] md:h-[42px] w-auto max-w-full min-w-0" />
             <LedText text={accent} scale={2} dot={1.45} className="h-[24px] md:h-[42px] w-auto text-[#A6FF00]" />
           </span>
         ) : (
-          <LedText key={i} text={l} scale={2} dot={1.45} className="h-[24px] md:h-[42px] w-auto self-start" />
+          <LedText key={i} text={l} scale={2} dot={1.45} preserve="xMinYMid meet" className="h-[24px] md:h-[42px] w-auto max-w-full self-start" />
         ),
       )}
     </span>
@@ -583,7 +583,7 @@ export default function FinalCTA() {
               return (
                 <motion.div
                   variants={fadeUp}
-                  className="flex items-center justify-start md:justify-end w-full md:w-auto"
+                  className="flex items-center justify-start md:justify-end w-full md:w-auto min-w-0 md:max-w-[40%]"
                 >
                   <motion.div
                     animate={{ scale: pressing ? 1.05 : 1 }}
@@ -603,7 +603,7 @@ export default function FinalCTA() {
                     }
                   >
                     {globalCount != null ? (
-                      <LedText text={display} scale={2} dot={1.45} className="h-full w-auto" />
+                      <LedText text={display} scale={2} dot={1.45} className="h-full w-auto max-w-full" />
                     ) : (
                       <LedText text="—" scale={2} dot={1.45} className="h-full w-auto opacity-20" />
                     )}

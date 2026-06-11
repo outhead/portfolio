@@ -12,12 +12,16 @@ export default function LedText({
   text,
   className,
   style,
+  preserve,
   dot = 1.75,
   scale = 1,
 }: {
   text: string;
   className?: string;
   style?: React.CSSProperties;
+  /** preserveAspectRatio SVG — напр. "xMinYMid meet", чтобы при max-w-full
+   *  сжатый текст прижимался влево, а не центрировался. */
+  preserve?: string;
   /** Радиус диода в юнитах сетки (шаг 4). 1.5 — плотно (мелкие надписи),
    *  ~1.05–1.2 — разреженное табло (крупные). */
   dot?: number;
@@ -30,6 +34,7 @@ export default function LedText({
       viewBox={`0 0 ${cols * PITCH} ${rows * PITCH}`}
       className={className}
       style={style}
+      preserveAspectRatio={preserve}
       aria-hidden
       focusable="false"
     >

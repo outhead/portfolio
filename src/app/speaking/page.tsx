@@ -93,15 +93,16 @@ export default function SpeakingPage() {
           className="max-w-4xl"
         >
           <motion.div variants={fadeUp}>
-            <div className="inline-flex items-center gap-2 text-[12px] md:text-[13px] tracking-[0.22em] uppercase text-white/50 font-medium mb-4">
+            <div className="inline-flex items-center gap-2.5 text-white/50 mb-4">
               <span className="h-1 w-1 rounded-full bg-[#A6FF00]" />
-              Публично
+              <span className="sr-only">Публично</span>
+              <LedText text="Публично" className="h-[10px] w-auto" />
             </div>
           </motion.div>
           <motion.h1 variants={fadeUp} className="mb-6 md:mb-8 text-white flex flex-col gap-[8px] md:gap-[11px]">
             <span className="sr-only">Говорю и пишу</span>
-            <LedText text="Говорю" scale={2} dot={1.45} className="h-[28px] md:h-[48px] w-auto" />
-            <LedText text="И пишу" scale={2} dot={1.45} className="h-[28px] md:h-[48px] w-auto" />
+            <LedText text="Говорю" scale={2} dot={1.45} className="h-[28px] md:h-[48px] w-auto self-start" />
+            <LedText text="И пишу" scale={2} dot={1.45} className="h-[28px] md:h-[48px] w-auto self-start" />
           </motion.h1>
           <motion.p
             variants={fadeUp}

@@ -59,6 +59,73 @@ export function DotGraph({ className = "" }: { className?: string }) {
   );
 }
 
+/** PixelGlyph — пиктограмма из LED-точек по битмапе ("1" — горящий диод). */
+export function PixelGlyph({ rows, className }: { rows: string[]; className?: string }) {
+  const P = 4;
+  const cols = rows[0].length;
+  return (
+    <svg
+      viewBox={`0 0 ${cols * P} ${rows.length * P}`}
+      className={className}
+      aria-hidden
+      focusable="false"
+    >
+      {rows.flatMap((r, y) =>
+        [...r].map((c, x) =>
+          c === "1" ? (
+            <circle key={`${x}-${y}`} cx={x * P + P / 2} cy={y * P + P / 2} r={1.6} fill="currentColor" />
+          ) : null,
+        ),
+      )}
+    </svg>
+  );
+}
+
+/** Иконки экспертизы: орг-схема / сегменты направлений / код */
+export const GLYPH_ORG = [
+  "000111000",
+  "000111000",
+  "000010000",
+  "011111110",
+  "010000010",
+  "111000111",
+  "111000111",
+];
+export const GLYPH_GRID = [
+  "111101111",
+  "111101111",
+  "111101111",
+  "000000000",
+  "111101111",
+  "111101111",
+  "111101111",
+];
+export const GLYPH_CODE = [
+  "000000000",
+  "001001100",
+  "010001010",
+  "100010001",
+  "010100010",
+  "001100100",
+  "000000000",
+];
+
+/** Пиксельный кубок — награда CX Awards. */
+export const GLYPH_TROPHY = [
+  "1111111111111",
+  "1111111111111",
+  "0111111111110",
+  "0111111111110",
+  "0011111111100",
+  "0001111111000",
+  "0000111110000",
+  "0000011100000",
+  "0000011100000",
+  "0000111110000",
+  "0011111111100",
+  "0111111111110",
+];
+
 export function Activity({ seed = 0 }: { seed?: number }) {
   return (
     <span className="flex items-end gap-[2.5px] h-[14px] shrink-0" aria-hidden>
