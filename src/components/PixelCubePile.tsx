@@ -68,7 +68,7 @@ interface Body3 { p: V3; v: V3; q: Q; w: V3; }
 export default function PixelCubePile({
   color = "#FF2436",
   logoSrc,
-  grid = 100,
+  grid = 124,
 }: {
   color?: string;
   logoSrc?: string;
@@ -131,6 +131,8 @@ export default function PixelCubePile({
 
     let W = 0, H = 0, outW = 0, outH = 0, dpr = 1;
     let Sx = 0, Sy = 0, gridY = 0, focal = 0, cxp = 0, cyp = 0;
+    let cellSize = 0, rDot = 0;
+    const bgDots = document.createElement("canvas"); // кэш погашенных диодов
     const mobile = window.matchMedia("(max-width: 767px)").matches;
     const maxN = mobile ? 12 : 18;
 
@@ -141,13 +143,27 @@ export default function PixelCubePile({
       outW = Math.round(W * dpr); outH = Math.round(H * dpr);
       canvas.width = outW; canvas.height = outH;
       canvas.style.width = `${W}px`; canvas.style.height = `${H}px`;
-      Sx = Math.min(560, Math.max(340, Math.round(W * 0.8)));
+      Sx = Math.min(660, Math.max(380, Math.round(W * 0.9)));
       Sy = Math.round(Sx * H / W);
       buf.width = Sx; buf.height = Sy;
       gridY = Math.max(8, Math.round(grid * H / W));
       lo.width = grid; lo.height = gridY;
       focal = Sx * 0.92;
       cxp = Sx / 2; cyp = Sy * 0.42;
+      cellSize = outW / grid;
+      rDot = cellSize * 0.28;
+      // кэш фоновой сетки погашенных диодов (статична — рисуем один раз)
+      bgDots.width = outW; bgDots.height = outH;
+      const bg2 = bgDots.getContext("2d")!;
+      bg2.clearRect(0, 0, outW, outH);
+      bg2.fillStyle = `rgba(${br},${bg},${bb},0.06)`;
+      for (let gy = 0; gy < gridY; gy++) {
+        for (let gx = 0; gx < grid; gx++) {
+          bg2.beginPath();
+          bg2.arc((gx + 0.5) * cellSize, (gy + 0.5) * cellSize, rDot, 0, Math.PI * 2);
+          bg2.fill();
+        }
+      }
     };
     measure();
 
@@ -292,26 +308,22 @@ export default function PixelCubePile({
       // даунскейл → точки
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, outW, outH);
+      ctx.drawImage(bgDots, 0, 0); // статичный фон погашенных диодов — кэш
       loctx.clearRect(0, 0, grid, gridY);
       loctx.imageSmoothingEnabled = true;
       loctx.drawImage(buf, 0, 0, Sx, Sy, 0, 0, grid, gridY);
       const data = loctx.getImageData(0, 0, grid, gridY).data;
-      const cell = outW / grid;
-      const rDot = cell * 0.32;
       for (let gy = 0; gy < gridY; gy++) {
         for (let gx = 0; gx < grid; gx++) {
-          const cx = (gx + 0.5) * cell, cy = (gy + 0.5) * cell;
           const o = (gy * grid + gx) * 4;
-          const rr = data[o], gg = data[o + 1], bbb = data[o + 2], aa = data[o + 3];
+          const aa = data[o + 3];
+          if (aa < 20) continue; // погашенные — уже в фоне
+          const rr = data[o], gg = data[o + 1], bbb = data[o + 2];
+          const a = aa / 255;
+          const mx = Math.max(rr, gg, bbb) / 255;
           ctx.beginPath();
-          ctx.arc(cx, cy, rDot, 0, Math.PI * 2);
-          if (aa < 20) {
-            ctx.fillStyle = `rgba(${br},${bg},${bb},0.06)`;
-          } else {
-            const a = aa / 255;
-            const mx = Math.max(rr, gg, bbb) / 255;
-            ctx.fillStyle = `rgba(${rr},${gg},${bbb},${(0.34 + 0.66 * mx) * (0.55 + 0.45 * a)})`;
-          }
+          ctx.arc((gx + 0.5) * cellSize, (gy + 0.5) * cellSize, rDot, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${rr},${gg},${bbb},${(0.34 + 0.66 * mx) * (0.55 + 0.45 * a)})`;
           ctx.fill();
         }
       }
