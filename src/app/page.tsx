@@ -1078,7 +1078,7 @@ export default function PreviewHome() {
           initial="hidden"
           animate="show"
           variants={stagger}
-          className="relative z-[2] px-4 md:px-[5%] xl:px-[8%] 2xl:px-[max(8%,calc((100%_-_1720px)/2))] pt-2 md:pt-5 pb-8 md:pb-12"
+          className="relative z-[2] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] pt-2 md:pt-5 pb-8 md:pb-12"
         >
           <div className="grid grid-cols-12 gap-3 md:gap-5 items-stretch">
             {/* ── Хиро-дисплей: LED-табло ── */}
