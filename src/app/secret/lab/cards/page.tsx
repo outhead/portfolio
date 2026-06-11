@@ -8,6 +8,7 @@ import { LedLines } from "@/components/LedBoard";
 import PixelCube from "@/components/PixelCube";
 import PixelCube3D, { type CubeMode } from "@/components/PixelCube3D";
 import PixelCubeRain from "@/components/PixelCubeRain";
+import PixelCubePile from "@/components/PixelCubePile";
 import { ArrowUpRight } from "lucide-react";
 
 const MTS_RED = "#FF2436";
@@ -159,6 +160,39 @@ export default function CardsLabPage() {
     <main className="min-h-screen bg-black px-5 md:px-[8%] py-16 md:py-24">
       <div className="mb-12 text-white/40">
         <LedText text="Прототип · пиксельные заглушки" className="h-[11px] w-auto" />
+      </div>
+
+      {/* Гибрид — большие вращающиеся 3D-кубы + физика засыпания */}
+      <div className="mb-16">
+        <span className="block mb-4 text-[12px] tracking-[0.1em] uppercase text-white/35">
+          Гибрид · большие 3D-кубы вращаются и копятся физикой (наведи мышь)
+        </span>
+        <div className="no-underline group block w-full max-w-[520px]">
+          <article className="relative rounded-2xl overflow-hidden bg-[#0f0f0e] border border-white/[0.06] group-hover:border-white/20 transition-colors duration-300">
+            <div className="h-full flex flex-col p-3 md:p-4 pb-0 md:pb-0">
+              <div className="relative w-full aspect-[16/9] rounded-xl border border-white/[0.08] overflow-hidden bg-black/40">
+                <div
+                  aria-hidden
+                  className="absolute inset-0 opacity-[0.5] z-0"
+                  style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1.4px)", backgroundSize: "12px 12px" }}
+                />
+                <PixelCubePile color={MTS_RED} logoSrc="/images/logos/mts.svg" />
+                <div className="absolute top-4 left-4 md:top-5 md:left-5 z-[2] text-white/75 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+                  <LedText text="МТС" className="h-[9px] md:h-[10px] w-auto" />
+                </div>
+              </div>
+              <div className="flex-1 flex flex-col items-center justify-center gap-4 md:gap-5 text-center px-5 py-6 md:py-7">
+                <h3 className="text-white max-w-full">
+                  <LedLines text="Дать МТС голос и собрать Мой МТС в платформу" center maxChars={22} lineClass="h-[15px] md:h-[18px]" />
+                </h3>
+                <div className="flex flex-wrap justify-center gap-1.5 md:gap-2">
+                  <TagChip>B2C</TagChip>
+                  <TagChip>Ecosystem</TagChip>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
       </div>
 
       {/* Режимы вращения — наведи на каждый */}
