@@ -126,7 +126,7 @@ export default function PixelCubePile({
     const HX = 2.3, HZ = 1.25; // полуширина / полуглубина
     const FLOOR = 0;           // y пола (центр куба покоится на S)
     const G = 15.5;            // тяжелее — сильнее притяжение
-    const REST = 0.46, LIN_DAMP = 0.38, ANG_DAMP = 1.2, FLOOR_FRIC = 0.8; // пружинистее
+    const REST = 0.46, LIN_DAMP = 0.38, ANG_DAMP = 0.8, FLOOR_FRIC = 0.8; // пружинистее
     const RAD = S * 1.06;      // радиус сферы для коллизий кубов
 
     // ── Камера ──
@@ -239,7 +239,8 @@ export default function PixelCubePile({
         p: [(Math.random() * 2 - 1) * (HX - S), 2.35 + Math.random() * 0.5, (Math.random() * 2 - 1) * (HZ - S)],
         v: [0, 0, 0],
         q: rndQ,
-        w: [(Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4],
+        // небольшое рандомное вращение при падении
+        w: [(Math.random() - 0.5) * 1.8, (Math.random() - 0.5) * 1.8, (Math.random() - 0.5) * 1.8],
         col: palette[(Math.random() * palette.length) | 0],
       });
     };
