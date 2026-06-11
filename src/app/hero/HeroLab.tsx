@@ -629,26 +629,28 @@ function LedCounter({
   const spin = () => {
     if (busy.current) return;
     busy.current = true;
-    const len = value.length;
-    const total = 10 + len * 4;
-    let tick = 0;
+    // Отсчёт по времени, а не по тикам: фоновые вкладки троттлят
+    // setInterval до 1 Гц — спин всё равно завершится вовремя.
+    const start = performance.now();
+    const dur = 700 + value.length * 200;
     const id = setInterval(() => {
-      tick++;
+      const t = performance.now() - start;
+      if (t >= dur) {
+        clearInterval(id);
+        setDisp(value);
+        busy.current = false;
+        return;
+      }
       setDisp(
         value
           .split("")
           .map((ch, i) => {
             if (!/[0-9]/.test(ch)) return ch;
-            const settleAt = total - (len - 1 - i) * 4;
-            return tick >= settleAt ? ch : String(Math.floor(Math.random() * 10));
+            const settleAt = dur - (value.length - 1 - i) * 200;
+            return t >= settleAt - 200 ? ch : String(Math.floor(Math.random() * 10));
           })
           .join(""),
       );
-      if (tick >= total) {
-        clearInterval(id);
-        setDisp(value);
-        busy.current = false;
-      }
     }, 55);
   };
 
