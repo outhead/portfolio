@@ -91,6 +91,8 @@ function LedBoard({
   minRows = 0,
   align = "center",
   dim = LED_DIM,
+  dimR,
+  sparkle = 0,
 }: {
   lines: LedLine[];
   className?: string;
@@ -109,6 +111,10 @@ function LedBoard({
   align?: "center" | "left";
   /** Цвет незажжённых диодов поля */
   dim?: string;
+  /** Радиус незажжённых диодов (меньше — поле «реже») */
+  dimR?: number;
+  /** Сколько случайных диодов поля изредка вспыхивает лаймом */
+  sparkle?: number;
 }) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
   const [idx, setIdx] = useState(0);
@@ -163,14 +169,34 @@ function LedBoard({
       <style>{`
         @keyframes ledIn${uid} { from { opacity: 0; } to { opacity: 1; } }
         @keyframes ledOut${uid} { from { opacity: 1; } to { opacity: 0; } }
+        @keyframes ledSpark${uid} { 0%, 100% { opacity: 0; } 6% { opacity: 0.55; } 14% { opacity: 0; } }
       `}</style>
       <defs>
         <pattern id={`f${uid}`} width={PITCH} height={PITCH} patternUnits="userSpaceOnUse">
-          <circle cx={PITCH / 2} cy={PITCH / 2} r={R} fill={dim} />
+          <circle cx={PITCH / 2} cy={PITCH / 2} r={dimR ?? R} fill={dim} />
         </pattern>
       </defs>
       {/* Поле незажжённых диодов */}
       <rect width={fieldCols * PITCH} height={fieldRows * PITCH} fill={`url(#f${uid})`} />
+      {/* Редкие «живые» диоды поля — мягко вспыхивают и гаснут */}
+      {sparkle > 0 &&
+        Array.from({ length: sparkle }).map((_, i) => {
+          const c = (i * 37 + 11) % fieldCols;
+          const r2 = (i * 53 + 7) % fieldRows;
+          return (
+            <circle
+              key={`sp${i}`}
+              cx={c * PITCH + PITCH / 2}
+              cy={r2 * PITCH + PITCH / 2}
+              r={R}
+              fill="#A6FF00"
+              style={{
+                opacity: 0,
+                animation: `ledSpark${uid} ${5 + (i % 4)}s ease-in-out ${(i * 0.9) % 5}s infinite`,
+              }}
+            />
+          );
+        })}
       {/* Гаснущее предыдущее слово: волна гашения слева направо, быстро */}
       {prev.map((lay, li) =>
         lay ? (
@@ -976,6 +1002,212 @@ function V6() {
    Один LED-грид — только заголовок и ключевые цифры. Остальное — гладкие
    OLED-панели: стеклянные поверхности, тонкие светящиеся контуры, воздух. */
 
+/* NeuralWeb — генеративная структура из светящихся узлов и связей:
+   нейросеть / карта созвездий / системная архитектура. Canvas 2D,
+   медленное вращение + параллакс от курсора + бегущие сигналы. */
+function NeuralWeb({ className = "" }: { className?: string }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const DPR = Math.min(window.devicePixelRatio || 1, 2);
+    let W = 0;
+    let H = 0;
+    const resize = () => {
+      W = canvas.clientWidth;
+      H = canvas.clientHeight;
+      canvas.width = W * DPR;
+      canvas.height = H * DPR;
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    };
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(canvas);
+
+    // Узлы: фибоначчи-сфера с джиттером радиуса → «созвездие», не шар
+    const N = 78;
+    const nodes = Array.from({ length: N }).map((_, i) => {
+      const t = (i + 0.5) / N;
+      const incl = Math.acos(1 - 2 * t);
+      const az = Math.PI * (1 + Math.sqrt(5)) * i;
+      const jr = 0.74 + 0.42 * Math.pow(Math.random(), 2);
+      return {
+        x: Math.sin(incl) * Math.cos(az) * jr,
+        y: Math.cos(incl) * jr * 0.8,
+        z: Math.sin(incl) * Math.sin(az) * jr,
+        r: 1 + Math.random() * 1.3,
+        hub: false,
+        ph: Math.random() * Math.PI * 2,
+      };
+    });
+    for (let i = 0; i < 6; i++) {
+      const n = nodes[Math.floor((i + 0.37) * (N / 6))];
+      n.hub = true;
+      n.r = 2.4 + Math.random() * 0.8;
+    }
+
+    // Рёбра: 2 ближайших соседа (хабы — 5) в 3D
+    const edges: Array<[number, number]> = [];
+    const has = new Set<string>();
+    for (let i = 0; i < N; i++) {
+      const dists = nodes
+        .map((m, j) => ({
+          j,
+          d: j === i ? 1e9 : (nodes[i].x - m.x) ** 2 + (nodes[i].y - m.y) ** 2 + (nodes[i].z - m.z) ** 2,
+        }))
+        .sort((a, b) => a.d - b.d);
+      const k = nodes[i].hub ? 5 : 2;
+      for (let m = 0; m < k; m++) {
+        const j = dists[m].j;
+        const key = i < j ? `${i}-${j}` : `${j}-${i}`;
+        if (!has.has(key)) {
+          has.add(key);
+          edges.push([i, j]);
+        }
+      }
+    }
+
+    let mx = 0;
+    let my = 0;
+    const onMove = (e: MouseEvent) => {
+      const b = canvas.getBoundingClientRect();
+      mx = ((e.clientX - b.left) / Math.max(b.width, 1) - 0.5) * 2;
+      my = ((e.clientY - b.top) / Math.max(b.height, 1) - 0.5) * 2;
+    };
+    window.addEventListener("mousemove", onMove, { passive: true });
+
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const t0 = performance.now();
+    let raf = 0;
+
+    const frame = () => {
+      const t = (performance.now() - t0) / 1000;
+      ctx.clearRect(0, 0, W, H);
+      const ay = t * 0.1 + mx * 0.35;
+      const ax = Math.sin(t * 0.06) * 0.16 + my * 0.22;
+      const R = Math.min(W, H) * 0.46;
+      const cx = W / 2;
+      const cy = H / 2;
+
+      const P = nodes.map((n) => {
+        const x1 = n.x * Math.cos(ay) + n.z * Math.sin(ay);
+        const z1 = -n.x * Math.sin(ay) + n.z * Math.cos(ay);
+        const y1 = n.y * Math.cos(ax) - z1 * Math.sin(ax);
+        const z2 = n.y * Math.sin(ax) + z1 * Math.cos(ax);
+        const s = 1 / (1.95 - z2);
+        return { sx: cx + x1 * R * s, sy: cy + y1 * R * s, z: z2, s };
+      });
+
+      // Связи — тоньше и глубже по z
+      for (const [i, j] of edges) {
+        const a = P[i];
+        const b = P[j];
+        const al = 0.04 + 0.09 * ((a.z + b.z) / 2 + 1);
+        ctx.strokeStyle = `rgba(166,255,0,${al.toFixed(3)})`;
+        ctx.lineWidth = 0.6;
+        ctx.beginPath();
+        ctx.moveTo(a.sx, a.sy);
+        ctx.lineTo(b.sx, b.sy);
+        ctx.stroke();
+      }
+
+      // Бегущие сигналы по рёбрам
+      for (let s = 0; s < 4; s++) {
+        const e = edges[(s * 31 + Math.floor(t * 0.4) * 17) % edges.length];
+        const k = (t * (0.3 + s * 0.09)) % 1;
+        const a = P[e[0]];
+        const b = P[e[1]];
+        ctx.fillStyle = "rgba(200,255,120,0.9)";
+        ctx.beginPath();
+        ctx.arc(a.sx + (b.sx - a.sx) * k, a.sy + (b.sy - a.sy) * k, 1.3, 0, 7);
+        ctx.fill();
+      }
+
+      // Узлы: хабы пульсируют и светятся
+      nodes.forEach((n, i) => {
+        const p = P[i];
+        const pulse = 0.6 + 0.4 * Math.sin(t * 1.3 + n.ph);
+        const r = Math.max(n.r * p.s, 0.4);
+        if (n.hub) {
+          const g = ctx.createRadialGradient(p.sx, p.sy, 0, p.sx, p.sy, r * 7);
+          g.addColorStop(0, `rgba(166,255,0,${(0.4 * pulse).toFixed(3)})`);
+          g.addColorStop(1, "rgba(166,255,0,0)");
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(p.sx, p.sy, r * 7, 0, 7);
+          ctx.fill();
+        }
+        const al = 0.3 + 0.55 * ((p.z + 1) / 2);
+        ctx.fillStyle = n.hub
+          ? `rgba(225,255,170,${(0.7 + 0.3 * pulse).toFixed(3)})`
+          : `rgba(190,235,120,${al.toFixed(3)})`;
+        ctx.beginPath();
+        ctx.arc(p.sx, p.sy, r, 0, 7);
+        ctx.fill();
+      });
+
+      if (!reduced) raf = requestAnimationFrame(frame);
+    };
+    raf = requestAnimationFrame(frame);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+      window.removeEventListener("mousemove", onMove);
+    };
+  }, []);
+
+  return <canvas ref={ref} className={className} aria-hidden />;
+}
+
+/* DotGraph — тихий граф данных из точек, фон панели «В цифрах» */
+function DotGraph({ className = "" }: { className?: string }) {
+  const pts = Array.from({ length: 26 }).map((_, i) => {
+    const x = i / 25;
+    return {
+      x: 6 + x * 188,
+      y: 14 + (0.72 - 0.48 * x - 0.12 * Math.sin(x * 5.2)) * 60,
+    };
+  });
+  return (
+    <svg viewBox="0 0 200 70" preserveAspectRatio="none" className={className} aria-hidden>
+      <style>{`@keyframes dgw7 { 0%, 100% { opacity: 0.18; } 50% { opacity: 0.7; } }`}</style>
+      {pts.map((p, i) => (
+        <circle
+          key={i}
+          cx={p.x}
+          cy={p.y}
+          r={1.2}
+          fill="#A6FF00"
+          style={{ animation: `dgw7 3.4s ease-in-out ${(i * 0.13).toFixed(2)}s infinite` }}
+        />
+      ))}
+    </svg>
+  );
+}
+
+/* Activity — минимальные зелёные бары активности у строк экспертизы */
+function Activity({ seed = 0 }: { seed?: number }) {
+  return (
+    <span className="flex items-end gap-[2.5px] h-[14px] shrink-0" aria-hidden>
+      {Array.from({ length: 5 }).map((_, i) => (
+        <span
+          key={i}
+          className="w-[2.5px] rounded-[1px] bg-[#A6FF00]/75 origin-bottom"
+          style={{
+            height: 5 + ((i * 7 + seed * 5) % 9),
+            animation: `actb7 ${(1.6 + ((i + seed) % 5) * 0.3).toFixed(1)}s ease-in-out ${(i * 0.21 + seed * 0.37).toFixed(2)}s infinite alternate`,
+          }}
+        />
+      ))}
+    </span>
+  );
+}
+
 function Oled({
   children,
   className = "",
@@ -1043,10 +1275,11 @@ function V7() {
       />
 
       {/* Единый корпус-дисплей: стекло, без винтов */}
-      <div className="relative rounded-[30px] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(255,255,255,0.025),rgba(255,255,255,0.005))] p-3 md:p-5 shadow-[0_40px_120px_rgba(0,0,0,0.6)]">
-        <div className="grid grid-cols-12 gap-3 md:gap-5 items-stretch">
+      <div className="relative rounded-[30px] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(255,255,255,0.025),rgba(255,255,255,0.005))] p-3 md:p-6 shadow-[0_40px_120px_rgba(0,0,0,0.6)]">
+        <style>{`@keyframes actb7 { from { transform: scaleY(0.3); } to { transform: scaleY(1); } }`}</style>
+        <div className="grid grid-cols-12 gap-3 md:gap-6 items-stretch">
           {/* ── Хиро-дисплей ── */}
-          <Oled glow className="col-span-12 lg:col-span-7 lg:row-span-2 p-5 md:p-8 flex flex-col">
+          <Oled glow className="col-span-12 lg:col-span-7 lg:row-span-2 p-6 md:p-10 flex flex-col">
             <div className="relative">
               <LedBoard
                 className="hidden md:block w-full h-auto"
@@ -1056,7 +1289,9 @@ function V7() {
                 pad={2}
                 minCols={114}
                 minRows={58}
-                dim="rgba(255,255,255,0.05)"
+                dim="rgba(255,255,255,0.03)"
+                dimR={1.0}
+                sparkle={14}
                 lines={heroLines}
               />
               <LedBoard
@@ -1066,64 +1301,63 @@ function V7() {
                 pad={1}
                 minCols={51}
                 minRows={31}
-                dim="rgba(255,255,255,0.05)"
+                dim="rgba(255,255,255,0.03)"
+                dimR={1.15}
+                sparkle={8}
                 lines={heroLines}
               />
             </div>
             <h1 className="sr-only">7 лет развиваю людей, команды, визуал, сервисы</h1>
-            <p className="mt-5 md:mt-7 max-w-[460px] text-[14px] md:text-[17px] leading-relaxed text-white/60 font-light">
+            <p className="mt-7 md:mt-9 max-w-[460px] text-[14px] md:text-[17px] leading-relaxed text-white/60 font-light">
               От стратегии и культуры до AI и цифровых продуктов.
             </p>
-            <div className="mt-6 md:mt-8">
+            <div className="mt-7 md:mt-9">
               <Ctas />
             </div>
-            <div className="mt-auto pt-8 opacity-70">
+            <div className="mt-auto pt-10 opacity-60">
               <Logos />
             </div>
           </Oled>
 
-          {/* ── Сфера ── */}
-          <Oled className="col-span-12 lg:col-span-5 p-5 md:p-6 flex flex-col gap-4">
+          {/* ── Генеративная структура: нейросеть / созвездие / архитектура ── */}
+          <Oled className="col-span-12 lg:col-span-5 p-6 md:p-7 flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] md:text-[12px] tracking-[0.22em] uppercase text-white/45">
-                <span className="text-[#A6FF00]/70">[</span>
+              <span className="text-[10px] md:text-[11px] tracking-[0.26em] uppercase text-white/35">
+                <span className="text-[#A6FF00]/60">[</span>
                 <span className="mx-2">Дизайн-директор</span>
-                <span className="text-[#A6FF00]/70">]</span>
+                <span className="text-[#A6FF00]/60">]</span>
               </span>
             </div>
-            <div ref={sphereRef} className="relative flex-1 min-h-[280px] md:min-h-[330px]">
-              <ParticleSphere
-                className="absolute inset-0 w-full h-full"
-                trackingRef={sphereRef}
-                sphereRadFactor={0.46}
-              />
+            <div ref={sphereRef} className="relative flex-1 min-h-[380px] md:min-h-[480px]">
+              <NeuralWeb className="absolute inset-0 w-full h-full" />
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-[11px] md:text-[12px] tracking-[0.22em] uppercase text-white/40">
+              <span className="text-[10px] md:text-[11px] tracking-[0.26em] uppercase text-white/35">
                 Москва
               </span>
               <span
                 aria-hidden
-                className="w-[6px] h-[6px] rounded-full"
+                className="w-[5px] h-[5px] rounded-full"
                 style={{ background: "#A6FF00", boxShadow: "0 0 10px rgba(166,255,0,0.8)" }}
               />
             </div>
           </Oled>
 
-          {/* ── В цифрах ── */}
-          <Oled className="col-span-12 lg:col-span-5 p-5 md:p-6">
-            <div className="text-[11px] md:text-[12px] tracking-[0.22em] uppercase text-white/45 mb-5">
+          {/* ── В цифрах: тихий граф данных из точек на фоне ── */}
+          <Oled className="col-span-12 lg:col-span-5 p-6 md:p-7">
+            <DotGraph className="absolute inset-x-4 bottom-2 h-[70px] opacity-50 pointer-events-none" />
+            <div className="relative text-[10px] md:text-[11px] tracking-[0.26em] uppercase text-white/35 mb-6">
               В цифрах
             </div>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="relative grid grid-cols-3 gap-5">
               {[
                 { v: "30", l: "запусков" },
                 { v: "7", l: "лет опыта" },
                 { v: "27", l: "команд" },
               ].map((m) => (
-                <div key={m.l} className="flex flex-col gap-2.5">
+                <div key={m.l} className="flex flex-col gap-3">
                   <LedCounter value={m.v} tone="#A6FF00" />
-                  <span className="text-[11px] md:text-[12px] tracking-[0.14em] uppercase text-white/40">
+                  <span className="text-[10px] md:text-[11px] tracking-[0.16em] uppercase text-white/40">
                     {m.l}
                   </span>
                 </div>
@@ -1131,34 +1365,50 @@ function V7() {
             </div>
           </Oled>
 
-          {/* ── Награда ── */}
-          <Oled className="col-span-12 md:col-span-5 p-5 md:p-6 flex flex-col gap-5">
-            <div className="text-[11px] md:text-[12px] tracking-[0.22em] uppercase text-white/45">
+          {/* ── Награда: тёплая золотая LED-матрица ── */}
+          <Oled className="col-span-12 md:col-span-5 p-6 md:p-7 flex flex-col gap-6">
+            <div
+              aria-hidden
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                backgroundImage:
+                  "radial-gradient(rgba(201,166,107,0.13) 1.1px, transparent 1.2px)",
+                backgroundSize: "13px 13px",
+                maskImage:
+                  "radial-gradient(ellipse 90% 80% at 70% 30%, black, transparent 75%)",
+                WebkitMaskImage:
+                  "radial-gradient(ellipse 90% 80% at 70% 30%, black, transparent 75%)",
+              }}
+            />
+            <div className="relative text-[10px] md:text-[11px] tracking-[0.26em] uppercase text-white/35">
               Награда · 2024
             </div>
-            <LedText text="СХ·24" scale={2} dot={1.45} className="h-[36px] md:h-[44px] w-auto self-start text-[#C9A66B]" />
-            <div className="mt-auto">
+            <LedText text="СХ·24" scale={2} dot={1.45} className="relative h-[36px] md:h-[46px] w-auto self-start text-[#C9A66B]" />
+            <div className="relative mt-auto">
               <div className="text-[12px] md:text-[13px] tracking-[0.16em] uppercase text-white/50">
                 Customer Experience Awards
               </div>
-              <div className="mt-2.5 pt-2.5 border-t border-white/[0.06] text-[11px] md:text-[12px] tracking-[0.16em] uppercase text-[#C9A66B]/75">
+              <div className="mt-3 pt-3 border-t border-[#C9A66B]/15 text-[11px] md:text-[12px] tracking-[0.16em] uppercase text-[#C9A66B]/75">
                 Победитель в сегменте B2E
               </div>
             </div>
           </Oled>
 
-          {/* ── Экспертиза ── */}
-          <Oled className="col-span-12 md:col-span-7 p-5 md:p-6">
-            <div className="text-[11px] md:text-[12px] tracking-[0.22em] uppercase text-white/45 mb-5">
+          {/* ── Экспертиза: сигнальные линии и бары активности ── */}
+          <Oled className="col-span-12 md:col-span-7 p-6 md:p-7">
+            <div className="text-[10px] md:text-[11px] tracking-[0.26em] uppercase text-white/35 mb-5">
               Экспертиза
             </div>
-            <ul className="flex flex-col gap-4">
+            <ul className="flex flex-col">
               {[
                 { num: "01", label: "Управление", note: "дизайн-функции и команды" },
                 { num: "02", label: "Направления", note: "B2C / B2E / EdTech / E-COM" },
                 { num: "03", label: "Ремесло", note: "процессы и применение AI" },
-              ].map((item) => (
-                <li key={item.num} className="flex items-baseline gap-4">
+              ].map((item, i) => (
+                <li
+                  key={item.num}
+                  className={`flex items-center gap-4 py-3.5 ${i > 0 ? "border-t border-white/[0.05]" : ""}`}
+                >
                   <span className="font-p95 text-[12px] tabular-nums text-[#A6FF00]/70 w-5 shrink-0">
                     {item.num}
                   </span>
@@ -1170,6 +1420,7 @@ function V7() {
                       {item.note}
                     </span>
                   </span>
+                  <Activity seed={i} />
                 </li>
               ))}
             </ul>
