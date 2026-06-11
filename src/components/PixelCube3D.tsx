@@ -25,12 +25,14 @@ const VERTS: V3[] = [
   [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1],     // z=1  (4..7)
 ];
 
-// Грани в порядке [bl, br, tr, tl] (для одинаковой ориентации лого) + нормаль.
+// Грани: вершины в UV-порядке [ (0,0), (1,0), (1,1), (0,1) ], подобраны так,
+// что U×V совпадает с outward-нормалью (одинаковая «рукость» → знак не
+// зеркалится и одинаково ориентирован на всех гранях).
 const FACES: { idx: [number, number, number, number]; n: V3 }[] = [
   { idx: [4, 5, 6, 7], n: [0, 0, 1] },   // front +z
   { idx: [1, 0, 3, 2], n: [0, 0, -1] },  // back  -z
-  { idx: [1, 5, 6, 2], n: [1, 0, 0] },   // right +x
-  { idx: [4, 0, 3, 7], n: [-1, 0, 0] },  // left  -x
+  { idx: [5, 1, 2, 6], n: [1, 0, 0] },   // right +x
+  { idx: [0, 4, 7, 3], n: [-1, 0, 0] },  // left  -x
   { idx: [7, 6, 2, 3], n: [0, 1, 0] },   // top   +y
   { idx: [0, 1, 5, 4], n: [0, -1, 0] },  // bottom -y
 ];
@@ -134,6 +136,37 @@ export default function PixelCube3D({
     let last = performance.now();
     let lit = 0;
 
+    // Текстурируем треугольник: texture(t0,t1,t2) → screen(s0,s1,s2).
+    // Аффин на треугольник = кусочно-перспективная аппроксимация (без зеркала).
+    type P = [number, number];
+    const texTri = (
+      s0: P, s1: P, s2: P, t0: P, t1: P, t2: P
+    ) => {
+      const e1x = t1[0] - t0[0], e1y = t1[1] - t0[1];
+      const e2x = t2[0] - t0[0], e2y = t2[1] - t0[1];
+      const det = e1x * e2y - e2x * e1y;
+      if (Math.abs(det) < 1e-6) return;
+      const f1x = s1[0] - s0[0], f1y = s1[1] - s0[1];
+      const f2x = s2[0] - s0[0], f2y = s2[1] - s0[1];
+      const a = (f1x * e2y - f2x * e1y) / det;
+      const c = (-f1x * e2x + f2x * e1x) / det;
+      const b = (f1y * e2y - f2y * e1y) / det;
+      const d = (-f1y * e2x + f2y * e1x) / det;
+      const e = s0[0] - (a * t0[0] + c * t0[1]);
+      const f = s0[1] - (b * t0[0] + d * t0[1]);
+      bctx.save();
+      bctx.beginPath();
+      bctx.moveTo(s0[0], s0[1]);
+      bctx.lineTo(s1[0], s1[1]);
+      bctx.lineTo(s2[0], s2[1]);
+      bctx.closePath();
+      bctx.clip();
+      bctx.setTransform(a, b, c, d, e, f);
+      bctx.drawImage(logoTex, 0, 0);
+      bctx.setTransform(1, 0, 0, 1, 0, 0);
+      bctx.restore();
+    };
+
     const project = (v: V3): [number, number] => {
       const d = 4.4;
       const f = d / (d - v[2]);
@@ -174,19 +207,15 @@ export default function PixelCube3D({
         bctx.fillStyle = `rgb(${Math.round(br * shade)},${Math.round(bg * shade)},${Math.round(bb * shade)})`;
         bctx.fill();
 
-        // знак на каждой грани, пока она к зрителю
+        // знак на каждой грани, пока она к зрителю — два текстурных треугольника
         if (logoReady && facing > 0.04) {
-          bctx.save();
-          bctx.clip();
-          const tl = p[3], tr = p[2], bl = p[0];
-          const m11 = (tr[0] - tl[0]) / LS, m12 = (tr[1] - tl[1]) / LS;
-          const m21 = (bl[0] - tl[0]) / LS, m22 = (bl[1] - tl[1]) / LS;
+          // p в UV-порядке: [ (0,0), (1,0), (1,1), (0,1) ]
+          const s0 = p[0] as P, s1 = p[1] as P, s2 = p[2] as P, s3 = p[3] as P;
+          const t0: P = [0, 0], t1: P = [LS, 0], t2: P = [LS, LS], t3: P = [0, LS];
           bctx.globalAlpha = Math.min(1, facing * 1.5);
-          bctx.setTransform(m11, m12, m21, m22, tl[0], tl[1]);
-          bctx.drawImage(logoTex, 0, 0);
-          bctx.setTransform(1, 0, 0, 1, 0, 0);
+          texTri(s0, s1, s2, t0, t1, t2);
+          texTri(s0, s2, s3, t0, t2, t3);
           bctx.globalAlpha = 1;
-          bctx.restore();
         }
       }
 
