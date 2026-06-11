@@ -151,6 +151,7 @@ export default function PixelCubePile({
     let W = 0, H = 0, outW = 0, outH = 0, dpr = 1;
     let Sx = 0, Sy = 0, gridY = 0, focal = 0, cxp = 0, cyp = 0;
     let cellSize = 0, rDot = 0;
+    let CENTER_Y = 0.6; // мировая высота подвеса — вычисляется под центр кадра
     const bgDots = document.createElement("canvas"); // кэш погашенных диодов
     const mobile = window.matchMedia("(max-width: 767px)").matches;
     const maxN = maxCubes ?? (mobile ? 30 : 45);
@@ -169,6 +170,19 @@ export default function PixelCubePile({
       lo.width = grid; lo.height = gridY;
       focal = Sx * 0.92;
       cxp = Sx / 2; cyp = Sy * 0.42;
+      // высота подвеса, проецирующаяся ровно в центр кадра (бинпоиск по проекции)
+      {
+        let loY = -1, hiY = 3;
+        for (let it = 0; it < 32; it++) {
+          const mid = (loY + hiY) / 2;
+          const d: V3 = [-camC[0], mid - camC[1], -camC[2]];
+          const vy = dot(d, camU);
+          const front = Math.max(0.05, -dot(d, camZ));
+          const sy = cyp - vy * focal / front;
+          if (sy > Sy / 2) loY = mid; else hiY = mid; // ниже центра → поднять
+        }
+        CENTER_Y = (loY + hiY) / 2;
+      }
       cellSize = outW / grid;
       rDot = cellSize * 0.28;
       // кэш фоновой сетки погашенных диодов (статична — рисуем один раз)
@@ -243,7 +257,6 @@ export default function PixelCubePile({
     const bodies: Body3[] = [];
     let grounded = false;
     let simT = 0;
-    const CENTER_Y = 0.5;
     const rndQ = (): Q => qNorm([Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5]);
     const rndW = (k: number): V3 => [(Math.random() - 0.5) * k, (Math.random() - 0.5) * k, (Math.random() - 0.5) * k];
 
@@ -271,11 +284,11 @@ export default function PixelCubePile({
 
     const step = (dt: number) => {
       for (const b of bodies) {
-        // подвешенный центральный куб: только лёгкий бобинг, ориентация
-        // фиксированная и симметричная — строго по центру, без дрейфа вбок
+        // подвешенный центральный куб: бобинг + плавное вращение «как обычно».
+        // Центроид на x=0 → горизонтально по центру; высота — ровно центр кадра.
         if (b.frozen) {
           b.p = [0, CENTER_Y + Math.sin(simT * 1.2) * 0.05, 0];
-          b.q = Q_IDLE;
+          b.q = qIntegrate(b.q, [0.22, 0.55, 0], dt);
           continue;
         }
         b.v[1] -= G * dt;
