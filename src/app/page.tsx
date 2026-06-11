@@ -1124,7 +1124,7 @@ export default function PreviewHome() {
                     className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-[#A6FF00] text-black font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:bg-white transition-colors no-underline"
                   >
                     <span className="leading-none translate-y-[1px]">Обсудить проект</span>
-                    <ArrowRight className="w-4 h-4" strokeWidth={2.2} />
+                    <LedText text="→" className="h-[13px] w-auto" />
                   </Link>
                   <Link
                     href="#portfolio"
@@ -1132,7 +1132,7 @@ export default function PreviewHome() {
                     className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:border-[#A6FF00]/60 hover:text-[#A6FF00] transition-colors no-underline"
                   >
                     <span className="leading-none translate-y-[1px]">Смотреть кейсы</span>
-                    <ArrowRight className="w-4 h-4" strokeWidth={2} />
+                    <LedText text="→" className="h-[13px] w-auto" />
                   </Link>
                 </div>
                 <div className="mt-auto pt-7 md:pt-8 flex items-center gap-6 md:gap-10 flex-wrap opacity-60 hover:opacity-90 transition-opacity">
