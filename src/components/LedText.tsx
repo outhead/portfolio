@@ -1,4 +1,4 @@
-import { layoutLedText, LED_ROWS } from "@/components/ledFont";
+import { layoutLedText } from "@/components/ledFont";
 
 /**
  * LedText — статичный текст точечным LED-шрифтом 5×7.
@@ -12,17 +12,20 @@ export default function LedText({
   text,
   className,
   dot = 1.5,
+  scale = 1,
 }: {
   text: string;
   className?: string;
   /** Радиус диода в юнитах сетки (шаг 4). 1.5 — плотно (мелкие надписи),
-   *  ~1.05 — разреженное табло (крупные). */
+   *  ~1.05–1.2 — разреженное табло (крупные). */
   dot?: number;
+  /** Апскейл битмапы: 2–3 → штрих в 2–3 точки, точки мельче и их больше. */
+  scale?: number;
 }) {
-  const { dots, cols } = layoutLedText(text);
+  const { dots, cols, rows } = layoutLedText(text, scale);
   return (
     <svg
-      viewBox={`0 0 ${cols * PITCH} ${LED_ROWS * PITCH}`}
+      viewBox={`0 0 ${cols * PITCH} ${rows * PITCH}`}
       className={className}
       aria-hidden
       focusable="false"

@@ -64,27 +64,41 @@ export type LedDot = {
   lit: boolean;
 };
 
-/** Раскладывает текст в сетку диодов. Возвращает все ячейки (с промежутками). */
-export function layoutLedText(text: string): { dots: LedDot[]; cols: number } {
+/**
+ * Раскладывает текст в сетку диодов. Возвращает все ячейки (с промежутками).
+ * `scale` — целочисленный апскейл битмапы: при 2–3 штрих буквы становится
+ * толщиной в 2–3 точки (точек больше, сами мельче), силуэт тот же.
+ */
+export function layoutLedText(
+  text: string,
+  scale = 1,
+): { dots: LedDot[]; cols: number; rows: number } {
   const dots: LedDot[] = [];
   let col = 0;
+  const rows = LED_ROWS * scale;
   const chars = [...text.toUpperCase()].map((c) => (c === "Ё" ? "Е" : c));
   for (let ci = 0; ci < chars.length; ci++) {
     const g = LED_GLYPHS[chars[ci]];
     if (!g) continue;
     const w = g[0].length;
-    for (let c = 0; c < w; c++) {
-      for (let r = 0; r < LED_ROWS; r++) {
-        dots.push({ col: col + c, row: r, lit: g[r][c] === "1" });
+    for (let c = 0; c < w * scale; c++) {
+      for (let r = 0; r < rows; r++) {
+        dots.push({
+          col: col + c,
+          row: r,
+          lit: g[Math.floor(r / scale)][Math.floor(c / scale)] === "1",
+        });
       }
     }
-    col += w;
+    col += w * scale;
     if (ci < chars.length - 1) {
-      for (let r = 0; r < LED_ROWS; r++) {
-        dots.push({ col, row: r, lit: false });
+      for (let c = 0; c < scale; c++) {
+        for (let r = 0; r < rows; r++) {
+          dots.push({ col: col + c, row: r, lit: false });
+        }
       }
-      col += 1;
+      col += scale;
     }
   }
-  return { dots, cols: col };
+  return { dots, cols: col, rows };
 }

@@ -1151,15 +1151,16 @@ export default function PreviewHome() {
                     <h1 className="font-p95 text-[clamp(44px,calc(20vw_-_21px),128px)] md:text-[clamp(64px,9vw,128px)] leading-[0.92] uppercase tracking-tight text-white">
                       <span className="sr-only">7 лет развиваю людей</span>
                       <span className="block max-md:flex max-md:justify-center">
-                        <LedText text="7 лет" dot={1.05} className="h-[0.72em] w-auto" />
+                        <LedText text="7 лет" scale={3} dot={1.2} className="h-[0.72em] w-auto" />
                       </span>
                       <span className="block mt-[0.14em] max-md:flex max-md:justify-center">
-                        <LedText text="Развиваю" dot={1.05} className="h-[0.72em] w-auto" />
+                        <LedText text="Развиваю" scale={3} dot={1.2} className="h-[0.72em] w-auto" />
                       </span>
                       <span className="block mt-[0.14em] max-md:flex max-md:justify-center">
                         <LedFlipWord
                           words={["ЛЮДЕЙ", "КОМАНДЫ", "ВИЗУАЛ", "СЕРВИСЫ", "ИНТЕРЕС"]}
-                          dot={1.05}
+                          scale={3}
+                          dot={1.2}
                           className="text-white"
                         />
                       </span>

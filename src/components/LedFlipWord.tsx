@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { layoutLedText, LED_ROWS } from "@/components/ledFont";
+import { layoutLedText } from "@/components/ledFont";
 
 /**
  * LedFlipWord — крупное слово точечным LED-шрифтом, циклически
@@ -19,24 +19,28 @@ export default function LedFlipWord({
   className,
   style,
   dot = 1.5,
+  scale = 1,
 }: {
   words: readonly string[];
   className?: string;
   style?: React.CSSProperties;
   /** Радиус диода в юнитах сетки (шаг 4), как у LedText. */
   dot?: number;
+  /** Апскейл битмапы, как у LedText. */
+  scale?: number;
 }) {
   const els = useRef<(SVGCircleElement | null)[]>([]);
 
   // Сетка: общая ширина по самому широкому слову, битмапа на каждое слово
-  const layouts = words.map((w) => layoutLedText(w));
+  const layouts = words.map((w) => layoutLedText(w, scale));
+  const ROWS = layouts[0].rows;
   const maxCols = Math.max(...layouts.map((l) => l.cols));
   const grids = layouts.map((l) => {
-    const g = new Uint8Array(maxCols * LED_ROWS);
-    for (const d of l.dots) if (d.lit) g[d.col * LED_ROWS + d.row] = 1;
+    const g = new Uint8Array(maxCols * ROWS);
+    for (const d of l.dots) if (d.lit) g[d.col * ROWS + d.row] = 1;
     return g;
   });
-  const N = maxCols * LED_ROWS;
+  const N = maxCols * ROWS;
 
   useEffect(() => {
     if (words.length < 2) return;
@@ -106,18 +110,18 @@ export default function LedFlipWord({
 
   const dots: { cx: number; cy: number; lit: boolean }[] = [];
   for (let c = 0; c < maxCols; c++)
-    for (let r = 0; r < LED_ROWS; r++)
+    for (let r = 0; r < ROWS; r++)
       dots.push({
         cx: c * PITCH + PITCH / 2,
         cy: r * PITCH + PITCH / 2,
-        lit: grids[0][c * LED_ROWS + r] === 1,
+        lit: grids[0][c * ROWS + r] === 1,
       });
 
   return (
     <span className={className}>
       <span className="sr-only">{words[0]}</span>
       <svg
-        viewBox={`0 0 ${maxCols * PITCH} ${LED_ROWS * PITCH}`}
+        viewBox={`0 0 ${maxCols * PITCH} ${ROWS * PITCH}`}
         aria-hidden
         focusable="false"
         style={{ display: "block", height: "0.72em", width: "auto", ...style }}
