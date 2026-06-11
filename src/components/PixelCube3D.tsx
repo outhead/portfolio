@@ -211,7 +211,8 @@ export default function PixelCube3D({
         if (logoReady && facing > 0.04) {
           // p в UV-порядке: [ (0,0), (1,0), (1,1), (0,1) ]
           const s0 = p[0] as P, s1 = p[1] as P, s2 = p[2] as P, s3 = p[3] as P;
-          const t0: P = [0, 0], t1: P = [LS, 0], t2: P = [LS, LS], t3: P = [0, LS];
+          // V инвертирован: экран флипает Y, иначе знак вверх ногами
+          const t0: P = [0, LS], t1: P = [LS, LS], t2: P = [LS, 0], t3: P = [0, 0];
           bctx.globalAlpha = Math.min(1, facing * 1.5);
           texTri(s0, s1, s2, t0, t1, t2);
           texTri(s0, s2, s3, t0, t2, t3);
