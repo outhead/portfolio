@@ -516,7 +516,8 @@ export default function FinalCTA() {
                     data-ym-goal="secret_open"
                     className="inline-flex items-center gap-1.5 px-4 py-2 md:px-5 md:py-2.5 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[15px] tracking-[0.2em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
                   >
-                    <span className="leading-none translate-y-[1px]">{stage.bonus.label}</span>
+                    <span className="sr-only">{stage.bonus.label}</span>
+                    <LedText text={stage.bonus.label} className="h-[11px] w-auto" />
                   </Link>
                 </motion.div>
               ) : null}
@@ -544,7 +545,8 @@ export default function FinalCTA() {
                       className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:border-white/50 hover:text-white transition-colors no-underline"
                     >
                       <Send className="w-4 h-4" strokeWidth={2.2} />
-                      <span className="leading-none translate-y-[1px]">Подписаться на канал</span>
+                      <span className="sr-only">Подписаться на канал</span>
+                      <LedText text="Подписаться на канал" className="h-[11px] w-auto" />
                     </Link>
                   </motion.div>
                 )}
