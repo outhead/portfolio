@@ -10,7 +10,6 @@ import { layoutLedText, LED_ROWS } from "@/components/ledFont";
  */
 
 const PITCH = 4;
-const R = 1.5;
 const HOLD = 2.4; // сек на слово
 const OUT = 0.4; // рассыпание
 const IN = 0.5; // сборка
@@ -19,10 +18,13 @@ export default function LedFlipWord({
   words,
   className,
   style,
+  dot = 1.5,
 }: {
   words: readonly string[];
   className?: string;
   style?: React.CSSProperties;
+  /** Радиус диода в юнитах сетки (шаг 4), как у LedText. */
+  dot?: number;
 }) {
   const els = useRef<(SVGCircleElement | null)[]>([]);
 
@@ -128,7 +130,7 @@ export default function LedFlipWord({
             }}
             cx={d.cx}
             cy={d.cy}
-            r={R}
+            r={dot}
             fill="currentColor"
             style={{ opacity: d.lit ? 1 : 0 }}
           />

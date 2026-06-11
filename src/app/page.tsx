@@ -1149,12 +1149,17 @@ export default function PreviewHome() {
                 <div className="relative z-[1] flex flex-col justify-start md:justify-center p-7 md:p-10 lg:p-12 pt-[216px] md:pt-24 pb-12 md:pb-32 md:min-h-[600px] lg:min-h-[720px]">
                   <div className="flex flex-col gap-6 md:gap-8 md:max-w-[58%] max-md:items-center max-md:text-center">
                     <h1 className="font-p95 text-[clamp(44px,calc(20vw_-_21px),128px)] md:text-[clamp(64px,9vw,128px)] leading-[0.92] uppercase tracking-tight text-white">
-                      {/* Мобайл: «7 лет развиваю» одной строкой (inline), md+ — двумя (block) */}
-                      <span className="inline md:block text-white">7 лет </span>
-                      <span className="inline md:block text-white">РАЗВИВАЮ</span>
-                      <span className="block mt-[0.08em] max-md:flex max-md:justify-center">
+                      <span className="sr-only">7 лет развиваю людей</span>
+                      <span className="block max-md:flex max-md:justify-center">
+                        <LedText text="7 лет" dot={1.05} className="h-[0.72em] w-auto" />
+                      </span>
+                      <span className="block mt-[0.14em] max-md:flex max-md:justify-center">
+                        <LedText text="Развиваю" dot={1.05} className="h-[0.72em] w-auto" />
+                      </span>
+                      <span className="block mt-[0.14em] max-md:flex max-md:justify-center">
                         <LedFlipWord
                           words={["ЛЮДЕЙ", "КОМАНДЫ", "ВИЗУАЛ", "СЕРВИСЫ", "ИНТЕРЕС"]}
+                          dot={1.05}
                           className="text-white"
                         />
                       </span>

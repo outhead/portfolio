@@ -7,14 +7,17 @@ import { layoutLedText, LED_ROWS } from "@/components/ledFont";
  */
 
 const PITCH = 4;
-const R = 1.5;
 
 export default function LedText({
   text,
   className,
+  dot = 1.5,
 }: {
   text: string;
   className?: string;
+  /** Радиус диода в юнитах сетки (шаг 4). 1.5 — плотно (мелкие надписи),
+   *  ~1.05 — разреженное табло (крупные). */
+  dot?: number;
 }) {
   const { dots, cols } = layoutLedText(text);
   return (
@@ -31,7 +34,7 @@ export default function LedText({
             key={i}
             cx={d.col * PITCH + PITCH / 2}
             cy={d.row * PITCH + PITCH / 2}
-            r={R}
+            r={dot}
             fill="currentColor"
           />
         ))}
