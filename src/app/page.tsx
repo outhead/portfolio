@@ -682,7 +682,7 @@ function ServiceTile({ tile }: { tile: ServiceTileData }) {
             variant={animation}
             reverse={animationReverse}
             active={mobileActive}
-            className="absolute inset-0"
+            className="absolute inset-0 w-full h-full"
           />
         </div>
       </div>
