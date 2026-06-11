@@ -356,7 +356,7 @@ export default function SecretLoviPage() {
 
       {/* HUD сверху (фикс) */}
       <div className="absolute top-0 left-0 right-0 z-[2] pt-[88px] px-5 text-center pointer-events-none">
-        <p className="text-white/40 mb-3">
+        <p className="text-white/40 mb-3 flex justify-center">
           <span className="sr-only">Загадка №3</span>
           <LedText text="Загадка №3" className="h-[9px] w-auto" />
         </p>
@@ -365,7 +365,7 @@ export default function SecretLoviPage() {
             <h1 className="mb-3">
               <LedLines text="Найди выход" center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
             </h1>
-            {startRef.current != null && <div className="text-[#A6FF00] tabular-nums text-sm md:text-[15px]">{fmtTime(elapsed)}</div>}
+            {startRef.current != null && <div className="text-[#A6FF00] flex justify-center"><LedText text={fmtTime(elapsed)} className="h-[11px] md:h-[12px] w-auto" /></div>}
             <p className="mt-4 text-[13px] text-[#C9A66B]/85 transition-opacity duration-700" style={{ opacity: hintMove ? 1 : 0 }}>
               Тут тесно. Потяни экран — мир больше, чем кажется.
             </p>

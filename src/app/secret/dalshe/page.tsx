@@ -458,9 +458,8 @@ export default function SecretDalshePage() {
                   onClick={reset}
                   className="mt-5 inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white/70 hover:border-white/40 hover:text-white transition-colors"
                 >
-                  <span className="leading-none translate-y-[1px]">
-                    {over ? "Повторить" : "Начать заново"}
-                  </span>
+                  <span className="sr-only">{over ? "Повторить" : "Начать заново"}</span>
+                  <LedText text={over ? "Повторить" : "Начать заново"} className="h-[10px] w-auto" />
                 </button>
               </>
             )}

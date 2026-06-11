@@ -210,7 +210,7 @@ export default function Dalshe3() {
               <span className="sr-only">Крестики-нолики · Загадка №4</span>
               <LedText text="Крестики-нолики · Загадка №4" className="h-[9px] w-auto" />
             </p>
-            <h1 ref={headRef} className="transition-colors flex items-center justify-center gap-[0.45em]">
+            <h1 ref={headRef} className="transition-colors flex items-center justify-center gap-[10px] md:gap-[16px]">
               <span className="sr-only">Это не решение</span>
               <LedText text="Это" scale={2} dot={1.45} className="h-[17px] md:h-[24px] w-auto" />
               <span
