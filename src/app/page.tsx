@@ -676,7 +676,7 @@ function ServiceTile({ tile }: { tile: ServiceTileData }) {
       {/* Pulse-анимация. Фиксированная высота (не flex-1!), чтобы круг
           стоял на одной y-координате во всех плитках. Default — статичный
           серый кадр; hover (десктоп) или scroll-into-view (мобила) — зелёная анимация. */}
-      <div className="h-[150px] md:h-[165px] flex items-center justify-center">
+      <div className="h-[150px] md:h-[165px] my-4 md:my-7 flex items-center justify-center">
         <div className="relative w-[140px] h-[140px]">
           <PulseAnimation
             variant={animation}

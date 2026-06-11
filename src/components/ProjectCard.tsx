@@ -214,8 +214,10 @@ export default function ProjectCard({
 
   // Медиа-окно с аспектом исходника (1800×1169) — кадр видео помещается
   // целиком. Компания и теги — по углам окна, как лейблы у экспериментов.
+  // Кадр исходника 1800×1169, но его нижняя треть пустая — окно ниже,
+  // кроп от верха (object-top), кубик остаётся в кадре целиком.
   const MediaWindow = (
-    <div className="relative w-full aspect-[1800/1169] rounded-xl border border-white/[0.08] overflow-hidden bg-black/40">
+    <div className={`relative w-full ${wide ? "aspect-[21/9]" : "aspect-[16/9]"} rounded-xl border border-white/[0.08] overflow-hidden bg-black/40`}>
       {CoverTint}
       <CoverMedia project={project} active={coverActive} onVideoPlayingChange={setVideoPlaying} />
       {HoverArrow}
@@ -241,7 +243,7 @@ export default function ProjectCard({
   // Заголовок — по центру карточки, как у плитки экспериментов.
   const Title = (
     <div className={`flex-1 flex items-center justify-center text-center ${
-      featured ? "px-6 py-6 md:py-7" : "px-5 py-5 md:py-6"
+      featured ? "px-6 py-7 md:py-8" : "px-5 py-6 md:py-7"
     }`}>
       <h3 className="text-white">
         <LedLines
