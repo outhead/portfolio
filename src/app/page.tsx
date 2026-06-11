@@ -5,7 +5,7 @@ import ParticleSphere from "@/components/ParticleSphere";
 import PulseAnimation, { type PulseVariant } from "@/components/PulseAnimation";
 import LedText from "@/components/LedText";
 import { LedBoard, LedCounter, LedLines, type LedLine } from "@/components/LedBoard";
-import { Oled, PixelGlyph, GLYPH_ORG, GLYPH_GRID, GLYPH_CODE, GLYPH_TROPHY } from "@/components/OledKit";
+import { Oled, PixelGlyph, GLYPH_ORG, GLYPH_GRID, GLYPH_CODE } from "@/components/OledKit";
 import FinalCTA from "@/components/FinalCTA";
 import PillsBackdrop from "@/components/PillsBackdrop";
 import { TypographyFix } from "@/components/TypographyFix";
@@ -1045,10 +1045,13 @@ export default function PreviewHome() {
                     <span className="sr-only">Награда · 2024</span>
                     <LedText text="Награда · 2024" className="h-[10px] w-auto" />
                   </div>
-                  {/* Пиксельный кубок — справа, поверх золотой матрицы */}
-                  <PixelGlyph
-                    rows={GLYPH_TROPHY}
-                    className="absolute right-5 md:right-8 top-1/2 -translate-y-1/2 h-[64px] md:h-[88px] w-auto text-[#C9A66B]/85 pointer-events-none"
+                  {/* Пиксельная статуэтка CX Awards — справа, во всю высоту панели */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/images/gpn/prize.png"
+                    alt=""
+                    aria-hidden
+                    className="absolute right-5 md:right-9 top-1/2 -translate-y-1/2 h-[82%] w-auto pointer-events-none select-none"
                   />
                   <span className="sr-only">CX Awards 2024</span>
                   <LedText
