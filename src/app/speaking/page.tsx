@@ -192,8 +192,8 @@ export default function SpeakingPage() {
             <div className="flex items-center gap-2 mb-4">
               <GraduationCap className="w-4 h-4 text-white/40" strokeWidth={1.5} />
               <div className="text-white/70">
-                <span className="sr-only">Менторство и&nbsp;курсы</span>
-                <LedText text="Менторство и&nbsp;курсы" className="h-[11px] w-auto" />
+                <span className="sr-only">Менторство и курсы</span>
+                <LedText text="Менторство и курсы" className="h-[11px] w-auto" />
               </div>
             </div>
             <ul className="space-y-2.5 text-[15px] md:text-[16px] text-white/65 leading-relaxed mb-5">
