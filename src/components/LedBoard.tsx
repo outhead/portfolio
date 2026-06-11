@@ -188,6 +188,61 @@ export function LedBoard({
   );
 }
 
+/* LedLines — многострочный LED-текст: грубый перенос по словам.
+   Для заголовков карточек и секций — единый язык с табло хиро. */
+export function LedLines({
+  text,
+  className = "",
+  lineClass = "h-[16px] md:h-[20px]",
+  scale = 2,
+  dot = 1.45,
+  maxChars = 24,
+  center = false,
+  accent,
+}: {
+  text: string;
+  className?: string;
+  /** Высота строки (tailwind h-классы) */
+  lineClass?: string;
+  scale?: number;
+  dot?: number;
+  /** Примерно символов на строку до переноса */
+  maxChars?: number;
+  center?: boolean;
+  /** Хвост-акцент лаймом (например «*» или «.») */
+  accent?: string;
+}) {
+  const words = text.split(" ");
+  const lines: string[] = [];
+  let cur = "";
+  for (const w of words) {
+    if ((cur + " " + w).trim().length > maxChars && cur) {
+      lines.push(cur);
+      cur = w;
+    } else {
+      cur = cur ? `${cur} ${w}` : w;
+    }
+  }
+  if (cur) lines.push(cur);
+  return (
+    <span
+      className={`flex flex-col ${center ? "items-center" : "items-start"} gap-[7px] md:gap-[9px] ${className}`}
+    >
+      <span className="sr-only">{text + (accent ?? "")}</span>
+      {lines.map((l, i) =>
+        i === lines.length - 1 && accent ? (
+          <span key={i} className="flex items-start gap-[6px]">
+            <LedText text={l} scale={scale} dot={dot} className={`${lineClass} w-auto`} />
+            <LedText text={accent} scale={scale} dot={dot} className={`${lineClass} w-auto text-[#A6FF00]`} />
+          </span>
+        ) : (
+          <LedText key={i} text={l} scale={scale} dot={dot} className={`${lineClass} w-auto`} />
+        ),
+      )}
+    </span>
+  );
+}
+
 export function LedCounter({
   value,
   className = "",

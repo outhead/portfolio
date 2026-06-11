@@ -1,6 +1,7 @@
 "use client";
 
 import LedText from "@/components/LedText";
+import { LedLines } from "@/components/LedBoard";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Wrench } from "lucide-react";
 
@@ -45,9 +46,8 @@ export default function WIPOverlay({
             <LedText text="В работе" className="h-[9px] w-auto" />
           </span>
 
-          <h2 className="mt-5 font-p95 text-[clamp(28px,4.5vw,44px)] uppercase leading-[1.0] tracking-tight text-white">
-            {title}
-            <span className="text-[#A6FF00]">.</span>
+          <h2 className="mt-5 text-white">
+            <LedLines text={title} accent="." maxChars={24} lineClass="h-[16px] md:h-[20px]" />
           </h2>
 
           <p className="mt-4 md:mt-5 text-sm md:text-[15px] text-white/65 leading-relaxed">

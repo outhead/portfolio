@@ -12,6 +12,7 @@ import PressCollapse from "@/components/PressCollapse";
 import WIPOverlay from "@/components/WIPOverlay";
 import DecryptApproach from "@/components/DecryptApproach";
 import LedText from "@/components/LedText";
+import { LedLines } from "@/components/LedBoard";
 
 /* Пиксельный лейбл секций кейса — единый язык с табло главной */
 function CaseLabel({
@@ -135,8 +136,8 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
             <span className="sr-only">{project.company}</span>
             <LedText text={project.company} className="h-[10px] w-auto" />
           </div>
-          <h1 className="font-p95 text-[clamp(32px,6vw,72px)] uppercase leading-[0.95] mb-4">
-            {project.title}
+          <h1 className="mb-5 text-white">
+            <LedLines text={project.title} maxChars={32} lineClass="h-[18px] md:h-[30px]" />
           </h1>
           <p className="text-[15px] tracking-[0.05em] text-white/40 uppercase">
             {project.role} · {project.period}
@@ -562,8 +563,12 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
       <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-12 md:py-16 bg-black border-t border-white/[0.06]">
         <div className="max-w-3xl">
           <CaseLabel className="mb-4" tone="text-white/35">Открыт к офферам</CaseLabel>
-          <h3 className="font-p95 text-[clamp(24px,3vw,40px)] uppercase leading-[1] mb-6 text-white/90">
-            Хочется поговорить про эту роль или просто познакомиться?
+          <h3 className="mb-7 text-white/90">
+            <LedLines
+              text="Хочется поговорить про эту роль или просто познакомиться?"
+              maxChars={30}
+              lineClass="h-[14px] md:h-[19px]"
+            />
           </h3>
           <div className="flex flex-wrap gap-3">
             <a

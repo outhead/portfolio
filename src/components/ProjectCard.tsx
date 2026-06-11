@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import LedText from "@/components/LedText";
+import { LedLines } from "@/components/LedBoard";
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { Project } from "@/data/projects";
@@ -181,16 +182,18 @@ export default function ProjectCard({
         <span className="sr-only">{project.company}</span>
         <LedText text={project.company} className="h-[9px] md:h-[10px] w-auto" />
       </div>
-      <h3
-        className={`font-p95 uppercase leading-[0.95] text-white ${
-          featured
-            ? "text-[clamp(28px,3.4vw,48px)] max-w-2xl"
-            : wide
-              ? "text-[clamp(24px,2.8vw,40px)] max-w-xl"
-              : "text-[clamp(22px,2.4vw,32px)] max-w-[90%]"
-        }`}
-      >
-        {project.title}
+      <h3 className="text-white">
+        <LedLines
+          text={project.title}
+          maxChars={featured ? 34 : wide ? 32 : 28}
+          lineClass={
+            featured
+              ? "h-[18px] md:h-[24px]"
+              : wide
+                ? "h-[16px] md:h-[21px]"
+                : "h-[15px] md:h-[18px]"
+          }
+        />
       </h3>
 
       <div className="flex flex-wrap items-center gap-1.5 md:gap-2 mt-0.5">

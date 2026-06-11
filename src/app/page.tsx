@@ -4,7 +4,7 @@ import ProjectCard from "@/components/ProjectCard";
 import ParticleSphere from "@/components/ParticleSphere";
 import PulseAnimation, { type PulseVariant } from "@/components/PulseAnimation";
 import LedText from "@/components/LedText";
-import { LedBoard, LedCounter, type LedLine } from "@/components/LedBoard";
+import { LedBoard, LedCounter, LedLines, type LedLine } from "@/components/LedBoard";
 import { Oled, Activity } from "@/components/OledKit";
 import FinalCTA from "@/components/FinalCTA";
 import PillsBackdrop from "@/components/PillsBackdrop";
@@ -626,8 +626,9 @@ function CareerHoverList() {
                 <LedText text={job.year} className="h-[9px] w-auto" />
               </span>
               <span className="flex-1 min-w-0 flex flex-col">
-                <span className="font-p95 text-[16px] text-white uppercase leading-tight">
-                  {job.company}
+                <span className="text-white">
+                  <span className="sr-only">{job.company}</span>
+                  <LedText text={job.company} className="h-[11px] w-auto" />
                 </span>
                 <span className="text-[14px] text-white/72 leading-tight">
                   {job.role}
@@ -654,8 +655,9 @@ function CareerHoverList() {
                 <LedText text={job.year} className="h-[10px] w-auto" />
               </span>
               <span className="flex-1 min-w-0 flex flex-row items-baseline gap-3">
-                <span className="font-p95 text-[17px] text-white uppercase leading-tight truncate">
-                  {job.company}
+                <span className="text-white min-w-0">
+                  <span className="sr-only">{job.company}</span>
+                  <LedText text={job.company} className="h-[12px] w-auto" />
                 </span>
                 <span className="text-[15px] text-white/72 leading-tight truncate">
                   {job.role}
@@ -1343,8 +1345,11 @@ export default function PreviewHome() {
                       <span className="sr-only">Эксперименты</span>
                       <LedText text="Эксперименты" className="h-[10px] w-auto" />
                     </div>
-                    <h3 className="font-p95 text-[clamp(22px,3vw,36px)] uppercase leading-[0.95] text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
-                      Код,<br />WebGL,<br />шейдеры.
+                    <h3 className="text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)] flex flex-col gap-[7px] md:gap-[9px]">
+                      <span className="sr-only">Код, WebGL, шейдеры.</span>
+                      <LedText text="Код," scale={2} dot={1.45} className="h-[16px] md:h-[20px] w-auto" />
+                      <LedText text="WebGL," scale={2} dot={1.45} className="h-[16px] md:h-[20px] w-auto" />
+                      <LedText text="шейдеры." scale={2} dot={1.45} className="h-[16px] md:h-[20px] w-auto" />
                     </h3>
                   </div>
                   <span className="relative z-[2] inline-flex items-center gap-2 text-white/74 group-hover:text-[#A6FF00] transition-colors mt-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
@@ -1509,8 +1514,14 @@ export default function PreviewHome() {
           {/* Центрированный заголовочный блок: ярлык → крупный хедлайн → астерикс-сноска */}
           <motion.div variants={fadeUp} className="mb-14 md:mb-20 text-center">
             <SectionLabel>ОТЗЫВЫ</SectionLabel>
-            <h3 className="mt-5 md:mt-7 font-p95 text-[clamp(36px,7.2vw,108px)] leading-[0.9] uppercase tracking-tight text-white">
-              Не&nbsp;верьте мне на&nbsp;слово<Star />
+            <h3 className="mt-6 md:mt-8 flex justify-center text-white">
+              <LedLines
+                text="Не верьте мне на слово"
+                accent="*"
+                center
+                maxChars={26}
+                lineClass="h-[22px] md:h-[42px]"
+              />
             </h3>
             <p className="mt-5 md:mt-7 flex justify-center text-[#A6FF00]">
               <span className="sr-only">* Спросите тех, кто со мной работал</span>
@@ -1623,8 +1634,8 @@ export default function PreviewHome() {
                         <span className="sr-only">{t.label}</span>
                         <LedText text={t.label} className="h-[10px] w-auto" />
                       </div>
-                      <h3 className="font-p95 text-[clamp(20px,2.6vw,32px)] uppercase leading-[1] text-white mb-4 max-w-sm">
-                        {t.title}
+                      <h3 className="text-white mb-5 max-w-sm">
+                        <LedLines text={t.title} maxChars={24} lineClass="h-[14px] md:h-[17px]" />
                       </h3>
                       <p className="text-[15px] md:text-[16px] text-white/72 leading-relaxed max-w-md">
                         {t.body}
@@ -1738,8 +1749,9 @@ export default function PreviewHome() {
                     <Send className="w-5 h-5 md:w-6 md:h-6 text-black" strokeWidth={2} />
                   </div>
                   <div>
-                    <div className="font-p95 text-[clamp(28px,4.5vw,56px)] uppercase leading-[0.95] text-black">
-                      @egoradi
+                    <div className="text-black">
+                      <span className="sr-only">@egoradi</span>
+                      <LedText text="@egoradi" scale={2} dot={1.45} className="h-[22px] md:h-[34px] w-auto" />
                     </div>
                     <div className="mt-3 inline-flex items-center gap-2 text-black/70 group-hover:text-black transition-colors">
                       <span className="sr-only">Написать</span>
@@ -1774,8 +1786,9 @@ export default function PreviewHome() {
                       </div>
                       <link.Icon className="w-4 h-4 text-white/45 group-hover:text-white transition-colors" strokeWidth={1.75} />
                     </div>
-                    <div className="font-p95 text-[15px] md:text-[16px] tracking-[0.05em] text-white/80 group-hover:text-white transition-colors leading-tight truncate">
-                      {link.value}
+                    <div className="text-white/80 group-hover:text-white transition-colors min-w-0 overflow-hidden">
+                      <span className="sr-only">{link.value}</span>
+                      <LedText text={link.value} className="h-[10px] w-auto max-w-full" />
                     </div>
                   </div>
                 </Link>
@@ -1787,8 +1800,9 @@ export default function PreviewHome() {
               <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0a0a0a] min-h-[200px] md:min-h-[220px]">
                 {/* Текст — абсолют, чтобы НЕ блокировать drag по глобусу справа */}
                 <div className="absolute z-[2] left-6 md:left-8 top-1/2 -translate-y-1/2 max-w-[60%] md:max-w-[55%] flex flex-col items-start gap-3 pointer-events-none">
-                  <h4 className="font-p95 text-[clamp(20px,2.4vw,30px)] uppercase tracking-[0.02em] text-white leading-none">
-                    Москва, Россия
+                  <h4 className="text-white">
+                    <span className="sr-only">Москва, Россия</span>
+                    <LedText text="Москва, Россия" scale={2} dot={1.45} className="h-[16px] md:h-[20px] w-auto" />
                   </h4>
                   <div className="inline-flex items-center gap-2.5 text-white/72">
                     <span className="relative inline-flex items-center justify-center w-3 h-3 shrink-0">

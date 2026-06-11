@@ -1,6 +1,7 @@
 "use client";
 
 import ProjectCard from "@/components/ProjectCard";
+import LedText from "@/components/LedText";
 import { experimentProjects } from "@/data/projects";
 import { motion, type Variants } from "framer-motion";
 
@@ -35,11 +36,9 @@ export default function ExperimentsPage() {
               Лаборатория
             </div>
           </motion.div>
-          <motion.h1
-            variants={fadeUp}
-            className="font-p95 text-[clamp(48px,9vw,112px)] leading-[0.92] uppercase tracking-tight mb-5 md:mb-7"
-          >
-            ЭКСПЕРИМЕНТЫ
+          <motion.h1 variants={fadeUp} className="mb-6 md:mb-8 text-white">
+            <span className="sr-only">Эксперименты</span>
+            <LedText text="Эксперименты" scale={2} dot={1.45} className="h-[28px] md:h-[52px] w-auto max-w-full" />
           </motion.h1>
           <motion.p
             variants={fadeUp}
