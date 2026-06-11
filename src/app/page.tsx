@@ -1,10 +1,10 @@
 "use client";
 
 import ProjectCard from "@/components/ProjectCard";
+import ParticleSphere from "@/components/ParticleSphere";
 import PulseAnimation, { type PulseVariant } from "@/components/PulseAnimation";
 import LedText from "@/components/LedText";
 import { LedBoard, LedCounter, type LedLine } from "@/components/LedBoard";
-import NeuralWeb from "@/components/NeuralWeb";
 import { Oled, DotGraph, Activity } from "@/components/OledKit";
 import FinalCTA from "@/components/FinalCTA";
 import PillsBackdrop from "@/components/PillsBackdrop";
@@ -1045,6 +1045,7 @@ function Toolbox() {
 // PAGE
 // ═══════════════════════════════════════════════════════════════════
 export default function PreviewHome() {
+  const heroSphereRef = useRef<HTMLDivElement>(null);
   const heroLines: LedLine[] = [
     { text: "7 ЛЕТ", color: "#F2F4EF" },
     { text: "РАЗВИВАЮ", color: "#F2F4EF" },
@@ -1075,12 +1076,12 @@ export default function PreviewHome() {
           initial="hidden"
           animate="show"
           variants={stagger}
-          className="relative z-[2] px-4 md:px-[5%] xl:px-[8%] 2xl:px-[max(8%,calc((100%_-_1720px)/2))] pt-4 md:pt-10 pb-10 md:pb-14"
+          className="relative z-[2] px-4 md:px-[5%] xl:px-[8%] 2xl:px-[max(8%,calc((100%_-_1720px)/2))] pt-2 md:pt-5 pb-8 md:pb-12"
         >
-          <div className="grid grid-cols-12 gap-3 md:gap-6 items-stretch">
+          <div className="grid grid-cols-12 gap-3 md:gap-5 items-stretch">
             {/* ── Хиро-дисплей: LED-табло ── */}
             <motion.div variants={fadeUp} className="col-span-12 lg:col-span-7 lg:row-span-2">
-              <Oled glow className="h-full p-5 md:p-10 flex flex-col">
+              <Oled glow className="h-full p-5 md:p-8 flex flex-col">
                 <div className="relative">
                   <LedBoard
                     className="hidden md:block w-full h-auto"
@@ -1089,7 +1090,7 @@ export default function PreviewHome() {
                     dotR={1.45}
                     pad={2}
                     minCols={114}
-                    minRows={58}
+                    minRows={54}
                     dim="rgba(255,255,255,0.03)"
                     dimR={1.0}
                     sparkle={14}
@@ -1111,10 +1112,10 @@ export default function PreviewHome() {
                 <h1 className="sr-only">
                   7 лет развиваю людей, команды, визуал, сервисы — дизайн-директор Егор Шугаев
                 </h1>
-                <p className="mt-6 md:mt-9 max-w-[460px] text-[14px] md:text-[17px] leading-relaxed text-white/60 font-light">
+                <p className="mt-5 md:mt-7 max-w-[460px] text-[14px] md:text-[17px] leading-relaxed text-white/60 font-light">
                   От стратегии и культуры до AI и цифровых продуктов.
                 </p>
-                <div className="mt-6 md:mt-9 flex flex-wrap items-center gap-3">
+                <div className="mt-5 md:mt-7 flex flex-wrap items-center gap-3">
                   <Link
                     href="https://t.me/egoradi"
                     target="_blank"
@@ -1128,13 +1129,13 @@ export default function PreviewHome() {
                   <Link
                     href="#portfolio"
                     data-ym-goal="hero_view_cases"
-                    className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:border-white/50 hover:text-white transition-colors no-underline"
+                    className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:border-[#A6FF00]/60 hover:text-[#A6FF00] transition-colors no-underline"
                   >
                     <span className="leading-none translate-y-[1px]">Смотреть кейсы</span>
                     <ArrowRight className="w-4 h-4" strokeWidth={2} />
                   </Link>
                 </div>
-                <div className="mt-auto pt-8 md:pt-10 flex items-center gap-6 md:gap-10 flex-wrap opacity-60 hover:opacity-90 transition-opacity">
+                <div className="mt-auto pt-7 md:pt-8 flex items-center gap-6 md:gap-10 flex-wrap opacity-60 hover:opacity-90 transition-opacity">
                   <img src="/images/logos/ozon.svg" alt="Ozon" className="h-4 md:h-5 w-auto self-center brightness-0 invert" />
                   <img src="/images/logos/mts.svg" alt="МТС" className="h-6 md:h-8 w-auto brightness-0 invert" />
                   <img src="/images/logos/gazpromneft.svg" alt="Газпром нефть" className="h-6 md:h-8 w-auto brightness-0 invert" />
@@ -1154,8 +1155,21 @@ export default function PreviewHome() {
                     <LedText text="]" className="h-[10px] w-auto text-[#A6FF00]/60" />
                   </span>
                 </div>
-                <div className="relative flex-1 min-h-[300px] md:min-h-[440px]">
-                  <NeuralWeb className="absolute inset-0 w-full h-full" />
+                <div ref={heroSphereRef} className="relative flex-1 min-h-[280px] md:min-h-[400px]">
+                  {/* Шар — белый: зелёный оставлен акцентам и действиям */}
+                  <ParticleSphere
+                    className="absolute inset-0 w-full h-full"
+                    trackingRef={heroSphereRef}
+                    sphereRadFactor={0.46}
+                    r={235}
+                    g={238}
+                    b={230}
+                    tapMessages={[
+                      "Воу. Интерактив.",
+                      "Ладно-ладно. По сайту спрятаны пасхалки и мини-задания.",
+                      "Долистай до конца — там кнопка с сюрпризом.",
+                    ]}
+                  />
                 </div>
                 <div className="flex items-center justify-between text-white/35">
                   <span aria-label="Москва">
@@ -1247,7 +1261,7 @@ export default function PreviewHome() {
                 data-ym-goal="nav_skills"
                 className="block h-full no-underline group"
               >
-                <Oled className="h-full p-5 md:p-7 transition-colors duration-300 group-hover:border-white/[0.12]">
+                <Oled className="h-full p-5 md:p-7 transition-colors duration-300 group-hover:border-[#A6FF00]/25">
                   <div className="text-[10px] md:text-[11px] tracking-[0.26em] uppercase text-white/35 mb-5">
                     Экспертиза
                   </div>
