@@ -135,7 +135,7 @@ interface ProjectCardProps {
 /** Маленький chip — stokt-style pill под title. */
 function TagChip({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center px-3 py-1.5 rounded-full border border-white/15 bg-white/[0.04] text-[12px] md:text-[13px] tracking-[0.08em] uppercase text-white/80 leading-[1.2] backdrop-blur-sm">
+    <span className="inline-flex items-center px-3 py-1.5 rounded-full border border-white/15 bg-black/40 text-[12px] md:text-[13px] tracking-[0.08em] uppercase text-white/80 leading-[1.2] backdrop-blur-sm">
       {children}
     </span>
   );
@@ -164,46 +164,10 @@ export default function ProjectCard({
   featured = false,
   wide = false,
 }: ProjectCardProps) {
-  // Hover-arrow в top-right (как у Stokt)
+  // Hover-arrow в top-right медиа-окна
   const HoverArrow = (
-    <div className="absolute top-3 right-3 md:top-4 md:right-4 w-9 h-9 md:w-10 md:h-10 rounded-full border border-white/20 flex items-center justify-center bg-black/30 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0 z-[2]">
+    <div className="absolute top-3 right-3 md:top-4 md:right-4 w-9 h-9 md:w-10 md:h-10 rounded-full border border-white/20 flex items-center justify-center bg-black/30 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0 z-[3]">
       <ArrowUpRight className="w-4 h-4 text-white/90" strokeWidth={2} />
-    </div>
-  );
-
-  // Bottom-content: company bracket-label, title, tag-chips + metric
-  const BottomContent = (
-    <div
-      className={`flex flex-col gap-3 md:gap-4 ${
-        featured ? "p-6 md:p-7" : wide ? "p-5 md:p-6" : "p-5"
-      } pt-4 md:pt-5`}
-    >
-      <div className="text-white/60">
-        <span className="sr-only">{project.company}</span>
-        <LedText text={project.company} className="h-[9px] md:h-[10px] w-auto" />
-      </div>
-      <h3 className="text-white">
-        <LedLines
-          text={project.title}
-          maxChars={featured ? 34 : wide ? 32 : 28}
-          lineClass={
-            featured
-              ? "h-[18px] md:h-[24px]"
-              : wide
-                ? "h-[16px] md:h-[21px]"
-                : "h-[15px] md:h-[18px]"
-          }
-        />
-      </h3>
-
-      <div className="flex flex-wrap items-center gap-1.5 md:gap-2 mt-0.5">
-        {project.metric && (
-          <MetricChip value={project.metric} label={project.metricLabel} />
-        )}
-        {project.tags.slice(0, featured ? 4 : wide ? 3 : 2).map((t) => (
-          <TagChip key={t}>{t}</TagChip>
-        ))}
-      </div>
     </div>
   );
 
@@ -248,63 +212,54 @@ export default function ProjectCard({
   // Параметры цели — общие для всех вариантов карточки.
   const goalParams = JSON.stringify({ case_slug: project.slug, variant: featured ? "featured" : wide ? "wide" : "regular" });
 
-  // === FEATURED — крупная hero-карточка (2×2 в сетке) ===
-  if (featured) {
-    return (
-      <Link
-        href={`/cases/${project.slug}`}
-        data-ym-goal="case_open"
-        data-ym-goal-params={goalParams}
-        className="no-underline group h-full block"
-      >
-        <motion.article
-          ref={articleRef}
-          whileHover={{ y: -4 }}
-          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          className="relative rounded-2xl overflow-hidden bg-[#0f0f0e] border border-white/[0.06] group-hover:border-white/20 transition-colors duration-300 h-full"
-        >
-          <div className="h-full min-h-[360px] md:min-h-[480px] flex flex-col p-3 md:p-4 pb-0 md:pb-0">
-            <div className="relative flex-1 min-h-[200px] rounded-xl border border-white/[0.08] overflow-hidden bg-black/40">
-              {CoverTint}
-              <CoverMedia project={project} active={coverActive} onVideoPlayingChange={setVideoPlaying} />
-              {HoverArrow}
-            </div>
-            {BottomContent}
-          </div>
-        </motion.article>
-      </Link>
-    );
-  }
+  // Медиа-окно с аспектом исходника (1800×1169) — кадр видео помещается
+  // целиком. Компания и теги — по углам окна, как лейблы у экспериментов.
+  const MediaWindow = (
+    <div className="relative w-full aspect-[1800/1169] rounded-xl border border-white/[0.08] overflow-hidden bg-black/40">
+      {CoverTint}
+      <CoverMedia project={project} active={coverActive} onVideoPlayingChange={setVideoPlaying} />
+      {HoverArrow}
+      {/* Компания — верхний левый угол окна */}
+      <div className="absolute top-4 left-4 md:top-5 md:left-5 z-[2] text-white/65 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+        <span className="sr-only">{project.company}</span>
+        <LedText text={project.company} className="h-[9px] md:h-[10px] w-auto" />
+      </div>
+      {/* Теги — нижний левый угол; метрика — нижний правый */}
+      <div className="absolute bottom-3 left-3 md:bottom-4 md:left-4 z-[2] flex flex-wrap gap-1.5 md:gap-2 max-w-[70%]">
+        {project.tags.slice(0, featured ? 4 : wide ? 3 : 2).map((t) => (
+          <TagChip key={t}>{t}</TagChip>
+        ))}
+      </div>
+      {project.metric && (
+        <div className="absolute bottom-3 right-3 md:bottom-4 md:right-4 z-[2]">
+          <MetricChip value={project.metric} label={project.metricLabel} />
+        </div>
+      )}
+    </div>
+  );
 
-  // === WIDE — 2×1 акцент-карта ===
-  if (wide) {
-    return (
-      <Link
-        href={`/cases/${project.slug}`}
-        data-ym-goal="case_open"
-        data-ym-goal-params={goalParams}
-        className="no-underline group h-full block"
-      >
-        <motion.article
-          ref={articleRef}
-          whileHover={{ y: -4 }}
-          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          className="relative rounded-2xl overflow-hidden bg-[#0f0f0e] border border-white/[0.06] group-hover:border-white/20 transition-colors duration-300 h-full"
-        >
-          <div className="h-full min-h-[360px] md:min-h-[360px] flex flex-col p-3 md:p-4 pb-0 md:pb-0">
-            <div className="relative flex-1 min-h-[160px] rounded-xl border border-white/[0.08] overflow-hidden bg-black/40">
-              {CoverTint}
-              <CoverMedia project={project} active={coverActive} onVideoPlayingChange={setVideoPlaying} />
-              {HoverArrow}
-            </div>
-            {BottomContent}
-          </div>
-        </motion.article>
-      </Link>
-    );
-  }
+  // Заголовок — по центру карточки, как у плитки экспериментов.
+  const Title = (
+    <div className={`flex-1 flex items-center justify-center text-center ${
+      featured ? "px-6 py-6 md:py-7" : "px-5 py-5 md:py-6"
+    }`}>
+      <h3 className="text-white">
+        <LedLines
+          text={project.title}
+          center
+          maxChars={featured ? 34 : wide ? 32 : 28}
+          lineClass={
+            featured
+              ? "h-[18px] md:h-[24px]"
+              : wide
+                ? "h-[16px] md:h-[21px]"
+                : "h-[15px] md:h-[18px]"
+          }
+        />
+      </h3>
+    </div>
+  );
 
-  // === REGULAR — компактная bento-карточка ===
   return (
     <Link
       href={`/cases/${project.slug}`}
@@ -316,15 +271,11 @@ export default function ProjectCard({
         ref={articleRef}
         whileHover={{ y: -4 }}
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        className="relative rounded-2xl overflow-hidden bg-[#0f0f0e] border border-white/[0.06] group-hover:border-white/20 h-full transition-colors duration-300"
+        className="relative rounded-2xl overflow-hidden bg-[#0f0f0e] border border-white/[0.06] group-hover:border-white/20 transition-colors duration-300 h-full"
       >
-        <div className="h-full min-h-[360px] md:min-h-[320px] flex flex-col p-3 pb-0">
-          <div className="relative flex-1 min-h-[150px] rounded-xl border border-white/[0.08] overflow-hidden bg-black/40">
-            {CoverTint}
-            <CoverMedia project={project} active={coverActive} onVideoPlayingChange={setVideoPlaying} />
-            {HoverArrow}
-          </div>
-          {BottomContent}
+        <div className="h-full flex flex-col p-3 md:p-4 pb-0 md:pb-0">
+          {MediaWindow}
+          {Title}
         </div>
       </motion.article>
     </Link>
