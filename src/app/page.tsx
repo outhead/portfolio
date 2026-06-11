@@ -1,10 +1,11 @@
 "use client";
 
 import ProjectCard from "@/components/ProjectCard";
-import ParticleSphere from "@/components/ParticleSphere";
 import PulseAnimation, { type PulseVariant } from "@/components/PulseAnimation";
-import LedFlipWord from "@/components/LedFlipWord";
 import LedText from "@/components/LedText";
+import { LedBoard, LedCounter, type LedLine } from "@/components/LedBoard";
+import NeuralWeb from "@/components/NeuralWeb";
+import { Oled, DotGraph, Activity } from "@/components/OledKit";
 import FinalCTA from "@/components/FinalCTA";
 import PillsBackdrop from "@/components/PillsBackdrop";
 import { TypographyFix } from "@/components/TypographyFix";
@@ -25,12 +26,9 @@ import {
   ArrowRight,
   Users,
   Sparkles,
-  Trophy,
   Globe,
   Layers,
   ArrowUpRight,
-  Compass,
-  BarChart3,
 } from "lucide-react";
 
 const LinkedinIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -1047,7 +1045,11 @@ function Toolbox() {
 // PAGE
 // ═══════════════════════════════════════════════════════════════════
 export default function PreviewHome() {
-  const heroTileRef = useRef<HTMLDivElement>(null);
+  const heroLines: LedLine[] = [
+    { text: "7 ЛЕТ", color: "#F2F4EF" },
+    { text: "РАЗВИВАЮ", color: "#F2F4EF" },
+    { words: ["ЛЮДЕЙ", "КОМАНДЫ", "ВИЗУАЛ", "СЕРВИСЫ", "ИНТЕРЕС"], color: "#A6FF00" },
+  ];
   // На главной по умолчанию показываем только готовые work-кейсы (без wip).
   // wip-кейсы (ozon, mts-b2c) — за кнопкой «Показать ещё», чтобы недоделанные
   // карточки не утяжеляли первое впечатление.
@@ -1057,15 +1059,15 @@ export default function PreviewHome() {
   return (
     <>
       <TypographyFix />
-      {/* ═══════ HERO — bento-грид: 1 большая content-плитка + 1 photo-плитка + 3 метрики ═══════ */}
-      <section className="relative min-h-[100vh] overflow-hidden bg-black">
-        {/* Фоновая радиальная подсветка — вне карточек, как amber-lighting студии */}
+      {/* ═══════ HERO — «премиальный дисплей»: LED-табло + нейроструктура + OLED-панели ═══════ */}
+      <section className="relative bg-black">
+        {/* Воздух: мягкий свет сверху + лаймовый ambient снизу */}
         <div
           aria-hidden
-          className="absolute inset-0 pointer-events-none opacity-70"
+          className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              "radial-gradient(ellipse 55% 60% at 85% 55%, rgba(201,166,107,0.18), transparent 60%), radial-gradient(ellipse 45% 50% at 20% 80%, rgba(166,255,0,0.08), transparent 70%)",
+              "radial-gradient(ellipse 70% 45% at 50% 0%, rgba(255,255,255,0.035), transparent 60%), radial-gradient(ellipse 55% 35% at 50% 105%, rgba(166,255,0,0.05), transparent 70%)",
           }}
         />
 
@@ -1073,146 +1075,127 @@ export default function PreviewHome() {
           initial="hidden"
           animate="show"
           variants={stagger}
-          className="relative z-[2] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] pt-2 md:pt-12 pb-10 md:pb-14"
+          className="relative z-[2] px-4 md:px-[5%] xl:px-[8%] 2xl:px-[max(8%,calc((100%_-_1720px)/2))] pt-4 md:pt-10 pb-10 md:pb-14"
         >
-          {/* Bento: 12-колоночный грид с разными размерами */}
-          <div className="grid grid-cols-12 gap-3 md:gap-4">
-            {/* === TILE 1+2: ОБЪЕДИНЁННЫЙ ХИРО (col-span-12) — текст слева + сфера справа === */}
-            <motion.div
-              variants={fadeUp}
-              className="col-span-12 order-1 md:order-none"
-            >
-              <div ref={heroTileRef} className="relative rounded-3xl border border-white/[0.1] bg-black overflow-hidden md:min-h-[600px] lg:min-h-[720px]">
-                {/* Сфера — на десктопе абсолютно справа, на мобилке банером сверху */}
-                <div
-                  aria-hidden
-                  className="absolute inset-x-0 top-0 h-[208px] md:inset-y-0 md:left-auto md:right-0 md:h-auto md:w-[40%] pointer-events-none z-[2]"
-                >
-                  <div
-                    className="absolute inset-0"
-                    style={{
-                      background:
-                        "radial-gradient(circle at 50% 50%, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 1px, transparent 1.2px) 0 0/22px 22px",
-                    }}
+          <div className="grid grid-cols-12 gap-3 md:gap-6 items-stretch">
+            {/* ── Хиро-дисплей: LED-табло ── */}
+            <motion.div variants={fadeUp} className="col-span-12 lg:col-span-7 lg:row-span-2">
+              <Oled glow className="h-full p-5 md:p-10 flex flex-col">
+                <div className="relative">
+                  <LedBoard
+                    className="hidden md:block w-full h-auto"
+                    align="left"
+                    scale={2}
+                    dotR={1.45}
+                    pad={2}
+                    minCols={114}
+                    minRows={58}
+                    dim="rgba(255,255,255,0.03)"
+                    dimR={1.0}
+                    sparkle={14}
+                    lines={heroLines}
                   />
-                  <ParticleSphere
-                    className="absolute inset-0 w-full h-full"
-                    trackingRef={heroTileRef}
-                    tapMessages={[
-                      "Воу. Интерактив.",
-                      "Ладно-ладно. По сайту спрятаны пасхалки и мини-задания.",
-                      "Долистай до конца — там кнопка с сюрпризом.",
-                    ]}
+                  <LedBoard
+                    className="md:hidden w-full h-auto"
+                    align="left"
+                    scale={1}
+                    pad={1}
+                    minCols={51}
+                    minRows={31}
+                    dim="rgba(255,255,255,0.03)"
+                    dimR={1.15}
+                    sparkle={8}
+                    lines={heroLines}
                   />
                 </div>
-
-                {/* Якорь — верхний правый угол: роль (md+; на мобиле — в строке ниже) */}
-                <div className="hidden md:inline-flex absolute top-6 right-6 md:top-10 md:right-10 lg:top-12 lg:right-12 z-[2] items-center gap-2 text-white/70">
-                  <span className="sr-only">Дизайн-директор</span>
-                  <LedText text="[" className="h-[12px] w-auto text-[#A6FF00]/80" />
-                  <LedText text="Дизайн-директор" className="h-[12px] w-auto" />
-                  <LedText text="]" className="h-[12px] w-auto text-[#A6FF00]/80" />
+                <h1 className="sr-only">
+                  7 лет развиваю людей, команды, визуал, сервисы — дизайн-директор Егор Шугаев
+                </h1>
+                <p className="mt-6 md:mt-9 max-w-[460px] text-[14px] md:text-[17px] leading-relaxed text-white/60 font-light">
+                  От стратегии и культуры до AI и цифровых продуктов.
+                </p>
+                <div className="mt-6 md:mt-9 flex flex-wrap items-center gap-3">
+                  <Link
+                    href="https://t.me/egoradi"
+                    target="_blank"
+                    data-ym-goal="cta_telegram"
+                    data-ym-goal-params='{"placement":"hero"}'
+                    className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-[#A6FF00] text-black font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:bg-white transition-colors no-underline"
+                  >
+                    <span className="leading-none translate-y-[1px]">Обсудить проект</span>
+                    <ArrowRight className="w-4 h-4" strokeWidth={2.2} />
+                  </Link>
+                  <Link
+                    href="#portfolio"
+                    data-ym-goal="hero_view_cases"
+                    className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:border-white/50 hover:text-white transition-colors no-underline"
+                  >
+                    <span className="leading-none translate-y-[1px]">Смотреть кейсы</span>
+                    <ArrowRight className="w-4 h-4" strokeWidth={2} />
+                  </Link>
                 </div>
-
-                {/* Мобильная строка под шапкой «Егор Шугаев»: слева роль, справа город */}
-                <div className="md:hidden absolute top-9 left-6 right-6 z-[2] flex items-center justify-between text-white/70">
-                  <span className="inline-flex items-center gap-1.5">
-                    <span className="sr-only">Дизайн-директор</span>
-                    <LedText text="[" className="h-[10px] w-auto text-[#A6FF00]/80" />
-                    <LedText text="Дизайн-директор" className="h-[10px] w-auto" />
-                    <LedText text="]" className="h-[10px] w-auto text-[#A6FF00]/80" />
-                  </span>
-                  <span className="inline-flex" aria-label="Москва">
-                    <LedText text="Москва" className="h-[10px] w-auto" />
-                  </span>
+                <div className="mt-auto pt-8 md:pt-10 flex items-center gap-6 md:gap-10 flex-wrap opacity-60 hover:opacity-90 transition-opacity">
+                  <img src="/images/logos/ozon.svg" alt="Ozon" className="h-4 md:h-5 w-auto self-center brightness-0 invert" />
+                  <img src="/images/logos/mts.svg" alt="МТС" className="h-6 md:h-8 w-auto brightness-0 invert" />
+                  <img src="/images/logos/gazpromneft.svg" alt="Газпром нефть" className="h-6 md:h-8 w-auto brightness-0 invert" />
+                  <img src="/images/logos/hse.svg" alt="ВШЭ" className="h-6 md:h-8 w-auto brightness-0 invert" />
                 </div>
-
-                {/* Якорь — нижний левый угол: лого компаний (md+; на мобиле — в потоке под кнопками) */}
-                <div className="hidden md:flex absolute bottom-6 left-6 md:bottom-10 md:left-10 lg:bottom-12 lg:left-12 z-[2] items-end gap-8 md:gap-12 flex-wrap">
-                  <img src="/images/logos/ozon.svg" alt="Ozon" className="h-4 md:h-5 w-auto self-center brightness-0 invert opacity-55 hover:opacity-100 transition-opacity duration-200" />
-                  <img src="/images/logos/mts.svg" alt="МТС" className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity duration-200" />
-                  <img src="/images/logos/gazpromneft.svg" alt="Газпром нефть" className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity duration-200" />
-                  <img src="/images/logos/hse.svg" alt="ВШЭ" className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity duration-200" />
-                </div>
-
-                {/* Якорь — нижний правый угол: город (md+; на мобиле — в строке под шапкой) */}
-                <div
-                  className="hidden md:block absolute bottom-6 right-6 md:bottom-10 md:right-10 lg:bottom-12 lg:right-12 z-[2] text-white/70"
-                  aria-label="Москва"
-                >
-                  <LedText text="Москва" className="h-[12px] w-auto" />
-                </div>
-
-                {/* Центральный контент — ограничен слева, чтобы не наезжать на сферу.
-                    На мобиле justify-start — содержимое сидит сразу под сферой, без огромного gap.
-                    На десктопе justify-center — текст ровно центрирован внутри tile. */}
-                <div className="relative z-[1] flex flex-col justify-start md:justify-center p-7 md:p-10 lg:p-12 pt-[216px] md:pt-24 pb-12 md:pb-32 md:min-h-[600px] lg:min-h-[720px]">
-                  <div className="flex flex-col gap-6 md:gap-8 md:max-w-[58%] max-md:items-center max-md:text-center">
-                    <h1 className="font-p95 text-[clamp(44px,calc(20vw_-_21px),128px)] md:text-[clamp(64px,9vw,128px)] leading-[0.92] uppercase tracking-tight text-white">
-                      <span className="sr-only">7 лет развиваю людей</span>
-                      <span className="block max-md:flex max-md:justify-center">
-                        <LedText text="7 лет" scale={3} dot={1.2} className="h-[0.72em] w-auto" />
-                      </span>
-                      <span className="block mt-[0.14em] max-md:flex max-md:justify-center">
-                        <LedText text="Развиваю" scale={3} dot={1.2} className="h-[0.72em] w-auto" />
-                      </span>
-                      <span className="block mt-[0.14em] max-md:flex max-md:justify-center">
-                        <LedFlipWord
-                          words={["ЛЮДЕЙ", "КОМАНДЫ", "ВИЗУАЛ", "СЕРВИСЫ", "ИНТЕРЕС"]}
-                          scale={3}
-                          dot={1.2}
-                          className="text-white"
-                        />
-                      </span>
-                    </h1>
-
-                    <p className="max-w-[560px] text-lg md:text-[20px] leading-snug text-white/70 font-light">
-                      От стратегии и культуры до AI и цифровых продуктов.
-                    </p>
-
-                    <div className="flex flex-wrap items-center gap-3 mt-2 max-md:justify-center">
-                      <Link
-                        href="https://t.me/egoradi"
-                        target="_blank"
-                        data-ym-goal="cta_telegram"
-                        data-ym-goal-params='{"placement":"hero"}'
-                        className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-[#A6FF00] text-black font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:bg-white transition-colors no-underline"
-                      >
-                        <span className="leading-none translate-y-[1px]">Обсудить проект</span>
-                        <ArrowRight className="w-4 h-4" strokeWidth={2.2} />
-                      </Link>
-                      <Link
-                        href="#portfolio"
-                        data-ym-goal="hero_view_cases"
-                        className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:border-white/50 hover:text-white transition-colors no-underline"
-                      >
-                        <span className="leading-none translate-y-[1px]">Смотреть кейсы</span>
-                        <ArrowRight className="w-4 h-4" strokeWidth={2} />
-                      </Link>
-                    </div>
-
-                    {/* Mobile-only: логотипы компаний в потоке под кнопками — без перекрытия */}
-                    <div className="md:hidden mt-2 flex flex-col gap-3">
-                      <div className="flex items-center gap-5 flex-wrap justify-center">
-                        <img src="/images/logos/ozon.svg" alt="Ozon" className="h-4 w-auto self-center brightness-0 invert opacity-55" />
-                        <img src="/images/logos/mts.svg" alt="МТС" className="h-6 w-auto brightness-0 invert opacity-55" />
-                        <img src="/images/logos/gazpromneft.svg" alt="Газпром нефть" className="h-6 w-auto brightness-0 invert opacity-55" />
-                        <img src="/images/logos/hse.svg" alt="ВШЭ" className="h-6 w-auto brightness-0 invert opacity-55" />
-                      </div>
-                    </div>
-
-                  </div>
-                </div>
-              </div>
+              </Oled>
             </motion.div>
 
-            {/* === TILE 3: НАГРАДА · CX'24 (col-span-4) — линкуем на кейс Газпром Нефть ===
-                На md (iPad-портрет / iPhone-лендскейп) тайл узкий, трофей требует pr-44
-                и крупного клампа "CX'24" — налезает. Поэтому 3-в-ряд только с lg+. */}
-            <motion.div
-              variants={fadeUp}
-              className="col-span-12 lg:col-span-4 order-3 lg:order-none"
-            >
+            {/* ── Нейроструктура: узлы, связи, сигналы ── */}
+            <motion.div variants={fadeUp} className="col-span-12 lg:col-span-5">
+              <Oled className="h-full p-5 md:p-7 flex flex-col gap-4">
+                <div className="flex items-center justify-between text-white/35">
+                  <span className="inline-flex items-center gap-2">
+                    <span className="sr-only">Дизайн-директор</span>
+                    <LedText text="[" className="h-[10px] w-auto text-[#A6FF00]/60" />
+                    <LedText text="Дизайн-директор" className="h-[10px] w-auto" />
+                    <LedText text="]" className="h-[10px] w-auto text-[#A6FF00]/60" />
+                  </span>
+                </div>
+                <div className="relative flex-1 min-h-[300px] md:min-h-[440px]">
+                  <NeuralWeb className="absolute inset-0 w-full h-full" />
+                </div>
+                <div className="flex items-center justify-between text-white/35">
+                  <span aria-label="Москва">
+                    <LedText text="Москва" className="h-[10px] w-auto" />
+                  </span>
+                  <span
+                    aria-hidden
+                    className="w-[5px] h-[5px] rounded-full"
+                    style={{ background: "#A6FF00", boxShadow: "0 0 10px rgba(166,255,0,0.8)" }}
+                  />
+                </div>
+              </Oled>
+            </motion.div>
+
+            {/* ── В цифрах: LED-счётчики + тихий граф из точек ── */}
+            <motion.div variants={fadeUp} className="col-span-12 lg:col-span-5">
+              <Oled className="h-full p-5 md:p-7">
+                <DotGraph className="absolute inset-x-6 -bottom-1 h-[46px] opacity-30 pointer-events-none" />
+                <div className="relative text-[10px] md:text-[11px] tracking-[0.26em] uppercase text-white/35 mb-6">
+                  В цифрах
+                </div>
+                <div className="relative grid grid-cols-3 gap-5">
+                  {[
+                    { v: "30", l: "запусков" },
+                    { v: "7", l: "лет опыта" },
+                    { v: "27", l: "команд" },
+                  ].map((m) => (
+                    <div key={m.l} className="flex flex-col gap-3">
+                      <LedCounter value={m.v} tone="#A6FF00" />
+                      <span className="text-[10px] md:text-[11px] tracking-[0.16em] uppercase text-white/40">
+                        {m.l}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </Oled>
+            </motion.div>
+
+            {/* ── Награда: тёплая золотая LED-матрица, ссылка на кейс ── */}
+            <motion.div variants={fadeUp} className="col-span-12 md:col-span-5">
               <Link
                 href="/cases/gazprom-neft"
                 aria-label="Открыть кейс Газпром Нефть — CX Awards 2024"
@@ -1220,143 +1203,84 @@ export default function PreviewHome() {
                 data-ym-goal-params='{"case_slug":"gazprom-neft","placement":"hero_award_tile"}'
                 className="block h-full no-underline group"
               >
-                <div className="relative h-full min-h-[260px] md:min-h-[280px] rounded-2xl border border-[#C9A66B]/30 bg-gradient-to-br from-[#C9A66B]/[0.10] via-[#C9A66B]/[0.04] to-transparent py-5 md:py-6 pl-5 md:pl-6 pr-36 md:pr-44 flex flex-col justify-between gap-4 overflow-hidden transition-all duration-300 group-hover:border-[#C9A66B]/60 group-hover:from-[#C9A66B]/[0.14] group-hover:shadow-[0_0_40px_-8px_rgba(201,166,107,0.28)]">
-                  {/* мягкое золотое свечение справа — ambient под трофеем */}
+                <Oled className="h-full p-5 md:p-7 flex flex-col gap-6 transition-colors duration-300 group-hover:border-[#C9A66B]/30">
                   <div
                     aria-hidden
-                    className="pointer-events-none absolute -right-12 top-1/2 -translate-y-1/2 w-[260px] h-[260px] rounded-full opacity-65"
+                    className="absolute inset-0 pointer-events-none"
                     style={{
-                      background:
-                        "radial-gradient(circle, rgba(201,166,107,0.36) 0%, rgba(201,166,107,0.12) 35%, rgba(201,166,107,0) 70%)",
+                      backgroundImage:
+                        "radial-gradient(rgba(201,166,107,0.13) 1.1px, transparent 1.2px)",
+                      backgroundSize: "13px 13px",
+                      maskImage:
+                        "radial-gradient(ellipse 90% 80% at 70% 30%, black, transparent 75%)",
+                      WebkitMaskImage:
+                        "radial-gradient(ellipse 90% 80% at 70% 30%, black, transparent 75%)",
                     }}
                   />
-
-                  {/* Иконка приза справа — крупная, главный визуальный акцент */}
-                  <Image
-                    src="/images/gpn/prize.png"
-                    alt="CX Awards 2024 — приз"
-                    width={462}
-                    height={616}
-                    aria-hidden
-                    className="pointer-events-none absolute right-3 md:right-4 top-1/2 -translate-y-1/2 w-[130px] md:w-[160px] h-auto opacity-95 group-hover:opacity-100 group-hover:scale-[1.04] transition-all duration-500 drop-shadow-[0_10px_40px_rgba(201,166,107,0.45)]"
-                  />
-
-                  {/* Топ-метка */}
-                  <div className="relative z-[1]">
-                    <span className="inline-flex items-center gap-2 font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-[#C9A66B] leading-none">
-                      <Trophy className="w-4 h-4 shrink-0" strokeWidth={1.75} />
-                      Награда · 2024
-                    </span>
+                  <div className="relative text-[10px] md:text-[11px] tracking-[0.26em] uppercase text-white/35">
+                    Награда · 2024
                   </div>
-
-                  {/* Тело */}
-                  <div className="relative z-[1]">
-                    <div className="font-p95 text-[clamp(40px,4.6vw,68px)] uppercase tracking-tight text-[#C9A66B] leading-[0.9]">
-                      CX&apos;24
-                    </div>
-                    <div className="text-[13px] md:text-[14px] tracking-[0.14em] uppercase text-white/75 mt-3 font-light">
+                  <span className="sr-only">CX Awards 2024</span>
+                  <LedText
+                    text="СХ·24"
+                    scale={2}
+                    dot={1.45}
+                    className="relative h-[36px] md:h-[46px] w-auto self-start text-[#C9A66B]"
+                  />
+                  <div className="relative mt-auto">
+                    <div className="text-[12px] md:text-[13px] tracking-[0.16em] uppercase text-white/50">
                       Customer Experience Awards
                     </div>
+                    <div className="mt-3 pt-3 border-t border-[#C9A66B]/15 text-[11px] md:text-[12px] tracking-[0.16em] uppercase text-[#C9A66B]/75">
+                      Победитель в сегменте B2E
+                    </div>
                   </div>
-
-                  {/* Футер: победитель в сегменте, без стрелки */}
-                  <div className="relative z-[1] font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-[#C9A66B]/85 leading-none pt-3.5 border-t border-[#C9A66B]/15">
-                    Победитель в сегменте B2E
-                  </div>
-                </div>
+                </Oled>
               </Link>
             </motion.div>
 
-            {/* === TILE 4: ЭКСПЕРТИЗА (col-span-4) — 3 направления, ссылка на секцию #skills === */}
-            <motion.div
-              variants={fadeUp}
-              className="col-span-12 lg:col-span-4 order-4 lg:order-none"
-            >
+            {/* ── Экспертиза: бары активности, ссылка на #skills ── */}
+            <motion.div variants={fadeUp} className="col-span-12 md:col-span-7">
               <Link
                 href="#skills"
                 aria-label="Перейти к экспертизе"
                 data-ym-goal="nav_skills"
                 className="block h-full no-underline group"
               >
-                <div className="relative h-full min-h-[260px] md:min-h-[280px] rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5 md:p-6 flex flex-col justify-between gap-5 overflow-hidden transition-all duration-300 group-hover:border-[#A6FF00]/40 group-hover:bg-white/[0.04]">
-                  {/* Топ-метка */}
-                  <div className="relative z-[1]">
-                    <span className="inline-flex items-center gap-2 font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-[#A6FF00] leading-none">
-                      <Compass className="w-4 h-4 shrink-0" strokeWidth={1.75} />
-                      Экспертиза
-                    </span>
+                <Oled className="h-full p-5 md:p-7 transition-colors duration-300 group-hover:border-white/[0.12]">
+                  <div className="text-[10px] md:text-[11px] tracking-[0.26em] uppercase text-white/35 mb-5">
+                    Экспертиза
                   </div>
-
-                  {/* 3 направления — синхронно с секцией #skills */}
-                  <ul className="space-y-4 md:space-y-5 relative z-[1]">
+                  <ul className="flex flex-col">
                     {[
                       { num: "01", label: "Управление", note: "дизайн-функции и команды" },
                       { num: "02", label: "Направления", note: "B2C / B2E / EdTech / E-COM" },
-                      { num: "03", label: "Ремесло", note: "оптимизация процессов и применение AI" },
-                    ].map((item) => (
+                      { num: "03", label: "Ремесло", note: "процессы и применение AI" },
+                    ].map((item, i) => (
                       <li
                         key={item.num}
-                        className="flex items-baseline gap-3"
+                        className={`flex items-center gap-4 py-3.5 ${i > 0 ? "border-t border-white/[0.05]" : ""}`}
                       >
-                        <span className="font-p95 text-[13px] md:text-[14px] tabular-nums tracking-[0.1em] text-white/45 leading-none w-6 shrink-0">
+                        <span className="text-[11px] tabular-nums text-[#A6FF00]/60 w-5 shrink-0">
                           {item.num}
                         </span>
-                        <span className="flex-1 leading-tight">
-                          <span className="font-p95 text-[16px] md:text-[17px] tracking-[0.18em] uppercase text-white">
+                        <span className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-baseline sm:gap-3">
+                          <span className="text-[13px] md:text-[14px] font-medium tracking-[0.1em] uppercase text-white">
                             {item.label}
                           </span>
-                          <span className="block text-[13px] tracking-[0.06em] uppercase text-white/72 font-light leading-snug mt-1">
+                          <span className="text-[11px] md:text-[12px] tracking-[0.06em] uppercase text-white/45">
                             {item.note}
                           </span>
                         </span>
+                        <Activity seed={i} />
                       </li>
                     ))}
                   </ul>
-                </div>
+                </Oled>
               </Link>
-            </motion.div>
-
-            {/* === TILE 5: В ЦИФРАХ (col-span-4) — три метрики === */}
-            <motion.div
-              variants={fadeUp}
-              className="col-span-12 lg:col-span-4 order-5 lg:order-none"
-            >
-              <div className="relative h-full min-h-[260px] md:min-h-[280px] rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5 md:p-6 flex flex-col gap-8 md:gap-10 overflow-hidden">
-                {/* Топ-метка */}
-                <div className="flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4 shrink-0 text-white/70" strokeWidth={1.75} />
-                  <span className="font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/70 leading-none">
-                    В цифрах
-                  </span>
-                </div>
-
-                {/* Три цифры в ряд */}
-                <div className="grid grid-cols-3 gap-3 md:gap-4 flex-1 content-center">
-                  {[
-                    { value: "30", label: "запусков" },
-                    { value: "7", label: "лет опыта" },
-                    { value: "27", label: "команд" },
-                  ].map((item, idx) => (
-                    <div
-                      key={item.value}
-                      className={`flex flex-col gap-2 min-w-0 ${
-                        idx > 0 ? "border-l border-white/10 pl-3 md:pl-4" : ""
-                      }`}
-                    >
-                      <div className="text-white" aria-label={item.value}>
-                        <LedText text={item.value} className="h-[30px] md:h-[36px] w-auto" />
-                      </div>
-                      <div className="text-[12px] md:text-[13px] tracking-[0.04em] uppercase text-white/72 leading-[1.4] font-light">
-                        {item.label}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </motion.div>
           </div>
         </motion.div>
-
       </section>
 
       {/* ═══════ PROJECTS — полноширинный асимметричный бенто ═══════ */}
