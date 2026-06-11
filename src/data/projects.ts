@@ -32,6 +32,11 @@ export interface Project {
   metricLabel?: string;
   type: "work" | "experiment";
   coverColor: string;
+  /** Пиксельная заглушка карточки: бренд-цвет кубов и путь к знаку (SVG).
+   *  Если заданы — карточка показывает PixelCubePile (подвешенный куб →
+   *  засыпание на ховере) вместо видео/глянца. */
+  cubeColor?: string;
+  cubeLogo?: string;
   coverImage?: string;
   /**
    * Optional cover video (mp4/webm). Если задан — карточка показывает автоплей-видео
@@ -127,6 +132,8 @@ export const projects: Project[] = [
     slug: "mts-2024",
     title: "Дать МТС голос и собрать Мой МТС в платформу",
     company: "МТС",
+    cubeColor: "#FF2436",
+    cubeLogo: "/images/logos/mts.svg",
     role: "Руководитель направления дизайна (B2C ecosystem)",
     period: "май 2024 — июль 2025",
     year: 2024,
@@ -342,6 +349,8 @@ export const projects: Project[] = [
     slug: "gazprom-neft",
     title: "Построить ЦК дизайна и разморозить флагман",
     company: "Газпром Нефть",
+    cubeColor: "#1C92E5",
+    cubeLogo: "/images/logos/gazpromneft.svg",
     role: "Head of Design",
     period: "2022 — 2024",
     year: 2022,
@@ -551,6 +560,8 @@ export const projects: Project[] = [
   },
   {
     slug: "ozon",
+    cubeColor: "#2E6BFF",
+    cubeLogo: "/images/logos/ozon.svg",
     wip: true,
     title: "Дизайн-процессы и HR-бренд",
     company: "Ozon",
@@ -615,6 +626,8 @@ export const projects: Project[] = [
   },
   {
     slug: "mts-b2c",
+    cubeColor: "#FF2436",
+    cubeLogo: "/images/logos/mts.svg",
     wip: true,
     title: "B2C-продукты МТС",
     company: "МТС",
@@ -685,6 +698,8 @@ export const projects: Project[] = [
   },
   {
     slug: "mentorship-agent",
+    cubeColor: "#3DDC84",
+    cubeLogo: "/images/logos/smiley.svg",
     title: "Как я менторю и использую AI-агентов",
     company: "Independent · Practice",
     role: "Mentor · Process Designer",

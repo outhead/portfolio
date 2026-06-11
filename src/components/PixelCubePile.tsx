@@ -438,11 +438,22 @@ export default function PixelCubePile({
     const onResize = () => measure();
     window.addEventListener("resize", onResize);
 
+    // пауза рендера, когда карточка вне вьюпорта — несколько канвасов на
+    // главной не жгут CPU одновременно
+    let rafRunning = true;
+    const visIO = new IntersectionObserver((es) => {
+      const vis = es[0].isIntersecting;
+      if (vis && !rafRunning) { rafRunning = true; last = performance.now(); raf = requestAnimationFrame(frame); }
+      else if (!vis && rafRunning) { rafRunning = false; cancelAnimationFrame(raf); }
+    }, { threshold: 0 });
+    visIO.observe(wrap);
+
     return () => {
       cancelAnimationFrame(raf);
       wrap.removeEventListener("mouseenter", onEnter);
       wrap.removeEventListener("mouseleave", onLeave);
       io?.disconnect();
+      visIO.disconnect();
       window.removeEventListener("resize", onResize);
     };
   }, [color, colors, logoSrc, grid, maxCubes, idleCenter]);

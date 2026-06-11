@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { Project } from "@/data/projects";
 import { CardCoverVideo } from "@/components/CoverVideo";
+import PixelCubePile from "@/components/PixelCubePile";
 import { useEffect, useRef, useState, type RefObject } from "react";
 
 /**
@@ -219,10 +220,24 @@ export default function ProjectCard({
   // «Pet Project» — служебная подпись, в окне не показываем.
   const showCompany = !/pet\s*project/i.test(project.company);
 
+  const hasCube = !!(project.cubeColor && project.cubeLogo);
+
   const MediaWindow = (
     <div className={`relative w-full ${wide ? "aspect-[21/9]" : "aspect-[16/9]"} rounded-xl border border-white/[0.08] overflow-hidden bg-black/40`}>
-      {CoverTint}
-      <CoverMedia project={project} active={coverActive} onVideoPlayingChange={setVideoPlaying} />
+      {hasCube ? (
+        <PixelCubePile
+          color={project.cubeColor}
+          logoSrc={project.cubeLogo}
+          idleCenter
+          grid={featured ? 124 : wide ? 118 : 100}
+          maxCubes={featured || wide ? 45 : 32}
+        />
+      ) : (
+        <>
+          {CoverTint}
+          <CoverMedia project={project} active={coverActive} onVideoPlayingChange={setVideoPlaying} />
+        </>
+      )}
       {/* Затемнения для читаемости лейблов поверх яркого видео */}
       <div aria-hidden className="absolute inset-x-0 top-0 h-14 md:h-16 bg-gradient-to-b from-black/65 to-transparent z-[1] pointer-events-none" />
       <div aria-hidden className="absolute inset-x-0 bottom-0 h-16 md:h-20 bg-gradient-to-t from-black/75 to-transparent z-[1] pointer-events-none" />
