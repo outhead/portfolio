@@ -1,3 +1,4 @@
+import LedText from "@/components/LedText";
 import Link from "next/link";
 import ScrollReveal from "@/components/ScrollReveal";
 import WIPOverlay from "@/components/WIPOverlay";
@@ -234,10 +235,11 @@ export default function MentoringPage() {
       <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-20 md:py-32 border-t border-white/[0.04] bg-black/75">
         <div className="max-w-5xl">
           <ScrollReveal>
-            <div className="font-p95 text-[15px] md:text-[16px] tracking-[0.2em] uppercase text-white/70 mb-6">
-              <span className="text-[#A6FF00]/80">[</span>
-              <span className="mx-2">Принципы</span>
-              <span className="text-[#A6FF00]/80">]</span>
+            <div className="inline-flex items-center gap-2 text-white/70 mb-6">
+              <LedText text="[" className="h-[10px] w-auto text-[#A6FF00]/80" />
+              <span className="sr-only">Принципы</span>
+              <LedText text="Принципы" className="h-[10px] w-auto" />
+              <LedText text="]" className="h-[10px] w-auto text-[#A6FF00]/80" />
             </div>
           </ScrollReveal>
 
@@ -278,8 +280,8 @@ export default function MentoringPage() {
               >
                 <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] hover:border-white/[0.2] hover:bg-white/[0.04] transition-colors p-7 md:p-10 flex flex-col justify-between min-h-[240px] md:min-h-[280px] h-full">
                   <div>
-                    <div className="font-p95 text-[15px] md:text-[16px] tracking-[0.2em] uppercase text-white/45 mb-3">
-                      {p.n} /
+                    <div className="text-white/45 mb-3">
+                      <LedText text={`${p.n} /`} className="h-[9px] w-auto" />
                     </div>
                     <h3 className="font-p95 text-[clamp(22px,3.2vw,44px)] uppercase leading-[0.98] text-white mb-4 max-w-2xl">
                       {p.title}

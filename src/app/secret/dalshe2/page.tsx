@@ -1,5 +1,6 @@
 "use client";
 
+import LedText from "@/components/LedText";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import confetti from "canvas-confetti";
@@ -185,7 +186,10 @@ export default function Dalshe2() {
         <div className="relative z-[1] w-full max-w-[460px] mx-auto flex flex-col items-center text-center">
           {/* Шапка фикс-высоты — чтобы поле во всех уровнях было на одной высоте */}
           <div className="flex flex-col items-center" style={{ minHeight: "clamp(108px, 17vw, 150px)" }}>
-            <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-3">Крестики-нолики · Загадка №3</p>
+            <p className="text-white/40 mb-3">
+              <span className="sr-only">Крестики-нолики · Загадка №3</span>
+              <LedText text="Крестики-нолики · Загадка №3" className="h-[9px] w-auto" />
+            </p>
             <h1 className="font-p95 leading-[0.95] uppercase tracking-tight mb-3" style={{ fontSize: "clamp(26px, 5vw, 46px)" }}>
               Обыграй компьютер
             </h1>
@@ -211,24 +215,27 @@ export default function Dalshe2() {
           ) : null}
 
           <button type="button" onClick={reset}
-            className="mt-8 inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white/70 font-p95 text-[14px] tracking-[0.12em] uppercase hover:border-white/40 hover:text-white transition-colors">
-            <span className="leading-none translate-y-[1px]">Начать заново</span>
+            className="mt-8 inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white/70 hover:border-white/40 hover:text-white transition-colors">
+            <span className="sr-only">Начать заново</span><LedText text="Начать заново" className="h-[10px] w-auto" />
           </button>
         </div>
       ) : (
         <div className="relative z-[1] w-full max-w-[420px] mx-auto flex flex-col items-center text-center">
-          <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-4">Три в ряд</p>
+          <p className="text-white/40 mb-4">
+            <span className="sr-only">Три в ряд</span>
+            <LedText text="Три в ряд" className="h-[9px] w-auto" />
+          </p>
           <h1 className="font-p95 leading-none uppercase tracking-tight text-[#A6FF00] mb-5" style={{ fontSize: "clamp(40px, 11vw, 76px)" }}>
             Готово
           </h1>
           <p className="text-sm text-white/60 mb-8 max-w-xs">Ты не переиграл его — ты переставил фигуры.</p>
           <div className="flex flex-wrap items-center justify-center gap-3">
-            <Link href="/secret/dalshe3" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[14px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
-              <span className="leading-none translate-y-[1px]">Дальше</span><span className="leading-none">→</span>
+            <Link href="/secret/dalshe3" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
+              <span className="sr-only">Дальше</span><LedText text="Дальше" className="h-[10px] w-auto" /><LedText text="→" className="h-[11px] w-auto" />
             </Link>
             <button type="button" onClick={reset}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white/70 font-p95 text-[14px] tracking-[0.12em] uppercase hover:border-white/40 hover:text-white transition-colors">
-              <span className="leading-none translate-y-[1px]">Ещё раз</span>
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white/70 hover:border-white/40 hover:text-white transition-colors">
+              <span className="sr-only">Ещё раз</span><LedText text="Ещё раз" className="h-[10px] w-auto" />
             </button>
           </div>
         </div>

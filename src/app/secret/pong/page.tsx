@@ -1,5 +1,6 @@
 "use client";
 
+import LedText from "@/components/LedText";
 import { useEffect, useRef, useState } from "react";
 import confetti from "canvas-confetti";
 import { connectP2P, type P2PHandle } from "./rtc";
@@ -1024,8 +1025,9 @@ export default function PongPage() {
         background: "radial-gradient(ellipse 55% 45% at 50% 38%, rgba(166,255,0,0.05), transparent 62%)",
       }} />
       <div className="relative z-[1] w-full max-w-[440px] mx-auto flex flex-col items-center text-center">
-        <p className="font-p95 text-[11px] sm:text-[12px] tracking-[0.25em] uppercase text-white/40 mb-1.5">
-          Пинг-понг · вдвоём
+        <p className="text-white/40 mb-1.5">
+          <span className="sr-only">Пинг-понг · вдвоём</span>
+          <LedText text="Пинг-понг · вдвоём" className="h-[8px] w-auto" />
           <span className="ml-2 normal-case tracking-normal" style={{ color: transport === "p2p" ? "rgba(166,255,0,0.65)" : "rgba(255,255,255,0.25)" }}>
             <span className={transport === "p2p" ? "animate-pulse" : ""}>●</span> {transport === "p2p" ? "p2p" : "сервер"}
           </span>
@@ -1064,7 +1066,7 @@ export default function PongPage() {
                       <p className="text-[15px] text-white/80 mb-1">Жду соперника</p>
                       <p className="text-[13px] text-white/45 mb-5 max-w-xs">Кинь ссылку другу — игра начнётся, когда он откроет.</p>
                       <button type="button" onClick={copy}
-                        className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[13px] tracking-[0.1em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors">
+                        className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors">
                         <span className="leading-none translate-y-[1px]">{copied ? "скопировано" : "копировать ссылку"}</span>
                       </button>
                     </>
@@ -1082,7 +1084,7 @@ export default function PongPage() {
                     {iWon ? "Ты выиграл" : "Ты проиграл"}
                   </p>
                   <button type="button" onClick={rematch}
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[13px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors">
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors">
                     <span className="leading-none translate-y-[1px]">{role === "host" ? "Реванш" : "Запросить реванш"}</span>
                   </button>
                 </>
@@ -1091,7 +1093,7 @@ export default function PongPage() {
               {/* выбор режима — хост, пока игра не идёт; второй режим, не дефолт */}
               {role === "host" && (phase === "waiting" || phase === "over") ? (
                 <button type="button" onClick={toggleMode}
-                  className="mt-5 font-p95 text-[11px] tracking-[0.15em] uppercase text-white/35 hover:text-white/70 transition-colors">
+                  className="mt-5 text-white/35 hover:text-white/70 transition-colors">
                   режим:{" "}
                   <span className={mode === "field" ? "text-[#A6FF00]" : "text-white/70"}>
                     {mode === "field" ? "⌁ магнитное поле" : "классика"}

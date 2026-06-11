@@ -1,5 +1,6 @@
 "use client";
 
+import LedText from "@/components/LedText";
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -38,7 +39,10 @@ export default function ZapretProto() {
 
       {!won ? (
         <div className="relative z-[1] w-full max-w-[440px] mx-auto flex flex-col items-center text-center">
-          <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-3">Прототип · A</p>
+          <p className="text-white/40 mb-3">
+            <span className="sr-only">Прототип · A</span>
+            <LedText text="Прототип · A" className="h-[9px] w-auto" />
+          </p>
 
           {/* Фикс-высота заголовка+сообщения, чтобы кнопка не прыгала */}
           <div className="flex flex-col items-center justify-start" style={{ height: 200 }}>
@@ -68,14 +72,17 @@ export default function ZapretProto() {
         </div>
       ) : (
         <div className="relative z-[1] w-full max-w-[420px] mx-auto flex flex-col items-center text-center">
-          <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-4">Разгадал</p>
+          <p className="text-white/40 mb-4">
+            <span className="sr-only">Разгадал</span>
+            <LedText text="Разгадал" className="h-[9px] w-auto" />
+          </p>
           <h1 className="font-p95 leading-none uppercase tracking-tight text-[#A6FF00] mb-5" style={{ fontSize: "clamp(40px, 11vw, 76px)" }}>
             Готово
           </h1>
           <p className="text-sm text-white/60 mb-8 max-w-xs">Ты не послушался — в этом и был фокус.</p>
-          <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[14px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
+          <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
             <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2.2} />
-            <span className="leading-none translate-y-[1px]">На главную</span>
+            <span className="sr-only">На главную</span><LedText text="На главную" className="h-[10px] w-auto" />
           </Link>
         </div>
       )}

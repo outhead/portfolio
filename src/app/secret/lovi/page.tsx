@@ -1,5 +1,6 @@
 "use client";
 
+import LedText from "@/components/LedText";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -321,8 +322,9 @@ export default function SecretLoviPage() {
             {/* старт «ты здесь» */}
             <div className="absolute" style={{ left: 0, top: 0, transform: "translate(-50%,-50%)" }}>
               <div className="w-3 h-3 rounded-full bg-white/80" />
-              <div className="mt-3 font-p95 text-[11px] tracking-[0.2em] uppercase text-white/40 whitespace-nowrap -translate-x-1/2 ml-1.5">
-                ты здесь
+              <div className="mt-3 text-white/40 whitespace-nowrap -translate-x-1/2 ml-1.5">
+                <span className="sr-only">ты здесь</span>
+                <LedText text="ты здесь" className="h-[8px] w-auto" />
               </div>
             </div>
 
@@ -338,7 +340,10 @@ export default function SecretLoviPage() {
               <div className="relative flex flex-col items-center">
                 <div className="w-28 h-28 rounded-2xl border-2 border-[#A6FF00] bg-[#A6FF00]/10 flex items-center justify-center animate-pulse"
                   style={{ boxShadow: "0 0 60px -8px rgba(166,255,0,0.7)" }}>
-                  <span className="font-p95 text-[15px] tracking-[0.18em] uppercase text-[#A6FF00]">Выход</span>
+                  <span className="text-[#A6FF00]">
+                    <span className="sr-only">Выход</span>
+                    <LedText text="Выход" className="h-[11px] w-auto" />
+                  </span>
                 </div>
               </div>
             </button>
@@ -350,7 +355,10 @@ export default function SecretLoviPage() {
 
       {/* HUD сверху (фикс) */}
       <div className="absolute top-0 left-0 right-0 z-[2] pt-[88px] px-5 text-center pointer-events-none">
-        <p className="font-p95 text-[12px] md:text-[13px] tracking-[0.25em] uppercase text-white/40 mb-3">Загадка №3</p>
+        <p className="text-white/40 mb-3">
+          <span className="sr-only">Загадка №3</span>
+          <LedText text="Загадка №3" className="h-[9px] w-auto" />
+        </p>
         {phase === "play" && (
           <>
             <h1 className="font-p95 leading-[0.95] uppercase tracking-tight mb-3" style={{ fontSize: "clamp(28px, 5vw, 48px)" }}>
@@ -372,8 +380,8 @@ export default function SecretLoviPage() {
               <path d="M6 20 H30 M22 12 L32 20 L22 28" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <span className="font-p95 text-[11px] tracking-[0.2em] uppercase text-white/40">
-            {ui.dist > Math.max(sizeRef.current.w, sizeRef.current.h) * 1.2 ? "далеко" : "ближе"}
+          <span className="text-white/40">
+            <LedText text={ui.dist > Math.max(sizeRef.current.w, sizeRef.current.h) * 1.2 ? "далеко" : "ближе"} className="h-[8px] w-auto" />
           </span>
         </div>
       )}
@@ -382,7 +390,10 @@ export default function SecretLoviPage() {
       {phase === "done" && (
         <div className="absolute inset-0 z-[5] flex items-start justify-center px-5 pt-[96px] pb-12 bg-black/75 backdrop-blur-sm overflow-y-auto">
           <div className="w-full max-w-[420px] mx-auto flex flex-col items-center text-center">
-            <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-4">Выход был за краем</p>
+            <p className="text-white/40 mb-4">
+              <span className="sr-only">Выход был за краем</span>
+              <LedText text="Выход был за краем" className="h-[9px] w-auto" />
+            </p>
             <h1 className="font-p95 leading-none uppercase tracking-tight text-[#A6FF00] mb-4" style={{ fontSize: "clamp(40px, 11vw, 76px)" }}>
               Нашёл
             </h1>
@@ -399,7 +410,7 @@ export default function SecretLoviPage() {
                   className="flex-1 bg-white/[0.06] border border-white/15 rounded-full px-5 py-3 text-[15px] text-white text-center sm:text-left placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors"
                 />
                 <button type="button" onClick={submitScore} disabled={submitting}
-                  className="inline-flex items-center justify-center px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[14px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors disabled:opacity-50">
+                  className="inline-flex items-center justify-center px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors disabled:opacity-50">
                   <span className="leading-none translate-y-[1px]">{submitting ? "..." : "Отправить"}</span>
                 </button>
               </div>
@@ -407,7 +418,10 @@ export default function SecretLoviPage() {
 
             {entries.length > 0 ? (
               <div className="w-full max-w-[360px] mx-auto mb-8">
-                <p className="font-p95 text-[11px] tracking-[0.25em] uppercase text-white/35 mb-3">Быстрее всех</p>
+                <p className="text-white/35 mb-3">
+                  <span className="sr-only">Быстрее всех</span>
+                  <LedText text="Быстрее всех" className="h-[8px] w-auto" />
+                </p>
                 <ol className="text-left">
                   {entries.map((e, i) => {
                     const mine = youAt != null && e.at === youAt;
@@ -424,9 +438,9 @@ export default function SecretLoviPage() {
             ) : !submitted ? (<p className="text-sm text-white/40 mb-8">Разгадай первым.</p>) : null}
 
             <Link href="/" data-ym-goal="quest3_solved"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[14px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
               <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2.2} />
-              <span className="leading-none translate-y-[1px]">На главную</span>
+              <span className="sr-only">На главную</span><LedText text="На главную" className="h-[10px] w-auto" />
             </Link>
           </div>
         </div>

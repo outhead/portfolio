@@ -1,5 +1,6 @@
 "use client";
 
+import LedText from "@/components/LedText";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Wrench } from "lucide-react";
 
@@ -38,9 +39,10 @@ export default function WIPOverlay({
         />
 
         <div className="relative">
-          <span className="inline-flex items-center gap-2 font-p95 text-[13px] md:text-[14px] tracking-[0.22em] uppercase text-[#A6FF00]">
+          <span className="inline-flex items-center gap-2 text-[#A6FF00]">
             <Wrench className="w-3.5 h-3.5" strokeWidth={2} />
-            В работе
+            <span className="sr-only">В работе</span>
+            <LedText text="В работе" className="h-[9px] w-auto" />
           </span>
 
           <h2 className="mt-5 font-p95 text-[clamp(28px,4.5vw,44px)] uppercase leading-[1.0] tracking-tight text-white">
@@ -58,13 +60,13 @@ export default function WIPOverlay({
               className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-[#A6FF00] text-black font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:bg-white transition-colors no-underline"
             >
               <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2.2} />
-              <span className="leading-none translate-y-[1px]">На главную</span>
+              <span className="sr-only">На главную</span><LedText text="На главную" className="h-[11px] w-auto" />
             </Link>
             <Link
               href="/#portfolio"
               className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/[0.15] text-white/85 font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:border-white/40 hover:text-white transition-colors no-underline"
             >
-              <span className="leading-none translate-y-[1px]">Готовые кейсы</span>
+              <span className="sr-only">Готовые кейсы</span><LedText text="Готовые кейсы" className="h-[11px] w-auto" />
               <ArrowRight className="w-3.5 h-3.5" strokeWidth={2} />
             </Link>
           </div>

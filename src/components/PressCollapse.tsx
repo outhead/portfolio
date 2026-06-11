@@ -1,5 +1,6 @@
 "use client";
 
+import LedText from "@/components/LedText";
 import { useState } from "react";
 import { ChevronDown, Newspaper } from "lucide-react";
 import CaseLinkCard, { type CaseLinkData } from "./CaseLinkCard";
@@ -28,8 +29,9 @@ export default function PressCollapse({ links }: Props) {
         <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#A6FF00]/15 ring-1 ring-[#A6FF00]/35">
           <Newspaper className="w-3.5 h-3.5 text-[#A6FF00]" strokeWidth={2.25} />
         </span>
-        <span className="font-p95 text-[12px] tracking-[0.18em] uppercase">
-          Пресса и публикации · {links.length}
+        <span>
+          <span className="sr-only">Пресса и публикации · {links.length}</span>
+          <LedText text={`Пресса и публикации · ${links.length}`} className="h-[9px] w-auto" />
         </span>
         <ChevronDown
           className={`w-3.5 h-3.5 text-[#A6FF00] transition-transform duration-300 ${

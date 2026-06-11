@@ -1,5 +1,6 @@
 "use client";
 
+import LedText from "@/components/LedText";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import confetti from "canvas-confetti";
@@ -109,7 +110,10 @@ export default function KodFinal() {
       {!won ? (
         <>
         <div className="relative z-[1] w-full max-w-[320px] mx-auto flex flex-col items-center text-center select-none">
-          <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-3">Загадка №5 · финал</p>
+          <p className="text-white/40 mb-3">
+            <span className="sr-only">Загадка №5 · финал</span>
+            <LedText text="Загадка №5 · финал" className="h-[9px] w-auto" />
+          </p>
           <h1 className="font-p95 leading-[0.95] uppercase tracking-tight mb-2" style={{ fontSize: "clamp(26px, 5vw, 44px)" }}>
             Введи код
           </h1>
@@ -147,15 +151,19 @@ export default function KodFinal() {
         {/* Разгадка — в самом «подвале»: надо пролистать вниз (на телефоне — пара экранов) */}
         <div aria-hidden style={{ height: "128vh" }} />
         <div className="relative z-[1] w-full max-w-[440px] mx-auto text-center pb-4">
-          <p className="font-p95 text-[12px] sm:text-[13px] tracking-[0.3em] uppercase text-white/25">
-            Сектор 4 · Узел 6 · Шлюз 8 · Ключ 8
+          <p className="text-white/25">
+            <span className="sr-only">Сектор 4 · Узел 6 · Шлюз 8 · Ключ 8</span>
+            <LedText text="Сектор 4 · Узел 6 · Шлюз 8 · Ключ 8" className="h-[9px] w-auto" />
           </p>
           <p className="mt-2 text-[10px] tracking-[0.2em] uppercase text-white/12">Терминал #0000 · служебная метка</p>
         </div>
         </>
       ) : (
         <div className="relative z-[1] w-full max-w-[440px] mx-auto flex flex-col items-center text-center">
-          <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-3">Квест пройден</p>
+          <p className="text-white/40 mb-3">
+            <span className="sr-only">Квест пройден</span>
+            <LedText text="Квест пройден" className="h-[9px] w-auto" />
+          </p>
           <h1 className="font-p95 leading-none uppercase tracking-tight text-[#A6FF00] mb-4" style={{ fontSize: "clamp(40px, 11vw, 76px)" }}>
             Доступ
           </h1>
@@ -197,7 +205,7 @@ export default function KodFinal() {
               ) : null}
 
               <button type="button" onClick={submit} disabled={submitting}
-                className="mt-1 inline-flex items-center justify-center px-6 py-3.5 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[14px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors disabled:opacity-50">
+                className="mt-1 inline-flex items-center justify-center px-6 py-3.5 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors disabled:opacity-50">
                 <span className="leading-none translate-y-[1px]">{submitting ? "..." : "В таблицу"}</span>
               </button>
               {!showFb ? (
@@ -216,14 +224,15 @@ export default function KodFinal() {
               <div className="flex flex-wrap items-center justify-center gap-2.5">
                 {fb.length > 0 ? (
                   <button type="button" onClick={() => setShowWall((v) => !v)}
-                    className="inline-flex items-center px-5 py-2.5 rounded-full border border-white/15 text-white/70 font-p95 text-[12px] tracking-[0.1em] uppercase hover:border-white/40 hover:text-white transition-colors">
+                    className="inline-flex items-center px-5 py-2.5 rounded-full border border-white/15 text-white/70 hover:border-white/40 hover:text-white transition-colors">
                     {showWall ? "скрыть отзывы" : `отзывы · ${fb.length}`}
                   </button>
                 ) : null}
                 {TG_CHANNEL ? (
                   <a href={TG_CHANNEL} target="_blank" rel="noopener noreferrer"
-                    className="inline-flex items-center px-5 py-2.5 rounded-full border border-[#A6FF00]/40 text-[#A6FF00] font-p95 text-[12px] tracking-[0.1em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
-                    Канал
+                    className="inline-flex items-center px-5 py-2.5 rounded-full border border-[#A6FF00]/40 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
+                    <span className="sr-only">Канал</span>
+                    <LedText text="Канал" className="h-[9px] w-auto" />
                   </a>
                 ) : null}
               </div>
@@ -234,7 +243,10 @@ export default function KodFinal() {
           {submitted && entries.length > 0 ? (
             <div className="w-full max-w-[380px] mx-auto mb-8 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5">
               <div className="flex items-center justify-between mb-3">
-                <p className="font-p95 text-[11px] tracking-[0.22em] uppercase text-white/40">Быстрее всех</p>
+                <p className="text-white/40">
+                  <span className="sr-only">Быстрее всех</span>
+                  <LedText text="Быстрее всех" className="h-[8px] w-auto" />
+                </p>
                 <button type="button" onClick={() => setOthersOnly((v) => !v)}
                   className="text-[11px] tracking-[0.08em] uppercase text-white/35 hover:text-[#A6FF00] transition-colors">
                   {othersOnly ? "все" : "без друзей"}
@@ -262,7 +274,10 @@ export default function KodFinal() {
           {/* ─── 4. Стена отзывов (по кнопке) ─── */}
           {submitted && showWall && fb.length > 0 ? (
             <div className="w-full max-w-[420px] mx-auto mb-8 text-left">
-              <p className="font-p95 text-[11px] tracking-[0.22em] uppercase text-white/40 mb-3">Стена прошедших</p>
+              <p className="text-white/40 mb-3">
+                <span className="sr-only">Стена прошедших</span>
+                <LedText text="Стена прошедших" className="h-[8px] w-auto" />
+              </p>
               <div className="flex flex-col gap-2.5">
                 {fb.map((f, i) => (
                   <div key={`${f.at}-${i}`} className="rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-3">
@@ -277,8 +292,8 @@ export default function KodFinal() {
           {/* ─── 5. Дальше ─── */}
           <div className="mb-4 flex flex-col items-center">
             <p className="text-[13px] text-white/45 mb-3 max-w-xs">Есть ещё одна. Но в одиночку её не пройти.</p>
-            <Link href="/secret/pair" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[14px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
-              <span className="leading-none translate-y-[1px]">Кооп-загадка</span><span className="leading-none">→</span>
+            <Link href="/secret/pair" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
+              <span className="sr-only">Кооп-загадка</span><LedText text="Кооп-загадка" className="h-[10px] w-auto" /><LedText text="→" className="h-[11px] w-auto" />
             </Link>
           </div>
         </div>

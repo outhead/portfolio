@@ -5,7 +5,7 @@ import ParticleSphere from "@/components/ParticleSphere";
 import PulseAnimation, { type PulseVariant } from "@/components/PulseAnimation";
 import LedText from "@/components/LedText";
 import { LedBoard, LedCounter, type LedLine } from "@/components/LedBoard";
-import { Oled, DotGraph, Activity } from "@/components/OledKit";
+import { Oled, Activity } from "@/components/OledKit";
 import FinalCTA from "@/components/FinalCTA";
 import PillsBackdrop from "@/components/PillsBackdrop";
 import { TypographyFix } from "@/components/TypographyFix";
@@ -1189,7 +1189,6 @@ export default function PreviewHome() {
             {/* ── В цифрах: LED-счётчики + тихий граф из точек ── */}
             <motion.div variants={fadeUp} className="col-span-12 lg:col-span-5">
               <Oled className="h-full p-5 md:p-7">
-                <DotGraph className="absolute inset-x-6 -bottom-1 h-[46px] opacity-30 pointer-events-none" />
                 <div className="relative mb-6 text-white/40">
                   <span className="sr-only">В цифрах</span>
                   <LedText text="В цифрах" className="h-[10px] w-auto" />

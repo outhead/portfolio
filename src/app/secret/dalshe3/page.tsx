@@ -1,5 +1,6 @@
 "use client";
 
+import LedText from "@/components/LedText";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import confetti from "canvas-confetti";
@@ -204,7 +205,10 @@ export default function Dalshe3() {
         <div className="relative z-[1] w-full max-w-[460px] mx-auto flex flex-col items-center text-center">
           {/* Шапка фикс-высоты — одна высота поля во всех уровнях */}
           <div className="flex flex-col items-center justify-center" style={{ minHeight: "clamp(108px, 17vw, 150px)" }}>
-            <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-3">Крестики-нолики · Загадка №4</p>
+            <p className="text-white/40 mb-3">
+              <span className="sr-only">Крестики-нолики · Загадка №4</span>
+              <LedText text="Крестики-нолики · Загадка №4" className="h-[9px] w-auto" />
+            </p>
             <h1 ref={headRef} className="font-p95 leading-[1.05] uppercase tracking-tight transition-colors" style={{ fontSize: "clamp(26px, 5vw, 46px)" }}>
               Это{" "}
               <span ref={neRef} className="transition-all" style={nearNe ? { color: "#FF4040", textShadow: "0 0 16px rgba(255,64,64,0.9)" } : undefined}>не</span>{" "}
@@ -233,18 +237,21 @@ export default function Dalshe3() {
           </p>
 
           <button type="button" onClick={reset}
-            className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white/70 font-p95 text-[14px] tracking-[0.12em] uppercase hover:border-white/40 hover:text-white transition-colors">
-            <span className="leading-none translate-y-[1px]">Начать заново</span>
+            className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white/70 hover:border-white/40 hover:text-white transition-colors">
+            <span className="sr-only">Начать заново</span><LedText text="Начать заново" className="h-[10px] w-auto" />
           </button>
         </div>
       ) : (
         <div className="relative z-[1] w-full max-w-[420px] mx-auto flex flex-col items-center text-center">
-          <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-4">Решено</p>
+          <p className="text-white/40 mb-4">
+            <span className="sr-only">Решено</span>
+            <LedText text="Решено" className="h-[9px] w-auto" />
+          </p>
           <h1 className="font-p95 leading-none uppercase tracking-tight text-[#A6FF00] mb-8" style={{ fontSize: "clamp(34px, 9vw, 64px)" }}>
             Это решение
           </h1>
-          <Link href="/secret/lab/kod" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[14px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
-            <span className="leading-none translate-y-[1px]">Дальше</span><span className="leading-none">→</span>
+          <Link href="/secret/lab/kod" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
+            <span className="sr-only">Дальше</span><LedText text="Дальше" className="h-[10px] w-auto" /><LedText text="→" className="h-[11px] w-auto" />
           </Link>
         </div>
       )}

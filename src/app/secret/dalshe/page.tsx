@@ -1,5 +1,6 @@
 "use client";
 
+import LedText from "@/components/LedText";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import confetti from "canvas-confetti";
@@ -398,25 +399,26 @@ export default function SecretDalshePage() {
               <Link
                 href="/secret/dalshe2"
                 data-ym-goal="quest2_solved"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[14px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
               >
-                <span className="leading-none translate-y-[1px]">Следующая загадка</span>
-                <span className="leading-none">→</span>
+                <span className="sr-only">Следующая загадка</span><LedText text="Следующая загадка" className="h-[10px] w-auto" />
+                <LedText text="→" className="h-[11px] w-auto" />
               </Link>
               <button
                 type="button"
                 onClick={reset}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white/70 font-p95 text-[14px] tracking-[0.12em] uppercase hover:border-white/40 hover:text-white transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white/70 hover:border-white/40 hover:text-white transition-colors"
               >
-                <span className="leading-none translate-y-[1px]">Сыграть снова</span>
+                <span className="sr-only">Сыграть снова</span><LedText text="Сыграть снова" className="h-[10px] w-auto" />
               </button>
             </div>
           </div>
         ) : (
           /* ─── Игра (ход / момент победы) ─── */
           <div className="w-full max-w-[460px] mx-auto flex flex-col items-center text-center">
-            <p className="font-p95 text-[12px] md:text-[13px] tracking-[0.25em] uppercase text-white/40 mb-3">
-              Крестики-нолики · Загадка №2
+            <p className="text-white/40 mb-3">
+              <span className="sr-only">Крестики-нолики · Загадка №2</span>
+              <LedText text="Крестики-нолики · Загадка №2" className="h-[9px] w-auto" />
             </p>
 
             {phase === "celebrate" ? (
@@ -453,7 +455,7 @@ export default function SecretDalshePage() {
                 <button
                   type="button"
                   onClick={reset}
-                  className="mt-5 inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white/70 font-p95 text-[14px] md:text-[15px] tracking-[0.12em] uppercase hover:border-white/40 hover:text-white transition-colors"
+                  className="mt-5 inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white/70 hover:border-white/40 hover:text-white transition-colors"
                 >
                   <span className="leading-none translate-y-[1px]">
                     {over ? "Повторить" : "Начать заново"}

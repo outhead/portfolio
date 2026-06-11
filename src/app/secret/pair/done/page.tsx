@@ -1,5 +1,6 @@
 "use client";
 
+import LedText from "@/components/LedText";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import confetti from "canvas-confetti";
@@ -23,7 +24,10 @@ export default function PairDone() {
         background: "radial-gradient(ellipse 55% 45% at 50% 38%, rgba(166,255,0,0.08), transparent 60%)",
       }} />
       <div className="relative z-[1] w-full max-w-[440px] mx-auto flex flex-col items-center text-center">
-        <p className="font-p95 text-[12px] tracking-[0.25em] uppercase text-white/40 mb-4">Вдвоём</p>
+        <p className="text-white/40 mb-4">
+          <span className="sr-only">Вдвоём</span>
+          <LedText text="Вдвоём" className="h-[9px] w-auto" />
+        </p>
         <h1 className="font-p95 leading-none uppercase tracking-tight text-[#A6FF00] mb-6" style={{ fontSize: "clamp(40px,11vw,76px)" }}>
           Готово
         </h1>
@@ -32,8 +36,8 @@ export default function PairDone() {
         </p>
         <div className="mb-8 flex flex-col items-center">
           <p className="text-[13px] text-white/45 mb-3 max-w-xs">Раз уж вы вдвоём — сыграйте.</p>
-          <Link href={pongHref} className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[14px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
-            <span className="leading-none translate-y-[1px]">Пинг-понг</span><span className="leading-none">→</span>
+          <Link href={pongHref} className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
+            <span className="sr-only">Пинг-понг</span><LedText text="Пинг-понг" className="h-[10px] w-auto" /><LedText text="→" className="h-[11px] w-auto" />
           </Link>
         </div>
       </div>

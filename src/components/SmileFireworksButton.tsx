@@ -1,5 +1,6 @@
 "use client";
 
+import LedText from "@/components/LedText";
 import { useEffect, useRef } from "react";
 import confetti from "canvas-confetti";
 
@@ -149,8 +150,9 @@ export default function SmileFireworksButton({
           aria-hidden
           className="absolute inset-0 w-full h-full pointer-events-none"
         />
-        <span className="relative z-[1] font-p95 text-[15px] md:text-[16px] leading-none uppercase tracking-[0.12em] translate-y-[1px]">
-          Не нажимать
+        <span className="relative z-[1]">
+          <span className="sr-only">Не нажимать</span>
+          <LedText text="Не нажимать" className="h-[11px] w-auto" />
         </span>
       </button>
     );

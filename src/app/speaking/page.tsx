@@ -1,5 +1,6 @@
 "use client";
 
+import LedText from "@/components/LedText";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, type Variants } from "framer-motion";
@@ -124,8 +125,9 @@ export default function SpeakingPage() {
       >
         <motion.div variants={fadeUp} className="mb-8 md:mb-10 flex items-center gap-3">
           <Mic2 className="w-4 h-4 text-white/40" strokeWidth={1.75} />
-          <span className="font-p95 text-[15px] md:text-[16px] tracking-[0.22em] uppercase text-white/70">
-            Видео и интервью
+          <span className="text-white/70">
+            <span className="sr-only">Видео и интервью</span>
+            <LedText text="Видео и интервью" className="h-[11px] w-auto" />
           </span>
           <span className="text-[13px] md:text-[14px] text-white/35 tabular-nums">
             {TALKS.length}
@@ -189,8 +191,9 @@ export default function SpeakingPage() {
           <motion.div variants={fadeUp}>
             <div className="flex items-center gap-2 mb-4">
               <GraduationCap className="w-4 h-4 text-white/40" strokeWidth={1.5} />
-              <div className="font-p95 text-[15px] md:text-[16px] tracking-[0.2em] uppercase text-white/70">
-                Менторство и&nbsp;курсы
+              <div className="text-white/70">
+                <span className="sr-only">Менторство и&nbsp;курсы</span>
+                <LedText text="Менторство и&nbsp;курсы" className="h-[11px] w-auto" />
               </div>
             </div>
             <ul className="space-y-2.5 text-[15px] md:text-[16px] text-white/65 leading-relaxed mb-5">
@@ -210,8 +213,9 @@ export default function SpeakingPage() {
           <motion.div variants={fadeUp}>
             <div className="flex items-center gap-2 mb-4">
               <Send className="w-4 h-4 text-white/40" strokeWidth={1.5} />
-              <div className="font-p95 text-[15px] md:text-[16px] tracking-[0.2em] uppercase text-white/70">
-                Telegram-канал
+              <div className="text-white/70">
+                <span className="sr-only">Telegram-канал</span>
+                <LedText text="Telegram-канал" className="h-[11px] w-auto" />
               </div>
             </div>
             <p className="text-[15px] md:text-[16px] text-white/65 leading-relaxed mb-5">

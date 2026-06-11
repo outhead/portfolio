@@ -1,5 +1,6 @@
 "use client";
 
+import LedText from "@/components/LedText";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -116,8 +117,9 @@ export default function SecretPage() {
       {/* Контент — по центру, как на странице крестиков */}
       <section className="relative z-[1] flex-1 flex items-start justify-center px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] pt-[64px] md:pt-[88px] pb-12">
         <div className="w-full max-w-[860px] mx-auto flex flex-col items-center text-center">
-          <p className="font-p95 text-[12px] md:text-[13px] tracking-[0.25em] uppercase text-white/40 mb-4 md:mb-8">
-            Шифр Цезаря · Загадка №1
+          <p className="text-white/40 mb-4 md:mb-8">
+            <span className="sr-only">Шифр Цезаря · Загадка №1</span>
+            <LedText text="Шифр Цезаря · Загадка №1" className="h-[9px] w-auto" />
           </p>
 
           {/* Большой текст — шифр или дешифровка.
@@ -165,8 +167,9 @@ export default function SecretPage() {
           {!isSecretFound && (
           <div className="mt-10 md:mt-14 w-full max-w-2xl mx-auto">
             <div className="flex items-baseline justify-between mb-3">
-              <span className="font-p95 text-[12px] md:text-[13px] tracking-[0.25em] uppercase text-white/40">
-                Сдвиг
+              <span className="text-white/40">
+                <span className="sr-only">Сдвиг</span>
+                <LedText text="Сдвиг" className="h-[9px] w-auto" />
               </span>
               {/* Счётчик редактируемый: можно ввести число вручную (в т.ч. больше 46) */}
               <input
@@ -220,10 +223,10 @@ export default function SecretPage() {
                 </p>
                 <Link
                   href="/"
-                  className="mt-6 inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
+                  className="mt-6 inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2.2} />
-                  <span className="leading-none translate-y-[1px]">Вернуться</span>
+                  <span className="sr-only">Вернуться</span><LedText text="Вернуться" className="h-[10px] w-auto" />
                 </Link>
               </div>
             ) : null}
@@ -240,10 +243,10 @@ export default function SecretPage() {
               <Link
                 href={QUEST2_HREF}
                 data-ym-goal="quest2_open"
-                className="mt-7 inline-flex items-center gap-2 px-7 py-3.5 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
+                className="mt-7 inline-flex items-center gap-2 px-7 py-3.5 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
               >
-                <span className="leading-none translate-y-[1px]">Дальше</span>
-                <span className="leading-none">→</span>
+                <span className="sr-only">Дальше</span><LedText text="Дальше" className="h-[10px] w-auto" />
+                <LedText text="→" className="h-[11px] w-auto" />
               </Link>
             </div>
           )}
