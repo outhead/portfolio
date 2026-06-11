@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export function generateStaticParams() {
-  return [{ v: "1" }, { v: "2" }, { v: "3" }, { v: "4" }];
+  return [{ v: "1" }, { v: "2" }, { v: "3" }, { v: "4" }, { v: "5" }];
 }
 
 export default async function HeroLabPage({

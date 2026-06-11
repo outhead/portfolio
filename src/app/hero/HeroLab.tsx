@@ -11,10 +11,11 @@
  * ──────────────────────────────────────────────────────────────── */
 
 import Link from "next/link";
-import { useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import ParticleSphere from "@/components/ParticleSphere";
 import FlippingWord from "@/components/FlippingWord";
+import { layoutLedText, LED_ROWS } from "@/components/ledFont";
 
 const WORDS = ["ЛЮДЕЙ", "КОМАНДЫ", "ВИЗУАЛ", "СЕРВИСЫ", "ИНТЕРЕС"] as const;
 
@@ -58,6 +59,98 @@ function RoleTag({ className = "" }: { className?: string }) {
       <span className="mx-2">Дизайн-директор</span>
       <span className="text-[#A6FF00]/80">]</span>
     </div>
+  );
+}
+
+/* ═══════ LED BOARD — табло из крупных кружков ═══════
+   Всё поле — тёмно-серые диоды; нужные загораются. Смена слова —
+   волна перерисовки слева направо, как на вокзальном табло. */
+
+type LedLine = { text?: string; words?: readonly string[]; color: string };
+
+const LED_DIM = "rgba(255,255,255,0.09)";
+
+function LedBoard({
+  lines,
+  className = "",
+  intervalMs = 2400,
+}: {
+  lines: LedLine[];
+  className?: string;
+  intervalMs?: number;
+}) {
+  const [idx, setIdx] = useState(0);
+  const hasFlip = lines.some((l) => l.words && l.words.length > 1);
+
+  useEffect(() => {
+    if (!hasFlip) return;
+    const id = setInterval(() => setIdx((v) => v + 1), intervalMs);
+    return () => clearInterval(id);
+  }, [hasFlip, intervalMs]);
+
+  const PITCH = 4;
+  const R = 1.72;
+  const PAD = 1; // поля в "диодах" по краям
+  const GAP = 2; // строки-промежутки между строками текста
+
+  // Раскладка строк при текущем индексе сменного слова
+  const layouts = lines.map((l) => {
+    const t = l.words ? l.words[idx % l.words.length] : (l.text ?? "");
+    return { ...layoutLedText(t), color: l.color };
+  });
+
+  // Поле фиксируем по самой широкой раскладке среди ВСЕХ слов (чтобы
+  // сетка не дёргалась при смене слова).
+  const fieldCols = useMemo(() => {
+    let max = 0;
+    for (const l of lines) {
+      const variants = l.words ?? [l.text ?? ""];
+      for (const v of variants) max = Math.max(max, layoutLedText(v).cols);
+    }
+    return max + PAD * 2;
+  }, [lines]);
+
+  const fieldRows = PAD * 2 + lines.length * LED_ROWS + (lines.length - 1) * GAP;
+
+  // Карта зажжённых диодов: "col,row" → цвет
+  const lit = new Map<string, string>();
+  layouts.forEach((lay, li) => {
+    const colOff = PAD + Math.floor((fieldCols - PAD * 2 - lay.cols) / 2);
+    const rowOff = PAD + li * (LED_ROWS + GAP);
+    for (const d of lay.dots) {
+      if (d.lit) lit.set(`${d.col + colOff},${d.row + rowOff}`, lay.color);
+    }
+  });
+
+  const cells = [];
+  for (let c = 0; c < fieldCols; c++) {
+    for (let r = 0; r < fieldRows; r++) {
+      const color = lit.get(`${c},${r}`);
+      cells.push(
+        <circle
+          key={`${c}-${r}`}
+          cx={c * PITCH + PITCH / 2}
+          cy={r * PITCH + PITCH / 2}
+          r={R}
+          fill={color ?? LED_DIM}
+          style={{
+            transition: "fill 150ms linear",
+            transitionDelay: `${c * 6 + ((c * 5 + r * 11) % 4) * 14}ms`,
+          }}
+        />,
+      );
+    }
+  }
+
+  return (
+    <svg
+      viewBox={`0 0 ${fieldCols * PITCH} ${fieldRows * PITCH}`}
+      className={className}
+      aria-hidden
+      focusable="false"
+    >
+      {cells}
+    </svg>
   );
 }
 
@@ -253,25 +346,97 @@ function V4() {
   );
 }
 
+/* ═══════ 5 · ГИБРИД: ТАБЛО ПО ЦЕНТРУ + СФЕРА ЗА ТЕКСТОМ + МЕТРИКИ ═══════ */
+function V5() {
+  const ref = useRef<HTMLDivElement>(null);
+  return (
+    <section className="relative min-h-[100vh] bg-black px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] pt-24 md:pt-28 pb-10">
+      <div ref={ref} className="relative rounded-3xl border border-white/[0.1] bg-black overflow-hidden min-h-[78vh] flex flex-col">
+        {/* Сфера — задний план всего тайла */}
+        <div aria-hidden className="absolute inset-0">
+          <ParticleSphere className="absolute inset-0 w-full h-full" trackingRef={ref} />
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background:
+                "radial-gradient(ellipse 60% 50% at 50% 48%, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.3) 55%, transparent 78%)",
+            }}
+          />
+        </div>
+
+        <RoleTag className="absolute top-6 right-6 md:top-10 md:right-10 z-[2]" />
+
+        {/* Центр: табло + сабтайтл + CTA */}
+        <div className="relative z-[1] flex-1 flex flex-col items-center justify-center text-center gap-7 md:gap-9 p-7 md:p-12 pointer-events-none">
+          <h1 className="sr-only">7 лет развиваю людей, команды, визуал, сервисы</h1>
+          {/* Десктоп: 2 строки табло */}
+          <LedBoard
+            className="hidden md:block w-full max-w-[920px] h-auto"
+            lines={[
+              { text: "7 ЛЕТ РАЗВИВАЮ", color: "#ffffff" },
+              { words: WORDS, color: "#A6FF00" },
+            ]}
+          />
+          {/* Мобайл: 3 строки табло */}
+          <LedBoard
+            className="md:hidden w-full max-w-[420px] h-auto"
+            lines={[
+              { text: "7 ЛЕТ", color: "#ffffff" },
+              { text: "РАЗВИВАЮ", color: "#ffffff" },
+              { words: WORDS, color: "#A6FF00" },
+            ]}
+          />
+          <p className="max-w-[560px] text-lg md:text-[20px] leading-snug text-white/70 font-light">
+            От стратегии и культуры до AI и цифровых продуктов.
+          </p>
+          <div className="pointer-events-auto">
+            <Ctas center />
+          </div>
+        </div>
+
+        {/* Лента метрик — нижняя кромка тайла (из V3) */}
+        <div className="relative z-[1] border-t border-white/10 grid grid-cols-3 divide-x divide-white/10 bg-black/40 backdrop-blur-[2px]">
+          {[
+            { value: "30", label: "запусков продуктов" },
+            { value: "7", label: "лет в дизайне" },
+            { value: "27", label: "команд под управлением" },
+          ].map((m) => (
+            <div key={m.value} className="flex flex-col items-center md:items-start gap-1.5 px-3 md:px-10 py-5 md:py-7">
+              <span className="font-p95 text-[26px] md:text-[40px] leading-none text-white tracking-tight">
+                {m.value}
+              </span>
+              <span className="text-[11px] md:text-[13px] tracking-[0.06em] uppercase text-white/55 font-light leading-snug text-center md:text-left">
+                {m.label}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function HeroLab({ v }: { v: string }) {
   const variants: Record<string, React.ReactNode> = {
     "1": <V1 />,
     "2": <V2 />,
     "3": <V3 />,
     "4": <V4 />,
+    "5": <V5 />,
   };
   const names: Record<string, string> = {
     "1": "Сфера за текстом",
     "2": "Постер",
     "3": "Сплит + метрики",
     "4": "Строка + сцена",
+    "5": "Гибрид: табло",
   };
   return (
     <>
       {variants[v] ?? <V1 />}
       {/* Переключатель вариантов */}
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[150] flex items-center gap-1.5 rounded-full border border-white/15 bg-black/80 backdrop-blur-md px-2.5 py-2">
-        {["1", "2", "3", "4"].map((n) => (
+        {["1", "2", "3", "4", "5"].map((n) => (
           <Link
             key={n}
             href={`/hero/${n}`}
