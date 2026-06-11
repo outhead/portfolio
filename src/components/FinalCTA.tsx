@@ -16,7 +16,7 @@ function LedHeadline({ text, accent }: { text: string; accent?: string }) {
   const lines: string[] = [];
   let cur = "";
   for (const w of words) {
-    if ((cur + " " + w).trim().length > 22 && cur) {
+    if ((cur + " " + w).trim().length > 18 && cur) {
       lines.push(cur);
       cur = w;
     } else {
@@ -583,7 +583,7 @@ export default function FinalCTA() {
               return (
                 <motion.div
                   variants={fadeUp}
-                  className="flex items-center justify-start md:justify-end w-full md:w-auto min-w-0 md:max-w-[40%]"
+                  className="flex items-center justify-start md:justify-end w-full md:w-auto shrink-0"
                 >
                   <motion.div
                     animate={{ scale: pressing ? 1.05 : 1 }}
@@ -603,7 +603,7 @@ export default function FinalCTA() {
                     }
                   >
                     {globalCount != null ? (
-                      <LedText text={display} scale={2} dot={1.45} className="h-full w-auto max-w-full" />
+                      <LedText text={display} scale={2} dot={1.45} className="h-full w-auto" />
                     ) : (
                       <LedText text="—" scale={2} dot={1.45} className="h-full w-auto opacity-20" />
                     )}

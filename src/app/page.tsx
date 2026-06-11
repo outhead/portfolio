@@ -677,7 +677,7 @@ function ServiceTile({ tile }: { tile: ServiceTileData }) {
           стоял на одной y-координате во всех плитках. Default — статичный
           серый кадр; hover (десктоп) или scroll-into-view (мобила) — зелёная анимация. */}
       <div className="h-[150px] md:h-[165px] my-4 md:my-7 flex items-center justify-center">
-        <div className="relative w-[140px] h-[140px]">
+        <div className="relative w-[140px] h-[140px] mx-auto">
           <PulseAnimation
             variant={animation}
             reverse={animationReverse}
@@ -689,7 +689,7 @@ function ServiceTile({ tile }: { tile: ServiceTileData }) {
 
       {/* Описание — прижато к низу карточки (на место бывших items),
           mt-auto выравнивает низ всех 3 карточек по горизонтали. */}
-      <p className="mt-auto text-[15px] md:text-[16px] leading-relaxed text-white/74">
+      <p className="text-[15px] md:text-[16px] leading-relaxed text-white/74">
         {body}
       </p>
     </motion.div>
