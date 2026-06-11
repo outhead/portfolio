@@ -1106,9 +1106,9 @@ function NeuralWeb({ className = "" }: { className?: string }) {
       for (const [i, j] of edges) {
         const a = P[i];
         const b = P[j];
-        const al = 0.04 + 0.09 * ((a.z + b.z) / 2 + 1);
+        const al = 0.07 + 0.14 * ((a.z + b.z) / 2 + 1);
         ctx.strokeStyle = `rgba(166,255,0,${al.toFixed(3)})`;
-        ctx.lineWidth = 0.6;
+        ctx.lineWidth = 0.7;
         ctx.beginPath();
         ctx.moveTo(a.sx, a.sy);
         ctx.lineTo(b.sx, b.sy);
@@ -1220,33 +1220,17 @@ function Oled({
 }) {
   return (
     <div
-      className={`relative rounded-[20px] border border-white/[0.07] bg-[linear-gradient(165deg,#171717_0%,#101010_55%,#0c0c0c_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_24px_70px_rgba(0,0,0,0.55)] overflow-hidden ${className}`}
+      className={`relative rounded-[20px] border border-white/[0.05] bg-[#121211] shadow-[0_18px_50px_rgba(0,0,0,0.4)] overflow-hidden ${className}`}
     >
-      {/* стеклянный блик сверху */}
-      <div
-        aria-hidden
-        className="absolute inset-x-0 top-0 h-[22%] pointer-events-none"
-        style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.035), transparent)" }}
-      />
       {glow && (
-        <>
-          <div
-            aria-hidden
-            className="absolute inset-x-6 bottom-0 h-px pointer-events-none"
-            style={{
-              background:
-                "linear-gradient(90deg, transparent, rgba(166,255,0,0.55) 30%, rgba(166,255,0,0.55) 70%, transparent)",
-            }}
-          />
-          <div
-            aria-hidden
-            className="absolute inset-x-0 bottom-[-40px] h-[80px] pointer-events-none"
-            style={{
-              background:
-                "radial-gradient(ellipse 60% 100% at 50% 100%, rgba(166,255,0,0.13), transparent 70%)",
-            }}
-          />
-        </>
+        <div
+          aria-hidden
+          className="absolute inset-x-6 bottom-0 h-px pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(90deg, transparent, rgba(166,255,0,0.45) 30%, rgba(166,255,0,0.45) 70%, transparent)",
+          }}
+        />
       )}
       {children}
     </div>
@@ -1274,8 +1258,8 @@ function V7() {
         }}
       />
 
-      {/* Единый корпус-дисплей: стекло, без винтов */}
-      <div className="relative rounded-[30px] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(255,255,255,0.025),rgba(255,255,255,0.005))] p-3 md:p-6 shadow-[0_40px_120px_rgba(0,0,0,0.6)]">
+      {/* Панели на чистом фоне — без корпуса-рамки */}
+      <div className="relative">
         <style>{`@keyframes actb7 { from { transform: scaleY(0.3); } to { transform: scaleY(1); } }`}</style>
         <div className="grid grid-cols-12 gap-3 md:gap-6 items-stretch">
           {/* ── Хиро-дисплей ── */}
@@ -1345,7 +1329,7 @@ function V7() {
 
           {/* ── В цифрах: тихий граф данных из точек на фоне ── */}
           <Oled className="col-span-12 lg:col-span-5 p-6 md:p-7">
-            <DotGraph className="absolute inset-x-4 bottom-2 h-[70px] opacity-50 pointer-events-none" />
+            <DotGraph className="absolute inset-x-6 -bottom-1 h-[46px] opacity-30 pointer-events-none" />
             <div className="relative text-[10px] md:text-[11px] tracking-[0.26em] uppercase text-white/35 mb-6">
               В цифрах
             </div>
@@ -1409,11 +1393,11 @@ function V7() {
                   key={item.num}
                   className={`flex items-center gap-4 py-3.5 ${i > 0 ? "border-t border-white/[0.05]" : ""}`}
                 >
-                  <span className="font-p95 text-[12px] tabular-nums text-[#A6FF00]/70 w-5 shrink-0">
+                  <span className="text-[11px] tabular-nums text-[#A6FF00]/60 w-5 shrink-0">
                     {item.num}
                   </span>
                   <span className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-baseline sm:gap-3">
-                    <span className="font-p95 text-[15px] md:text-[16px] tracking-[0.16em] uppercase text-white">
+                    <span className="text-[13px] md:text-[14px] font-medium tracking-[0.1em] uppercase text-white">
                       {item.label}
                     </span>
                     <span className="text-[11px] md:text-[12px] tracking-[0.06em] uppercase text-white/45">
