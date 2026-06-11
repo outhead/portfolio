@@ -143,7 +143,7 @@ export default function PixelCubePile({
 
     // ── Коробка (мир) ──
     const HX = 2.3, HZ = 1.25; // полуширина / полуглубина
-    const FLOOR = 0;           // y пола (центр куба покоится на S)
+    const FLOOR = -0.35;       // y пола (ниже — насыпь садится ниже в кадре)
     const G = 15.5;            // тяжелее — сильнее притяжение
     const REST = 0.46, LIN_DAMP = 0.38, ANG_DAMP = 0.8, FLOOR_FRIC = 0.8; // пружинистее
     const RAD = S * 1.06;      // радиус сферы для коллизий кубов
@@ -160,7 +160,7 @@ export default function PixelCubePile({
     let cellSize = 0, rDot = 0;
     const bgDots = document.createElement("canvas"); // кэш погашенных диодов
     const mobile = window.matchMedia("(max-width: 767px)").matches;
-    const maxN = maxCubes ?? (mobile ? 12 : 18);
+    const maxN = maxCubes ?? (mobile ? 30 : 45);
 
     const measure = () => {
       const r = wrap.getBoundingClientRect();
@@ -360,7 +360,7 @@ export default function PixelCubePile({
       // спавн на ховере
       if (hoverRef.current && bodies.length < maxN) {
         spawnAcc += dt;
-        if (spawnAcc > 0.11) { spawnAcc = 0; spawn(); }
+        if (spawnAcc > 0.06) { spawnAcc = 0; spawn(); }
       }
       // под-шаги физики для устойчивости (важно при высокой гравитации/отскоке)
       const sub2 = 3;
