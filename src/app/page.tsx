@@ -1000,7 +1000,7 @@ export default function PreviewHome() {
                   <span className="sr-only">В цифрах</span>
                   <LedText text="В цифрах" className="h-[10px] w-auto" />
                 </div>
-                <div className="relative grid grid-cols-3 gap-5">
+                <div className="relative flex justify-center gap-10 md:gap-14">
                   {[
                     { v: "30", l: "запусков" },
                     { v: "7", l: "лет опыта" },
