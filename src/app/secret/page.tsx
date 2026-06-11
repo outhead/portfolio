@@ -137,7 +137,7 @@ export default function SecretPage() {
             ) : (
               <h1 className={isSolved ? "lime-force" : "text-white"}>
                 <span className="sr-only">{decoded}</span>
-                <span className="flex flex-wrap justify-center gap-x-[0.5em] gap-y-[10px] md:gap-y-[14px]">
+                <span className="flex flex-wrap justify-center gap-x-[12px] md:gap-x-[20px] gap-y-[10px] md:gap-y-[14px]">
                   {decoded.split(" ").map((w, wi) => {
                     const lcls = "h-[18px] md:h-[30px] w-auto";
                     if (isSolved && w.includes("61")) {
