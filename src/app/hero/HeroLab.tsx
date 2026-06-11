@@ -160,7 +160,7 @@ function LedBoard({
       </defs>
       {/* Поле незажжённых диодов */}
       <rect width={fieldCols * PITCH} height={fieldRows * PITCH} fill={`url(#f${uid})`} />
-      {/* Гаснущее предыдущее слово */}
+      {/* Гаснущее предыдущее слово: волна гашения слева направо, быстро */}
       {prev.map((lay, li) =>
         lay ? (
           <g key={`p-${li}-${idx}`}>
@@ -174,15 +174,16 @@ function LedBoard({
                   r={R}
                   fill={lay.color}
                   style={{
-                    animation: `ledOut${uid} 130ms linear forwards`,
-                    animationDelay: `${d.col * 3}ms`,
+                    animation: `ledOut${uid} 90ms linear forwards`,
+                    animationDelay: `${d.col * 2}ms`,
                   }}
                 />
               ))}
           </g>
         ) : null,
       )}
-      {/* Текущие строки; сменное слово загорается волной слева направо */}
+      {/* Текущие строки. Сменное слово загорается ПОСЛЕ полного гашения
+          старого (как настоящее табло: очистка → перерисовка). */}
       {cur.map((lay, li) => (
         <g key={lay.flip ? `c-${li}-${idx}` : `s-${li}`}>
           {lay.dots
@@ -197,8 +198,8 @@ function LedBoard({
                 style={
                   lay.flip && idx > 0
                     ? {
-                        animation: `ledIn${uid} 150ms linear both`,
-                        animationDelay: `${120 + d.col * 4 + ((d.col * 5 + d.row * 11) % 4) * 10}ms`,
+                        animation: `ledIn${uid} 120ms linear both`,
+                        animationDelay: `${420 + d.col * 4 + ((d.col * 5 + d.row * 11) % 4) * 10}ms`,
                       }
                     : undefined
                 }
@@ -554,8 +555,14 @@ function Toggle({ on, onClick, label }: { on: boolean; onClick: () => void; labe
       className="relative w-[26px] h-[44px] rounded-full border border-black/80 bg-[linear-gradient(180deg,#0e0e0d,#1c1c1a)] shadow-[inset_0_2px_6px_rgba(0,0,0,0.8)]"
     >
       <span
-        className="absolute left-1/2 -translate-x-1/2 w-[18px] h-[18px] rounded-full border border-black/60 bg-[radial-gradient(circle_at_35%_30%,#3c3c38,#1f1f1d)] shadow-[0_2px_5px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.15)] transition-all duration-200"
-        style={{ top: on ? 3 : 21 }}
+        className="absolute left-1/2 -translate-x-1/2 w-[18px] h-[18px] rounded-full border border-black/60 transition-all duration-200"
+        style={{
+          top: on ? 3 : 21,
+          background: on
+            ? "radial-gradient(circle at 35% 30%, #ffd394, #b87a1f)"
+            : "radial-gradient(circle at 35% 30%, #c8ec7a, #6f9c10)",
+          boxShadow: `0 2px 5px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.25), 0 0 9px ${on ? "rgba(255,180,84,0.55)" : "rgba(166,255,0,0.45)"}`,
+        }}
       />
     </button>
   );
@@ -593,7 +600,13 @@ function V6() {
         }}
       />
 
-      <div className="relative grid grid-cols-12 gap-3 md:gap-4 items-stretch">
+      {/* Общий корпус-доска: все панели сидят на одной раме */}
+      <div className="relative rounded-[26px] border border-[#33332f] bg-[linear-gradient(180deg,#1c1c1a,#131312)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_30px_80px_rgba(0,0,0,0.6)] p-2.5 md:p-4">
+        <Screw className="top-3 left-3" />
+        <Screw className="top-3 right-3" />
+        <Screw className="bottom-3 left-3" />
+        <Screw className="bottom-3 right-3" />
+      <div className="relative grid grid-cols-12 gap-2.5 md:gap-3.5 items-stretch">
         {/* ── A · Главный экран-табло ── */}
         <Panel className="col-span-12 lg:col-span-7 lg:row-span-2 p-4 md:p-6 flex flex-col">
           <Screen className="relative">
@@ -604,7 +617,7 @@ function V6() {
               dotR={1.45}
               pad={3}
               minCols={118}
-              minRows={86}
+              minRows={64}
               lines={heroLines}
             />
             <LedBoard
@@ -613,10 +626,10 @@ function V6() {
               scale={1}
               pad={2}
               minCols={53}
-              minRows={41}
+              minRows={34}
               lines={heroLines}
             />
-            <p className="absolute left-4 bottom-3 md:left-6 md:bottom-5 max-w-[440px] text-left text-[13px] md:text-[17px] leading-snug text-white/65 font-light">
+            <p className="absolute left-4 bottom-3 md:left-6 md:bottom-5 max-w-[480px] text-left text-[14px] md:text-[18px] leading-snug text-white/75 font-light">
               От стратегии и культуры до AI и цифровых продуктов.
             </p>
             <h1 className="sr-only">7 лет развиваю людей, команды, визуал, сервисы</h1>
@@ -658,6 +671,7 @@ function V6() {
                 key={preset}
                 className="absolute inset-0 w-full h-full"
                 trackingRef={sphereRef}
+                sphereRadFactor={0.5}
                 r={p.r}
                 g={p.g}
                 b={p.b}
@@ -750,13 +764,13 @@ function V6() {
         </Panel>
 
         {/* ── F · Кнопочный блок (декор + одна загадка) ── */}
-        <Panel className="col-span-12 lg:col-span-3 p-4 md:p-5 flex flex-col justify-between gap-4">
+        <Panel className="col-span-12 lg:col-span-3 p-4 md:p-5 flex flex-col gap-4">
           <div className="grid grid-cols-3 gap-2">
             {["01", "02", "03", "04", "05"].map((n) => (
               <button
                 key={n}
                 type="button"
-                className="rounded-[6px] border border-black/70 bg-[linear-gradient(180deg,#262624,#191917)] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_2px_4px_rgba(0,0,0,0.5)] py-2 text-center text-[11px] tracking-[0.12em] text-white/45"
+                className="rounded-[7px] border border-black/70 bg-[linear-gradient(180deg,#262624,#191917)] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_2px_4px_rgba(0,0,0,0.5)] py-3 text-center text-[11px] tracking-[0.12em] text-white/45"
               >
                 {n}
               </button>
@@ -764,13 +778,20 @@ function V6() {
             <Link
               href="/secret"
               aria-label="Кнопка 06 — секрет"
-              className="rounded-[6px] border border-[#A6FF00]/30 bg-[linear-gradient(180deg,#262624,#191917)] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_2px_4px_rgba(0,0,0,0.5),0_0_10px_rgba(166,255,0,0.12)] py-2 text-center text-[11px] tracking-[0.12em] text-[#A6FF00] no-underline"
+              className="rounded-[7px] border border-[#A6FF00]/30 bg-[linear-gradient(180deg,#262624,#191917)] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_2px_4px_rgba(0,0,0,0.5),0_0_10px_rgba(166,255,0,0.12)] py-3 text-center text-[11px] tracking-[0.12em] text-[#A6FF00] no-underline flex items-center justify-center"
             >
               06
             </Link>
           </div>
+          {/* Шильдик-серийник */}
+          <div className="mt-auto rounded-[6px] border border-black/60 bg-[#101010] px-3 py-2.5 text-center shadow-[inset_0_1px_3px_rgba(0,0,0,0.7)]">
+            <span className="text-[10px] tracking-[0.3em] uppercase text-white/35">
+              Shugaev · Unit 07
+            </span>
+          </div>
+          {/* Динамик */}
           <div className="grid grid-cols-1 gap-1.5 opacity-70" aria-hidden>
-            {Array.from({ length: 7 }).map((_, i) => (
+            {Array.from({ length: 5 }).map((_, i) => (
               <span
                 key={i}
                 className="h-[3px] rounded bg-black/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
@@ -778,6 +799,7 @@ function V6() {
             ))}
           </div>
         </Panel>
+      </div>
       </div>
     </section>
   );
