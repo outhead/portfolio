@@ -42,7 +42,7 @@ function CoverMedia({
             src={project.coverImage}
             alt=""
             aria-hidden
-            className="absolute inset-0 w-full h-full object-cover z-0"
+            className="absolute inset-0 w-full h-full object-cover object-top z-0"
           />
         )}
         <CardCoverVideo
@@ -51,7 +51,7 @@ function CoverMedia({
           pauseAt={project.coverVideoPauseAt}
           hoverTarget={hoverTarget}
           onPlayingChange={onVideoPlayingChange}
-          className={`absolute inset-0 w-full h-full object-cover z-[1] ${baseTransition} ${
+          className={`absolute inset-0 w-full h-full object-cover object-top z-[1] ${baseTransition} ${
             active ? "opacity-100" : "opacity-0"
           }`}
         />
@@ -65,7 +65,7 @@ function CoverMedia({
         alt=""
         fill
         sizes="(max-width: 768px) 100vw, 50vw"
-        className={`object-cover z-0 ${baseTransition} ${
+        className={`object-cover object-top z-0 ${baseTransition} ${
           active ? "opacity-50" : "opacity-0"
         }`}
       />

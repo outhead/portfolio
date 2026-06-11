@@ -1250,7 +1250,7 @@ export default function PreviewHome() {
                 label: "УПРАВЛЕНИЕ",
                 title: "Строю дизайн-функции",
                 Icon: Users,
-                accent: "#A6FF00",
+                accent: "#C9A66B",
                 animation: "shockwave" as PulseVariant,
                 body:
                   "Собираю команды под задачу, выстраиваю процессы, культуру и дизайн-систему. Нанимаю на рост, развиваю лидов, защищаю бюджет. Когда ухожу, стараюсь оставить функцию, которая продолжает расти без меня.",
@@ -1287,7 +1287,7 @@ export default function PreviewHome() {
                 label: "РЕМЕСЛО",
                 title: "Оптимизирую процессы",
                 Icon: Code2,
-                accent: "#4FC3F7",
+                accent: "#C9A66B",
                 animation: "wave" as PulseVariant,
                 body:
                   "Автоматизирую рутину, собираю AI-инструменты и агенты под конкретные задачи. Понимаю, что реально сделать руками и сколько это стоит в человеко-часах. Знаю, когда применять AI, а когда нанимать эксперта.",
@@ -1367,10 +1367,10 @@ export default function PreviewHome() {
                 variants={fadeUp}
                 className="shrink-0 w-[85vw] sm:w-[60vw] md:w-auto snap-start md:snap-align-none relative h-full p-6 md:p-7 rounded-2xl border border-white/[0.06] bg-[#0f0f0e] hover:border-[#A6FF00]/20 transition-colors duration-300 flex flex-col"
               >
-                <span className="mb-4 text-[#C9A66B]/60" aria-hidden>
-                  <LedText text='"' scale={2} dot={1.45} className="h-[13px] w-auto" />
+                <span className="mb-5 text-[#C9A66B]/70" aria-hidden>
+                  <LedText text='"' scale={2} dot={1.45} className="h-[18px] w-auto" />
                 </span>
-                <p className="text-white/75 text-base md:text-[17px] leading-relaxed">
+                <p className="text-white/75 text-[15px] md:text-[16px] leading-relaxed">
                   {t.quote}
                 </p>
                 {/* mt-auto прижимает подпись к низу карточки — выравнивает подписи в обоих кейсах */}
@@ -1385,8 +1385,8 @@ export default function PreviewHome() {
                     />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-[16px] text-white font-medium leading-tight">{t.name}</div>
-                    <div className="text-[13px] text-white/50 mt-1 leading-snug">{t.role}</div>
+                    <div className="text-[15px] text-white font-medium leading-tight">{t.name}</div>
+                    <div className="text-[12.5px] text-white/50 mt-1 leading-snug">{t.role}</div>
                   </div>
                 </div>
               </motion.div>
