@@ -227,13 +227,16 @@ export default function PixelCubePile({
       const worldV = CV.map((lv) => add(b.p, qRot(b.q, lv)));
       const pv = worldV.map(project);
       // грани, видимые камере, по убыванию глубины
+      // у подвешенного куба грани подсвечены ровнее — весь силуэт горит,
+      // и куб (центрально-симметричный) читается строго по центру при вращении
+      const amb = b.frozen ? 0.62 : 0.3, dif = b.frozen ? 0.42 : 1.0;
       const faces = CF.map((f, i) => {
         const wn = qRot(b.q, f.n);
         const facing = dot(wn, camZ); // camZ к камере; >0 — грань к нам
         const cen = f.idx.reduce((a, k) => add(a, worldV[k]), [0, 0, 0] as V3).map((x) => x / 4) as V3;
         const depth = project(cen)[2];
         const lam = Math.max(0, dot(wn, lightW));
-        return { i, facing, depth, shade: Math.min(1, 0.3 + 1.0 * lam) };
+        return { i, facing, depth, shade: Math.min(1, amb + dif * lam) };
       }).filter((f) => f.facing > 0).sort((a, b2) => b2.depth - a.depth);
 
       for (const f of faces) {

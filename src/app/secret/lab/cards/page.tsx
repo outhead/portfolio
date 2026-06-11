@@ -60,6 +60,42 @@ function TagChip({ children }: { children: React.ReactNode }) {
   );
 }
 
+/** Прод-вариант карточки кейса: окно с PixelCubePile (подвешенный куб →
+ *  засыпание на ховере), знак + бренд-цвет, заголовок и теги. */
+function ProdCard({
+  company, color, logo, title, tags, palette,
+}: {
+  company: string; color?: string; logo: string; title: string; tags: string[]; palette?: string[];
+}) {
+  return (
+    <div className="no-underline group h-full block w-full">
+      <article className="relative rounded-2xl overflow-hidden bg-[#0f0f0e] border border-white/[0.06] group-hover:border-white/20 transition-colors duration-300 h-full">
+        <div className="h-full flex flex-col p-3 md:p-4 pb-0 md:pb-0">
+          <div className="relative w-full aspect-[16/9] rounded-xl border border-white/[0.08] overflow-hidden bg-black/40">
+            <div
+              aria-hidden
+              className="absolute inset-0 opacity-[0.5] z-0"
+              style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1.4px)", backgroundSize: "12px 12px" }}
+            />
+            <PixelCubePile color={color} colors={palette} logoSrc={logo} grid={104} idleCenter />
+            <div className="absolute top-4 left-4 md:top-5 md:left-5 z-[2] text-white/75 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+              <LedText text={company} className="h-[9px] md:h-[10px] w-auto" />
+            </div>
+          </div>
+          <div className="flex-1 flex flex-col items-center justify-center gap-4 md:gap-5 text-center px-5 py-6 md:py-7">
+            <h3 className="text-white max-w-full">
+              <LedLines text={title} center maxChars={22} lineClass="h-[15px] md:h-[18px]" />
+            </h3>
+            <div className="flex flex-wrap justify-center gap-1.5 md:gap-2">
+              {tags.map((t) => <TagChip key={t}>{t}</TagChip>)}
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+  );
+}
+
 /** Карточка-прототип: окно с PixelCube вместо видео/глянца. */
 function PrototypeCard({ active = false }: { active?: boolean }) {
   return (
@@ -160,6 +196,23 @@ export default function CardsLabPage() {
     <main className="min-h-screen bg-black px-5 md:px-[8%] py-16 md:py-24">
       <div className="mb-12 text-white/40">
         <LedText text="Прототип · пиксельные заглушки" className="h-[11px] w-auto" />
+      </div>
+
+      {/* ПРОД — финальные карточки кейсов */}
+      <div className="mb-20">
+        <span className="block mb-5 text-[12px] tracking-[0.1em] uppercase text-white/35">
+          Прод · карточки кейсов (подвешенный куб → засыпание на ховере)
+        </span>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+          <ProdCard company="МТС" color="#FF2436" logo="/images/logos/mts.svg"
+            title="Дать МТС голос и собрать Мой МТС в платформу" tags={["B2C", "Ecosystem"]} />
+          <ProdCard company="Газпром Нефть" color="#1C92E5" logo="/images/logos/gazpromneft.svg"
+            title="Построить ЦК дизайна и разморозить флагман" tags={["B2E", "Design System"]} />
+          <ProdCard company="Ozon" color="#2E6BFF" logo="/images/logos/ozon.svg"
+            title="Дизайн-процессы и HR-бренд" tags={["B2C", "E-com"]} />
+          <ProdCard company="Менторинг" logo="/images/logos/smiley.svg"
+            title="Менторинг для дизайнеров и лидов" tags={["Practice"]} palette={["#3DDC84"]} />
+        </div>
       </div>
 
       {/* Примерка логотипов и цветов */}
