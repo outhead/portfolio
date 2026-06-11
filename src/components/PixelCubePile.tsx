@@ -68,7 +68,7 @@ interface Body3 { p: V3; v: V3; q: Q; w: V3; }
 export default function PixelCubePile({
   color = "#FF2436",
   logoSrc,
-  grid = 64,
+  grid = 84,
 }: {
   color?: string;
   logoSrc?: string;
@@ -118,8 +118,8 @@ export default function PixelCubePile({
     // ── Коробка (мир) ──
     const HX = 2.3, HZ = 1.25; // полуширина / полуглубина
     const FLOOR = 0;           // y пола (центр куба покоится на S)
-    const G = 9.2;
-    const REST = 0.16, LIN_DAMP = 0.6, ANG_DAMP = 1.4, FLOOR_FRIC = 0.72;
+    const G = 15.5;            // тяжелее — сильнее притяжение
+    const REST = 0.46, LIN_DAMP = 0.38, ANG_DAMP = 1.2, FLOOR_FRIC = 0.8; // пружинистее
     const RAD = S * 1.06;      // радиус сферы для коллизий кубов
 
     // ── Камера ──
@@ -279,8 +279,8 @@ export default function PixelCubePile({
         spawnAcc += dt;
         if (spawnAcc > 0.11) { spawnAcc = 0; spawn(); }
       }
-      // под-шаги физики для устойчивости
-      const sub2 = 2;
+      // под-шаги физики для устойчивости (важно при высокой гравитации/отскоке)
+      const sub2 = 3;
       for (let k = 0; k < sub2; k++) step(dt / sub2);
 
       // рендер сцены в буфер
