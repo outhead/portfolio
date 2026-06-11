@@ -49,7 +49,7 @@ function hexToRgb(hex: string): [number, number, number] {
 }
 
 // геометрия куба (полусторона S)
-const S = 0.5;
+const S = 0.42;
 const CV: V3[] = [
   [-S, -S, -S], [S, -S, -S], [S, S, -S], [-S, S, -S],
   [-S, -S, S], [S, -S, S], [S, S, S], [-S, S, S],
@@ -68,7 +68,7 @@ interface Body3 { p: V3; v: V3; q: Q; w: V3; }
 export default function PixelCubePile({
   color = "#FF2436",
   logoSrc,
-  grid = 84,
+  grid = 100,
 }: {
   color?: string;
   logoSrc?: string;
@@ -132,7 +132,7 @@ export default function PixelCubePile({
     let W = 0, H = 0, outW = 0, outH = 0, dpr = 1;
     let Sx = 0, Sy = 0, gridY = 0, focal = 0, cxp = 0, cyp = 0;
     const mobile = window.matchMedia("(max-width: 767px)").matches;
-    const maxN = mobile ? 9 : 14;
+    const maxN = mobile ? 12 : 18;
 
     const measure = () => {
       const r = wrap.getBoundingClientRect();
@@ -141,7 +141,7 @@ export default function PixelCubePile({
       outW = Math.round(W * dpr); outH = Math.round(H * dpr);
       canvas.width = outW; canvas.height = outH;
       canvas.style.width = `${W}px`; canvas.style.height = `${H}px`;
-      Sx = Math.min(480, Math.max(300, Math.round(W * 0.72)));
+      Sx = Math.min(560, Math.max(340, Math.round(W * 0.8)));
       Sy = Math.round(Sx * H / W);
       buf.width = Sx; buf.height = Sy;
       gridY = Math.max(8, Math.round(grid * H / W));
@@ -212,7 +212,8 @@ export default function PixelCubePile({
       if (bodies.length >= maxN) return;
       const rndQ = qNorm([Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5]);
       bodies.push({
-        p: [(Math.random() * 2 - 1) * (HX - S), 4.2 + Math.random() * 1.6, (Math.random() * 2 - 1) * (HZ - S)],
+        // спавн у верхней кромки сетки (мировая высота линии ≈ 2.2), а не из офскрина
+        p: [(Math.random() * 2 - 1) * (HX - S), 2.35 + Math.random() * 0.5, (Math.random() * 2 - 1) * (HZ - S)],
         v: [0, 0, 0],
         q: rndQ,
         w: [(Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4],
@@ -296,7 +297,7 @@ export default function PixelCubePile({
       loctx.drawImage(buf, 0, 0, Sx, Sy, 0, 0, grid, gridY);
       const data = loctx.getImageData(0, 0, grid, gridY).data;
       const cell = outW / grid;
-      const rDot = cell * 0.34;
+      const rDot = cell * 0.32;
       for (let gy = 0; gy < gridY; gy++) {
         for (let gx = 0; gx < grid; gx++) {
           const cx = (gx + 0.5) * cell, cy = (gy + 0.5) * cell;
