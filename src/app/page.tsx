@@ -1065,7 +1065,7 @@ export default function PreviewHome() {
                       <span className="sr-only">Customer Experience Awards</span>
                       <LedText text="Customer Experience Awards" className="h-[10px] w-auto" />
                     </div>
-                    <div className="mt-3 pt-3 border-t border-[#C9A66B]/15 text-[#C9A66B]/80">
+                    <div className="mt-6 text-[#C9A66B]/80">
                       <span className="sr-only">Победитель в сегменте B2E</span>
                       <LedText text="Победитель в сегменте B2E" className="h-[10px] w-auto" />
                     </div>
@@ -1092,10 +1092,10 @@ export default function PreviewHome() {
                       { num: "01", label: "Управление", note: "дизайн-функции и команды", glyph: GLYPH_ORG },
                       { num: "02", label: "Направления", note: "B2C / B2E / EdTech / E-COM", glyph: GLYPH_GRID },
                       { num: "03", label: "Ремесло", note: "процессы и применение AI", glyph: GLYPH_CODE },
-                    ].map((item, i) => (
+                    ].map((item) => (
                       <li
                         key={item.num}
-                        className={`flex items-center gap-4 py-3.5 ${i > 0 ? "border-t border-white/[0.05]" : ""}`}
+                        className="flex items-center gap-4 py-3.5"
                       >
                         <span className="w-5 shrink-0 text-[#C9A66B]/70">
                           <LedText text={item.num} className="h-[9px] w-auto" />
