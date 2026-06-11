@@ -885,12 +885,12 @@ export default function PreviewHome() {
           initial="hidden"
           animate="show"
           variants={stagger}
-          className="relative z-[2] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] pt-2 md:pt-5 pb-8 md:pb-12"
+          className="relative z-[2] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] pt-2 md:pt-4 pb-8 md:pb-10"
         >
           <div className="grid grid-cols-12 gap-3 md:gap-5 items-stretch">
             {/* ── Хиро-дисплей: LED-табло ── */}
             <motion.div variants={fadeUp} className="col-span-12 lg:col-span-7 lg:row-span-2">
-              <Oled className="h-full p-5 md:p-8 flex flex-col">
+              <Oled className="h-full p-5 md:p-6 flex flex-col">
                 <div className="relative">
                   <LedBoard
                     className="hidden md:block w-full h-auto"
@@ -899,7 +899,7 @@ export default function PreviewHome() {
                     dotR={1.45}
                     pad={2}
                     minCols={114}
-                    minRows={54}
+                    minRows={50}
                     dim="rgba(255,255,255,0.03)"
                     dimR={1.0}
                     lines={heroLines}
@@ -919,10 +919,10 @@ export default function PreviewHome() {
                 <h1 className="sr-only">
                   7 лет развиваю людей, команды, визуал, сервисы — дизайн-директор Егор Шугаев
                 </h1>
-                <p className="mt-5 md:mt-7 max-w-[460px] text-[14px] md:text-[17px] leading-relaxed text-white/60 font-light">
+                <p className="mt-5 md:mt-6 max-w-[460px] text-[14px] md:text-[16px] leading-relaxed text-white/60 font-light">
                   От стратегии и культуры до AI и цифровых продуктов.
                 </p>
-                <div className="mt-5 md:mt-7 flex flex-wrap items-center gap-3">
+                <div className="mt-5 md:mt-6 flex flex-wrap items-center gap-3">
                   <Link
                     href="https://t.me/egoradi"
                     target="_blank"
@@ -964,7 +964,7 @@ export default function PreviewHome() {
                     <LedText text="]" className="h-[10px] w-auto text-[#C9A66B]/70" />
                   </span>
                 </div>
-                <div ref={heroSphereRef} className="relative flex-1 min-h-[280px] md:min-h-[400px]">
+                <div ref={heroSphereRef} className="relative flex-1 min-h-[280px] md:min-h-[320px]">
                   {/* Шар — белый: зелёный оставлен акцентам и действиям */}
                   <ParticleSphere
                     className="absolute inset-0 w-full h-full"

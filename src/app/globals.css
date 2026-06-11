@@ -28,6 +28,13 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* === DESKTOP SCALE — сайт читается лучше при 125%: масштабируем целиком === */
+@media (min-width: 1100px) {
+  html {
+    zoom: 1.25;
+  }
+}
+
 /* === A11Y: FOCUS INDICATORS === */
 a:focus-visible,
 button:focus-visible {
