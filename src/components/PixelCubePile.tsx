@@ -43,20 +43,13 @@ function qIntegrate(q: Q, w: V3, dt: number): Q {
   ];
   return qNorm([q[0] + dq[0], q[1] + dq[1], q[2] + dq[2], q[3] + dq[3]]);
 }
-function qMul(a: Q, b: Q): Q {
-  return [
-    a[3] * b[0] + a[0] * b[3] + a[1] * b[2] - a[2] * b[1],
-    a[3] * b[1] - a[0] * b[2] + a[1] * b[3] + a[2] * b[0],
-    a[3] * b[2] + a[0] * b[1] - a[1] * b[0] + a[2] * b[3],
-    a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2],
-  ];
-}
 function qAxis(axis: V3, ang: number): Q {
   const h = ang / 2, s = Math.sin(h);
   return [axis[0] * s, axis[1] * s, axis[2] * s, Math.cos(h)];
 }
-// приятная изо-ориентация (видны три грани)
-const Q_ISO: Q = qMul(qAxis([1, 0, 0], -0.5), qAxis([0, 1, 0], 0.6));
+// ориентация покоя: только наклон вперёд (pitch) — лево-право симметрично,
+// куб смотрится строго по центру, смайл на передней грани читается
+const Q_IDLE: Q = qAxis([1, 0, 0], -0.42);
 function hexToRgb(hex: string): [number, number, number] {
   const h = hex.replace("#", "");
   return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
@@ -268,7 +261,7 @@ export default function PixelCubePile({
     };
     // подвешенный по центру куб (в покое)
     const addIdleCenter = () => {
-      bodies.push({ p: [0, CENTER_Y, 0], v: [0, 0, 0], q: Q_ISO, w: [0, 0, 0], col: palette[0], center: true, frozen: true });
+      bodies.push({ p: [0, CENTER_Y, 0], v: [0, 0, 0], q: Q_IDLE, w: [0, 0, 0], col: palette[0], center: true, frozen: true });
     };
     // новый центральный куб падает сверху и застывает по центру
     const dropCenter = () => {
@@ -278,10 +271,11 @@ export default function PixelCubePile({
 
     const step = (dt: number) => {
       for (const b of bodies) {
-        // подвешенный центральный куб: лёгкий бобинг + очень медленный поворот
+        // подвешенный центральный куб: только лёгкий бобинг, ориентация
+        // фиксированная и симметричная — строго по центру, без дрейфа вбок
         if (b.frozen) {
           b.p = [0, CENTER_Y + Math.sin(simT * 1.2) * 0.05, 0];
-          b.q = qIntegrate(b.q, [0, 0.35, 0], dt);
+          b.q = Q_IDLE;
           continue;
         }
         b.v[1] -= G * dt;
@@ -294,7 +288,7 @@ export default function PixelCubePile({
 
         // ищущий центральный куб: падает сверху и застывает по центру
         if (b.center && b.p[1] <= CENTER_Y && b.v[1] <= 0) {
-          b.p = [0, CENTER_Y, 0]; b.v = [0, 0, 0]; b.w = [0, 0, 0]; b.frozen = true;
+          b.p = [0, CENTER_Y, 0]; b.v = [0, 0, 0]; b.w = [0, 0, 0]; b.q = Q_IDLE; b.frozen = true;
           continue;
         }
 
