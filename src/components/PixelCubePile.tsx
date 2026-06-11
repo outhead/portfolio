@@ -31,7 +31,7 @@ const FACES: { idx: [number, number, number, number]; n: V3 }[] = [
 ];
 
 // Фиксированная изо-ориентация (видны front/top/right со знаком)
-const AX0 = -0.36, AY0 = 0.52;
+const AX0 = -0.5, AY0 = 0.72;
 
 function rot([x, y, z]: V3, ax: number, ay: number): V3 {
   let c = Math.cos(ay), s = Math.sin(ay);
@@ -83,7 +83,7 @@ export default function PixelCubePile({
       const img = new Image();
       img.onload = () => {
         const lc = logoTex.getContext("2d")!;
-        const pad = LS * 0.12, box = LS - pad * 2;
+        const pad = LS * 0.05, box = LS - pad * 2;
         const k = Math.min(box / img.width, box / img.height);
         const w = img.width * k, h = img.height * k;
         lc.drawImage(img, (LS - w) / 2, (LS - h) / 2, w, h);
@@ -96,15 +96,17 @@ export default function PixelCubePile({
       img.src = logoSrc;
     }
 
-    // offscreen-буфер сцены (в нём рендерим кубы, потом сэмплим в точки)
+    // offscreen-буфер сцены (хайрес) + лоурес для бокс-фильтр-сэмплинга в точки
     const buf = document.createElement("canvas");
     const bctx = buf.getContext("2d", { willReadFrequently: true })!;
+    const lo = document.createElement("canvas");
+    const loctx = lo.getContext("2d", { willReadFrequently: true })!;
 
     let W = 0, H = 0, outW = 0, outH = 0, dpr = 1;
     let Sx = 0, Sy = 0, bs = 1; // буфер и масштаб панель→буфер
     let gridY = 0;
     const mobile = window.matchMedia("(max-width: 767px)").matches;
-    const maxN = mobile ? 5 : 8;
+    const maxN = mobile ? 9 : 13;
     let L = 70;
 
     const measure = () => {
@@ -114,16 +116,17 @@ export default function PixelCubePile({
       outW = Math.round(W * dpr); outH = Math.round(H * dpr);
       canvas.width = outW; canvas.height = outH;
       canvas.style.width = `${W}px`; canvas.style.height = `${H}px`;
-      Sx = Math.min(360, Math.max(200, Math.round(W * 0.55)));
+      Sx = Math.min(460, Math.max(280, Math.round(W * 0.7)));
       Sy = Math.round(Sx * H / W);
       buf.width = Sx; buf.height = Sy;
       bs = Sx / W;
       gridY = Math.max(8, Math.round(grid * H / W));
-      L = Math.min(120, Math.max(56, Math.round(W * 0.24)));
+      lo.width = grid; lo.height = gridY;
+      L = Math.min(86, Math.max(40, Math.round(W * 0.17)));
     };
 
     const project = (v: V3, sc: number): [number, number] => {
-      const d = 4.6, f = d / (d - v[2]);
+      const d = 3.9, f = d / (d - v[2]);
       return [v[0] * sc * f, -v[1] * sc * f];
     };
 
@@ -201,7 +204,8 @@ export default function PixelCubePile({
 
       const addGround = () => {
         if (ground) return;
-        ground = Bodies.rectangle(W / 2, H + 18, W + 60, 36, wallOpts);
+        // верх пола чуть выше нижней кромки — пила собирается внутри кадра
+        ground = Bodies.rectangle(W / 2, H + 8, W + 60, 32, wallOpts);
         Composite.add(engine.world, ground);
       };
       const removeGround = () => {
@@ -213,9 +217,9 @@ export default function PixelCubePile({
       const spawn = () => {
         if (cubes.length >= maxN) return;
         const x = L / 2 + Math.random() * (W - L);
-        const body = Bodies.rectangle(x, -L, L, L, {
+        const body = Bodies.rectangle(x, -L * 0.5, L, L, {
           inertia: Infinity, // спин заблокирован — не вращаются
-          density: 0.004, restitution: 0.08, friction: 0.8, frictionAir: 0.01,
+          density: 0.004, restitution: 0.06, friction: 0.85, frictionAir: 0.012,
         });
         cubes.push({ body });
         Composite.add(engine.world, body);
@@ -226,9 +230,9 @@ export default function PixelCubePile({
         hoverRef.current = true;
         addGround();
         if (spawnId != null) return;
-        const burst = mobile ? 4 : 6;
-        for (let i = 0; i < burst; i++) window.setTimeout(spawn, i * 130);
-        spawnId = window.setInterval(spawn, 150);
+        const burst = mobile ? 6 : 9;
+        for (let i = 0; i < burst; i++) window.setTimeout(spawn, i * 90);
+        spawnId = window.setInterval(spawn, 120);
       };
       const onLeave = () => {
         hoverRef.current = false;
@@ -262,24 +266,27 @@ export default function PixelCubePile({
         const sorted = [...cubes].sort((a, b) => a.body.position.y - b.body.position.y);
         for (const cu of sorted) drawCube(cu);
 
-        const data = bctx.getImageData(0, 0, Sx, Sy).data;
+        // даунскейл хайрес-буфера в сетку (бокс-фильтр) — тонкий знак не теряется
+        loctx.clearRect(0, 0, grid, gridY);
+        loctx.imageSmoothingEnabled = true;
+        loctx.drawImage(buf, 0, 0, Sx, Sy, 0, 0, grid, gridY);
+        const data = loctx.getImageData(0, 0, grid, gridY).data;
         const cell = outW / grid;
         const rDot = cell * 0.34;
         for (let gyi = 0; gyi < gridY; gyi++) {
           for (let gx = 0; gx < grid; gx++) {
             const cx = (gx + 0.5) * cell;
             const cy = (gyi + 0.5) * cell;
-            const sxp = Math.min(Sx - 1, Math.floor((cx / outW) * Sx));
-            const syp = Math.min(Sy - 1, Math.floor((cy / outH) * Sy));
-            const o = (syp * Sx + sxp) * 4;
+            const o = (gyi * grid + gx) * 4;
             const rr = data[o], gg = data[o + 1], bbb = data[o + 2], aa = data[o + 3];
             ctx.beginPath();
             ctx.arc(cx, cy, rDot, 0, Math.PI * 2);
-            if (aa < 24) {
+            if (aa < 20) {
               ctx.fillStyle = `rgba(${br},${bg},${bb},0.06)`;
             } else {
+              const a = aa / 255;
               const lum = (0.299 * rr + 0.587 * gg + 0.114 * bbb) / 255;
-              ctx.fillStyle = `rgba(${rr},${gg},${bbb},${0.32 + 0.68 * lum})`;
+              ctx.fillStyle = `rgba(${rr},${gg},${bbb},${(0.3 + 0.7 * lum) * (0.55 + 0.45 * a)})`;
             }
             ctx.fill();
           }
