@@ -164,9 +164,10 @@ export default function SpeakingPage() {
                     <ArrowUpRight className="w-4 h-4 text-white/85" strokeWidth={2} />
                   </div>
                 </div>
-                <div className="mt-3 md:mt-4 flex flex-col gap-1.5">
-                  <div className="text-[11px] md:text-[12px] tracking-[0.16em] uppercase text-white/40">
-                    {talk.era}
+                <div className="mt-3 md:mt-4 flex flex-col gap-2">
+                  <div className="text-[#C9A66B]/70">
+                    <span className="sr-only">{talk.era}</span>
+                    <LedText text={talk.era} className="h-[8px] md:h-[9px] w-auto" />
                   </div>
                   <div className="text-[15px] md:text-[16px] text-white/85 leading-snug group-hover:text-white transition-colors">
                     {talk.label}
