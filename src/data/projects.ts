@@ -570,7 +570,7 @@ export const projects: Project[] = [
     ],
     type: "work",
     coverColor: "#0E0E0E",
-    coverImage: "/videos/ozon-cover.png",
+    coverImage: "/videos/ozon-cover.jpg",
     coverVideo: "/videos/ozon-cover.mp4",
     coverVideoPauseAt: 2.86,
     screenshots: [
@@ -634,7 +634,7 @@ export const projects: Project[] = [
     ],
     type: "work",
     coverColor: "#0E0E0E",
-    coverImage: "/videos/mts-b2c-cover.png",
+    coverImage: "/videos/mts-b2c-cover.jpg",
     coverVideo: "/videos/mts-b2c-cover.mp4",
     coverVideoPauseAt: 2.86,
     sections: [
