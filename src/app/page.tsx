@@ -3,7 +3,8 @@
 import ProjectCard from "@/components/ProjectCard";
 import ParticleSphere from "@/components/ParticleSphere";
 import PulseAnimation, { type PulseVariant } from "@/components/PulseAnimation";
-import FlippingWord from "@/components/FlippingWord";
+import LedFlipWord from "@/components/LedFlipWord";
+import LedText from "@/components/LedText";
 import FinalCTA from "@/components/FinalCTA";
 import PillsBackdrop from "@/components/PillsBackdrop";
 import { TypographyFix } from "@/components/TypographyFix";
@@ -68,13 +69,17 @@ function SectionLabel({
   const isLight = tone === "light";
   return (
     <div
-      className={`inline-flex items-center gap-1.5 font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase ${
+      className={`inline-flex items-center gap-2 ${
         isLight ? "text-black/65" : "text-white/75"
       }`}
     >
-      <span className="text-[#A6FF00]">[</span>
-      <span>{children}</span>
-      <span className="text-[#A6FF00]">]</span>
+      <span className="sr-only">{children}</span>
+      <LedText text="[" className="h-[12px] md:h-[13px] w-auto text-[#A6FF00]" />
+      <LedText
+        text={typeof children === "string" ? children : ""}
+        className="h-[12px] md:h-[13px] w-auto"
+      />
+      <LedText text="]" className="h-[12px] md:h-[13px] w-auto text-[#A6FF00]" />
     </div>
   );
 }
@@ -1102,20 +1107,24 @@ export default function PreviewHome() {
                 </div>
 
                 {/* Якорь — верхний правый угол: роль (md+; на мобиле — в строке ниже) */}
-                <div className="hidden md:block absolute top-6 right-6 md:top-10 md:right-10 lg:top-12 lg:right-12 z-[2] font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/70">
-                  <span className="text-[#A6FF00]/80">[</span>
-                  <span className="mx-2">Дизайн-директор</span>
-                  <span className="text-[#A6FF00]/80">]</span>
+                <div className="hidden md:inline-flex absolute top-6 right-6 md:top-10 md:right-10 lg:top-12 lg:right-12 z-[2] items-center gap-2 text-white/70">
+                  <span className="sr-only">Дизайн-директор</span>
+                  <LedText text="[" className="h-[12px] w-auto text-[#A6FF00]/80" />
+                  <LedText text="Дизайн-директор" className="h-[12px] w-auto" />
+                  <LedText text="]" className="h-[12px] w-auto text-[#A6FF00]/80" />
                 </div>
 
                 {/* Мобильная строка под шапкой «Егор Шугаев»: слева роль, справа город */}
-                <div className="md:hidden absolute top-9 left-6 right-6 z-[2] flex items-center justify-between font-p95 text-[13px] tracking-[0.2em] uppercase text-white/70">
-                  <span className="whitespace-nowrap">
-                    <span className="text-[#A6FF00]/80">[</span>
-                    <span className="mx-2">Дизайн-директор</span>
-                    <span className="text-[#A6FF00]/80">]</span>
+                <div className="md:hidden absolute top-9 left-6 right-6 z-[2] flex items-center justify-between text-white/70">
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="sr-only">Дизайн-директор</span>
+                    <LedText text="[" className="h-[10px] w-auto text-[#A6FF00]/80" />
+                    <LedText text="Дизайн-директор" className="h-[10px] w-auto" />
+                    <LedText text="]" className="h-[10px] w-auto text-[#A6FF00]/80" />
                   </span>
-                  <span className="whitespace-nowrap">Москва</span>
+                  <span className="inline-flex" aria-label="Москва">
+                    <LedText text="Москва" className="h-[10px] w-auto" />
+                  </span>
                 </div>
 
                 {/* Якорь — нижний левый угол: лого компаний (md+; на мобиле — в потоке под кнопками) */}
@@ -1127,8 +1136,11 @@ export default function PreviewHome() {
                 </div>
 
                 {/* Якорь — нижний правый угол: город (md+; на мобиле — в строке под шапкой) */}
-                <div className="hidden md:block absolute bottom-6 right-6 md:bottom-10 md:right-10 lg:bottom-12 lg:right-12 z-[2] font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/70 whitespace-nowrap">
-                  Москва
+                <div
+                  className="hidden md:block absolute bottom-6 right-6 md:bottom-10 md:right-10 lg:bottom-12 lg:right-12 z-[2] text-white/70"
+                  aria-label="Москва"
+                >
+                  <LedText text="Москва" className="h-[12px] w-auto" />
                 </div>
 
                 {/* Центральный контент — ограничен слева, чтобы не наезжать на сферу.
@@ -1140,8 +1152,8 @@ export default function PreviewHome() {
                       {/* Мобайл: «7 лет развиваю» одной строкой (inline), md+ — двумя (block) */}
                       <span className="inline md:block text-white">7 лет </span>
                       <span className="inline md:block text-white">РАЗВИВАЮ</span>
-                      <span className="block">
-                        <FlippingWord
+                      <span className="block mt-[0.08em] max-md:flex max-md:justify-center">
+                        <LedFlipWord
                           words={["ЛЮДЕЙ", "КОМАНДЫ", "ВИЗУАЛ", "СЕРВИСЫ", "ИНТЕРЕС"]}
                           className="text-white"
                         />
@@ -1325,8 +1337,8 @@ export default function PreviewHome() {
                         idx > 0 ? "border-l border-white/10 pl-3 md:pl-4" : ""
                       }`}
                     >
-                      <div className="font-p95 text-[clamp(32px,3.6vw,52px)] uppercase tracking-tight text-white leading-none">
-                        {item.value}
+                      <div className="text-white" aria-label={item.value}>
+                        <LedText text={item.value} className="h-[30px] md:h-[36px] w-auto" />
                       </div>
                       <div className="text-[12px] md:text-[13px] tracking-[0.04em] uppercase text-white/72 leading-[1.4] font-light">
                         {item.label}

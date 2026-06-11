@@ -85,12 +85,12 @@ const SEQ: Record<FxName, Phase[]> = {
   scan: ["scan"],
 };
 const DUR: Record<Exclude<Phase, "text">, number> = {
-  out: 0.75,
-  in: 0.85,
-  fxwave: 1.7,
-  fxeq: 2.2,
-  fxrain: 2.2,
-  scan: 2.6,
+  out: 0.5,
+  in: 0.6,
+  fxwave: 1.2,
+  fxeq: 1.6,
+  fxrain: 1.6,
+  scan: 1.9,
 };
 const ORDER: FxName[] = ["wave", "eq", "rain", "scan"];
 const SHINE_DUR = 1.2; // длительность блика
