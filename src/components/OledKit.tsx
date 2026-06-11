@@ -2,7 +2,7 @@
  * OledKit — панели «премиального дисплея» и микро-визуализации:
  * Oled — плоская тёмная панель с тонкой обводкой (+ лайм-кромка),
  * DotGraph — тихий граф данных из точек,
- * Activity — минимальные зелёные бары активности.
+ * Activity — минимальные золотые бары активности.
  * ──────────────────────────────────────────────────────────────── */
 
 export function Oled({
@@ -66,7 +66,7 @@ export function Activity({ seed = 0 }: { seed?: number }) {
       {Array.from({ length: 5 }).map((_, i) => (
         <span
           key={i}
-          className="w-[2.5px] rounded-[1px] bg-[#A6FF00]/75 origin-bottom"
+          className="w-[2.5px] rounded-[1px] bg-[#C9A66B]/80 origin-bottom"
           style={{
             height: 5 + ((i * 7 + seed * 5) % 9),
             animation: `actbOled ${(1.6 + ((i + seed) % 5) * 0.3).toFixed(1)}s ease-in-out ${(i * 0.21 + seed * 0.37).toFixed(2)}s infinite alternate`,

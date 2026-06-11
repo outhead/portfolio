@@ -11,11 +11,13 @@ const PITCH = 4;
 export default function LedText({
   text,
   className,
+  style,
   dot = 1.75,
   scale = 1,
 }: {
   text: string;
   className?: string;
+  style?: React.CSSProperties;
   /** Радиус диода в юнитах сетки (шаг 4). 1.5 — плотно (мелкие надписи),
    *  ~1.05–1.2 — разреженное табло (крупные). */
   dot?: number;
@@ -27,6 +29,7 @@ export default function LedText({
     <svg
       viewBox={`0 0 ${cols * PITCH} ${rows * PITCH}`}
       className={className}
+      style={style}
       aria-hidden
       focusable="false"
     >

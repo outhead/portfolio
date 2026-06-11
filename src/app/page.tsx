@@ -22,7 +22,6 @@ import {
   Mail,
   FileDown,
   MapPin,
-  Quote,
   ArrowRight,
   Users,
   Sparkles,
@@ -72,12 +71,12 @@ function SectionLabel({
       }`}
     >
       <span className="sr-only">{children}</span>
-      <LedText text="[" className="h-[12px] md:h-[13px] w-auto text-[#A6FF00]" />
+      <LedText text="[" className="h-[12px] md:h-[13px] w-auto text-[#C9A66B]" />
       <LedText
         text={typeof children === "string" ? children : ""}
         className="h-[12px] md:h-[13px] w-auto"
       />
-      <LedText text="]" className="h-[12px] md:h-[13px] w-auto text-[#A6FF00]" />
+      <LedText text="]" className="h-[12px] md:h-[13px] w-auto text-[#C9A66B]" />
     </div>
   );
 }
@@ -651,7 +650,7 @@ function ServiceTile({ tile }: { tile: ServiceTileData }) {
     <motion.div
       ref={tileRef}
       variants={fadeUp}
-      className="group relative w-full rounded-2xl border border-white/[0.06] bg-[#0f0f0e] hover:border-white/[0.2] transition-colors p-6 md:p-8 flex flex-col gap-5 md:gap-6 min-h-[420px] md:min-h-[520px] overflow-hidden"
+      className="group relative w-full rounded-2xl border border-white/[0.06] bg-[#0f0f0e] hover:border-white/[0.2] transition-colors p-6 md:p-8 flex flex-col gap-5 md:gap-6 min-h-[360px] md:min-h-[420px] overflow-hidden"
     >
       {/* Верх: index / icon / label */}
       <div className="flex items-start justify-between gap-3">
@@ -677,8 +676,8 @@ function ServiceTile({ tile }: { tile: ServiceTileData }) {
       {/* Pulse-анимация. Фиксированная высота (не flex-1!), чтобы круг
           стоял на одной y-координате во всех плитках. Default — статичный
           серый кадр; hover (десктоп) или scroll-into-view (мобила) — зелёная анимация. */}
-      <div className="h-[200px] md:h-[220px] flex items-center justify-center">
-        <div className="relative w-[180px] h-[180px]">
+      <div className="h-[150px] md:h-[165px] flex items-center justify-center">
+        <div className="relative w-[140px] h-[140px]">
           <PulseAnimation
             variant={animation}
             reverse={animationReverse}
@@ -945,7 +944,7 @@ export default function PreviewHome() {
                     <LedText text="→" className="h-[13px] w-auto" />
                   </Link>
                 </div>
-                <div className="mt-auto pt-7 md:pt-8 flex items-center gap-6 md:gap-10 flex-wrap">
+                <div className="mt-auto pt-6 md:pt-7 border-t border-white/[0.06] flex items-center gap-6 md:gap-10 flex-wrap">
                   <img src="/images/logos/ozon.svg" alt="Ozon" className="h-4 md:h-5 w-auto self-center brightness-0 invert opacity-55 hover:opacity-100 transition-opacity" />
                   <img src="/images/logos/mts.svg" alt="МТС" className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity" />
                   <img src="/images/logos/gazpromneft.svg" alt="Газпром нефть" className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity" />
@@ -960,9 +959,9 @@ export default function PreviewHome() {
                 <div className="flex items-center justify-between text-white/35">
                   <span className="inline-flex items-center gap-2">
                     <span className="sr-only">Дизайн-директор</span>
-                    <LedText text="[" className="h-[10px] w-auto text-[#A6FF00]/60" />
+                    <LedText text="[" className="h-[10px] w-auto text-[#C9A66B]/70" />
                     <LedText text="Дизайн-директор" className="h-[10px] w-auto" />
-                    <LedText text="]" className="h-[10px] w-auto text-[#A6FF00]/60" />
+                    <LedText text="]" className="h-[10px] w-auto text-[#C9A66B]/70" />
                   </span>
                 </div>
                 <div ref={heroSphereRef} className="relative flex-1 min-h-[280px] md:min-h-[400px]">
@@ -1008,7 +1007,7 @@ export default function PreviewHome() {
                     { v: "27", l: "команд" },
                   ].map((m) => (
                     <div key={m.l} className="flex flex-col gap-3">
-                      <LedCounter value={m.v} tone="#A6FF00" />
+                      <LedCounter value={m.v} tone="#C9A66B" />
                       <span className="text-white/40">
                         <span className="sr-only">{m.l}</span>
                         <LedText text={m.l} className="h-[9px] w-auto" />
@@ -1090,7 +1089,7 @@ export default function PreviewHome() {
                         key={item.num}
                         className={`flex items-center gap-4 py-3.5 ${i > 0 ? "border-t border-white/[0.05]" : ""}`}
                       >
-                        <span className="w-5 shrink-0 text-[#A6FF00]/60">
+                        <span className="w-5 shrink-0 text-[#C9A66B]/70">
                           <LedText text={item.num} className="h-[9px] w-auto" />
                         </span>
                         <span className="flex-1 min-w-0 flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
@@ -1324,12 +1323,13 @@ export default function PreviewHome() {
               <LedLines
                 text="Не верьте мне на слово"
                 accent="*"
+                accentColor="#C9A66B"
                 center
                 maxChars={26}
                 lineClass="h-[22px] md:h-[42px]"
               />
             </h3>
-            <p className="mt-5 md:mt-7 flex justify-center text-[#A6FF00]">
+            <p className="mt-5 md:mt-7 flex justify-center text-[#C9A66B]">
               <span className="sr-only">* Спросите тех, кто со мной работал</span>
               <LedText text="* Спросите тех, кто со мной работал" className="h-[11px] md:h-[14px] w-auto" />
             </p>
@@ -1367,7 +1367,9 @@ export default function PreviewHome() {
                 variants={fadeUp}
                 className="shrink-0 w-[85vw] sm:w-[60vw] md:w-auto snap-start md:snap-align-none relative h-full p-6 md:p-7 rounded-2xl border border-white/[0.06] bg-[#0f0f0e] hover:border-[#A6FF00]/20 transition-colors duration-300 flex flex-col"
               >
-                <Quote className="w-5 h-5 text-[#A6FF00]/40 mb-4" strokeWidth={1.5} />
+                <span className="mb-4 text-[#C9A66B]/60" aria-hidden>
+                  <LedText text='"' scale={2} dot={1.45} className="h-[13px] w-auto" />
+                </span>
                 <p className="text-white/75 text-base md:text-[17px] leading-relaxed">
                   {t.quote}
                 </p>
@@ -1431,6 +1433,19 @@ export default function PreviewHome() {
                   className="no-underline group block h-full"
                 >
                   <div className="relative h-full rounded-2xl overflow-hidden border border-white/[0.06] group-hover:border-white/20 bg-[#0f0f0e] transition-colors duration-300 p-7 md:p-9 flex flex-col justify-between min-h-[260px]">
+                    <div
+                      aria-hidden
+                      className="absolute inset-0 pointer-events-none"
+                      style={{
+                        backgroundImage:
+                          "radial-gradient(rgba(255,255,255,0.07) 1.1px, transparent 1.2px)",
+                        backgroundSize: "13px 13px",
+                        maskImage:
+                          "radial-gradient(ellipse 80% 90% at 85% 10%, black, transparent 70%)",
+                        WebkitMaskImage:
+                          "radial-gradient(ellipse 80% 90% at 85% 10%, black, transparent 70%)",
+                      }}
+                    />
                     <div
                       className="absolute top-7 right-7 md:top-9 md:right-9 h-2 w-2 rounded-full"
                       style={{ backgroundColor: t.accent }}
@@ -1546,7 +1561,7 @@ export default function PreviewHome() {
                 data-ym-goal-params='{"placement":"contacts_grid"}'
                 className="group no-underline block h-full"
               >
-                <div className="relative h-full min-h-[180px] md:min-h-[260px] rounded-2xl overflow-hidden border border-[#A6FF00]/30 bg-[#A6FF00] hover:bg-[#B8FF33] transition-colors p-6 md:p-8 flex flex-col justify-between">
+                <div className="relative h-full min-h-[160px] md:min-h-[230px] rounded-2xl overflow-hidden border border-[#A6FF00]/30 bg-[#A6FF00] hover:bg-[#B8FF33] transition-colors p-6 md:p-8 flex flex-col justify-between">
                   <div className="flex items-start justify-between">
                     <div className="text-black/60">
                       <span className="sr-only">Telegram</span>
@@ -1584,7 +1599,7 @@ export default function PreviewHome() {
                   data-ym-goal-params='{"placement":"contacts_grid"}'
                   className="group no-underline block h-full"
                 >
-                  <div className="relative h-full min-h-[120px] md:min-h-[130px] rounded-2xl overflow-hidden border border-white/[0.06] bg-[#0f0f0e] hover:border-white/[0.2] transition-colors p-5 flex flex-col justify-between">
+                  <div className="relative h-full min-h-[104px] md:min-h-[112px] rounded-2xl overflow-hidden border border-white/[0.06] bg-[#0f0f0e] hover:border-white/[0.2] transition-colors p-5 flex flex-col justify-between">
                     <div className="flex items-start justify-between">
                       <div className="text-white/70">
                         <span className="sr-only">{link.label}</span>

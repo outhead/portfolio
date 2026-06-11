@@ -279,7 +279,7 @@ export default function MentoringPage() {
                 delay={i * 80}
                 className={p.wide ? "md:col-span-2 h-full" : "h-full"}
               >
-                <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] hover:border-white/[0.2] hover:bg-white/[0.04] transition-colors p-7 md:p-10 flex flex-col justify-between min-h-[240px] md:min-h-[280px] h-full">
+                <div className="rounded-2xl border border-white/[0.06] bg-[#0f0f0e] hover:border-white/[0.2] transition-colors p-7 md:p-10 flex flex-col justify-between min-h-[240px] md:min-h-[280px] h-full">
                   <div>
                     <div className="text-white/45 mb-3">
                       <LedText text={`${p.n} /`} className="h-[9px] w-auto" />

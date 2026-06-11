@@ -199,6 +199,7 @@ export function LedLines({
   maxChars = 24,
   center = false,
   accent,
+  accentColor = "#A6FF00",
 }: {
   text: string;
   className?: string;
@@ -211,6 +212,8 @@ export function LedLines({
   center?: boolean;
   /** Хвост-акцент лаймом (например «*» или «.») */
   accent?: string;
+  /** Цвет accent-хвоста (default лайм). */
+  accentColor?: string;
 }) {
   const words = text.split(" ");
   const lines: string[] = [];
@@ -233,7 +236,7 @@ export function LedLines({
         i === lines.length - 1 && accent ? (
           <span key={i} className="flex items-start gap-[6px]">
             <LedText text={l} scale={scale} dot={dot} className={`${lineClass} w-auto`} />
-            <LedText text={accent} scale={scale} dot={dot} className={`${lineClass} w-auto text-[#A6FF00]`} />
+            <LedText text={accent} scale={scale} dot={dot} className={`${lineClass} w-auto`} style={{ color: accentColor }} />
           </span>
         ) : (
           <LedText key={i} text={l} scale={scale} dot={dot} className={`${lineClass} w-auto`} />

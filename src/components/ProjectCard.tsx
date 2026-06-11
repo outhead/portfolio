@@ -135,7 +135,7 @@ interface ProjectCardProps {
 /** Маленький chip — stokt-style pill под title. */
 function TagChip({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center px-3 py-1.5 rounded-full border border-white/15 bg-white/[0.04] text-[13px] md:text-[14px] tracking-[0.04em] text-white/80 leading-[1.2] backdrop-blur-sm">
+    <span className="inline-flex items-center px-3 py-1.5 rounded-full border border-white/15 bg-white/[0.04] text-[12px] md:text-[13px] tracking-[0.08em] uppercase text-white/80 leading-[1.2] backdrop-blur-sm">
       {children}
     </span>
   );
@@ -150,7 +150,7 @@ function MetricChip({
   label?: string;
 }) {
   return (
-    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#A6FF00]/10 border border-[#A6FF00]/25 text-[#A6FF00] leading-[1.2]">
+    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#C9A66B]/10 border border-[#C9A66B]/30 text-[#C9A66B] leading-[1.2]">
       <span className="sr-only">
         {value} {label ?? ""}
       </span>
@@ -166,7 +166,7 @@ export default function ProjectCard({
 }: ProjectCardProps) {
   // Hover-arrow в top-right (как у Stokt)
   const HoverArrow = (
-    <div className="absolute top-4 right-4 md:top-5 md:right-5 w-9 h-9 md:w-10 md:h-10 rounded-full border border-white/20 flex items-center justify-center bg-black/30 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0 z-[2]">
+    <div className="absolute top-3 right-3 md:top-4 md:right-4 w-9 h-9 md:w-10 md:h-10 rounded-full border border-white/20 flex items-center justify-center bg-black/30 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0 z-[2]">
       <ArrowUpRight className="w-4 h-4 text-white/90" strokeWidth={2} />
     </div>
   );
@@ -174,9 +174,9 @@ export default function ProjectCard({
   // Bottom-content: company bracket-label, title, tag-chips + metric
   const BottomContent = (
     <div
-      className={`absolute bottom-0 left-0 right-0 flex flex-col gap-3 md:gap-4 z-[2] ${
-        featured ? "p-6 md:p-8 lg:p-10" : wide ? "p-6 md:p-8" : "p-5 md:p-6"
-      }`}
+      className={`flex flex-col gap-3 md:gap-4 ${
+        featured ? "p-6 md:p-7" : wide ? "p-5 md:p-6" : "p-5"
+      } pt-4 md:pt-5`}
     >
       <div className="text-white/60">
         <span className="sr-only">{project.company}</span>
@@ -245,17 +245,6 @@ export default function ProjectCard({
     />
   );
 
-  // Bottom floor — градиент-поднос для читаемости текста поверх cover.
-  // Появляется вместе с cover. До hover/фокуса карточка остаётся чисто чёрной
-  // без каких-либо переходов снизу вверх.
-  const GradientFloor = (
-    <div
-      className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent pointer-events-none z-[1] transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-        coverActive ? "opacity-100" : "opacity-0"
-      }`}
-    />
-  );
-
   // Параметры цели — общие для всех вариантов карточки.
   const goalParams = JSON.stringify({ case_slug: project.slug, variant: featured ? "featured" : wide ? "wide" : "regular" });
 
@@ -274,11 +263,12 @@ export default function ProjectCard({
           transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
           className="relative rounded-2xl overflow-hidden bg-[#0f0f0e] border border-white/[0.06] group-hover:border-white/20 transition-colors duration-300 h-full"
         >
-          <div className="relative h-full min-h-[360px] md:min-h-[480px] overflow-hidden">
-            {CoverTint}
-            <CoverMedia project={project} active={coverActive} onVideoPlayingChange={setVideoPlaying} />
-            {GradientFloor}
-            {HoverArrow}
+          <div className="h-full min-h-[360px] md:min-h-[480px] flex flex-col p-3 md:p-4 pb-0 md:pb-0">
+            <div className="relative flex-1 min-h-[200px] rounded-xl border border-white/[0.08] overflow-hidden bg-black/40">
+              {CoverTint}
+              <CoverMedia project={project} active={coverActive} onVideoPlayingChange={setVideoPlaying} />
+              {HoverArrow}
+            </div>
             {BottomContent}
           </div>
         </motion.article>
@@ -301,11 +291,12 @@ export default function ProjectCard({
           transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
           className="relative rounded-2xl overflow-hidden bg-[#0f0f0e] border border-white/[0.06] group-hover:border-white/20 transition-colors duration-300 h-full"
         >
-          <div className="relative h-full min-h-[360px] md:min-h-[360px] overflow-hidden">
-            {CoverTint}
-            <CoverMedia project={project} active={coverActive} onVideoPlayingChange={setVideoPlaying} />
-            {GradientFloor}
-            {HoverArrow}
+          <div className="h-full min-h-[360px] md:min-h-[360px] flex flex-col p-3 md:p-4 pb-0 md:pb-0">
+            <div className="relative flex-1 min-h-[160px] rounded-xl border border-white/[0.08] overflow-hidden bg-black/40">
+              {CoverTint}
+              <CoverMedia project={project} active={coverActive} onVideoPlayingChange={setVideoPlaying} />
+              {HoverArrow}
+            </div>
             {BottomContent}
           </div>
         </motion.article>
@@ -327,11 +318,12 @@ export default function ProjectCard({
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
         className="relative rounded-2xl overflow-hidden bg-[#0f0f0e] border border-white/[0.06] group-hover:border-white/20 h-full transition-colors duration-300"
       >
-        <div className="relative h-full min-h-[360px] md:min-h-[320px] overflow-hidden">
-          {CoverTint}
-          <CoverMedia project={project} active={coverActive} onVideoPlayingChange={setVideoPlaying} />
-          {GradientFloor}
-          {HoverArrow}
+        <div className="h-full min-h-[360px] md:min-h-[320px] flex flex-col p-3 pb-0">
+          <div className="relative flex-1 min-h-[150px] rounded-xl border border-white/[0.08] overflow-hidden bg-black/40">
+            {CoverTint}
+            <CoverMedia project={project} active={coverActive} onVideoPlayingChange={setVideoPlaying} />
+            {HoverArrow}
+          </div>
           {BottomContent}
         </div>
       </motion.article>
