@@ -11,6 +11,25 @@ import HeroSlider from "@/components/HeroSlider";
 import PressCollapse from "@/components/PressCollapse";
 import WIPOverlay from "@/components/WIPOverlay";
 import DecryptApproach from "@/components/DecryptApproach";
+import LedText from "@/components/LedText";
+
+/* Пиксельный лейбл секций кейса — единый язык с табло главной */
+function CaseLabel({
+  children,
+  className = "mb-2",
+  tone = "text-white/40",
+}: {
+  children: string;
+  className?: string;
+  tone?: string;
+}) {
+  return (
+    <div className={`${tone} ${className}`}>
+      <span className="sr-only">{children}</span>
+      <LedText text={children} className="h-[9px] w-auto" />
+    </div>
+  );
+}
 
 export function generateStaticParams() {
   return projects.map((project) => ({
@@ -105,13 +124,17 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
           {/* Breadcrumb */}
           <Link
             href="/#portfolio"
-            className="inline-flex items-center gap-2 text-[12px] tracking-[0.12em] uppercase text-white/30 no-underline hover:text-white/60 transition-colors mb-8"
+            className="inline-flex items-center gap-2 text-white/35 no-underline hover:text-white/65 transition-colors mb-8"
           >
-            <ArrowLeft className="w-3 h-3" strokeWidth={2} />
-            <span>Все проекты</span>
+            <LedText text="←" className="h-[11px] w-auto" />
+            <span className="sr-only">Все проекты</span>
+            <LedText text="Все проекты" className="h-[9px] w-auto" />
           </Link>
 
-          <div className="text-[12px] tracking-[0.12em] uppercase text-white/30 mb-2">{project.company}</div>
+          <div className="text-white/35 mb-2">
+            <span className="sr-only">{project.company}</span>
+            <LedText text={project.company} className="h-[10px] w-auto" />
+          </div>
           <h1 className="font-p95 text-[clamp(32px,6vw,72px)] uppercase leading-[0.95] mb-4">
             {project.title}
           </h1>
@@ -137,13 +160,10 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
             return (
               <div className={`grid grid-cols-2 ${colsClass} gap-px bg-white/[0.04] rounded-lg overflow-hidden my-0`}>
                 {project.results!.map((r) => (
-                  <div key={r.label} className="bg-black p-5 md:p-6 text-center">
-                    <div className="font-p95 text-4xl md:text-6xl text-white leading-none mb-2 tracking-tight">
-                      {r.value}
-                    </div>
-                    <div className="text-[15px] md:text-[16px] tracking-[0.1em] uppercase text-white/45">
-                      {r.label}
-                    </div>
+                  <div key={r.label} className="bg-black p-5 md:p-6 flex flex-col items-center gap-2.5">
+                    <span className="sr-only">{`${r.value} ${r.label}`}</span>
+                    <LedText text={r.value} scale={2} dot={1.45} className="h-[28px] md:h-[40px] w-auto text-white" />
+                    <LedText text={r.label} className="h-[9px] md:h-[10px] w-auto text-white/45" />
                   </div>
                 ))}
               </div>
@@ -192,8 +212,6 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
             const hasSectionScreenshots = section.screenshots && section.screenshots.length > 0;
             const hasStructured =
               section.context || section.approach || section.helped || section.result;
-            const labelClass =
-              "text-[11px] tracking-[0.14em] uppercase text-white/40 mb-2";
             const proseClass =
               "text-white/65 leading-relaxed text-sm md:text-base";
 
@@ -233,8 +251,8 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
               <div key={i} id={`section-${i + 1}`} className="mb-16 md:mb-24 scroll-mt-24">
                 {/* Section header: large number + title */}
                 <div className="flex items-baseline gap-4 mb-6">
-                  <span className="text-[15px] tracking-[0.14em] uppercase text-white/25 font-mono">
-                    {String(i + 1).padStart(2, "0")}
+                  <span className="text-white/30">
+                    <LedText text={String(i + 1).padStart(2, "0")} className="h-[10px] w-auto" />
                   </span>
                   <h3 className="text-xl md:text-2xl text-white/95 font-semibold leading-tight">
                     {section.title}
@@ -257,13 +275,13 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                   <div className="space-y-6 max-w-3xl">
                     {section.context && (
                       <div>
-                        <div className={labelClass}>Задача</div>
+                        <CaseLabel>Задача</CaseLabel>
                         {renderProse(section.context)}
                       </div>
                     )}
                     {section.approach && (
                       <div>
-                        <div className={labelClass}>Подход</div>
+                        <CaseLabel>Подход</CaseLabel>
                         {section.approachSimple ? (
                           <DecryptApproach
                             technical={section.approach}
@@ -276,7 +294,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                     )}
                     {section.helped && (
                       <div className="border-l-2 border-[#A6FF00]/30 pl-4">
-                        <div className={labelClass}>Что способствовало</div>
+                        <CaseLabel>Что способствовало</CaseLabel>
                         {renderProse(section.helped)}
                       </div>
                     )}
@@ -361,11 +379,12 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                         key={c.label}
                         className="bg-black p-5 md:p-7 text-center"
                       >
-                        <div className="font-p95 text-4xl md:text-6xl text-white leading-none mb-2 tracking-tight">
-                          {c.value}
+                        <span className="sr-only">{`${c.value} ${c.label}`}</span>
+                        <div className="mb-2.5 flex justify-center">
+                          <LedText text={c.value} scale={2} dot={1.45} className="h-[26px] md:h-[38px] w-auto text-white" />
                         </div>
-                        <div className="text-[12px] md:text-[16px] tracking-[0.12em] uppercase text-white/45 leading-tight">
-                          {c.label}
+                        <div className="flex justify-center text-white/45">
+                          <LedText text={c.label} className="h-[9px] md:h-[10px] w-auto" />
                         </div>
                       </div>
                     ))}
@@ -395,10 +414,11 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                           href={project.tryUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-md bg-[#A6FF00] text-black font-p95 text-base md:text-lg uppercase tracking-tight hover:bg-[#B8FF33] transition-colors no-underline shadow-[0_0_40px_-8px_rgba(166,255,0,0.5)]"
+                          className="inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-md bg-[#A6FF00] text-black hover:bg-[#B8FF33] transition-colors no-underline shadow-[0_0_40px_-8px_rgba(166,255,0,0.5)]"
                         >
                           <span className="text-xl leading-none">▶</span>
-                          Попробовать
+                          <span className="sr-only">Попробовать</span>
+                          <LedText text="Попробовать" className="h-[12px] w-auto" />
                         </a>
                         <p className="text-sm text-white/45 leading-relaxed max-w-sm">
                           Тот самый конструктор из видео — открой и покрути сам.
@@ -433,7 +453,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                     Идея: сначала задача и подход + визуал, потом — что получилось. */}
                 {section.result && (
                   <div className="mt-10 md:mt-12 max-w-3xl">
-                    <div className={labelClass}>Результат</div>
+                    <CaseLabel>Результат</CaseLabel>
                     {renderProse(section.result)}
                   </div>
                 )}
@@ -451,7 +471,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
           {project.screenshots && project.screenshots.length > 0 &&
             !project.sections?.some((s) => s.screenshots && s.screenshots.length > 0) && (
             <div className="mt-16 mb-12">
-              <div className="text-[12px] tracking-[0.12em] uppercase text-white/30 mb-6">Скриншоты</div>
+              <CaseLabel className="mb-6" tone="text-white/35">Скриншоты</CaseLabel>
               <ImageLightbox
                 mode={project.screenshotsMode ?? "web"}
                 images={project.screenshots.map((shot, n) => {
@@ -494,11 +514,11 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
             });
             return (
               <div className="mt-16 mb-8">
-                <div className="text-[12px] tracking-[0.12em] uppercase text-white/30 mb-6">Пруфы и ссылки</div>
+                <CaseLabel className="mb-6" tone="text-white/35">Пруфы и ссылки</CaseLabel>
                 <div className="flex flex-col gap-8">
                   {sortedGroups.map(([cat, items]) => (
                     <div key={cat}>
-                      <div className="text-[11px] tracking-[0.12em] uppercase text-white/40 mb-3">{cat}</div>
+                      <CaseLabel className="mb-3">{cat}</CaseLabel>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {items.map((link) => (
                           <CaseLinkCard key={link.url} link={link} size="md" />
@@ -516,7 +536,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
         {project.sections && project.sections.length > 1 && (
           <aside className="hidden lg:block w-44 xl:w-48 flex-shrink-0">
             <div className="sticky top-24">
-              <div className="text-[11px] tracking-[0.14em] uppercase text-white/30 mb-3">Содержание</div>
+              <CaseLabel className="mb-3" tone="text-white/35">Содержание</CaseLabel>
               <ul className="space-y-2.5">
                 {project.sections.map((s, i) => (
                   <li key={i}>
@@ -541,7 +561,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
       {/* CTA — связаться */}
       <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-12 md:py-16 bg-black border-t border-white/[0.06]">
         <div className="max-w-3xl">
-          <div className="text-[12px] tracking-[0.12em] uppercase text-white/30 mb-4">Открыт к офферам</div>
+          <CaseLabel className="mb-4" tone="text-white/35">Открыт к офферам</CaseLabel>
           <h3 className="font-p95 text-[clamp(24px,3vw,40px)] uppercase leading-[1] mb-6 text-white/90">
             Хочется поговорить про эту роль или просто познакомиться?
           </h3>
@@ -572,9 +592,10 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
               href={`/cases/${prev.slug}`}
               className="group py-8 md:py-12 pr-4 no-underline"
             >
-              <div className="text-[11px] tracking-[0.12em] uppercase text-white/25 mb-2 flex items-center gap-1.5">
-                <ArrowLeft className="w-3 h-3" strokeWidth={2} />
-                Предыдущий
+              <div className="text-white/30 mb-2 flex items-center gap-2">
+                <LedText text="←" className="h-[10px] w-auto" />
+                <span className="sr-only">Предыдущий</span>
+                <LedText text="Предыдущий" className="h-[9px] w-auto" />
               </div>
               <div className="text-sm md:text-base text-white/50 group-hover:text-white/80 transition-colors">
                 {prev.title}
@@ -586,9 +607,10 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
               href="/#portfolio"
               className="group py-8 md:py-12 pr-4 no-underline"
             >
-              <div className="text-[11px] tracking-[0.12em] uppercase text-white/25 mb-2 flex items-center gap-1.5">
-                <ArrowLeft className="w-3 h-3" strokeWidth={2} />
-                Назад
+              <div className="text-white/30 mb-2 flex items-center gap-2">
+                <LedText text="←" className="h-[10px] w-auto" />
+                <span className="sr-only">Назад</span>
+                <LedText text="Назад" className="h-[9px] w-auto" />
               </div>
               <div className="text-sm md:text-base text-white/50 group-hover:text-white/80 transition-colors">
                 Все проекты
@@ -601,9 +623,10 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
               href={`/cases/${next.slug}`}
               className="group py-8 md:py-12 pl-4 text-right border-l border-white/[0.06] no-underline"
             >
-              <div className="text-[11px] tracking-[0.12em] uppercase text-white/25 mb-2 flex items-center gap-1.5 justify-end">
-                Следующий
-                <ArrowRight className="w-3 h-3" strokeWidth={2} />
+              <div className="text-white/30 mb-2 flex items-center gap-2 justify-end">
+                <span className="sr-only">Следующий</span>
+                <LedText text="Следующий" className="h-[9px] w-auto" />
+                <LedText text="→" className="h-[10px] w-auto" />
               </div>
               <div className="text-sm md:text-base text-white/50 group-hover:text-white/80 transition-colors">
                 {next.title}
@@ -615,9 +638,10 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
               href="/#portfolio"
               className="group py-8 md:py-12 pl-4 text-right border-l border-white/[0.06] no-underline"
             >
-              <div className="text-[11px] tracking-[0.12em] uppercase text-white/25 mb-2 flex items-center gap-1.5 justify-end">
-                Назад
-                <ArrowRight className="w-3 h-3" strokeWidth={2} />
+              <div className="text-white/30 mb-2 flex items-center gap-2 justify-end">
+                <span className="sr-only">Назад</span>
+                <LedText text="Назад" className="h-[9px] w-auto" />
+                <LedText text="→" className="h-[10px] w-auto" />
               </div>
               <div className="text-sm md:text-base text-white/50 group-hover:text-white/80 transition-colors">
                 Все проекты

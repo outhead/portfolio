@@ -2,6 +2,24 @@
 
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import LedText from "@/components/LedText";
+
+/* Грубый перенос строки для LED-текста бабла (~24 символа) */
+function wrapLedLines(text: string, max = 24): string[] {
+  const words = text.split(" ");
+  const lines: string[] = [];
+  let cur = "";
+  for (const w of words) {
+    if ((cur + " " + w).trim().length > max && cur) {
+      lines.push(cur);
+      cur = w;
+    } else {
+      cur = cur ? `${cur} ${w}` : w;
+    }
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
 
 // ParticleSphere — облако частиц, которое стягивается из глубины кадра к
 // поверхности целевой фигуры (shape), держится и затухает.
@@ -609,9 +627,14 @@ export default function ParticleSphere({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="pointer-events-none absolute left-1/2 top-1/2 z-[3] -translate-x-1/2 -translate-y-1/2 max-w-[80%] rounded-2xl border border-[#A6FF00]/40 bg-black/80 px-4 py-2 text-center text-[13px] md:text-[14px] leading-snug text-white shadow-[0_4px_24px_rgba(0,0,0,0.5)] backdrop-blur-sm"
+            className="pointer-events-none absolute left-1/2 top-1/2 z-[3] -translate-x-1/2 -translate-y-1/2 max-w-[86%] rounded-xl bg-[#1d1d1b]/95 px-5 py-3.5 shadow-[0_8px_30px_rgba(0,0,0,0.45)] backdrop-blur-sm text-white/90"
           >
-            {tapMessages[tapStage - 1]}
+            <span className="sr-only">{tapMessages[tapStage - 1]}</span>
+            <span className="flex flex-col items-center gap-[6px]">
+              {wrapLedLines(tapMessages[tapStage - 1]).map((l, i) => (
+                <LedText key={i} text={l} className="h-[9px] md:h-[10px] w-auto" />
+              ))}
+            </span>
           </motion.div>
         ) : null}
       </AnimatePresence>
