@@ -58,9 +58,10 @@ export default function ZapretProto() {
           <button
             type="button"
             onClick={press}
-            className="px-8 py-4 rounded-md border-2 border-[#A6FF00] bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-base md:text-lg uppercase tracking-tight hover:bg-[#A6FF00]/20 transition-colors"
+            className="px-8 py-4 rounded-md border-2 border-[#A6FF00] bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00]/20 transition-colors"
           >
-            Не нажимать
+            <span className="sr-only">Не нажимать</span>
+            <LedText text="Не нажимать" className="h-[13px] w-auto" />
           </button>
 
           <button

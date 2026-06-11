@@ -271,6 +271,19 @@ body.pong-immersive {
   body.pong-immersive footer { display: none; }
 }
 
+/* Шифр (LED-версия): «61» пульсирует между белым и лаймом —
+   SVG-диоды наследуют color, поэтому анимируем color. */
+.led61 {
+  animation: led61pulse 2.4s ease-in-out infinite;
+}
+@keyframes led61pulse {
+  0%, 100% { color: #ffffff; -webkit-text-fill-color: #ffffff; }
+  50% { color: #a6ff00; -webkit-text-fill-color: #a6ff00; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .led61 { animation: none; color: #a6ff00; }
+}
+
 /* Шифр: САМИ цифры 61 переливаются — заливка слева направо по очереди белым и
    зелёным (2с на цвет). Через background-clip:text; !important перебивает .lime-force. */
 .fill61 {

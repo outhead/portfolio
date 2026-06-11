@@ -1035,11 +1035,19 @@ export default function PongPage() {
             <span className="ml-2 normal-case tracking-normal text-[#A6FF00]/65">⌁ поле</span>
           ) : null}
         </p>
-        <div className="flex items-center justify-center gap-2.5 sm:gap-5 mb-2 font-p95 tabular-nums" style={{ fontSize: "clamp(20px,5vw,30px)" }}>
-          <span className="text-white/40 text-[10px] sm:text-xs uppercase tracking-[0.12em]">соперник</span>
-          <span key={`t${theirs}`} className="text-white/80 score-pop inline-block">{theirs}</span>
-          <span className="text-white/20">:</span>
-          <span key={`m${mine}`} className="text-[#A6FF00] score-pop inline-block">{mine}</span>
+        <div className="flex items-center justify-center gap-2.5 sm:gap-5 mb-2">
+          <span className="text-white/40">
+            <LedText text="соперник" className="h-[7px] sm:h-[8px] w-auto" />
+          </span>
+          <span key={`t${theirs}`} className="text-white/80 score-pop inline-flex">
+            <LedText text={String(theirs)} scale={2} dot={1.45} className="h-[16px] sm:h-[20px] w-auto" />
+          </span>
+          <span className="text-white/20">
+            <LedText text=":" className="h-[12px] w-auto" />
+          </span>
+          <span key={`m${mine}`} className="text-[#A6FF00] score-pop inline-flex">
+            <LedText text={String(mine)} scale={2} dot={1.45} className="h-[16px] sm:h-[20px] w-auto" />
+          </span>
           <span className="text-white/40 text-[10px] sm:text-xs uppercase tracking-[0.12em]">ты</span>
         </div>
 
@@ -1051,7 +1059,9 @@ export default function PongPage() {
 
           {count > 0 && phase === "count" ? (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <span key={count} className="font-p95 text-[#A6FF00] count-in inline-block" style={{ fontSize: "clamp(64px,18vw,120px)" }}>{count}</span>
+              <span key={count} className="text-[#A6FF00] count-in inline-flex">
+                <LedText text={String(count)} scale={2} dot={1.45} className="h-[56px] sm:h-[80px] w-auto" />
+              </span>
             </div>
           ) : null}
 

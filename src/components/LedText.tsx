@@ -11,7 +11,7 @@ const PITCH = 4;
 export default function LedText({
   text,
   className,
-  dot = 1.5,
+  dot = 1.75,
   scale = 1,
 }: {
   text: string;

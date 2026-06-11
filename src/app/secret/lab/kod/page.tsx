@@ -122,8 +122,8 @@ export default function KodFinal() {
 
           <div className={`flex gap-3 mb-8 transition-transform ${wrong ? "translate-x-1" : ""}`} style={wrong ? { color: "#C9A66B" } : undefined}>
             {[0, 1, 2, 3].map((i) => (
-              <div key={i} className={`w-12 h-14 rounded-md border flex items-center justify-center font-p95 text-2xl ${wrong ? "border-[#C9A66B]/60" : "border-white/20"} ${entry[i] ? "text-white" : "text-white/20"}`}>
-                {entry[i] ?? "·"}
+              <div key={i} className={`w-12 h-14 rounded-md border flex items-center justify-center ${wrong ? "border-[#C9A66B]/60" : "border-white/20"} ${entry[i] ? "text-white" : "text-white/20"}`}>
+                <LedText text={entry[i] ?? "·"} scale={2} dot={1.45} className="h-[20px] w-auto" />
               </div>
             ))}
           </div>
@@ -131,14 +131,18 @@ export default function KodFinal() {
           <div className="grid grid-cols-3 gap-2.5">
             {["1","2","3","4","5","6","7","8","9"].map((d) => (
               <button key={d} type="button" onClick={() => push(d)}
-                className="w-16 h-16 rounded-md border border-white/12 bg-white/[0.03] text-white/85 font-p95 text-xl hover:border-white/30 hover:bg-white/[0.07] transition-colors">
-                {d}
+                className="w-16 h-16 rounded-md border border-white/12 bg-white/[0.03] text-white/85 hover:border-white/30 hover:bg-white/[0.07] transition-colors inline-flex items-center justify-center">
+                <LedText text={d} className="h-[15px] w-auto" />
               </button>
             ))}
-            <button type="button" onClick={back}
-              className="w-16 h-16 rounded-md border border-white/12 bg-white/[0.03] text-white/45 text-sm hover:border-white/30 transition-colors">←</button>
+            <button type="button" onClick={back} aria-label="Стереть"
+              className="w-16 h-16 rounded-md border border-white/12 bg-white/[0.03] text-white/45 hover:border-white/30 transition-colors inline-flex items-center justify-center">
+              <LedText text="←" className="h-[13px] w-auto" />
+            </button>
             <button type="button" onClick={() => push("0")}
-              className="w-16 h-16 rounded-md border border-white/12 bg-white/[0.03] text-white/85 font-p95 text-xl hover:border-white/30 hover:bg-white/[0.07] transition-colors">0</button>
+              className="w-16 h-16 rounded-md border border-white/12 bg-white/[0.03] text-white/85 hover:border-white/30 hover:bg-white/[0.07] transition-colors inline-flex items-center justify-center">
+              <LedText text="0" className="h-[15px] w-auto" />
+            </button>
             <span className="w-16 h-16" />
           </div>
 
@@ -258,7 +262,9 @@ export default function KodFinal() {
                   const mine = youAt != null && e.at === youAt;
                   return (
                     <li key={`${e.at}-${i}`} className={`flex items-center gap-3 py-2 border-b border-white/[0.05] last:border-0 ${mine ? "text-[#A6FF00]" : "text-white/80"}`}>
-                      <span className="font-p95 tabular-nums text-[13px] w-5 text-white/35">{i + 1}</span>
+                      <span className="w-5 text-white/35">
+                        <LedText text={String(i + 1)} className="h-[9px] w-auto" />
+                      </span>
                       <span className="flex-1 text-[15px] truncate">
                         {e.name}
                         {e.tester ? <span className="ml-2 text-[10px] tracking-[0.1em] uppercase text-[#C9A66B]/70 align-middle">друг/тест</span> : null}

@@ -103,10 +103,11 @@ export default function PraviloProto() {
                   onPointerMove={onMove}
                   onPointerUp={onUp(c.id)}
                   onPointerCancel={onUp(c.id)}
-                  className={`touch-none cursor-grab active:cursor-grabbing inline-flex items-center px-4 py-2.5 rounded-md border font-p95 text-[15px] md:text-base tracking-[0.08em] uppercase ${cls} ${active ? "z-10 shadow-lg" : ""}`}
+                  className={`touch-none cursor-grab active:cursor-grabbing inline-flex items-center px-4 py-2.5 rounded-md border ${cls} ${active ? "z-10 shadow-lg" : ""}`}
                   style={active ? { transform: `translate(${off.x}px, ${off.y}px)`, transition: "none" } : { transition: "transform .2s ease" }}
                 >
-                  {c.word}
+                  <span className="sr-only">{c.word}</span>
+                  <LedText text={c.word} className="h-[11px] md:h-[12px] w-auto pointer-events-none" />
                 </div>
               );
             })}

@@ -203,7 +203,7 @@ export default function PairPage() {
 
         {phase === "error" ? (
           <>
-            <h1 className="font-p95 uppercase tracking-tight mb-4" style={{ fontSize: "clamp(28px,5vw,44px)" }}>Сбой связи</h1>
+            <h1 className="mb-4 flex justify-center"><span className="sr-only">Сбой связи</span><LedText text="Сбой связи" scale={2} dot={1.45} className="h-[20px] md:h-[26px] w-auto" /></h1>
             <p className="text-white/55 text-sm mb-8 max-w-xs">Не удалось открыть сессию. Попробуй обновить страницу.</p>
             <Link href="/secret/lab/kod" className="text-[13px] text-white/40 hover:text-white/70 no-underline">← К терминалу</Link>
           </>
@@ -211,7 +211,7 @@ export default function PairPage() {
 
         {phase === "same_ip" ? (
           <>
-            <h1 className="font-p95 uppercase tracking-tight mb-5" style={{ fontSize: "clamp(28px,5.5vw,48px)" }}>Хм.</h1>
+            <h1 className="mb-5 flex justify-center"><span className="sr-only">Хм.</span><LedText text="Хм." scale={2} dot={1.45} className="h-[20px] md:h-[28px] w-auto" /></h1>
             <p className="text-[15px] text-white/70 max-w-xs leading-relaxed mb-3">
               Я вижу, как ты пытаешься меня обмануть. Тебе нужен кто-то — дальше, чем твоя вторая рука.
             </p>
@@ -221,7 +221,7 @@ export default function PairPage() {
 
         {phase === "full" ? (
           <>
-            <h1 className="font-p95 uppercase tracking-tight mb-4" style={{ fontSize: "clamp(28px,5vw,44px)" }}>Занято</h1>
+            <h1 className="mb-4 flex justify-center"><span className="sr-only">Занято</span><LedText text="Занято" scale={2} dot={1.45} className="h-[20px] md:h-[26px] w-auto" /></h1>
             <p className="text-white/55 text-sm max-w-xs">В этой сессии уже двое. Пусть напарник создаст новую.</p>
           </>
         ) : null}
@@ -265,7 +265,7 @@ export default function PairPage() {
               </div>
             ) : (
               <div className="mt-10 flex flex-col items-center">
-                <p className="font-p95 uppercase tracking-tight text-[#A6FF00] mb-2" style={{ fontSize: "clamp(28px,7vw,44px)" }}>Сошлось!</p>
+                <p className="text-[#A6FF00] mb-2 flex justify-center"><span className="sr-only">Сошлось!</span><LedText text="Сошлось!" scale={2} dot={1.45} className="h-[20px] md:h-[26px] w-auto" /></p>
                 <p className="text-[13px] text-white/55 max-w-xs">Вы сделали это вдвоём. Финал открыт у обоих.</p>
                 <Link href={`/secret/pair/done?room=${token}&host=1`} className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
                   <span className="sr-only">Дальше</span><LedText text="Дальше" className="h-[10px] w-auto" /><LedText text="→" className="h-[11px] w-auto" />
@@ -329,7 +329,7 @@ export default function PairPage() {
               <p className="mt-10 text-[13px] text-white/40">Напарник скажет, когда сойдётся.</p>
             ) : (
               <div className="mt-10 flex flex-col items-center">
-                <p className="font-p95 uppercase tracking-tight text-[#A6FF00] mb-2" style={{ fontSize: "clamp(28px,7vw,44px)" }}>Сошлось!</p>
+                <p className="text-[#A6FF00] mb-2 flex justify-center"><span className="sr-only">Сошлось!</span><LedText text="Сошлось!" scale={2} dot={1.45} className="h-[20px] md:h-[26px] w-auto" /></p>
                 <p className="text-[13px] text-white/55 max-w-xs">Вы сделали это вдвоём. Финал открыт у обоих.</p>
                 <Link href={`/secret/pair/done?room=${token}`} className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
                   <span className="sr-only">Дальше</span><LedText text="Дальше" className="h-[10px] w-auto" /><LedText text="→" className="h-[11px] w-auto" />

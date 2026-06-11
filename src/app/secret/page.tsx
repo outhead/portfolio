@@ -130,35 +130,31 @@ export default function SecretPage() {
             style={{ minHeight: isSecretFound ? undefined : "clamp(120px, 14vw, 240px)" }}
           >
             {isSecretFound ? (
-              <h1
-                className="font-p95 leading-[1.05] uppercase tracking-tight lime-force break-words"
-                style={{ fontSize: "clamp(36px, 6vw, 88px)" }}
-              >
-                Поздравляю
+              <h1 className="lime-force flex justify-center">
+                <span className="sr-only">Поздравляю</span>
+                <LedText text="Поздравляю" scale={2} dot={1.45} className="h-[26px] md:h-[44px] w-auto" />
               </h1>
             ) : (
-              <h1
-                className="font-p95 leading-[1.05] uppercase tracking-tight break-words text-white"
-                style={{ fontSize: "clamp(28px, 5.2vw, 76px)" }}
-              >
-                {isSolved ? (
-                  <span className="lime-force">
-                    {decoded.includes("61")
-                      ? (() => {
-                          const [pre, post] = decoded.split("61");
-                          return (
-                            <>
-                              {pre}
-                              <span className="fill61">61</span>
-                              {post}
-                            </>
-                          );
-                        })()
-                      : decoded}
-                  </span>
-                ) : (
-                  decoded
-                )}
+              <h1 className={isSolved ? "lime-force" : "text-white"}>
+                <span className="sr-only">{decoded}</span>
+                <span className="flex flex-wrap justify-center gap-x-[0.5em] gap-y-[10px] md:gap-y-[14px]">
+                  {decoded.split(" ").map((w, wi) => {
+                    const lcls = "h-[18px] md:h-[30px] w-auto";
+                    if (isSolved && w.includes("61")) {
+                      const [pre, post] = w.split("61");
+                      return (
+                        <span key={wi} className="inline-flex">
+                          {pre ? <LedText text={pre} scale={2} dot={1.45} className={lcls} /> : null}
+                          <span className="led61">
+                            <LedText text="61" scale={2} dot={1.45} className={lcls} />
+                          </span>
+                          {post ? <LedText text={post} scale={2} dot={1.45} className={lcls} /> : null}
+                        </span>
+                      );
+                    }
+                    return <LedText key={`${w}-${wi}`} text={w} scale={2} dot={1.45} className={lcls} />;
+                  })}
+                </span>
               </h1>
             )}
           </div>
@@ -183,7 +179,7 @@ export default function SecretPage() {
                 }}
                 onFocus={(e) => e.currentTarget.select()}
                 aria-label="Ввести сдвиг вручную"
-                className="w-[2.5em] bg-transparent text-right font-p95 text-[clamp(18px,2vw,28px)] tabular-nums text-white outline-none cursor-text"
+                className="w-[2.5em] bg-transparent text-right font-mono text-[clamp(16px,1.6vw,22px)] tabular-nums text-white outline-none cursor-text"
               />
             </div>
 
@@ -198,9 +194,9 @@ export default function SecretPage() {
               className="w-full h-2 appearance-none bg-white/[0.08] rounded-full outline-none cursor-pointer slider-lime"
             />
 
-            <div className="flex items-center justify-between mt-3 text-[12px] md:text-[13px] tracking-[0.18em] uppercase text-white/30 font-p95 tabular-nums">
-              <span>0</span>
-              <span>{SHIFT_MAX}</span>
+            <div className="flex items-center justify-between mt-3 text-white/30">
+              <LedText text="0" className="h-[9px] w-auto" />
+              <LedText text={String(SHIFT_MAX)} className="h-[9px] w-auto" />
             </div>
 
             {/* Подсказка после 8 сек */}

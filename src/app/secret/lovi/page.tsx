@@ -428,7 +428,9 @@ export default function SecretLoviPage() {
                     const mine = youAt != null && e.at === youAt;
                     return (
                       <li key={`${e.at}-${i}`} className={`flex items-center gap-3 py-2 border-b border-white/[0.05] ${mine ? "text-[#A6FF00]" : "text-white/80"}`}>
-                        <span className="font-p95 tabular-nums text-[13px] w-5 text-white/35">{i + 1}</span>
+                        <span className="w-5 text-white/35">
+                          <LedText text={String(i + 1)} className="h-[9px] w-auto" />
+                        </span>
                         <span className="flex-1 text-[15px] truncate">{e.name}</span>
                         <span className="text-[12px] text-white/45 whitespace-nowrap tabular-nums">{fmtTime(e.timeMs)}</span>
                       </li>

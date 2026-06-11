@@ -210,10 +210,17 @@ export default function Dalshe3() {
               <span className="sr-only">Крестики-нолики · Загадка №4</span>
               <LedText text="Крестики-нолики · Загадка №4" className="h-[9px] w-auto" />
             </p>
-            <h1 ref={headRef} className="font-p95 leading-[1.05] uppercase tracking-tight transition-colors" style={{ fontSize: "clamp(26px, 5vw, 46px)" }}>
-              Это{" "}
-              <span ref={neRef} className="transition-all" style={nearNe ? { color: "#FF4040", textShadow: "0 0 16px rgba(255,64,64,0.9)" } : undefined}>не</span>{" "}
-              решение
+            <h1 ref={headRef} className="transition-colors flex items-center justify-center gap-[0.45em]">
+              <span className="sr-only">Это не решение</span>
+              <LedText text="Это" scale={2} dot={1.45} className="h-[17px] md:h-[24px] w-auto" />
+              <span
+                ref={neRef}
+                className="transition-all inline-flex"
+                style={nearNe ? { color: "#FF4040", filter: "drop-shadow(0 0 10px rgba(255,64,64,0.9))" } : undefined}
+              >
+                <LedText text="не" scale={2} dot={1.45} className="h-[17px] md:h-[24px] w-auto" />
+              </span>
+              <LedText text="решение" scale={2} dot={1.45} className="h-[17px] md:h-[24px] w-auto" />
             </h1>
           </div>
 
