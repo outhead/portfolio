@@ -250,7 +250,7 @@ export default function PixelCubePile({
     const bodies: Body3[] = [];
     let grounded = false;
     let simT = 0;
-    const CENTER_Y = 1.0;
+    const CENTER_Y = 0.5;
     const rndQ = (): Q => qNorm([Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5]);
     const rndW = (k: number): V3 => [(Math.random() - 0.5) * k, (Math.random() - 0.5) * k, (Math.random() - 0.5) * k];
 
@@ -323,26 +323,31 @@ export default function PixelCubePile({
           b.w = [b.w[0] + corr[0] * 9 * dt * 6, b.w[1] + corr[1] * 9 * dt * 6, b.w[2] + corr[2] * 9 * dt * 6];
         }
       }
-      // коллизии кубов (сферо-аппроксимация)
-      for (let i = 0; i < bodies.length; i++) {
-        for (let j = i + 1; j < bodies.length; j++) {
-          const a = bodies[i], c = bodies[j];
-          if (a.frozen || c.frozen) continue; // подвешенный куб не толкаем
-          const dvec = sub(c.p, a.p);
-          const dist = Math.hypot(dvec[0], dvec[1], dvec[2]) || 0.0001;
-          const min = RAD * 2;
-          if (dist < min) {
+      // коллизии кубов (сферо-аппроксимация) — несколько итераций релаксации,
+      // чтобы быстрые/плотные кубы не проходили друг сквозь друга
+      const min = RAD * 2;
+      for (let it = 0; it < 3; it++) {
+        for (let i = 0; i < bodies.length; i++) {
+          for (let j = i + 1; j < bodies.length; j++) {
+            const a = bodies[i], c = bodies[j];
+            if (a.frozen || c.frozen) continue; // подвешенный куб не толкаем
+            const dvec = sub(c.p, a.p);
+            let dist = Math.hypot(dvec[0], dvec[1], dvec[2]);
+            if (dist >= min) continue;
+            if (dist < 1e-4) dist = 1e-4;
             const n = dvec.map((x) => x / dist) as V3;
             const push = (min - dist) * 0.5;
             a.p = sub(a.p, n.map((x) => x * push) as V3);
             c.p = add(c.p, n.map((x) => x * push) as V3);
-            // обмен нормальной компонентой скорости (демпфированный)
-            const va = dot(a.v, n), vc = dot(c.v, n);
-            const da = (vc - va) * (1 + REST) * 0.5;
-            a.v = add(a.v, n.map((x) => x * da) as V3);
-            c.v = sub(c.v, n.map((x) => x * da) as V3);
-            a.w = a.w.map((x) => x * 0.85) as V3;
-            c.w = c.w.map((x) => x * 0.85) as V3;
+            if (it === 0) {
+              // импульс скорости только в первом проходе
+              const va = dot(a.v, n), vc = dot(c.v, n);
+              const da = (vc - va) * (1 + REST) * 0.5;
+              a.v = add(a.v, n.map((x) => x * da) as V3);
+              c.v = sub(c.v, n.map((x) => x * da) as V3);
+              a.w = a.w.map((x) => x * 0.85) as V3;
+              c.w = c.w.map((x) => x * 0.85) as V3;
+            }
           }
         }
       }
@@ -362,8 +367,8 @@ export default function PixelCubePile({
         spawnAcc += dt;
         if (spawnAcc > 0.06) { spawnAcc = 0; spawn(); }
       }
-      // под-шаги физики для устойчивости (важно при высокой гравитации/отскоке)
-      const sub2 = 3;
+      // под-шаги физики для устойчивости (важно при высокой гравитации/плотности)
+      const sub2 = 5;
       for (let k = 0; k < sub2; k++) step(dt / sub2);
 
       // рендер сцены в буфер
