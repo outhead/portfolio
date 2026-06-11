@@ -20,7 +20,15 @@ import LedText from "@/components/LedText";
 
 const WORDS = ["ЛЮДЕЙ", "КОМАНДЫ", "ВИЗУАЛ", "СЕРВИСЫ", "ИНТЕРЕС"] as const;
 
-function Ctas({ center = false }: { center?: boolean }) {
+function Ctas({
+  center = false,
+  c1 = "Обсудить проект",
+  c2 = "Смотреть кейсы",
+}: {
+  center?: boolean;
+  c1?: string;
+  c2?: string;
+}) {
   return (
     <div className={`flex flex-wrap items-center gap-3 ${center ? "justify-center" : ""}`}>
       <Link
@@ -28,14 +36,14 @@ function Ctas({ center = false }: { center?: boolean }) {
         target="_blank"
         className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-[#A6FF00] text-black font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:bg-white transition-colors no-underline"
       >
-        <span className="leading-none translate-y-[1px]">Обсудить проект</span>
+        <span className="leading-none translate-y-[1px]">{c1}</span>
         <ArrowRight className="w-4 h-4" strokeWidth={2.2} />
       </Link>
       <Link
         href="/#portfolio"
         className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:border-white/50 hover:text-white transition-colors no-underline"
       >
-        <span className="leading-none translate-y-[1px]">Смотреть кейсы</span>
+        <span className="leading-none translate-y-[1px]">{c2}</span>
         <ArrowRight className="w-4 h-4" strokeWidth={2} />
       </Link>
     </div>
@@ -545,28 +553,159 @@ function Knob({ angle, onTurn, label }: { angle: number; onTurn: () => void; lab
   );
 }
 
-function Toggle({ on, onClick, label }: { on: boolean; onClick: () => void; label: string }) {
+function Toggle({
+  on,
+  onClick,
+  label,
+  offGlow = "#A6FF00",
+  onGlow = "#FFB454",
+}: {
+  on: boolean;
+  onClick: () => void;
+  label: string;
+  offGlow?: string;
+  onGlow?: string;
+}) {
+  const glow = on ? onGlow : offGlow;
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={on}
       aria-label={label}
-      className="relative w-[26px] h-[44px] rounded-full border border-black/80 bg-[linear-gradient(180deg,#0e0e0d,#1c1c1a)] shadow-[inset_0_2px_6px_rgba(0,0,0,0.8)]"
+      className="relative w-[30px] h-[50px] rounded-full border border-black/80 bg-[linear-gradient(180deg,#0d0d0c,#1d1d1b)] shadow-[inset_0_2px_7px_rgba(0,0,0,0.85)]"
     >
       <span
-        className="absolute left-1/2 -translate-x-1/2 w-[18px] h-[18px] rounded-full border border-black/60 transition-all duration-200"
+        className="absolute left-1/2 -translate-x-1/2 w-[21px] h-[21px] rounded-full border border-black/60 transition-all duration-200"
         style={{
-          top: on ? 3 : 21,
-          background: on
-            ? "radial-gradient(circle at 35% 30%, #ffd394, #b87a1f)"
-            : "radial-gradient(circle at 35% 30%, #c8ec7a, #6f9c10)",
-          boxShadow: `0 2px 5px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.25), 0 0 9px ${on ? "rgba(255,180,84,0.55)" : "rgba(166,255,0,0.45)"}`,
+          top: on ? 4 : 24,
+          background: "radial-gradient(circle at 35% 30%, #4a4a46, #232321)",
+          boxShadow: `0 2px 5px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.2), 0 0 10px ${glow}66, inset 0 -2px 4px ${glow}33`,
         }}
       />
     </button>
   );
 }
+
+/* Тумблер с подписью — кластер настроек прибора */
+function ToggleUnit({
+  caption,
+  ...t
+}: {
+  caption: string;
+  on: boolean;
+  onClick: () => void;
+  label: string;
+  offGlow?: string;
+  onGlow?: string;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-1.5">
+      <Toggle {...t} />
+      <span className="text-[9px] tracking-[0.2em] uppercase text-white/40 whitespace-nowrap">
+        {caption}
+      </span>
+    </div>
+  );
+}
+
+/* Счётчик-табло: при появлении и по клику цифры прокручиваются
+   случайными значениями и «встают» слева направо */
+function LedCounter({ value, className = "" }: { value: string; className?: string }) {
+  const [disp, setDisp] = useState(value);
+  const busy = useRef(false);
+
+  const spin = () => {
+    if (busy.current) return;
+    busy.current = true;
+    const len = value.length;
+    const total = 10 + len * 4;
+    let tick = 0;
+    const id = setInterval(() => {
+      tick++;
+      setDisp(
+        value
+          .split("")
+          .map((ch, i) => {
+            if (!/[0-9]/.test(ch)) return ch;
+            const settleAt = total - (len - 1 - i) * 4;
+            return tick >= settleAt ? ch : String(Math.floor(Math.random() * 10));
+          })
+          .join(""),
+      );
+      if (tick >= total) {
+        clearInterval(id);
+        setDisp(value);
+        busy.current = false;
+      }
+    }, 55);
+  };
+
+  useEffect(() => {
+    const t = setTimeout(spin, 500);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <button
+      type="button"
+      onClick={spin}
+      aria-label={`Значение ${value}`}
+      className={`appearance-none bg-transparent border-none p-0 cursor-pointer self-start ${className}`}
+    >
+      <LedText text={disp} scale={2} dot={1.45} className="h-[32px] md:h-[40px] w-auto text-[#F2F4EF]" />
+    </button>
+  );
+}
+
+/* LED-фейдер уровня: сегменты; на ховер «подкручивается» до максимума */
+function LevelBar({ level, max = 12 }: { level: number; max?: number }) {
+  const [boost, setBoost] = useState(false);
+  return (
+    <div
+      className="flex items-center gap-[3px] shrink-0"
+      onMouseEnter={() => setBoost(true)}
+      onMouseLeave={() => setBoost(false)}
+      aria-hidden
+    >
+      {Array.from({ length: max }).map((_, i) => {
+        const on = i < (boost ? max : level);
+        return (
+          <span
+            key={i}
+            className="w-[4px] h-[11px] rounded-[1px] transition-colors duration-150"
+            style={{
+              background: on ? "#A6FF00" : "rgba(255,255,255,0.10)",
+              boxShadow: on ? "0 0 5px rgba(166,255,0,0.45)" : undefined,
+              transitionDelay: `${i * 22}ms`,
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+/* Копия на двух языках — тумблер RU/EN перещёлкивает табло целиком */
+const COPY = {
+  ru: {
+    l1: "7 ЛЕТ",
+    l2: "РАЗВИВАЮ",
+    words: WORDS,
+    sub: "От стратегии и культуры до AI и цифровых продуктов.",
+    cta1: "Обсудить проект",
+    cta2: "Смотреть кейсы",
+  },
+  en: {
+    l1: "7 YEARS",
+    l2: "GROWING",
+    words: ["PEOPLE", "TEAMS", "VISUALS", "SERVICES", "INTEREST"] as const,
+    sub: "From strategy and culture to AI and digital products.",
+    cta1: "Start a project",
+    cta2: "View cases",
+  },
+} as const;
 
 const SPHERE_PRESETS = [
   { r: 166, g: 255, b: 0 },
@@ -579,13 +718,15 @@ function V6() {
   const sphereRef = useRef<HTMLDivElement>(null);
   const [preset, setPreset] = useState(0);
   const [amber, setAmber] = useState(false);
+  const [lang, setLang] = useState<"ru" | "en">("ru");
   const wordColor = amber ? "#FFB454" : "#A6FF00";
   const p = SPHERE_PRESETS[preset];
+  const c = COPY[lang];
 
   const heroLines: LedLine[] = [
-    { text: "7 ЛЕТ", color: "#F2F4EF" },
-    { text: "РАЗВИВАЮ", color: "#F2F4EF" },
-    { words: WORDS, color: wordColor },
+    { text: c.l1, color: "#F2F4EF" },
+    { text: c.l2, color: "#F2F4EF" },
+    { words: c.words, color: wordColor },
   ];
 
   return (
@@ -630,17 +771,29 @@ function V6() {
               lines={heroLines}
             />
             <p className="absolute left-4 bottom-3 md:left-6 md:bottom-5 max-w-[480px] text-left text-[14px] md:text-[18px] leading-snug text-white/75 font-light">
-              От стратегии и культуры до AI и цифровых продуктов.
+              {c.sub}
             </p>
             <h1 className="sr-only">7 лет развиваю людей, команды, визуал, сервисы</h1>
           </Screen>
 
           {/* Панель управления под экраном */}
           <div className="mt-4 md:mt-5 flex flex-wrap items-center gap-3">
-            <Ctas />
-            <div className="ml-auto hidden sm:flex items-center gap-3">
-              <Dlabel>Режим</Dlabel>
-              <Toggle on={amber} onClick={() => setAmber(!amber)} label="Цвет табло" />
+            <Ctas c1={c.cta1} c2={c.cta2} />
+            <div className="ml-auto hidden sm:flex items-start gap-4">
+              <ToggleUnit
+                caption="Цвет"
+                on={amber}
+                onClick={() => setAmber(!amber)}
+                label="Цвет табло"
+              />
+              <ToggleUnit
+                caption={lang === "ru" ? "RU → EN" : "EN → RU"}
+                on={lang === "en"}
+                onClick={() => setLang(lang === "ru" ? "en" : "ru")}
+                label="Язык табло"
+                offGlow="#A6FF00"
+                onGlow="#4FC3F7"
+              />
             </div>
           </div>
           <div className="mt-5 md:mt-6">
@@ -702,7 +855,7 @@ function V6() {
                 { v: "27", l: "команд" },
               ].map((m) => (
                 <div key={m.l} className="flex flex-col gap-2">
-                  <LedText text={m.v} scale={2} dot={1.45} className="h-[32px] md:h-[40px] w-auto self-start text-[#F2F4EF]" />
+                  <LedCounter value={m.v} />
                   <span className="text-[11px] md:text-[12px] tracking-[0.14em] uppercase text-white/45">
                     {m.l}
                   </span>
@@ -740,9 +893,9 @@ function V6() {
           <Screen className="flex-1 px-4 md:px-5 py-3 md:py-4">
             <ul className="flex flex-col justify-center gap-3 md:gap-4 h-full">
               {[
-                { num: "01", label: "Управление", note: "дизайн-функции и команды" },
-                { num: "02", label: "Направления", note: "B2C / B2E / EdTech / E-COM" },
-                { num: "03", label: "Ремесло", note: "процессы и применение AI" },
+                { num: "01", label: "Управление", note: "дизайн-функции и команды", level: 11 },
+                { num: "02", label: "Направления", note: "B2C / B2E / EdTech / E-COM", level: 10 },
+                { num: "03", label: "Ремесло", note: "процессы и применение AI", level: 9 },
               ].map((item) => (
                 <li key={item.num} className="flex items-center gap-3">
                   <span className="font-p95 text-[12px] tabular-nums text-white/40 w-5 shrink-0">
@@ -756,7 +909,7 @@ function V6() {
                       {item.note}
                     </span>
                   </span>
-                  <Lamp on />
+                  <LevelBar level={item.level} />
                 </li>
               ))}
             </ul>
