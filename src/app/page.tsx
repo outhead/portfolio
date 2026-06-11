@@ -621,8 +621,9 @@ function CareerHoverList() {
                 }`}
                 aria-hidden
               />
-              <span className="shrink-0 font-p95 text-[13px] tracking-[0.2em] uppercase text-white/70 w-[88px]">
-                {job.year}
+              <span className="shrink-0 text-white/70 w-[88px]">
+                <span className="sr-only">{job.year}</span>
+                <LedText text={job.year} className="h-[9px] w-auto" />
               </span>
               <span className="flex-1 min-w-0 flex flex-col">
                 <span className="font-p95 text-[16px] text-white uppercase leading-tight">
@@ -648,8 +649,9 @@ function CareerHoverList() {
                 }`}
                 aria-hidden
               />
-              <span className="shrink-0 font-p95 text-[14px] tracking-[0.2em] uppercase text-white/70 w-[110px]">
-                {job.year}
+              <span className="shrink-0 text-white/70 w-[110px]">
+                <span className="sr-only">{job.year}</span>
+                <LedText text={job.year} className="h-[10px] w-auto" />
               </span>
               <span className="flex-1 min-w-0 flex flex-row items-baseline gap-3">
                 <span className="font-p95 text-[17px] text-white uppercase leading-tight truncate">
@@ -803,18 +805,17 @@ function ServiceTile({ tile }: { tile: ServiceTileData }) {
             style={{ color: accent }}
             strokeWidth={1.75}
           />
-          <span
-            className="font-p95 text-[13px] md:text-[14px] tracking-[0.22em] uppercase"
-            style={{ color: `${accent}CC` }}
-          >
-            ( {label} )
+          <span style={{ color: `${accent}CC` }}>
+            <span className="sr-only">{label}</span>
+            <LedText text={`( ${label} )`} className="h-[10px] w-auto" />
           </span>
         </div>
       </div>
 
-      {/* Заголовок — фиксируем под 2 строки на md+, чтобы круги ниже выровнялись по горизонтали даже при разной длине заголовка. */}
-      <h3 className="font-p95 text-[clamp(22px,2.4vw,32px)] uppercase leading-[1.05] text-white md:min-h-[2.4em]">
-        {title}
+      {/* Заголовок — пиксельный, единым языком с табло хиро */}
+      <h3 className="text-white min-h-[40px] md:min-h-[46px]">
+        <span className="sr-only">{title}</span>
+        <LedText text={title} scale={2} dot={1.45} className="h-[16px] md:h-[19px] w-auto max-w-full" />
       </h3>
 
       {/* Pulse-анимация. Фиксированная высота (не flex-1!), чтобы круг
@@ -1081,7 +1082,7 @@ export default function PreviewHome() {
           <div className="grid grid-cols-12 gap-3 md:gap-5 items-stretch">
             {/* ── Хиро-дисплей: LED-табло ── */}
             <motion.div variants={fadeUp} className="col-span-12 lg:col-span-7 lg:row-span-2">
-              <Oled glow className="h-full p-5 md:p-8 flex flex-col">
+              <Oled className="h-full p-5 md:p-8 flex flex-col">
                 <div className="relative">
                   <LedBoard
                     className="hidden md:block w-full h-auto"
@@ -1135,11 +1136,11 @@ export default function PreviewHome() {
                     <LedText text="→" className="h-[13px] w-auto" />
                   </Link>
                 </div>
-                <div className="mt-auto pt-7 md:pt-8 flex items-center gap-6 md:gap-10 flex-wrap opacity-60 hover:opacity-90 transition-opacity">
-                  <img src="/images/logos/ozon.svg" alt="Ozon" className="h-4 md:h-5 w-auto self-center brightness-0 invert" />
-                  <img src="/images/logos/mts.svg" alt="МТС" className="h-6 md:h-8 w-auto brightness-0 invert" />
-                  <img src="/images/logos/gazpromneft.svg" alt="Газпром нефть" className="h-6 md:h-8 w-auto brightness-0 invert" />
-                  <img src="/images/logos/hse.svg" alt="ВШЭ" className="h-6 md:h-8 w-auto brightness-0 invert" />
+                <div className="mt-auto pt-7 md:pt-8 flex items-center gap-6 md:gap-10 flex-wrap">
+                  <img src="/images/logos/ozon.svg" alt="Ozon" className="h-4 md:h-5 w-auto self-center brightness-0 invert opacity-55 hover:opacity-100 transition-opacity" />
+                  <img src="/images/logos/mts.svg" alt="МТС" className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity" />
+                  <img src="/images/logos/gazpromneft.svg" alt="Газпром нефть" className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity" />
+                  <img src="/images/logos/hse.svg" alt="ВШЭ" className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity" />
                 </div>
               </Oled>
             </motion.div>
@@ -1188,8 +1189,9 @@ export default function PreviewHome() {
             <motion.div variants={fadeUp} className="col-span-12 lg:col-span-5">
               <Oled className="h-full p-5 md:p-7">
                 <DotGraph className="absolute inset-x-6 -bottom-1 h-[46px] opacity-30 pointer-events-none" />
-                <div className="relative text-[10px] md:text-[11px] tracking-[0.26em] uppercase text-white/35 mb-6">
-                  В цифрах
+                <div className="relative mb-6 text-white/40">
+                  <span className="sr-only">В цифрах</span>
+                  <LedText text="В цифрах" className="h-[10px] w-auto" />
                 </div>
                 <div className="relative grid grid-cols-3 gap-5">
                   {[
@@ -1199,8 +1201,9 @@ export default function PreviewHome() {
                   ].map((m) => (
                     <div key={m.l} className="flex flex-col gap-3">
                       <LedCounter value={m.v} tone="#A6FF00" />
-                      <span className="text-[10px] md:text-[11px] tracking-[0.16em] uppercase text-white/40">
-                        {m.l}
+                      <span className="text-white/40">
+                        <span className="sr-only">{m.l}</span>
+                        <LedText text={m.l} className="h-[9px] w-auto" />
                       </span>
                     </div>
                   ))}
@@ -1231,8 +1234,9 @@ export default function PreviewHome() {
                         "radial-gradient(ellipse 90% 80% at 70% 30%, black, transparent 75%)",
                     }}
                   />
-                  <div className="relative text-[10px] md:text-[11px] tracking-[0.26em] uppercase text-white/35">
-                    Награда · 2024
+                  <div className="relative text-[#C9A66B]/70">
+                    <span className="sr-only">Награда · 2024</span>
+                    <LedText text="Награда · 2024" className="h-[10px] w-auto" />
                   </div>
                   <span className="sr-only">CX Awards 2024</span>
                   <LedText
@@ -1242,11 +1246,13 @@ export default function PreviewHome() {
                     className="relative h-[36px] md:h-[46px] w-auto self-start text-[#C9A66B]"
                   />
                   <div className="relative mt-auto">
-                    <div className="text-[12px] md:text-[13px] tracking-[0.16em] uppercase text-white/50">
-                      Customer Experience Awards
+                    <div className="text-white/50">
+                      <span className="sr-only">Customer Experience Awards</span>
+                      <LedText text="Customer Experience Awards" className="h-[10px] w-auto" />
                     </div>
-                    <div className="mt-3 pt-3 border-t border-[#C9A66B]/15 text-[11px] md:text-[12px] tracking-[0.16em] uppercase text-[#C9A66B]/75">
-                      Победитель в сегменте B2E
+                    <div className="mt-3 pt-3 border-t border-[#C9A66B]/15 text-[#C9A66B]/80">
+                      <span className="sr-only">Победитель в сегменте B2E</span>
+                      <LedText text="Победитель в сегменте B2E" className="h-[10px] w-auto" />
                     </div>
                   </div>
                 </Oled>
@@ -1262,8 +1268,9 @@ export default function PreviewHome() {
                 className="block h-full no-underline group"
               >
                 <Oled className="h-full p-5 md:p-7 transition-colors duration-300 group-hover:border-[#A6FF00]/25">
-                  <div className="text-[10px] md:text-[11px] tracking-[0.26em] uppercase text-white/35 mb-5">
-                    Экспертиза
+                  <div className="mb-5 text-white/40">
+                    <span className="sr-only">Экспертиза</span>
+                    <LedText text="Экспертиза" className="h-[10px] w-auto" />
                   </div>
                   <ul className="flex flex-col">
                     {[
@@ -1275,12 +1282,13 @@ export default function PreviewHome() {
                         key={item.num}
                         className={`flex items-center gap-4 py-3.5 ${i > 0 ? "border-t border-white/[0.05]" : ""}`}
                       >
-                        <span className="text-[11px] tabular-nums text-[#A6FF00]/60 w-5 shrink-0">
-                          {item.num}
+                        <span className="w-5 shrink-0 text-[#A6FF00]/60">
+                          <LedText text={item.num} className="h-[9px] w-auto" />
                         </span>
-                        <span className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-baseline sm:gap-3">
-                          <span className="text-[13px] md:text-[14px] font-medium tracking-[0.1em] uppercase text-white">
-                            {item.label}
+                        <span className="flex-1 min-w-0 flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
+                          <span className="text-white">
+                            <span className="sr-only">{item.label}</span>
+                            <LedText text={item.label} className="h-[11px] w-auto" />
                           </span>
                           <span className="text-[11px] md:text-[12px] tracking-[0.06em] uppercase text-white/45">
                             {item.note}

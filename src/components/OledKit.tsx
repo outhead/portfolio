@@ -17,7 +17,7 @@ export function Oled({
 }) {
   return (
     <div
-      className={`relative rounded-[20px] border border-white/[0.05] bg-[#121211] shadow-[0_18px_50px_rgba(0,0,0,0.4)] overflow-hidden ${className}`}
+      className={`relative rounded-2xl border border-white/[0.06] bg-[#0f0f0e] shadow-[0_18px_50px_rgba(0,0,0,0.35)] overflow-hidden ${className}`}
     >
       {glow && (
         <div

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import LedText from "@/components/LedText";
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { Project } from "@/data/projects";
@@ -178,8 +179,9 @@ export default function ProjectCard({
         featured ? "p-6 md:p-8 lg:p-10" : wide ? "p-6 md:p-8" : "p-5 md:p-6"
       }`}
     >
-      <div className="font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/55">
-        {project.company}
+      <div className="text-white/60">
+        <span className="sr-only">{project.company}</span>
+        <LedText text={project.company} className="h-[9px] md:h-[10px] w-auto" />
       </div>
       <h3
         className={`font-p95 uppercase leading-[0.95] text-white ${

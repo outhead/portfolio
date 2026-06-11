@@ -6,7 +6,39 @@ import confetti from "canvas-confetti";
 import Link from "next/link";
 import { Send } from "lucide-react";
 import SmileFireworksButton from "./SmileFireworksButton";
+import LedText from "@/components/LedText";
 import { ymGoal } from "@/lib/yandex-metrika";
+
+/* Пиксельный многострочный заголовок: грубый перенос ~22 символа,
+   акцент (последний символ) — лаймом, отдельным глифом в конце строки. */
+function LedHeadline({ text, accent }: { text: string; accent?: string }) {
+  const words = text.split(" ");
+  const lines: string[] = [];
+  let cur = "";
+  for (const w of words) {
+    if ((cur + " " + w).trim().length > 22 && cur) {
+      lines.push(cur);
+      cur = w;
+    } else {
+      cur = cur ? `${cur} ${w}` : w;
+    }
+  }
+  if (cur) lines.push(cur);
+  return (
+    <span className="flex flex-col gap-[10px] md:gap-[14px]">
+      {lines.map((l, i) =>
+        i === lines.length - 1 && accent ? (
+          <span key={i} className="flex items-end gap-[6px]">
+            <LedText text={l} scale={2} dot={1.45} className="h-[24px] md:h-[42px] w-auto" />
+            <LedText text={accent} scale={2} dot={1.45} className="h-[24px] md:h-[42px] w-auto text-[#A6FF00]" />
+          </span>
+        ) : (
+          <LedText key={i} text={l} scale={2} dot={1.45} className="h-[24px] md:h-[42px] w-auto self-start" />
+        ),
+      )}
+    </span>
+  );
+}
 
 // ───────────────────────────────────────────────────────────
 // Счётчик-табло: форматирование больших чисел (1 234 → 12K → 1,2M).
@@ -429,12 +461,17 @@ export default function FinalCTA() {
           />
 
           <motion.div variants={fadeUp} className="relative mb-5 md:mb-7 flex items-center gap-3">
-            <span className="font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-[#A6FF00]">
-              [ Поздравляю ]
+            <span className="text-[#A6FF00]">
+              <span className="sr-only">Поздравляю</span>
+              <LedText text="[ Поздравляю ]" className="h-[10px] w-auto" />
             </span>
             {sessionCount > 0 && (
-              <span className="font-p95 text-[12px] md:text-[13px] tracking-[0.18em] uppercase text-white/30 tabular-nums">
-                · запустили фейерверк {sessionCount} {pluralize(sessionCount)}
+              <span className="text-white/30">
+                <span className="sr-only">{`запустили фейерверк ${sessionCount} ${pluralize(sessionCount)}`}</span>
+                <LedText
+                  text={`· запустили фейерверк ${sessionCount} ${pluralize(sessionCount)}`}
+                  className="h-[9px] md:h-[10px] w-auto"
+                />
               </span>
             )}
           </motion.div>
@@ -454,12 +491,13 @@ export default function FinalCTA() {
                     animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                     exit={{ opacity: 0, y: -10, filter: "blur(8px)" }}
                     transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                    className="[grid-area:1/1] font-p95 text-[clamp(32px,5.5vw,76px)] leading-[0.98] uppercase tracking-tight text-white max-w-3xl"
+                    className="[grid-area:1/1] text-white max-w-3xl"
                   >
-                    {stage.headline}
-                    {stage.accent ? (
-                      <span className="text-[#A6FF00]">{stage.accent}</span>
-                    ) : null}
+                    <span className="sr-only">
+                      {stage.headline}
+                      {stage.accent ?? ""}
+                    </span>
+                    <LedHeadline text={stage.headline} accent={stage.accent} />
                   </motion.h2>
                 </AnimatePresence>
               </div>
