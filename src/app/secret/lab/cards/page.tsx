@@ -12,6 +12,7 @@ import PixelCubePile from "@/components/PixelCubePile";
 import { ArrowUpRight } from "lucide-react";
 
 const MTS_RED = "#FF2436";
+const MENTOR_COLORS = ["#3DDC84", "#A86B3C"]; // зелёный + коричневый
 
 const MODES: { mode: CubeMode; label: string }[] = [
   { mode: "spin", label: "Spin · турнтейбл Y" },
@@ -160,6 +161,53 @@ export default function CardsLabPage() {
     <main className="min-h-screen bg-black px-5 md:px-[8%] py-16 md:py-24">
       <div className="mb-12 text-white/40">
         <LedText text="Прототип · пиксельные заглушки" className="h-[11px] w-auto" />
+      </div>
+
+      {/* Примерка логотипов и цветов */}
+      <div className="mb-16">
+        <span className="block mb-5 text-[12px] tracking-[0.1em] uppercase text-white/35">
+          Примерка · логотипы и бренд-цвета (наведи на каждую)
+        </span>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {[
+            { name: "МТС", color: "#FF2436", logo: "/images/logos/mts.svg" },
+            { name: "Газпром Нефть", color: "#1C92E5", logo: "/images/logos/gazpromneft.svg" },
+            { name: "Ozon", color: "#2E6BFF", logo: "/images/logos/ozon.svg" },
+          ].map((b) => (
+            <div key={b.name} className="flex flex-col gap-3">
+              <div className="relative w-full aspect-[16/9] rounded-xl border border-white/[0.08] overflow-hidden bg-black/40">
+                <div
+                  aria-hidden
+                  className="absolute inset-0 opacity-[0.5] z-0"
+                  style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1.4px)", backgroundSize: "12px 12px" }}
+                />
+                <PixelCubePile color={b.color} logoSrc={b.logo} grid={96} maxCubes={10} />
+                <div className="absolute top-3 left-3 z-[2] text-white/75 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+                  <LedText text={b.name} className="h-[8px] w-auto" />
+                </div>
+              </div>
+              <span className="text-[11px] tracking-[0.06em] uppercase text-white/40 text-center">{b.name} · {b.color}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Менторинг — зелёные и коричневые кубики со смайлами */}
+      <div className="mb-16">
+        <span className="block mb-4 text-[12px] tracking-[0.1em] uppercase text-white/35">
+          Менторинг · зелёные + коричневые кубики со смайлами (наведи мышь)
+        </span>
+        <div className="relative w-full max-w-[520px] aspect-[16/9] rounded-xl border border-white/[0.08] overflow-hidden bg-black/40">
+          <div
+            aria-hidden
+            className="absolute inset-0 opacity-[0.5] z-0"
+            style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1.4px)", backgroundSize: "12px 12px" }}
+          />
+          <PixelCubePile colors={MENTOR_COLORS} logoSrc="/images/logos/smiley.svg" grid={110} />
+          <div className="absolute top-3 left-3 z-[2] text-white/75 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+            <LedText text="Менторинг" className="h-[8px] w-auto" />
+          </div>
+        </div>
       </div>
 
       {/* Гибрид — большие вращающиеся 3D-кубы + физика засыпания */}

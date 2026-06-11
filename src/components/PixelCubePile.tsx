@@ -63,16 +63,22 @@ const CF: { idx: [number, number, number, number]; n: V3 }[] = [
   { idx: [0, 1, 5, 4], n: [0, -1, 0] },
 ];
 
-interface Body3 { p: V3; v: V3; q: Q; w: V3; }
+interface Body3 { p: V3; v: V3; q: Q; w: V3; col: [number, number, number]; }
 
 export default function PixelCubePile({
   color = "#FF2436",
+  colors,
   logoSrc,
   grid = 124,
+  maxCubes,
 }: {
   color?: string;
+  /** Палитра: каждый куб берёт случайный цвет. Перебивает `color`. */
+  colors?: string[];
   logoSrc?: string;
   grid?: number;
+  /** Переопределить макс. число кубов (напр. для лёгких превью-плиток). */
+  maxCubes?: number;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -85,7 +91,8 @@ export default function PixelCubePile({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const [br, bg, bb] = hexToRgb(color);
+    const palette = (colors && colors.length ? colors : [color]).map(hexToRgb);
+    const [br, bg, bb] = palette[0]; // база для погашенных диодов фона
     const lightW = norm([-0.4, 0.78, 0.5]); // свет сверху-слева-фронта
 
     // белый знак
@@ -134,7 +141,7 @@ export default function PixelCubePile({
     let cellSize = 0, rDot = 0;
     const bgDots = document.createElement("canvas"); // кэш погашенных диодов
     const mobile = window.matchMedia("(max-width: 767px)").matches;
-    const maxN = mobile ? 12 : 18;
+    const maxN = maxCubes ?? (mobile ? 12 : 18);
 
     const measure = () => {
       const r = wrap.getBoundingClientRect();
@@ -210,7 +217,7 @@ export default function PixelCubePile({
         bctx.moveTo(p[0][0], p[0][1]);
         for (let k = 1; k < 4; k++) bctx.lineTo(p[k][0], p[k][1]);
         bctx.closePath();
-        bctx.fillStyle = `rgb(${Math.round(br * f.shade)},${Math.round(bg * f.shade)},${Math.round(bb * f.shade)})`;
+        bctx.fillStyle = `rgb(${Math.round(b.col[0] * f.shade)},${Math.round(b.col[1] * f.shade)},${Math.round(b.col[2] * f.shade)})`;
         bctx.fill();
         if (logoReady && f.facing > 0.12) {
           bctx.globalAlpha = Math.min(1, f.facing * 1.4);
@@ -233,6 +240,7 @@ export default function PixelCubePile({
         v: [0, 0, 0],
         q: rndQ,
         w: [(Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4],
+        col: palette[(Math.random() * palette.length) | 0],
       });
     };
 
@@ -353,7 +361,7 @@ export default function PixelCubePile({
       io?.disconnect();
       window.removeEventListener("resize", onResize);
     };
-  }, [color, logoSrc, grid]);
+  }, [color, colors, logoSrc, grid, maxCubes]);
 
   return (
     <div ref={wrapRef} className="absolute inset-0">
