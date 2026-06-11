@@ -6,10 +6,50 @@
 import LedText from "@/components/LedText";
 import { LedLines } from "@/components/LedBoard";
 import PixelCube from "@/components/PixelCube";
-import PixelCube3D from "@/components/PixelCube3D";
+import PixelCube3D, { type CubeMode } from "@/components/PixelCube3D";
+import PixelCubeRain from "@/components/PixelCubeRain";
 import { ArrowUpRight } from "lucide-react";
 
 const MTS_RED = "#FF2436";
+
+const MODES: { mode: CubeMode; label: string }[] = [
+  { mode: "spin", label: "Spin · турнтейбл Y" },
+  { mode: "tumble", label: "Tumble · кувырок 2 оси" },
+  { mode: "pendulum", label: "Pendulum · качание" },
+  { mode: "lissajous", label: "Lissajous · дрейф" },
+];
+
+/** Карточка с физикой засыпания кубиками (Matter.js), как webgl-блок. */
+function RainCard() {
+  return (
+    <div className="no-underline group h-full block w-full max-w-[520px]">
+      <article className="relative rounded-2xl overflow-hidden bg-[#0f0f0e] border border-white/[0.06] group-hover:border-white/20 transition-colors duration-300 h-full">
+        <div className="h-full flex flex-col p-3 md:p-4 pb-0 md:pb-0">
+          <div className="relative w-full aspect-[16/9] rounded-xl border border-white/[0.08] overflow-hidden bg-black/40">
+            <div
+              aria-hidden
+              className="absolute inset-0 opacity-[0.5] z-0"
+              style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1.4px)", backgroundSize: "12px 12px" }}
+            />
+            <PixelCubeRain color={MTS_RED} />
+            <div className="absolute top-4 left-4 md:top-5 md:left-5 z-[2] text-white/75 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+              <LedText text="МТС" className="h-[9px] md:h-[10px] w-auto" />
+            </div>
+          </div>
+          <div className="flex-1 flex flex-col items-center justify-center gap-4 md:gap-5 text-center px-5 py-6 md:py-7">
+            <h3 className="text-white max-w-full">
+              <LedLines text="Дать МТС голос и собрать Мой МТС в платформу" center maxChars={22} lineClass="h-[15px] md:h-[18px]" />
+            </h3>
+            <div className="flex flex-wrap justify-center gap-1.5 md:gap-2">
+              <TagChip>B2C</TagChip>
+              <TagChip>Ecosystem</TagChip>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+  );
+}
 
 function TagChip({ children }: { children: React.ReactNode }) {
   return (
@@ -119,6 +159,33 @@ export default function CardsLabPage() {
     <main className="min-h-screen bg-black px-5 md:px-[8%] py-16 md:py-24">
       <div className="mb-12 text-white/40">
         <LedText text="Прототип · пиксельные заглушки" className="h-[11px] w-auto" />
+      </div>
+
+      {/* Режимы вращения — наведи на каждый */}
+      <div className="mb-16">
+        <span className="block mb-5 text-[12px] tracking-[0.1em] uppercase text-white/35">
+          Режимы вращения (наведи мышь — ускоряется)
+        </span>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {MODES.map(({ mode, label }) => (
+            <div key={mode} className="flex flex-col items-center gap-3">
+              <div className="w-full max-w-[180px] rounded-xl border border-white/[0.08] bg-black/40 overflow-hidden p-2">
+                <PixelCube3D color={MTS_RED} logoSrc="/images/logos/mts.svg" grid={40} mode={mode} className="w-full" />
+              </div>
+              <span className="text-[11px] tracking-[0.06em] uppercase text-white/40 text-center">{label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Физика засыпания кубиками — как webgl-блок */}
+      <div className="mb-16">
+        <span className="block mb-4 text-[12px] tracking-[0.1em] uppercase text-white/35">
+          Физика засыпания · кубики падают и копятся (наведи мышь)
+        </span>
+        <div className="max-w-[520px]">
+          <RainCard />
+        </div>
       </div>
 
       {/* Вариант B — настоящий 3D-куб в дот-матрице */}

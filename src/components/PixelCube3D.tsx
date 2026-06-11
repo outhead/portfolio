@@ -52,10 +52,13 @@ function hexToRgb(hex: string): [number, number, number] {
   return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
 }
 
+export type CubeMode = "spin" | "tumble" | "pendulum" | "lissajous";
+
 export default function PixelCube3D({
   color,
   logoSrc,
   grid = 44,
+  mode = "spin",
   className = "",
 }: {
   color: string;
@@ -63,6 +66,9 @@ export default function PixelCube3D({
   logoSrc?: string;
   /** Точек на сторону дот-сетки. */
   grid?: number;
+  /** Режим вращения: spin (турнтейбл Y), tumble (кувырок 2 оси),
+   *  pendulum (качание), lissajous (плавный дрейф). */
+  mode?: CubeMode;
   className?: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -131,7 +137,7 @@ export default function PixelCube3D({
     const ro = new ResizeObserver(resize);
     ro.observe(wrap);
 
-    let ax = -0.42, ay = 0.7;
+    let ax = -0.42, ay = 0.7, ph = 0;
     let raf = 0;
     let last = performance.now();
     let lit = 0;
@@ -180,8 +186,27 @@ export default function PixelCube3D({
       const target = hoverRef.current ? 1 : 0;
       lit += (target - lit) * Math.min(1, dt * 6);
 
-      ay += dt * (reduce ? 0 : 0.18 + lit * 0.5);
-      ax = -0.42 + Math.sin(now / 2600) * 0.12;
+      const sp = reduce ? 0.15 : 1 + lit * 1.6; // ховер ускоряет
+      ph += dt * sp;
+      switch (mode) {
+        case "tumble":
+          ay += dt * 0.55 * sp;
+          ax += dt * 0.34 * sp;
+          break;
+        case "pendulum":
+          ay = Math.sin(ph * 0.7) * 0.92;
+          ax = -0.3 + Math.sin(ph * 0.35) * 0.16;
+          break;
+        case "lissajous":
+          ay = Math.sin(ph * 0.55) * 0.95;
+          ax = -0.28 + Math.sin(ph * 0.8 + 1.1) * 0.42;
+          break;
+        case "spin":
+        default:
+          ay += dt * 0.5 * sp;
+          ax = -0.42 + Math.sin(ph * 0.5) * 0.1;
+          break;
+      }
 
       const rv = VERTS.map((v) => rotate(v, ax, ay));
       const pv = rv.map(project);
@@ -260,7 +285,7 @@ export default function PixelCube3D({
       wrap.removeEventListener("mouseenter", onEnter);
       wrap.removeEventListener("mouseleave", onLeave);
     };
-  }, [color, logoSrc, grid]);
+  }, [color, logoSrc, grid, mode]);
 
   return (
     <div ref={wrapRef} className={`relative ${className}`} style={{ aspectRatio: "1 / 1" }}>
