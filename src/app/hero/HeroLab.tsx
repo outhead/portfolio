@@ -90,6 +90,7 @@ function LedBoard({
   minCols = 0,
   minRows = 0,
   align = "center",
+  dim = LED_DIM,
 }: {
   lines: LedLine[];
   className?: string;
@@ -106,6 +107,8 @@ function LedBoard({
   minCols?: number;
   minRows?: number;
   align?: "center" | "left";
+  /** Цвет незажжённых диодов поля */
+  dim?: string;
 }) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
   const [idx, setIdx] = useState(0);
@@ -163,7 +166,7 @@ function LedBoard({
       `}</style>
       <defs>
         <pattern id={`f${uid}`} width={PITCH} height={PITCH} patternUnits="userSpaceOnUse">
-          <circle cx={PITCH / 2} cy={PITCH / 2} r={R} fill={LED_DIM} />
+          <circle cx={PITCH / 2} cy={PITCH / 2} r={R} fill={dim} />
         </pattern>
       </defs>
       {/* Поле незажжённых диодов */}
@@ -611,7 +614,15 @@ function ToggleUnit({
 
 /* Счётчик-табло: при появлении и по клику цифры прокручиваются
    случайными значениями и «встают» слева направо */
-function LedCounter({ value, className = "" }: { value: string; className?: string }) {
+function LedCounter({
+  value,
+  className = "",
+  tone = "#F2F4EF",
+}: {
+  value: string;
+  className?: string;
+  tone?: string;
+}) {
   const [disp, setDisp] = useState(value);
   const busy = useRef(false);
 
@@ -653,8 +664,9 @@ function LedCounter({ value, className = "" }: { value: string; className?: stri
       onClick={spin}
       aria-label={`Значение ${value}`}
       className={`appearance-none bg-transparent border-none p-0 cursor-pointer self-start ${className}`}
+      style={{ color: tone }}
     >
-      <LedText text={disp} scale={2} dot={1.45} className="h-[32px] md:h-[40px] w-auto text-[#F2F4EF]" />
+      <LedText text={disp} scale={2} dot={1.45} className="h-[32px] md:h-[40px] w-auto" />
     </button>
   );
 }
@@ -958,6 +970,214 @@ function V6() {
   );
 }
 
+/* ═══════ 7 · «ДИСПЛЕЙ» — единый премиальный экран, без ретро-железа ═══════
+   Один LED-грид — только заголовок и ключевые цифры. Остальное — гладкие
+   OLED-панели: стеклянные поверхности, тонкие светящиеся контуры, воздух. */
+
+function Oled({
+  children,
+  className = "",
+  glow = false,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  /** Тонкий лаймовый контур-свечение по нижней кромке */
+  glow?: boolean;
+}) {
+  return (
+    <div
+      className={`relative rounded-[20px] border border-white/[0.07] bg-[linear-gradient(165deg,#171717_0%,#101010_55%,#0c0c0c_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_24px_70px_rgba(0,0,0,0.55)] overflow-hidden ${className}`}
+    >
+      {/* стеклянный блик сверху */}
+      <div
+        aria-hidden
+        className="absolute inset-x-0 top-0 h-[22%] pointer-events-none"
+        style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.035), transparent)" }}
+      />
+      {glow && (
+        <>
+          <div
+            aria-hidden
+            className="absolute inset-x-6 bottom-0 h-px pointer-events-none"
+            style={{
+              background:
+                "linear-gradient(90deg, transparent, rgba(166,255,0,0.55) 30%, rgba(166,255,0,0.55) 70%, transparent)",
+            }}
+          />
+          <div
+            aria-hidden
+            className="absolute inset-x-0 bottom-[-40px] h-[80px] pointer-events-none"
+            style={{
+              background:
+                "radial-gradient(ellipse 60% 100% at 50% 100%, rgba(166,255,0,0.13), transparent 70%)",
+            }}
+          />
+        </>
+      )}
+      {children}
+    </div>
+  );
+}
+
+function V7() {
+  const sphereRef = useRef<HTMLDivElement>(null);
+
+  const heroLines: LedLine[] = [
+    { text: "7 ЛЕТ", color: "#F2F4EF" },
+    { text: "РАЗВИВАЮ", color: "#F2F4EF" },
+    { words: WORDS, color: "#A6FF00" },
+  ];
+
+  return (
+    <section className="relative min-h-[100vh] bg-[#0c0c0c] pt-20 md:pt-24 pb-12 px-4 md:px-[5%] xl:px-[8%] 2xl:px-[max(8%,calc((100%_-_1720px)/2))]">
+      {/* Воздух: мягкий свет сверху + лаймовый ambient снизу */}
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 70% 45% at 50% 0%, rgba(255,255,255,0.04), transparent 60%), radial-gradient(ellipse 55% 35% at 50% 105%, rgba(166,255,0,0.05), transparent 70%)",
+        }}
+      />
+
+      {/* Единый корпус-дисплей: стекло, без винтов */}
+      <div className="relative rounded-[30px] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(255,255,255,0.025),rgba(255,255,255,0.005))] p-3 md:p-5 shadow-[0_40px_120px_rgba(0,0,0,0.6)]">
+        <div className="grid grid-cols-12 gap-3 md:gap-5 items-stretch">
+          {/* ── Хиро-дисплей ── */}
+          <Oled glow className="col-span-12 lg:col-span-7 lg:row-span-2 p-5 md:p-8 flex flex-col">
+            <div className="relative">
+              <LedBoard
+                className="hidden md:block w-full h-auto"
+                align="left"
+                scale={2}
+                dotR={1.45}
+                pad={2}
+                minCols={114}
+                minRows={58}
+                dim="rgba(255,255,255,0.05)"
+                lines={heroLines}
+              />
+              <LedBoard
+                className="md:hidden w-full h-auto"
+                align="left"
+                scale={1}
+                pad={1}
+                minCols={51}
+                minRows={31}
+                dim="rgba(255,255,255,0.05)"
+                lines={heroLines}
+              />
+            </div>
+            <h1 className="sr-only">7 лет развиваю людей, команды, визуал, сервисы</h1>
+            <p className="mt-5 md:mt-7 max-w-[460px] text-[14px] md:text-[17px] leading-relaxed text-white/60 font-light">
+              От стратегии и культуры до AI и цифровых продуктов.
+            </p>
+            <div className="mt-6 md:mt-8">
+              <Ctas />
+            </div>
+            <div className="mt-auto pt-8 opacity-70">
+              <Logos />
+            </div>
+          </Oled>
+
+          {/* ── Сфера ── */}
+          <Oled className="col-span-12 lg:col-span-5 p-5 md:p-6 flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] md:text-[12px] tracking-[0.22em] uppercase text-white/45">
+                <span className="text-[#A6FF00]/70">[</span>
+                <span className="mx-2">Дизайн-директор</span>
+                <span className="text-[#A6FF00]/70">]</span>
+              </span>
+            </div>
+            <div ref={sphereRef} className="relative flex-1 min-h-[280px] md:min-h-[330px]">
+              <ParticleSphere
+                className="absolute inset-0 w-full h-full"
+                trackingRef={sphereRef}
+                sphereRadFactor={0.46}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] md:text-[12px] tracking-[0.22em] uppercase text-white/40">
+                Москва
+              </span>
+              <span
+                aria-hidden
+                className="w-[6px] h-[6px] rounded-full"
+                style={{ background: "#A6FF00", boxShadow: "0 0 10px rgba(166,255,0,0.8)" }}
+              />
+            </div>
+          </Oled>
+
+          {/* ── В цифрах ── */}
+          <Oled className="col-span-12 lg:col-span-5 p-5 md:p-6">
+            <div className="text-[11px] md:text-[12px] tracking-[0.22em] uppercase text-white/45 mb-5">
+              В цифрах
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              {[
+                { v: "30", l: "запусков" },
+                { v: "7", l: "лет опыта" },
+                { v: "27", l: "команд" },
+              ].map((m) => (
+                <div key={m.l} className="flex flex-col gap-2.5">
+                  <LedCounter value={m.v} tone="#A6FF00" />
+                  <span className="text-[11px] md:text-[12px] tracking-[0.14em] uppercase text-white/40">
+                    {m.l}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </Oled>
+
+          {/* ── Награда ── */}
+          <Oled className="col-span-12 md:col-span-5 p-5 md:p-6 flex flex-col gap-5">
+            <div className="text-[11px] md:text-[12px] tracking-[0.22em] uppercase text-white/45">
+              Награда · 2024
+            </div>
+            <LedText text="СХ·24" scale={2} dot={1.45} className="h-[36px] md:h-[44px] w-auto self-start text-[#C9A66B]" />
+            <div className="mt-auto">
+              <div className="text-[12px] md:text-[13px] tracking-[0.16em] uppercase text-white/50">
+                Customer Experience Awards
+              </div>
+              <div className="mt-2.5 pt-2.5 border-t border-white/[0.06] text-[11px] md:text-[12px] tracking-[0.16em] uppercase text-[#C9A66B]/75">
+                Победитель в сегменте B2E
+              </div>
+            </div>
+          </Oled>
+
+          {/* ── Экспертиза ── */}
+          <Oled className="col-span-12 md:col-span-7 p-5 md:p-6">
+            <div className="text-[11px] md:text-[12px] tracking-[0.22em] uppercase text-white/45 mb-5">
+              Экспертиза
+            </div>
+            <ul className="flex flex-col gap-4">
+              {[
+                { num: "01", label: "Управление", note: "дизайн-функции и команды" },
+                { num: "02", label: "Направления", note: "B2C / B2E / EdTech / E-COM" },
+                { num: "03", label: "Ремесло", note: "процессы и применение AI" },
+              ].map((item) => (
+                <li key={item.num} className="flex items-baseline gap-4">
+                  <span className="font-p95 text-[12px] tabular-nums text-[#A6FF00]/70 w-5 shrink-0">
+                    {item.num}
+                  </span>
+                  <span className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-baseline sm:gap-3">
+                    <span className="font-p95 text-[15px] md:text-[16px] tracking-[0.16em] uppercase text-white">
+                      {item.label}
+                    </span>
+                    <span className="text-[11px] md:text-[12px] tracking-[0.06em] uppercase text-white/45">
+                      {item.note}
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </Oled>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function HeroLab({ v }: { v: string }) {
   const variants: Record<string, React.ReactNode> = {
     "1": <V1 />,
@@ -966,6 +1186,7 @@ export default function HeroLab({ v }: { v: string }) {
     "4": <V4 />,
     "5": <V5 />,
     "6": <V6 />,
+    "7": <V7 />,
   };
   const names: Record<string, string> = {
     "1": "Сфера за текстом",
@@ -974,13 +1195,14 @@ export default function HeroLab({ v }: { v: string }) {
     "4": "Строка + сцена",
     "5": "Гибрид: табло",
     "6": "Прибор",
+    "7": "Дисплей",
   };
   return (
     <>
       {variants[v] ?? <V1 />}
       {/* Переключатель вариантов */}
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[150] flex items-center gap-1.5 rounded-full border border-white/15 bg-black/80 backdrop-blur-md px-2.5 py-2">
-        {["1", "2", "3", "4", "5", "6"].map((n) => (
+        {["1", "2", "3", "4", "5", "6", "7"].map((n) => (
           <Link
             key={n}
             href={`/hero/${n}`}
