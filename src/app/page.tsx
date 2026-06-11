@@ -944,7 +944,7 @@ export default function PreviewHome() {
                     <LedText text="→" className="h-[13px] w-auto" />
                   </Link>
                 </div>
-                <div className="mt-auto pt-6 md:pt-7 border-t border-white/[0.06] flex items-center gap-6 md:gap-10 flex-wrap">
+                <div className="mt-9 md:mt-auto md:pt-8 flex items-center gap-6 md:gap-10 flex-wrap">
                   <img src="/images/logos/ozon.svg" alt="Ozon" className="h-4 md:h-5 w-auto self-center brightness-0 invert opacity-55 hover:opacity-100 transition-opacity" />
                   <img src="/images/logos/mts.svg" alt="МТС" className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity" />
                   <img src="/images/logos/gazpromneft.svg" alt="Газпром нефть" className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity" />
