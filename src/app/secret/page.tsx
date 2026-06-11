@@ -168,19 +168,26 @@ export default function SecretPage() {
                 <LedText text="Сдвиг" className="h-[9px] w-auto" />
               </span>
               {/* Счётчик редактируемый: можно ввести число вручную (в т.ч. больше 46) */}
-              <input
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                value={decryptShift}
-                onChange={(e) => {
-                  const v = e.target.value.replace(/[^0-9]/g, "");
-                  setDecryptShift(Math.max(0, Math.min(99, Number(v || 0))));
-                }}
-                onFocus={(e) => e.currentTarget.select()}
-                aria-label="Ввести сдвиг вручную"
-                className="w-[2.5em] bg-transparent text-right font-mono text-[clamp(16px,1.6vw,22px)] tabular-nums text-white outline-none cursor-text"
-              />
+              {/* Значение рисуем LED-шрифтом; сам input прозрачный сверху —
+                  редактирование живое, каретка лаймовая, цифры пиксельные. */}
+              <span className="relative inline-flex items-center justify-end min-w-[3em] h-[24px]">
+                <span className="text-white pointer-events-none">
+                  <LedText text={String(decryptShift)} scale={2} dot={1.45} className="h-[15px] md:h-[18px] w-auto" />
+                </span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={decryptShift}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/[^0-9]/g, "");
+                    setDecryptShift(Math.max(0, Math.min(99, Number(v || 0))));
+                  }}
+                  onFocus={(e) => e.currentTarget.select()}
+                  aria-label="Ввести сдвиг вручную"
+                  className="absolute inset-0 w-full bg-transparent text-right font-mono text-[clamp(16px,1.6vw,22px)] tabular-nums text-transparent caret-[#A6FF00] selection:bg-[#A6FF00]/30 outline-none cursor-text"
+                />
+              </span>
             </div>
 
             <input
