@@ -234,30 +234,25 @@ export default function ProjectCard({
           <LedText text={project.company} className="h-[9px] md:h-[10px] w-auto" />
         </div>
       )}
-      {/* Теги и метрика — один ряд снизу, переносятся вместо пересечения */}
-      <div className="absolute bottom-3 inset-x-3 md:bottom-4 md:inset-x-4 z-[2] flex flex-wrap items-center gap-1.5 md:gap-2">
-        {project.tags.slice(0, featured ? 4 : wide ? 3 : 2).map((t) => (
-          <TagChip key={t}>{t}</TagChip>
-        ))}
-        {project.metric && (
-          <span className="ml-auto">
-            <MetricChip value={project.metric} label={project.metricLabel} />
-          </span>
-        )}
-      </div>
+      {/* В окне — только метрика, нижний левый угол */}
+      {project.metric && (
+        <div className="absolute bottom-3 left-3 md:bottom-4 md:left-4 z-[2]">
+          <MetricChip value={project.metric} label={project.metricLabel} />
+        </div>
+      )}
     </div>
   );
 
   // Заголовок — по центру карточки, как у плитки экспериментов.
   const Title = (
-    <div className={`flex-1 flex items-center justify-center text-center ${
+    <div className={`flex-1 flex flex-col items-center justify-center gap-4 md:gap-5 text-center ${
       featured ? "px-6 py-7 md:py-8" : "px-5 py-6 md:py-7"
     }`}>
-      <h3 className="text-white">
+      <h3 className="text-white max-w-full">
         <LedLines
           text={project.title}
           center
-          maxChars={featured ? 34 : wide ? 32 : 28}
+          maxChars={featured ? 28 : wide ? 26 : 22}
           lineClass={
             featured
               ? "h-[18px] md:h-[24px]"
@@ -267,6 +262,13 @@ export default function ProjectCard({
           }
         />
       </h3>
+      {project.tags.length > 0 && (
+        <div className="flex flex-wrap justify-center gap-1.5 md:gap-2">
+          {project.tags.slice(0, featured ? 4 : wide ? 3 : 2).map((t) => (
+            <TagChip key={t}>{t}</TagChip>
+          ))}
+        </div>
+      )}
     </div>
   );
 
