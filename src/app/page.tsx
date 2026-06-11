@@ -451,7 +451,7 @@ function CareerHoverList() {
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
 
   return (
-    <div className="rounded-2xl border border-white/[0.06] overflow-hidden bg-white/[0.015]">
+    <div className="rounded-2xl border border-white/[0.06] overflow-hidden bg-[#0f0f0e]">
       {careerJobs.map((job, i) => {
         const isExpanded = expandedIdx === i;
         const toggle = () =>
@@ -651,7 +651,7 @@ function ServiceTile({ tile }: { tile: ServiceTileData }) {
     <motion.div
       ref={tileRef}
       variants={fadeUp}
-      className="group relative w-full rounded-2xl border border-white/[0.08] bg-white/[0.015] hover:border-white/[0.2] transition-colors p-6 md:p-8 flex flex-col gap-5 md:gap-6 min-h-[420px] md:min-h-[520px] overflow-hidden"
+      className="group relative w-full rounded-2xl border border-white/[0.06] bg-[#0f0f0e] hover:border-white/[0.2] transition-colors p-6 md:p-8 flex flex-col gap-5 md:gap-6 min-h-[420px] md:min-h-[520px] overflow-hidden"
     >
       {/* Верх: index / icon / label */}
       <div className="flex items-start justify-between gap-3">
@@ -833,7 +833,7 @@ function Toolbox() {
                 key={t.name}
                 variants={fadeUp}
                 title={t.name}
-                className="group relative rounded-xl border border-white/[0.06] bg-white/[0.02] hover:border-[#A6FF00]/30 hover:bg-white/[0.035] transition-colors p-5 md:p-6 flex flex-col items-start justify-between min-h-[130px] md:min-h-[150px] overflow-hidden"
+                className="group relative rounded-2xl border border-white/[0.06] bg-[#0f0f0e] hover:border-[#A6FF00]/30 transition-colors p-5 md:p-6 flex flex-col items-start justify-between min-h-[130px] md:min-h-[150px] overflow-hidden"
               >
                 <div className="w-7 h-7 md:w-8 md:h-8 text-white/72 group-hover:text-white transition-colors">
                   {t.icon}
@@ -1144,7 +1144,7 @@ export default function PreviewHome() {
             )}
             <motion.div variants={fadeUp}>
               <Link href="/experiments" data-ym-goal="nav_experiments" data-ym-goal-params='{"placement":"work_grid"}' className="no-underline group block h-full">
-                <div className="relative h-full min-h-[280px] md:min-h-[340px] rounded-2xl overflow-hidden border-2 border-white/[0.06] group-hover:border-[#A6FF00]/40 bg-[#0a0a0a] transition-colors duration-300 p-6 md:p-7 flex flex-col justify-between">
+                <div className="relative h-full min-h-[280px] md:min-h-[340px] rounded-2xl overflow-hidden border border-white/[0.06] group-hover:border-[#A6FF00]/40 bg-[#0f0f0e] transition-colors duration-300 p-6 md:p-7 flex flex-col justify-between">
                   <PillsBackdrop />
                   <div className="relative z-[2]">
                     <div className="text-white/70 mb-3">
@@ -1365,7 +1365,7 @@ export default function PreviewHome() {
               <motion.div
                 key={t.name}
                 variants={fadeUp}
-                className="shrink-0 w-[85vw] sm:w-[60vw] md:w-auto snap-start md:snap-align-none relative h-full p-6 md:p-7 rounded-2xl border border-white/[0.06] bg-white/[0.015] hover:border-[#A6FF00]/20 transition-colors duration-300 flex flex-col"
+                className="shrink-0 w-[85vw] sm:w-[60vw] md:w-auto snap-start md:snap-align-none relative h-full p-6 md:p-7 rounded-2xl border border-white/[0.06] bg-[#0f0f0e] hover:border-[#A6FF00]/20 transition-colors duration-300 flex flex-col"
               >
                 <Quote className="w-5 h-5 text-[#A6FF00]/40 mb-4" strokeWidth={1.5} />
                 <p className="text-white/75 text-base md:text-[17px] leading-relaxed">
@@ -1430,7 +1430,7 @@ export default function PreviewHome() {
                   data-ym-goal-params='{"placement":"offer_cards"}'
                   className="no-underline group block h-full"
                 >
-                  <div className="relative h-full rounded-2xl overflow-hidden border border-white/[0.06] group-hover:border-white/20 bg-[#0a0a0a] transition-colors duration-300 p-7 md:p-9 flex flex-col justify-between min-h-[260px]">
+                  <div className="relative h-full rounded-2xl overflow-hidden border border-white/[0.06] group-hover:border-white/20 bg-[#0f0f0e] transition-colors duration-300 p-7 md:p-9 flex flex-col justify-between min-h-[260px]">
                     <div
                       className="absolute top-7 right-7 md:top-9 md:right-9 h-2 w-2 rounded-full"
                       style={{ backgroundColor: t.accent }}
@@ -1584,7 +1584,7 @@ export default function PreviewHome() {
                   data-ym-goal-params='{"placement":"contacts_grid"}'
                   className="group no-underline block h-full"
                 >
-                  <div className="relative h-full min-h-[120px] md:min-h-[130px] rounded-2xl overflow-hidden border border-white/[0.08] bg-white/[0.015] hover:border-white/[0.2] hover:bg-white/[0.035] transition-colors p-5 flex flex-col justify-between">
+                  <div className="relative h-full min-h-[120px] md:min-h-[130px] rounded-2xl overflow-hidden border border-white/[0.06] bg-[#0f0f0e] hover:border-white/[0.2] transition-colors p-5 flex flex-col justify-between">
                     <div className="flex items-start justify-between">
                       <div className="text-white/70">
                         <span className="sr-only">{link.label}</span>
@@ -1603,7 +1603,7 @@ export default function PreviewHome() {
 
             {/* 6. Location — компактная плитка, глобус справа (выходит за правый край), текст слева. */}
             <motion.div variants={fadeUp} className="col-span-2 md:col-span-4">
-              <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0a0a0a] min-h-[200px] md:min-h-[220px]">
+              <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0f0f0e] min-h-[200px] md:min-h-[220px]">
                 {/* Текст — абсолют, чтобы НЕ блокировать drag по глобусу справа */}
                 <div className="absolute z-[2] left-6 md:left-8 top-1/2 -translate-y-1/2 max-w-[60%] md:max-w-[55%] flex flex-col items-start gap-3 pointer-events-none">
                   <h4 className="text-white">

@@ -272,7 +272,7 @@ export default function ProjectCard({
           ref={articleRef}
           whileHover={{ y: -4 }}
           transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          className="relative rounded-2xl overflow-hidden bg-[#050506] border border-white/[0.06] group-hover:border-white/20 transition-colors duration-300 h-full"
+          className="relative rounded-2xl overflow-hidden bg-[#0f0f0e] border border-white/[0.06] group-hover:border-white/20 transition-colors duration-300 h-full"
         >
           <div className="relative h-full min-h-[360px] md:min-h-[480px] overflow-hidden">
             {CoverTint}
@@ -299,7 +299,7 @@ export default function ProjectCard({
           ref={articleRef}
           whileHover={{ y: -4 }}
           transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          className="relative rounded-2xl overflow-hidden bg-[#050506] border border-white/[0.06] group-hover:border-white/20 transition-colors duration-300 h-full"
+          className="relative rounded-2xl overflow-hidden bg-[#0f0f0e] border border-white/[0.06] group-hover:border-white/20 transition-colors duration-300 h-full"
         >
           <div className="relative h-full min-h-[360px] md:min-h-[360px] overflow-hidden">
             {CoverTint}
@@ -325,7 +325,7 @@ export default function ProjectCard({
         ref={articleRef}
         whileHover={{ y: -4 }}
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        className="relative rounded-2xl overflow-hidden bg-[#050506] border border-white/[0.06] group-hover:border-white/20 h-full transition-colors duration-300"
+        className="relative rounded-2xl overflow-hidden bg-[#0f0f0e] border border-white/[0.06] group-hover:border-white/20 h-full transition-colors duration-300"
       >
         <div className="relative h-full min-h-[360px] md:min-h-[320px] overflow-hidden">
           {CoverTint}
