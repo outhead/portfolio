@@ -100,6 +100,12 @@ export default function PongPage() {
   const applyHitRef = useRef<(p: Record<string, unknown>) => void>(() => {}); // лаг-компенсация отскока гостя
   const lastClaim = useRef(0);
   const countTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  // ─── выбор хоста: если оба зашли по одной ?s=-ссылке (два гостя), через 4с
+  // без state-пакетов и без живого хоста гость с бОльшим id берёт роль хоста ───
+  const myId = useRef(Math.random().toString(36).slice(2));
+  const lastStateAt = useRef(0);
+  const hostSeenAt = useRef(0);
+  const peerGuestId = useRef<string | null>(null);
 
   const setPhaseBoth = (p: Phase) => { phaseRef.current = p; setPhase(p); };
   const setCountBoth = (c: number) => { countRef.current = c; setCount(c); };
@@ -149,6 +155,7 @@ export default function PongPage() {
     // ─── общие обработчики для обоих транспортов (P2P и Realtime) ───
     /* eslint-disable @typescript-eslint/no-explicit-any */
     const applyState = (payload: any) => {
+      lastStateAt.current = performance.now();
       if (roleRef.current !== "guest") return;
       // Мяч у гостя живёт локально (dead reckoning по vx/vy), пакет хоста — авторитетная
       // коррекция: близко — мягко подтягиваем (без дёрганья), далеко — снапаем.
@@ -194,12 +201,16 @@ export default function PongPage() {
     ch.on("rematch", () => { if (roleRef.current === "host") startMatch(); });
     ch.on("hit", (payload) => { applyHitRef.current(payload as Record<string, unknown>); });
     ch.on("release", () => { onReleaseRef.current(1); });
-    ch.on("hello", () => {
+    const handleHello = (payload: unknown) => {
+      const p = (payload ?? {}) as { id?: string; h?: number };
+      if (p.h === 1) hostSeenAt.current = performance.now();
+      else if (p.id) peerGuestId.current = p.id;
       if (roleRef.current === "host") {
         onHelloMsg();
-        ch.send("hello", {});
+        chRef.current?.send("hello", { id: myId.current, h: 1 });
       }
-    });
+    };
+    ch.on("hello", handleHello);
 
     // Связь есть, если жив P2P ИЛИ на релее виден соперник. «Ожидание» показываем
     // только когда нет НИ того, ни другого, и с дебаунсом 3с — иначе мобильные
@@ -229,7 +240,7 @@ export default function PongPage() {
       onMessage: (m) => {
         if (m.event === "state") applyState(m.payload);
         else if (m.event === "paddle") applyPaddle(m.payload);
-        else if (m.event === "hello") onHelloMsg();
+        else if (m.event === "hello") handleHello(m.payload);
         else if (m.event === "rematch") { if (roleRef.current === "host") startMatch(); }
         else if (m.event === "hit") applyHitRef.current(m.payload);
         else if (m.event === "release") onReleaseRef.current(1);
@@ -237,7 +248,7 @@ export default function PongPage() {
       onOpen: () => {
         useP2P.current = true;
         setTransport("p2p");
-        if (roleRef.current === "guest") p2pRef.current?.sendCtl({ event: "hello", payload: {} });
+        if (roleRef.current === "guest") p2pRef.current?.sendCtl({ event: "hello", payload: { id: myId.current } });
         evalConn();
       },
       onClose: () => {
@@ -258,17 +269,41 @@ export default function PongPage() {
       evalConn();
     });
 
+    // Тупик «двух гостей»: зондируем hello; если 4с нет ни state-пакетов,
+    // ни ответа хоста (h:1), и наш id больше id второго гостя — становимся хостом.
+    lastStateAt.current = performance.now();
+    hostSeenAt.current = performance.now();
+    const electT = setInterval(() => {
+      if (roleRef.current !== "guest") return;
+      if (!(useP2P.current || relayPeers.current)) return;
+      if (phaseRef.current !== "waiting" && phaseRef.current !== "connecting") return;
+      chRef.current?.send("hello", { id: myId.current });
+      const now = performance.now();
+      if (
+        now - lastStateAt.current > 4000 &&
+        now - hostSeenAt.current > 4000 &&
+        peerGuestId.current &&
+        myId.current > peerGuestId.current
+      ) {
+        roleRef.current = "host";
+        setRole("host");
+        chRef.current?.send("hello", { id: myId.current, h: 1 });
+        resumeOrStart();
+      }
+    }, 1500);
+
     ch.onOpen(() => {
       // на (ре)коннекте релея активную игру НЕ сбрасываем; ожидание — только на старте
       if (phaseRef.current === "connecting") setPhaseBoth("waiting");
       if (roleRef.current === "guest") {
-        const hi = () => chRef.current?.send("hello", {});
+        const hi = () => chRef.current?.send("hello", { id: myId.current });
         hi(); setTimeout(hi, 500); setTimeout(hi, 1400);
       }
     });
 
     return () => {
       clearTimeout(connT);
+      clearInterval(electT);
       cancelWaiting();
       if (countTimer.current) clearInterval(countTimer.current);
       p2pRef.current?.close(); p2pRef.current = null;
