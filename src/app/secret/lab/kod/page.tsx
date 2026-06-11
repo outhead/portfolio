@@ -1,6 +1,7 @@
 "use client";
 
 import LedText from "@/components/LedText";
+import { LedLines } from "@/components/LedBoard";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import confetti from "canvas-confetti";
@@ -114,8 +115,8 @@ export default function KodFinal() {
             <span className="sr-only">Загадка №5 · финал</span>
             <LedText text="Загадка №5 · финал" className="h-[9px] w-auto" />
           </p>
-          <h1 className="font-p95 leading-[0.95] uppercase tracking-tight mb-2" style={{ fontSize: "clamp(26px, 5vw, 44px)" }}>
-            Введи код
+          <h1 className="mb-2">
+            <LedLines text="Введи код" center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
           </h1>
           <p className="text-[13px] text-white/40 mb-8">Терминал #0000 · доступ закрыт</p>
 
@@ -164,8 +165,8 @@ export default function KodFinal() {
             <span className="sr-only">Квест пройден</span>
             <LedText text="Квест пройден" className="h-[9px] w-auto" />
           </p>
-          <h1 className="font-p95 leading-none uppercase tracking-tight text-[#A6FF00] mb-4" style={{ fontSize: "clamp(40px, 11vw, 76px)" }}>
-            Доступ
+          <h1 className="text-[#A6FF00] mb-4">
+            <LedLines text="Доступ" center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
           </h1>
           {winMs != null ? (
             <p className="text-[15px] text-white/80 mb-8">

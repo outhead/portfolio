@@ -57,14 +57,14 @@ export default function WIPOverlay({
           <div className="mt-7 md:mt-8 flex flex-wrap items-center gap-3">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-[#A6FF00] text-black font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:bg-white transition-colors no-underline"
+              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-[#A6FF00] text-black hover:bg-white transition-colors no-underline"
             >
               <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2.2} />
               <span className="sr-only">На главную</span><LedText text="На главную" className="h-[11px] w-auto" />
             </Link>
             <Link
               href="/#portfolio"
-              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/[0.15] text-white/85 font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:border-white/40 hover:text-white transition-colors no-underline"
+              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/[0.15] text-white/85 hover:border-white/40 hover:text-white transition-colors no-underline"
             >
               <span className="sr-only">Готовые кейсы</span><LedText text="Готовые кейсы" className="h-[11px] w-auto" />
               <ArrowRight className="w-3.5 h-3.5" strokeWidth={2} />

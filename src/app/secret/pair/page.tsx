@@ -1,6 +1,7 @@
 "use client";
 
 import LedText from "@/components/LedText";
+import { LedLines } from "@/components/LedBoard";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import confetti from "canvas-confetti";
@@ -228,8 +229,8 @@ export default function PairPage() {
         {/* СМОТРЯЩИЙ */}
         {phase === "viewer" ? (
           <>
-            <h1 className="font-p95 leading-[1.05] uppercase tracking-tight mb-3" style={{ fontSize: "clamp(24px,4.5vw,40px)" }}>
-              Ты видишь, как надо
+            <h1 className="mb-3">
+              <LedLines text="Ты видишь, как надо" center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
             </h1>
             <p className="text-[13px] text-white/55 max-w-sm mb-8">
               Переключить тумблеры можешь не ты. Диктуй напарнику нужный порядок.
@@ -277,8 +278,8 @@ export default function PairPage() {
         {/* КОНТРОЛЛЕР */}
         {phase === "controller" ? (
           <>
-            <h1 className="font-p95 leading-[1.05] uppercase tracking-tight mb-3" style={{ fontSize: "clamp(24px,4.5vw,40px)" }}>
-              Ты переключаешь
+            <h1 className="mb-3">
+              <LedLines text="Ты переключаешь" center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
             </h1>
             <p className="text-[13px] text-white/55 max-w-sm mb-10">
               Порядок видит напарник. Слушай его и щёлкай тумблеры.

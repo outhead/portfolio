@@ -1,6 +1,7 @@
 "use client";
 
 import LedText from "@/components/LedText";
+import { LedLines } from "@/components/LedBoard";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import confetti from "canvas-confetti";
@@ -28,8 +29,8 @@ export default function PairDone() {
           <span className="sr-only">Вдвоём</span>
           <LedText text="Вдвоём" className="h-[9px] w-auto" />
         </p>
-        <h1 className="font-p95 leading-none uppercase tracking-tight text-[#A6FF00] mb-6" style={{ fontSize: "clamp(40px,11vw,76px)" }}>
-          Готово
+        <h1 className="text-[#A6FF00] mb-6">
+          <LedLines text="Готово" center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
         </h1>
         <p className="text-[15px] text-white/70 max-w-sm leading-relaxed mb-8">
           Это нельзя было пройти одному. Спасибо вам обоим — и тому, кто видел, и тому, кто щёлкал.

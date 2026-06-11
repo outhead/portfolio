@@ -1080,8 +1080,14 @@ export default function PongPage() {
 
               {phase === "over" ? (
                 <>
-                  <p className="font-p95 uppercase tracking-tight text-[#A6FF00] mb-3" style={{ fontSize: "clamp(28px,7vw,48px)" }}>
-                    {iWon ? "Ты выиграл" : "Ты проиграл"}
+                  <p className="text-[#A6FF00] mb-3 flex justify-center">
+                    <span className="sr-only">{iWon ? "Ты выиграл" : "Ты проиграл"}</span>
+                    <LedText
+                      text={iWon ? "Ты выиграл" : "Ты проиграл"}
+                      scale={2}
+                      dot={1.45}
+                      className="h-[20px] sm:h-[26px] w-auto"
+                    />
                   </p>
                   <button type="button" onClick={rematch}
                     className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors">

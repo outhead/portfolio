@@ -82,16 +82,6 @@ function SectionLabel({
   );
 }
 
-// ───────────────────────────────────────────────────────────────────
-// Asterisk — маленький зелёный `*` как типографический приём (stokt)
-// ───────────────────────────────────────────────────────────────────
-function Star() {
-  return (
-    <span className="text-[#A6FF00] font-p95 align-top inline-block translate-y-[-0.15em]">
-      *
-    </span>
-  );
-}
 
 // ───────────────────────────────────────────────────────────────────
 // DotGlobe — интерактивный дотовый глобус: точки только на суше
@@ -374,142 +364,6 @@ function DotGlobe() {
       className="absolute inset-0 w-full h-full touch-none select-none"
       aria-hidden
     />
-  );
-}
-
-// ───────────────────────────────────────────────────────────────────
-// SKILLS — accordion-бенто (stokt-style) — УСТАРЕЛО, оставлено для референса
-// ───────────────────────────────────────────────────────────────────
-interface SkillPanel {
-  key: string;
-  label: string;
-  title: string;
-  Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  accent: string;
-  body: string;
-  items: string[];
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function SkillsAccordion({ panels }: { panels: SkillPanel[] }) {
-  const [active, setActive] = useState<string>(panels[0].key);
-  const CONTENT_WIDTH = 560;
-  const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
-  return (
-    <div className="flex flex-col md:flex-row gap-2 md:gap-3 w-full md:h-[440px]">
-      {panels.map((p) => {
-        const isActive = active === p.key;
-        const PanelContent = (
-          <div
-            className="relative p-6 md:p-8 md:h-full md:flex md:flex-col"
-            style={{ width: `min(100%, ${CONTENT_WIDTH}px)` }}
-          >
-            <div
-              className="absolute top-6 right-6 md:top-8 md:right-8 h-2 w-2 rounded-full"
-              style={{ backgroundColor: p.accent }}
-            />
-            <div className="inline-flex items-center gap-2 font-p95 text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-white/75 mb-4">
-              <p.Icon className="w-4 h-4" strokeWidth={1.75} style={{ color: p.accent }} />
-              <span>{p.label}</span>
-            </div>
-            <h3 className="font-p95 text-[clamp(22px,2.6vw,36px)] leading-[0.98] uppercase text-white mb-4">
-              {p.title}
-            </h3>
-            <p className="text-sm md:text-[15px] text-white/74 leading-relaxed mb-6">{p.body}</p>
-            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 mt-auto">
-              {p.items.map((item) => (
-                <li
-                  key={item}
-                  className="flex items-start gap-2 text-sm text-white/70 leading-snug"
-                >
-                  <span
-                    className="mt-[7px] h-px w-2 shrink-0"
-                    style={{ backgroundColor: p.accent, opacity: 0.7 }}
-                  />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-        );
-
-        return (
-          <button
-            key={p.key}
-            type="button"
-            onClick={() => setActive(p.key)}
-            className={`group relative text-left rounded-2xl border overflow-hidden transition-[flex,border-color,background-color] duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)] md:h-full ${
-              isActive
-                ? "border-white/15 bg-[#0a0a0a] md:flex-[6]"
-                : "border-white/[0.06] bg-[#080808] hover:border-white/15 md:flex-[1] md:min-w-[72px]"
-            }`}
-            aria-expanded={isActive}
-          >
-            {/* Desktop: вертикальная рейка (свёрнутое состояние) */}
-            <div
-              className="hidden md:flex flex-col items-center justify-between absolute inset-0 py-6 px-3 transition-opacity duration-300 ease-out"
-              style={{
-                opacity: isActive ? 0 : 1,
-                pointerEvents: isActive ? "none" : "auto",
-              }}
-              aria-hidden={isActive}
-            >
-              <p.Icon className="w-5 h-5 text-white/40 group-hover:text-white/70 transition-colors" strokeWidth={1.5} />
-              <div
-                className="font-p95 text-[15px] tracking-[0.2em] uppercase text-white/72 group-hover:text-white/85 transition-colors whitespace-nowrap"
-                style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
-              >
-                {p.label}
-              </div>
-              <div
-                className="h-2 w-2 rounded-full"
-                style={{ backgroundColor: "transparent", boxShadow: `inset 0 0 0 1px ${p.accent}` }}
-              />
-            </div>
-
-            {/* Mobile свёрнутый */}
-            <div className={`md:hidden ${isActive ? "hidden" : "flex"} items-center justify-between px-5 py-4`}>
-              <div className="flex items-center gap-3">
-                <p.Icon className="w-4 h-4 text-white/70" strokeWidth={1.5} />
-                <div className="font-p95 text-[15px] tracking-[0.2em] uppercase text-white/75">
-                  {p.label}
-                </div>
-              </div>
-              <ArrowRight className="w-4 h-4 text-white/40" strokeWidth={1.75} />
-            </div>
-
-            {/* Desktop overlay */}
-            <div
-              className="hidden md:block md:absolute md:inset-0 md:overflow-hidden transition-opacity duration-[350ms] ease-out"
-              style={{
-                opacity: isActive ? 1 : 0,
-                pointerEvents: isActive ? "auto" : "none",
-              }}
-              aria-hidden={!isActive}
-            >
-              <div className="md:flex md:items-start h-full">{PanelContent}</div>
-            </div>
-
-            {/* Mobile expand */}
-            <AnimatePresence initial={false}>
-              {isActive && (
-                <motion.div
-                  key="mobile-expand"
-                  className="md:hidden overflow-hidden"
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.28, ease: EASE }}
-                  aria-hidden={!isActive}
-                >
-                  {PanelContent}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </button>
-        );
-      })}
-    </div>
   );
 }
 
@@ -844,54 +698,6 @@ function ServiceTile({ tile }: { tile: ServiceTileData }) {
 }
 
 // ───────────────────────────────────────────────────────────────────
-// SplitSection — лейбл + большой заголовок + контент
-// ───────────────────────────────────────────────────────────────────
-function SplitSection({
-  id,
-  label,
-  heading,
-  children,
-  className = "",
-  borderTop = true,
-  wideRight = false,
-}: {
-  id?: string;
-  label: string;
-  heading: string;
-  children: React.ReactNode;
-  className?: string;
-  borderTop?: boolean;
-  wideRight?: boolean;
-}) {
-  return (
-    <section
-      id={id}
-      className={`relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-24 bg-black ${
-        borderTop ? "border-t border-white/[0.06]" : ""
-      } ${className}`}
-    >
-      <motion.div
-        initial="hidden"
-        whileInView="show"
-        viewport={viewport}
-        variants={stagger}
-        className="grid md:grid-cols-[220px_1fr] lg:grid-cols-[260px_1fr] gap-8 md:gap-10 lg:gap-16"
-      >
-        <motion.div variants={fadeUp} className="md:sticky md:top-24 self-start">
-          <SectionLabel>{label}</SectionLabel>
-          <h2 className="font-p95 text-[clamp(28px,3.5vw,48px)] uppercase mt-2 leading-[0.95]">
-            {heading}
-          </h2>
-        </motion.div>
-        <motion.div variants={fadeUp} className={wideRight ? "" : "max-w-[620px]"}>
-          {children}
-        </motion.div>
-      </motion.div>
-    </section>
-  );
-}
-
-// ───────────────────────────────────────────────────────────────────
 // TOOLBOX — ряд инструментов (stokt «Everyday's Toolbox»)
 // ───────────────────────────────────────────────────────────────────
 const tools: Array<{ name: string; icon: React.ReactNode }> = [
@@ -1123,7 +929,7 @@ export default function PreviewHome() {
                     target="_blank"
                     data-ym-goal="cta_telegram"
                     data-ym-goal-params='{"placement":"hero"}'
-                    className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-[#A6FF00] text-black font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:bg-white transition-colors no-underline"
+                    className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-[#A6FF00] text-black hover:bg-white transition-colors no-underline"
                   >
                     <span className="sr-only">Обсудить проект</span>
                     <LedText text="Обсудить проект" className="h-[11px] w-auto" />
@@ -1132,7 +938,7 @@ export default function PreviewHome() {
                   <Link
                     href="#portfolio"
                     data-ym-goal="hero_view_cases"
-                    className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:border-[#A6FF00]/60 hover:text-[#A6FF00] transition-colors no-underline"
+                    className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 hover:border-[#A6FF00]/60 hover:text-[#A6FF00] transition-colors no-underline"
                   >
                     <span className="sr-only">Смотреть кейсы</span>
                     <LedText text="Смотреть кейсы" className="h-[11px] w-auto" />

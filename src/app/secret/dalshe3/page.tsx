@@ -1,6 +1,7 @@
 "use client";
 
 import LedText from "@/components/LedText";
+import { LedLines } from "@/components/LedBoard";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import confetti from "canvas-confetti";
@@ -247,8 +248,8 @@ export default function Dalshe3() {
             <span className="sr-only">Решено</span>
             <LedText text="Решено" className="h-[9px] w-auto" />
           </p>
-          <h1 className="font-p95 leading-none uppercase tracking-tight text-[#A6FF00] mb-8" style={{ fontSize: "clamp(34px, 9vw, 64px)" }}>
-            Это решение
+          <h1 className="text-[#A6FF00] mb-8">
+            <LedLines text="Это решение" center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
           </h1>
           <Link href="/secret/lab/kod" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
             <span className="sr-only">Дальше</span><LedText text="Дальше" className="h-[10px] w-auto" /><LedText text="→" className="h-[11px] w-auto" />

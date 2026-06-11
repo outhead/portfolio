@@ -1,4 +1,5 @@
 import LedText from "@/components/LedText";
+import { LedLines } from "@/components/LedBoard";
 import Link from "next/link";
 import ScrollReveal from "@/components/ScrollReveal";
 import WIPOverlay from "@/components/WIPOverlay";
@@ -29,8 +30,8 @@ export default function MentoringPage() {
       <section className="relative px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-20 md:py-32 border-t border-white/[0.04] bg-black/75">
         <div className="max-w-5xl">
           <div className="animate-fade-in-up">
-            <h1 className="font-p95 text-[clamp(48px,10vw,100px)] leading-[0.92] uppercase tracking-tight mb-4 md:mb-6">
-              МЕНТОРИНГ
+            <h1 className="text-white mb-4">
+              <LedLines text="МЕНТОРИНГ" maxChars={22} lineClass="h-[22px] md:h-[34px]" />
             </h1>
           </div>
           <p className="animate-fade-in-up animation-delay-200 text-base md:text-lg text-white/60 leading-relaxed max-w-2xl">
@@ -46,8 +47,8 @@ export default function MentoringPage() {
         <div className="max-w-5xl">
           <ScrollReveal>
             <div className="section-label mb-6">Форматы</div>
-            <h2 className="font-p95 text-[clamp(28px,4vw,56px)] uppercase mb-10 md:mb-14">
-              КАК МЫ РАБОТАЕМ
+            <h2 className="text-white mb-10">
+              <LedLines text="КАК МЫ РАБОТАЕМ" maxChars={22} lineClass="h-[22px] md:h-[34px]" />
             </h2>
           </ScrollReveal>
 
@@ -74,8 +75,8 @@ export default function MentoringPage() {
             ].map((format, i) => (
               <ScrollReveal key={format.title} delay={i * 100}>
                 <div className="border border-white/[0.06] rounded-lg p-6 md:p-7 hover:border-white/[0.12] transition-all duration-300 hover:-translate-y-1 h-full">
-                  <h3 className="font-p95 text-base md:text-lg uppercase tracking-tight mb-3 text-white/90">
-                    {format.title}
+                  <h3 className="mb-3 text-white/90">
+                    <LedLines text={format.title} maxChars={22} lineClass="h-[12px] md:h-[14px]" />
                   </h3>
                   <p className="text-sm text-white/50 leading-relaxed mb-6">
                     {format.description}
@@ -95,8 +96,8 @@ export default function MentoringPage() {
         <div className="max-w-5xl">
           <ScrollReveal>
             <div className="section-label mb-6">Для кого</div>
-            <h2 className="font-p95 text-[clamp(28px,4vw,56px)] uppercase mb-10 md:mb-14">
-              ПОДОЙДЁТ ВАМ?
+            <h2 className="text-white mb-10">
+              <LedLines text="ПОДОЙДЁТ ВАМ?" maxChars={22} lineClass="h-[22px] md:h-[34px]" />
             </h2>
           </ScrollReveal>
 
@@ -139,8 +140,8 @@ export default function MentoringPage() {
         <div className="max-w-5xl">
           <ScrollReveal>
             <div className="section-label mb-6">Запись</div>
-            <h2 className="font-p95 text-[clamp(28px,4vw,56px)] uppercase mb-10 md:mb-14">
-              ЗАПИСАТЬСЯ
+            <h2 className="text-white mb-10">
+              <LedLines text="ЗАПИСАТЬСЯ" maxChars={22} lineClass="h-[22px] md:h-[34px]" />
             </h2>
           </ScrollReveal>
 
@@ -283,8 +284,8 @@ export default function MentoringPage() {
                     <div className="text-white/45 mb-3">
                       <LedText text={`${p.n} /`} className="h-[9px] w-auto" />
                     </div>
-                    <h3 className="font-p95 text-[clamp(22px,3.2vw,44px)] uppercase leading-[0.98] text-white mb-4 max-w-2xl">
-                      {p.title}
+                    <h3 className="text-white mb-4 max-w-2xl">
+                      <LedLines text={p.title} maxChars={26} lineClass="h-[16px] md:h-[22px]" />
                     </h3>
                   </div>
                   <p className="text-sm md:text-[15px] text-white/60 leading-relaxed max-w-2xl">

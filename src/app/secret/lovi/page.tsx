@@ -1,6 +1,7 @@
 "use client";
 
 import LedText from "@/components/LedText";
+import { LedLines } from "@/components/LedBoard";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -361,8 +362,8 @@ export default function SecretLoviPage() {
         </p>
         {phase === "play" && (
           <>
-            <h1 className="font-p95 leading-[0.95] uppercase tracking-tight mb-3" style={{ fontSize: "clamp(28px, 5vw, 48px)" }}>
-              Найди выход
+            <h1 className="mb-3">
+              <LedLines text="Найди выход" center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
             </h1>
             {startRef.current != null && <div className="text-[#A6FF00] tabular-nums text-sm md:text-[15px]">{fmtTime(elapsed)}</div>}
             <p className="mt-4 text-[13px] text-[#C9A66B]/85 transition-opacity duration-700" style={{ opacity: hintMove ? 1 : 0 }}>
@@ -394,8 +395,8 @@ export default function SecretLoviPage() {
               <span className="sr-only">Выход был за краем</span>
               <LedText text="Выход был за краем" className="h-[9px] w-auto" />
             </p>
-            <h1 className="font-p95 leading-none uppercase tracking-tight text-[#A6FF00] mb-4" style={{ fontSize: "clamp(40px, 11vw, 76px)" }}>
-              Нашёл
+            <h1 className="text-[#A6FF00] mb-4">
+              <LedLines text="Нашёл" center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
             </h1>
             <p className="text-[15px] text-white/80 mb-8">
               Время: <span className="text-[#A6FF00] tabular-nums">{winMs != null ? fmtTime(winMs) : ""}</span>

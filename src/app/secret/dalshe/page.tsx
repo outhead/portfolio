@@ -1,6 +1,7 @@
 "use client";
 
 import LedText from "@/components/LedText";
+import { LedLines } from "@/components/LedBoard";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import confetti from "canvas-confetti";
@@ -387,8 +388,8 @@ export default function SecretDalshePage() {
         {phase === "score" ? (
           /* ─── Экран победы с таблицей лидеров ─── */
           <div className="w-full max-w-[420px] mx-auto flex flex-col items-center text-center">
-            <h1 className="font-p95 leading-none uppercase tracking-tight text-[#A6FF00] mb-8" style={{ fontSize: "clamp(44px, 12vw, 80px)" }}>
-              Победа
+            <h1 className="text-[#A6FF00] mb-8">
+              <LedLines text="Победа" center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
             </h1>
 
             <p className="text-sm md:text-[15px] text-white/60 mb-8 max-w-xs">
@@ -423,8 +424,8 @@ export default function SecretDalshePage() {
 
             {phase === "celebrate" ? (
               <>
-                <h1 className="font-p95 leading-[0.95] uppercase tracking-tight text-[#A6FF00] mb-6" style={{ fontSize: "clamp(34px, 7vw, 56px)" }}>
-                  Победа
+                <h1 className="text-[#A6FF00] mb-6">
+                  <LedLines text="Победа" center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
                 </h1>
                 {board}
               </>
@@ -432,8 +433,8 @@ export default function SecretDalshePage() {
               <>
                 {/* Шапка фикс-высоты (плашка №2 — снаружи) → поле на одной высоте с L2/L3 */}
                 <div className="flex flex-col items-center" style={{ minHeight: "clamp(78px, 12vw, 118px)" }}>
-                  <h1 className="font-p95 leading-[0.95] uppercase tracking-tight mb-3" style={{ fontSize: "clamp(26px, 5vw, 46px)" }}>
-                    Обыграй компьютер
+                  <h1 className="mb-3">
+                    <LedLines text="Обыграй компьютер" center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
                   </h1>
                   <p className="text-[13px] md:text-sm text-white/55 leading-relaxed max-w-sm">
                     Компьютер ходит первым и не любит проигрывать.

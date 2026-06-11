@@ -183,25 +183,24 @@ export default function SmileFireworksButton({
           aria-hidden
           className="absolute inset-0 w-full h-full pointer-events-none"
         />
-        <span className="relative font-p95 text-[clamp(28px,3.5vw,44px)] leading-none uppercase tracking-tight text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.85)] translate-y-[2px]">
-          Не нажимать
+        <span className="relative text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.85)]">
+          <span className="sr-only">Не нажимать</span>
+          <LedText text="Не нажимать" scale={2} dot={1.45} className="h-[18px] md:h-[24px] w-auto" />
         </span>
       </button>
 
-      <div className="min-h-[24px] flex items-baseline gap-2 font-p95">
+      <div className="min-h-[24px] flex items-center gap-2.5">
         {globalCount != null ? (
           <>
-            <span className="text-[18px] md:text-[20px] leading-none tabular-nums text-white">
-              {formatCount(globalCount)}
+            <span className="text-white">
+              <LedText text={formatCount(globalCount)} className="h-[13px] w-auto" />
             </span>
-            <span className="text-[11px] md:text-[12px] tracking-[0.18em] uppercase text-white/45">
-              {pluralize(globalCount)} нажали
+            <span className="text-white/45">
+              <LedText text={`${pluralize(globalCount)} нажали`} className="h-[8px] w-auto" />
             </span>
           </>
         ) : (
-          <span className="text-[11px] md:text-[12px] tracking-[0.18em] uppercase text-white/30">
-            &nbsp;
-          </span>
+          <span className="text-white/30">&nbsp;</span>
         )}
       </div>
 

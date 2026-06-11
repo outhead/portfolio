@@ -1,6 +1,7 @@
 "use client";
 
 import LedText from "@/components/LedText";
+import { LedLines } from "@/components/LedBoard";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import confetti from "canvas-confetti";
@@ -190,8 +191,8 @@ export default function Dalshe2() {
               <span className="sr-only">Крестики-нолики · Загадка №3</span>
               <LedText text="Крестики-нолики · Загадка №3" className="h-[9px] w-auto" />
             </p>
-            <h1 className="font-p95 leading-[0.95] uppercase tracking-tight mb-3" style={{ fontSize: "clamp(26px, 5vw, 46px)" }}>
-              Обыграй компьютер
+            <h1 className="mb-3">
+              <LedLines text="Обыграй компьютер" center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
             </h1>
             <p className="text-[13px] md:text-sm text-white/55 leading-relaxed max-w-sm">
               Компьютер ходит первым и не любит проигрывать.
@@ -225,8 +226,8 @@ export default function Dalshe2() {
             <span className="sr-only">Три в ряд</span>
             <LedText text="Три в ряд" className="h-[9px] w-auto" />
           </p>
-          <h1 className="font-p95 leading-none uppercase tracking-tight text-[#A6FF00] mb-5" style={{ fontSize: "clamp(40px, 11vw, 76px)" }}>
-            Готово
+          <h1 className="text-[#A6FF00] mb-5">
+            <LedLines text="Готово" center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
           </h1>
           <p className="text-sm text-white/60 mb-8 max-w-xs">Ты не переиграл его — ты переставил фигуры.</p>
           <div className="flex flex-wrap items-center justify-center gap-3">

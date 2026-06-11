@@ -1,6 +1,7 @@
 "use client";
 
 import LedText from "@/components/LedText";
+import { LedLines } from "@/components/LedBoard";
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -46,8 +47,8 @@ export default function ZapretProto() {
 
           {/* Фикс-высота заголовка+сообщения, чтобы кнопка не прыгала */}
           <div className="flex flex-col items-center justify-start" style={{ height: 200 }}>
-            <h1 className="font-p95 leading-[0.95] uppercase tracking-tight mb-4" style={{ fontSize: "clamp(30px, 6vw, 52px)" }}>
-              Тупик
+            <h1 className="mb-4">
+              <LedLines text="Тупик" center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
             </h1>
             <p className="text-sm md:text-[15px] text-white/60 leading-relaxed max-w-sm">
               {MESSAGES[presses]}
@@ -76,8 +77,8 @@ export default function ZapretProto() {
             <span className="sr-only">Разгадал</span>
             <LedText text="Разгадал" className="h-[9px] w-auto" />
           </p>
-          <h1 className="font-p95 leading-none uppercase tracking-tight text-[#A6FF00] mb-5" style={{ fontSize: "clamp(40px, 11vw, 76px)" }}>
-            Готово
+          <h1 className="text-[#A6FF00] mb-5">
+            <LedLines text="Готово" center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
           </h1>
           <p className="text-sm text-white/60 mb-8 max-w-xs">Ты не послушался — в этом и был фокус.</p>
           <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">

@@ -514,7 +514,7 @@ export default function FinalCTA() {
                   <Link
                     href={stage.bonus.href}
                     data-ym-goal="secret_open"
-                    className="inline-flex items-center gap-1.5 px-4 py-2 md:px-5 md:py-2.5 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] font-p95 text-[15px] tracking-[0.2em] uppercase hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 md:px-5 md:py-2.5 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
                   >
                     <span className="sr-only">{stage.bonus.label}</span>
                     <LedText text={stage.bonus.label} className="h-[11px] w-auto" />
@@ -542,7 +542,7 @@ export default function FinalCTA() {
                       href="https://t.me/aiegorka"
                       target="_blank"
                       data-ym-goal="telegram_channel"
-                      className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 font-p95 text-[15px] md:text-[16px] tracking-[0.12em] uppercase hover:border-white/50 hover:text-white transition-colors no-underline"
+                      className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 hover:border-white/50 hover:text-white transition-colors no-underline"
                     >
                       <Send className="w-4 h-4" strokeWidth={2.2} />
                       <span className="sr-only">Подписаться на канал</span>
@@ -588,7 +588,13 @@ export default function FinalCTA() {
                   <motion.div
                     animate={{ scale: pressing ? 1.05 : 1 }}
                     transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                    className={`font-p95 ${numClass} leading-none uppercase tracking-tight text-[#A6FF00] tabular-nums`}
+                    className={`led-counter-num text-[#A6FF00] ${
+                      numClass.includes("170")
+                        ? "h-[52px] md:h-[84px]"
+                        : numClass.includes("124")
+                          ? "h-[40px] md:h-[62px]"
+                          : "h-[30px] md:h-[46px]"
+                    }`}
                     aria-live="polite"
                     aria-label={
                       globalCount != null
@@ -597,9 +603,9 @@ export default function FinalCTA() {
                     }
                   >
                     {globalCount != null ? (
-                      display
+                      <LedText text={display} scale={2} dot={1.45} className="h-full w-auto" />
                     ) : (
-                      <span className="text-[#A6FF00]/20">—</span>
+                      <LedText text="—" scale={2} dot={1.45} className="h-full w-auto opacity-20" />
                     )}
                   </motion.div>
                 </motion.div>

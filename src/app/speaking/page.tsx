@@ -98,11 +98,10 @@ export default function SpeakingPage() {
               Публично
             </div>
           </motion.div>
-          <motion.h1
-            variants={fadeUp}
-            className="font-p95 text-[clamp(48px,9vw,112px)] leading-[0.92] uppercase tracking-tight mb-5 md:mb-7"
-          >
-            ГОВОРЮ<br />И ПИШУ
+          <motion.h1 variants={fadeUp} className="mb-6 md:mb-8 text-white flex flex-col gap-[8px] md:gap-[11px]">
+            <span className="sr-only">Говорю и пишу</span>
+            <LedText text="Говорю" scale={2} dot={1.45} className="h-[28px] md:h-[48px] w-auto" />
+            <LedText text="И пишу" scale={2} dot={1.45} className="h-[28px] md:h-[48px] w-auto" />
           </motion.h1>
           <motion.p
             variants={fadeUp}

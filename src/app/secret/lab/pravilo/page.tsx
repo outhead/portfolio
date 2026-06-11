@@ -1,6 +1,7 @@
 "use client";
 
 import LedText from "@/components/LedText";
+import { LedLines } from "@/components/LedBoard";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -81,8 +82,8 @@ export default function PraviloProto() {
             <span className="sr-only">Прототип · B</span>
             <LedText text="Прототип · B" className="h-[9px] w-auto" />
           </p>
-          <h1 className="font-p95 leading-[0.95] uppercase tracking-tight mb-8" style={{ fontSize: "clamp(28px, 5vw, 46px)" }}>
-            Найди выход
+          <h1 className="mb-8">
+            <LedLines text="Найди выход" center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
           </h1>
 
           <div className={`w-24 h-32 rounded-lg border-2 mb-12 transition-all duration-500 ${open ? "border-[#A6FF00] bg-[#A6FF00]/15 shadow-[0_0_50px_-8px_rgba(166,255,0,0.7)]" : "border-white/25 bg-white/[0.03]"}`} />
@@ -129,8 +130,8 @@ function Won({ note }: { note: string }) {
         <span className="sr-only">Разгадал</span>
         <LedText text="Разгадал" className="h-[9px] w-auto" />
       </p>
-      <h1 className="font-p95 leading-none uppercase tracking-tight text-[#A6FF00] mb-5" style={{ fontSize: "clamp(40px, 11vw, 76px)" }}>
-        Открыто
+      <h1 className="text-[#A6FF00] mb-5">
+        <LedLines text="Открыто" center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
       </h1>
       <p className="text-sm text-white/60 mb-8 max-w-xs">{note}</p>
       <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
