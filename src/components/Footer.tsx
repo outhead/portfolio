@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Send, Mail, ArrowUp } from "lucide-react";
+import LedText from "@/components/LedText";
 
 const LinkedinIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
@@ -49,8 +50,11 @@ export default function Footer() {
           ))}
         </div>
 
-        <div className="flex items-center gap-4 text-[12px] tracking-[0.12em] uppercase text-white/25">
-          <span>Егор Шугаев © {new Date().getFullYear()}</span>
+        <div className="flex items-center gap-4 text-white/25">
+          <span>
+            <span className="sr-only">Егор Шугаев © {new Date().getFullYear()}</span>
+            <LedText text={`Егор Шугаев © ${new Date().getFullYear()}`} className="h-[9px] w-auto" />
+          </span>
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             aria-label="Наверх"
