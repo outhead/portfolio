@@ -12,7 +12,6 @@ import PixelCubePile from "@/components/PixelCubePile";
 import { ArrowUpRight } from "lucide-react";
 
 const MTS_RED = "#FF2436";
-const MENTOR_COLORS = ["#3DDC84", "#A86B3C"]; // зелёный + коричневый
 
 const MODES: { mode: CubeMode; label: string }[] = [
   { mode: "spin", label: "Spin · турнтейбл Y" },
@@ -195,7 +194,7 @@ export default function CardsLabPage() {
       {/* Менторинг — зелёные и коричневые кубики со смайлами */}
       <div className="mb-16">
         <span className="block mb-4 text-[12px] tracking-[0.1em] uppercase text-white/35">
-          Менторинг · зелёные + коричневые кубики со смайлами (наведи мышь)
+          Менторинг · зелёные кубики со смайлами, центральный застыл (наведи мышь)
         </span>
         <div className="relative w-full max-w-[520px] aspect-[16/9] rounded-xl border border-white/[0.08] overflow-hidden bg-black/40">
           <div
@@ -203,7 +202,7 @@ export default function CardsLabPage() {
             className="absolute inset-0 opacity-[0.5] z-0"
             style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1.4px)", backgroundSize: "12px 12px" }}
           />
-          <PixelCubePile colors={MENTOR_COLORS} logoSrc="/images/logos/smiley.svg" grid={110} />
+          <PixelCubePile color="#3DDC84" logoSrc="/images/logos/smiley.svg" grid={110} idleCenter />
           <div className="absolute top-3 left-3 z-[2] text-white/75 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
             <LedText text="Менторинг" className="h-[8px] w-auto" />
           </div>

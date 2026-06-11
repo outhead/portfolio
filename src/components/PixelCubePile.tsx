@@ -43,6 +43,20 @@ function qIntegrate(q: Q, w: V3, dt: number): Q {
   ];
   return qNorm([q[0] + dq[0], q[1] + dq[1], q[2] + dq[2], q[3] + dq[3]]);
 }
+function qMul(a: Q, b: Q): Q {
+  return [
+    a[3] * b[0] + a[0] * b[3] + a[1] * b[2] - a[2] * b[1],
+    a[3] * b[1] - a[0] * b[2] + a[1] * b[3] + a[2] * b[0],
+    a[3] * b[2] + a[0] * b[1] - a[1] * b[0] + a[2] * b[3],
+    a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2],
+  ];
+}
+function qAxis(axis: V3, ang: number): Q {
+  const h = ang / 2, s = Math.sin(h);
+  return [axis[0] * s, axis[1] * s, axis[2] * s, Math.cos(h)];
+}
+// приятная изо-ориентация (видны три грани)
+const Q_ISO: Q = qMul(qAxis([1, 0, 0], -0.5), qAxis([0, 1, 0], 0.6));
 function hexToRgb(hex: string): [number, number, number] {
   const h = hex.replace("#", "");
   return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
@@ -63,7 +77,7 @@ const CF: { idx: [number, number, number, number]; n: V3 }[] = [
   { idx: [0, 1, 5, 4], n: [0, -1, 0] },
 ];
 
-interface Body3 { p: V3; v: V3; q: Q; w: V3; col: [number, number, number]; }
+interface Body3 { p: V3; v: V3; q: Q; w: V3; col: [number, number, number]; center: boolean; frozen: boolean; }
 
 export default function PixelCubePile({
   color = "#FF2436",
@@ -71,6 +85,7 @@ export default function PixelCubePile({
   logoSrc,
   grid = 124,
   maxCubes,
+  idleCenter = false,
 }: {
   color?: string;
   /** Палитра: каждый куб берёт случайный цвет. Перебивает `color`. */
@@ -79,6 +94,10 @@ export default function PixelCubePile({
   grid?: number;
   /** Переопределить макс. число кубов (напр. для лёгких превью-плиток). */
   maxCubes?: number;
+  /** В покое один куб подвешен по центру; на ховере он падает и начинается
+   *  засыпание; после ухода курсора все утекают и сверху падает новый
+   *  центральный куб, застывающий по центру. */
+  idleCenter?: boolean;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -230,31 +249,55 @@ export default function PixelCubePile({
 
     const bodies: Body3[] = [];
     let grounded = false;
+    let simT = 0;
+    const CENTER_Y = 1.0;
+    const rndQ = (): Q => qNorm([Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5]);
+    const rndW = (k: number): V3 => [(Math.random() - 0.5) * k, (Math.random() - 0.5) * k, (Math.random() - 0.5) * k];
 
     const spawn = () => {
       if (bodies.length >= maxN) return;
-      const rndQ = qNorm([Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5]);
       bodies.push({
         // спавн у верхней кромки сетки (мировая высота линии ≈ 2.2), а не из офскрина
         p: [(Math.random() * 2 - 1) * (HX - S), 2.35 + Math.random() * 0.5, (Math.random() * 2 - 1) * (HZ - S)],
         v: [0, 0, 0],
-        q: rndQ,
-        // небольшое рандомное вращение при падении
-        w: [(Math.random() - 0.5) * 1.8, (Math.random() - 0.5) * 1.8, (Math.random() - 0.5) * 1.8],
+        q: rndQ(),
+        w: rndW(1.8), // небольшое рандомное вращение при падении
         col: palette[(Math.random() * palette.length) | 0],
+        center: false, frozen: false,
       });
     };
+    // подвешенный по центру куб (в покое)
+    const addIdleCenter = () => {
+      bodies.push({ p: [0, CENTER_Y, 0], v: [0, 0, 0], q: Q_ISO, w: [0, 0, 0], col: palette[0], center: true, frozen: true });
+    };
+    // новый центральный куб падает сверху и застывает по центру
+    const dropCenter = () => {
+      bodies.push({ p: [0, 2.7, 0], v: [0, 0, 0], q: rndQ(), w: rndW(1.2), col: palette[0], center: true, frozen: false });
+    };
+    if (idleCenter) addIdleCenter();
 
     const step = (dt: number) => {
       for (const b of bodies) {
+        // подвешенный центральный куб: лёгкий бобинг + очень медленный поворот
+        if (b.frozen) {
+          b.p = [0, CENTER_Y + Math.sin(simT * 1.2) * 0.05, 0];
+          b.q = qIntegrate(b.q, [0, 0.35, 0], dt);
+          continue;
+        }
         b.v[1] -= G * dt;
         b.p = add(b.p, b.v.map((x) => x * dt) as V3);
-        // демпфирование
         const ld = Math.max(0, 1 - LIN_DAMP * dt);
         b.v = b.v.map((x) => x * ld) as V3;
         const adf = Math.max(0, 1 - ANG_DAMP * dt);
         b.w = b.w.map((x) => x * adf) as V3;
         b.q = qIntegrate(b.q, b.w, dt);
+
+        // ищущий центральный куб: падает сверху и застывает по центру
+        if (b.center && b.p[1] <= CENTER_Y && b.v[1] <= 0) {
+          b.p = [0, CENTER_Y, 0]; b.v = [0, 0, 0]; b.w = [0, 0, 0]; b.frozen = true;
+          continue;
+        }
+
         // стенки
         if (b.p[0] < -HX + S) { b.p[0] = -HX + S; b.v[0] = Math.abs(b.v[0]) * REST; }
         if (b.p[0] > HX - S) { b.p[0] = HX - S; b.v[0] = -Math.abs(b.v[0]) * REST; }
@@ -267,11 +310,24 @@ export default function PixelCubePile({
           b.v[0] *= FLOOR_FRIC; b.v[2] *= FLOOR_FRIC;
           b.w = b.w.map((x) => x * 0.7) as V3;
         }
+        // righting: на низкой скорости куб стремится лечь на плоскую грань
+        const speed = Math.hypot(b.v[0], b.v[1], b.v[2]);
+        if (grounded && b.p[1] < FLOOR + S + 0.25 && speed < 1.5) {
+          const ex = qRot(b.q, [1, 0, 0]), ey = qRot(b.q, [0, 1, 0]), ez = qRot(b.q, [0, 0, 1]);
+          let up: V3 = [0, 1, 0], bestAbs = -1;
+          for (const e of [ex, ey, ez]) for (const s of [1, -1]) {
+            const vy = e[1] * s;
+            if (Math.abs(vy) > bestAbs) { bestAbs = Math.abs(vy); up = [e[0] * s, e[1] * s, e[2] * s]; }
+          }
+          const corr = cross(up, [0, 1, 0]); // ось выправления, |corr| ~ sin(угла наклона)
+          b.w = [b.w[0] + corr[0] * 9 * dt * 6, b.w[1] + corr[1] * 9 * dt * 6, b.w[2] + corr[2] * 9 * dt * 6];
+        }
       }
       // коллизии кубов (сферо-аппроксимация)
       for (let i = 0; i < bodies.length; i++) {
         for (let j = i + 1; j < bodies.length; j++) {
           const a = bodies[i], c = bodies[j];
+          if (a.frozen || c.frozen) continue; // подвешенный куб не толкаем
           const dvec = sub(c.p, a.p);
           const dist = Math.hypot(dvec[0], dvec[1], dvec[2]) || 0.0001;
           const min = RAD * 2;
@@ -300,6 +356,7 @@ export default function PixelCubePile({
     const frame = (now: number) => {
       let dt = (now - last) / 1000; last = now;
       dt = Math.min(0.033, dt);
+      simT += dt;
       // спавн на ховере
       if (hoverRef.current && bodies.length < maxN) {
         spawnAcc += dt;
@@ -340,16 +397,27 @@ export default function PixelCubePile({
     };
     raf = requestAnimationFrame(frame);
 
-    const onEnter = () => { hoverRef.current = true; grounded = true; };
-    const onLeave = () => { hoverRef.current = false; grounded = false; }; // пол убран — утекают
+    const activate = () => {
+      hoverRef.current = true; grounded = true;
+      // отпускаем подвешенный/ищущий центральный куб — он падает вместе со всеми
+      for (const b of bodies) {
+        if (b.center || b.frozen) { b.center = false; b.frozen = false; b.w = rndW(1.8); }
+      }
+    };
+    const deactivate = () => {
+      hoverRef.current = false; grounded = false; // пол убран — все утекают
+      // сверху падает новый центральный куб и застывает по центру
+      if (idleCenter && !bodies.some((b) => b.center)) dropCenter();
+    };
+    const onEnter = () => activate();
+    const onLeave = () => deactivate();
     wrap.addEventListener("mouseenter", onEnter);
     wrap.addEventListener("mouseleave", onLeave);
     const isTouch = window.matchMedia("(hover: none)").matches;
     let io: IntersectionObserver | null = null;
     if (isTouch && typeof IntersectionObserver !== "undefined") {
-      io = new IntersectionObserver((es) => es.forEach((e) => {
-        hoverRef.current = e.isIntersecting; grounded = e.isIntersecting;
-      }), { rootMargin: "-50% 0px -35% 0px", threshold: 0 });
+      io = new IntersectionObserver((es) => es.forEach((e) => (e.isIntersecting ? activate() : deactivate())),
+        { rootMargin: "-50% 0px -35% 0px", threshold: 0 });
       io.observe(wrap);
     }
     const onResize = () => measure();
@@ -362,7 +430,7 @@ export default function PixelCubePile({
       io?.disconnect();
       window.removeEventListener("resize", onResize);
     };
-  }, [color, colors, logoSrc, grid, maxCubes]);
+  }, [color, colors, logoSrc, grid, maxCubes, idleCenter]);
 
   return (
     <div ref={wrapRef} className="absolute inset-0">
