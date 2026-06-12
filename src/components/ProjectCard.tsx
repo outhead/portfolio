@@ -9,6 +9,33 @@ import { ArrowUpRight } from "lucide-react";
 import { Project } from "@/data/projects";
 import { CardCoverVideo } from "@/components/CoverVideo";
 import PixelCubePile from "@/components/PixelCubePile";
+import LedFlipWord from "@/components/LedFlipWord";
+
+/** Живое LED-табло на карточке: дот-сетка фоном + перебор слов в зоне
+ *  над тайтлом (кейс led-font-engine — шрифт демонстрирует себя сам). */
+function LedCover({ words }: { words: string[] }) {
+  return (
+    <div className="absolute inset-0">
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle, rgba(166,255,0,0.07) 1.1px, transparent 1.3px)",
+          backgroundSize: "8px 8px",
+        }}
+      />
+      <div className="absolute inset-x-0 top-0 bottom-[35%] flex items-center justify-center px-8">
+        {/* Высота свг внутри LedFlipWord = 0.72em — задаётся через style.height */}
+        <LedFlipWord
+          words={words}
+          className="max-w-full text-[#A6FF00]"
+          style={{ height: "clamp(26px, 2.6vw, 40px)" }}
+        />
+      </div>
+    </div>
+  );
+}
 import { useEffect, useRef, useState, type RefObject } from "react";
 
 /**
@@ -199,7 +226,9 @@ export default function ProjectCard({
 
   // Медиа-слой на весь экран. Idle-куб подвешен на ~40% высоты — оптический
   // центр свободной зоны над тайтлом.
-  const MediaLayer = hasCube ? (
+  const MediaLayer = project.coverLed ? (
+    <LedCover words={project.coverLed} />
+  ) : hasCube ? (
     <PixelCubePile
       color={project.cubeColor}
       logoSrc={project.cubeLogo}
