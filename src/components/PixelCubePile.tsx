@@ -77,20 +77,29 @@ export default function PixelCubePile({
   colors,
   logoSrc,
   grid = 124,
+  pitch,
   maxCubes,
   idleCenter = false,
+  centerFrac = 0.5,
 }: {
   color?: string;
   /** Палитра: каждый куб берёт случайный цвет. Перебивает `color`. */
   colors?: string[];
   logoSrc?: string;
   grid?: number;
+  /** Физический шаг точки (CSS px на ячейку). Если задан — число колонок
+   *  считается из ширины, и детализация одинакова на любой карточке.
+   *  Перебивает `grid`. */
+  pitch?: number;
   /** Переопределить макс. число кубов (напр. для лёгких превью-плиток). */
   maxCubes?: number;
   /** В покое один куб подвешен по центру; на ховере он падает и начинается
    *  засыпание; после ухода курсора все утекают и сверху падает новый
    *  центральный куб, застывающий по центру. */
   idleCenter?: boolean;
+  /** Вертикаль подвеса idle-куба: доля высоты кадра (0.5 = центр,
+   *  0.4 = чуть выше — когда внизу карточки лежит тайтл). */
+  centerFrac?: number;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -135,7 +144,8 @@ export default function PixelCubePile({
     const loctx = lo.getContext("2d", { willReadFrequently: true })!;
 
     // ── Коробка (мир) ──
-    const HX = 2.3, HZ = 1.25; // полуширина / полуглубина
+    let HX = 2.3;              // полуширина — пересчитывается в measure() под аспект
+    const HZ = 1.25;           // полуглубина
     const FLOOR = -0.35;       // y пола (ниже — насыпь садится ниже в кадре)
     const G = 15.5;            // тяжелее — сильнее притяжение
     const REST = 0.46, LIN_DAMP = 0.38, ANG_DAMP = 0.8, FLOOR_FRIC = 0.8; // пружинистее
@@ -149,6 +159,7 @@ export default function PixelCubePile({
     const camU = cross(camZ, camR);             // верх
 
     let W = 0, H = 0, outW = 0, outH = 0, dpr = 1;
+    let GX = grid; // колонок дот-сетки; при `pitch` пересчитывается в measure()
     let Sx = 0, Sy = 0, gridY = 0, focal = 0, cxp = 0, cyp = 0;
     let cellSize = 0, rDot = 0;
     let CENTER_Y = 0.6; // мировая высота подвеса — вычисляется под центр кадра
@@ -162,15 +173,25 @@ export default function PixelCubePile({
       dpr = Math.min(window.devicePixelRatio || 1, 2);
       outW = Math.round(W * dpr); outH = Math.round(H * dpr);
       canvas.width = outW; canvas.height = outH;
-      canvas.style.width = `${W}px`; canvas.style.height = `${H}px`;
+      // CSS-размер канваса НЕ задаём инлайном: на html стоит zoom:1.25, и
+      // getBoundingClientRect возвращает уже умноженные на zoom пиксели —
+      // инлайн-ширина из ректа раздувала канвас на 25% (куб уезжал
+      // вправо-вниз за обрез). Классы w-full/h-full держат точный размер.
       Sx = Math.min(660, Math.max(380, Math.round(W * 0.9)));
       Sy = Math.round(Sx * H / W);
       buf.width = Sx; buf.height = Sy;
-      gridY = Math.max(8, Math.round(grid * H / W));
-      lo.width = grid; lo.height = gridY;
-      focal = Sx * 0.92;
+      GX = pitch ? Math.max(40, Math.round(W / pitch)) : grid;
+      gridY = Math.max(8, Math.round(GX * H / W));
+      lo.width = GX; lo.height = gridY;
+      // Масштаб куба нормируем от высоты кадра (Sy*1.64 ≡ Sx*0.92 при 16:9):
+      // на широких карточках куб не разрастается, видимый размер одинаковый
+      // во всех плитках. Sx-кап — для портретных пропорций.
+      focal = Math.min(Sx * 0.92, Sy * 1.64);
       cxp = Sx / 2; cyp = Sy * 0.42;
-      // высота подвеса, проецирующаяся ровно в центр кадра (бинпоиск по проекции)
+      // Стенки коробки растягиваем под видимую ширину кадра — насыпь
+      // на ховере заполняет широкие карточки до краёв, а не центр.
+      HX = Math.max(1.6, (Sx * 0.5) * 5.45 / focal * 0.78);
+      // высота подвеса, проецирующаяся в `centerFrac` высоты кадра (бинпоиск)
       {
         let loY = -1, hiY = 3;
         for (let it = 0; it < 32; it++) {
@@ -179,11 +200,11 @@ export default function PixelCubePile({
           const vy = dot(d, camU);
           const front = Math.max(0.05, -dot(d, camZ));
           const sy = cyp - vy * focal / front;
-          if (sy > Sy / 2) loY = mid; else hiY = mid; // ниже центра → поднять
+          if (sy > Sy * centerFrac) loY = mid; else hiY = mid; // ниже цели → поднять
         }
         CENTER_Y = (loY + hiY) / 2;
       }
-      cellSize = outW / grid;
+      cellSize = outW / GX;
       rDot = cellSize * 0.28;
       // кэш фоновой сетки погашенных диодов (статична — рисуем один раз)
       bgDots.width = outW; bgDots.height = outH;
@@ -191,7 +212,7 @@ export default function PixelCubePile({
       bg2.clearRect(0, 0, outW, outH);
       bg2.fillStyle = `rgba(${br},${bg},${bb},0.06)`;
       for (let gy = 0; gy < gridY; gy++) {
-        for (let gx = 0; gx < grid; gx++) {
+        for (let gx = 0; gx < GX; gx++) {
           bg2.beginPath();
           bg2.arc((gx + 0.5) * cellSize, (gy + 0.5) * cellSize, rDot, 0, Math.PI * 2);
           bg2.fill();
@@ -390,13 +411,13 @@ export default function PixelCubePile({
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, outW, outH);
       ctx.drawImage(bgDots, 0, 0); // статичный фон погашенных диодов — кэш
-      loctx.clearRect(0, 0, grid, gridY);
+      loctx.clearRect(0, 0, GX, gridY);
       loctx.imageSmoothingEnabled = true;
-      loctx.drawImage(buf, 0, 0, Sx, Sy, 0, 0, grid, gridY);
-      const data = loctx.getImageData(0, 0, grid, gridY).data;
+      loctx.drawImage(buf, 0, 0, Sx, Sy, 0, 0, GX, gridY);
+      const data = loctx.getImageData(0, 0, GX, gridY).data;
       for (let gy = 0; gy < gridY; gy++) {
-        for (let gx = 0; gx < grid; gx++) {
-          const o = (gy * grid + gx) * 4;
+        for (let gx = 0; gx < GX; gx++) {
+          const o = (gy * GX + gx) * 4;
           const aa = data[o + 3];
           if (aa < 20) continue; // погашенные — уже в фоне
           const rr = data[o], gg = data[o + 1], bbb = data[o + 2];
@@ -456,7 +477,7 @@ export default function PixelCubePile({
       visIO.disconnect();
       window.removeEventListener("resize", onResize);
     };
-  }, [color, colors, logoSrc, grid, maxCubes, idleCenter]);
+  }, [color, colors, logoSrc, grid, pitch, maxCubes, idleCenter, centerFrac]);
 
   return (
     <div ref={wrapRef} className="absolute inset-0">

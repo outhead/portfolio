@@ -68,7 +68,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ru">
+    // suppressHydrationWarning: инлайн-скрипт ниже вешает .js-scroll-smooth
+    // на <html> по load — в dev это гонится с гидрацией и React ругается
+    // на несовпадение className. Атрибут меняем осознанно, варнинг гасим.
+    <html lang="ru" suppressHydrationWarning>
       <head>
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />

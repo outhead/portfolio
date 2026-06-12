@@ -131,43 +131,19 @@ interface ProjectCardProps {
   featured?: boolean;
   /** Широкая 2×1-карточка, разбивающая ритм сетки. */
   wide?: boolean;
-}
-
-/** Маленький chip — stokt-style pill под title. */
-function TagChip({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="inline-flex items-center px-3 py-1.5 rounded-full border border-white/15 bg-black/40 text-[12px] md:text-[13px] tracking-[0.08em] uppercase text-white/80 leading-[1.2] backdrop-blur-sm">
-      {children}
-    </span>
-  );
-}
-
-/** Metric chip — компактный акцент с цифрой (если есть). */
-function MetricChip({
-  value,
-  label,
-}: {
-  value: string;
-  label?: string;
-}) {
-  return (
-    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#C9A66B]/10 border border-[#C9A66B]/30 text-[#C9A66B] leading-[1.2]">
-      <span className="sr-only">
-        {value} {label ?? ""}
-      </span>
-      <LedText text={label ? `${value} ${label}` : value} className="h-[9px] w-auto" />
-    </span>
-  );
+  /** Тег-строка в правом верхнем углу (LED). false — угол пустой. */
+  showTags?: boolean;
 }
 
 export default function ProjectCard({
   project,
   featured = false,
   wide = false,
+  showTags = true,
 }: ProjectCardProps) {
-  // Hover-arrow в top-right медиа-окна
+  // Hover-arrow в нижнем правом углу — верхний правый занят тег-строкой
   const HoverArrow = (
-    <div className="absolute top-3 right-3 md:top-4 md:right-4 w-9 h-9 md:w-10 md:h-10 rounded-full border border-white/20 flex items-center justify-center bg-black/30 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0 z-[3]">
+    <div className="absolute bottom-3 right-3 md:bottom-4 md:right-4 w-9 h-9 md:w-10 md:h-10 rounded-full border border-white/20 flex items-center justify-center bg-black/30 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0 z-[3] pointer-events-none">
       <ArrowUpRight className="w-4 h-4 text-white/90" strokeWidth={2} />
     </div>
   );
@@ -213,78 +189,30 @@ export default function ProjectCard({
   // Параметры цели — общие для всех вариантов карточки.
   const goalParams = JSON.stringify({ case_slug: project.slug, variant: featured ? "featured" : wide ? "wide" : "regular" });
 
-  // Медиа-окно с аспектом исходника (1800×1169) — кадр видео помещается
-  // целиком. Компания и теги — по углам окна, как лейблы у экспериментов.
-  // Кадр исходника 1800×1169, но его нижняя треть пустая — окно ниже,
-  // кроп от верха (object-top), кубик остаётся в кадре целиком.
-  // «Pet Project» — служебная подпись, в окне не показываем.
+  // Карточка — один цельный «экран»: дот-матрица (или обложка) на всю
+  // площадь, без внешней рамки и внутреннего медиа-окна. Все подписи —
+  // поверх матрицы: компания сверху слева, тайтл и чипы внизу по центру.
+  // «Pet Project» — служебная подпись, на экране не показываем.
   const showCompany = !/pet\s*project/i.test(project.company);
 
   const hasCube = !!(project.cubeColor && project.cubeLogo);
 
-  const MediaWindow = (
-    <div className={`relative w-full ${wide ? "aspect-[21/9]" : "aspect-[16/9]"} rounded-xl border border-white/[0.08] overflow-hidden bg-black/40`}>
-      {hasCube ? (
-        <PixelCubePile
-          color={project.cubeColor}
-          logoSrc={project.cubeLogo}
-          idleCenter
-          grid={featured ? 124 : wide ? 118 : 100}
-          maxCubes={featured || wide ? 45 : 32}
-        />
-      ) : (
-        <>
-          {CoverTint}
-          <CoverMedia project={project} active={coverActive} onVideoPlayingChange={setVideoPlaying} />
-        </>
-      )}
-      {/* Затемнения для читаемости лейблов поверх яркого видео */}
-      <div aria-hidden className="absolute inset-x-0 top-0 h-14 md:h-16 bg-gradient-to-b from-black/65 to-transparent z-[1] pointer-events-none" />
-      <div aria-hidden className="absolute inset-x-0 bottom-0 h-16 md:h-20 bg-gradient-to-t from-black/75 to-transparent z-[1] pointer-events-none" />
-      {HoverArrow}
-      {/* Компания — верхний левый угол окна */}
-      {showCompany && (
-        <div className="absolute top-4 left-4 md:top-5 md:left-5 z-[2] text-white/75 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
-          <span className="sr-only">{project.company}</span>
-          <LedText text={project.company} className="h-[9px] md:h-[10px] w-auto" />
-        </div>
-      )}
-      {/* В окне — только метрика, нижний левый угол */}
-      {project.metric && (
-        <div className="absolute bottom-3 left-3 md:bottom-4 md:left-4 z-[2]">
-          <MetricChip value={project.metric} label={project.metricLabel} />
-        </div>
-      )}
-    </div>
-  );
-
-  // Заголовок — по центру карточки, как у плитки экспериментов.
-  const Title = (
-    <div className={`flex-1 flex flex-col items-center justify-center gap-4 md:gap-5 text-center ${
-      featured ? "px-6 py-7 md:py-8" : "px-5 py-6 md:py-7"
-    }`}>
-      <h3 className="text-white max-w-full">
-        <LedLines
-          text={project.title}
-          center
-          maxChars={featured ? 28 : wide ? 26 : 22}
-          lineClass={
-            featured
-              ? "h-[18px] md:h-[24px]"
-              : wide
-                ? "h-[16px] md:h-[21px]"
-                : "h-[15px] md:h-[18px]"
-          }
-        />
-      </h3>
-      {project.tags.length > 0 && (
-        <div className="flex flex-wrap justify-center gap-1.5 md:gap-2">
-          {project.tags.slice(0, featured ? 4 : wide ? 3 : 2).map((t) => (
-            <TagChip key={t}>{t}</TagChip>
-          ))}
-        </div>
-      )}
-    </div>
+  // Медиа-слой на весь экран. Idle-куб подвешен на ~40% высоты — оптический
+  // центр свободной зоны над тайтлом.
+  const MediaLayer = hasCube ? (
+    <PixelCubePile
+      color={project.cubeColor}
+      logoSrc={project.cubeLogo}
+      idleCenter
+      centerFrac={0.4}
+      pitch={5.2}
+      maxCubes={featured || wide ? 45 : 32}
+    />
+  ) : (
+    <>
+      {CoverTint}
+      <CoverMedia project={project} active={coverActive} onVideoPlayingChange={setVideoPlaying} />
+    </>
   );
 
   return (
@@ -298,11 +226,53 @@ export default function ProjectCard({
         ref={articleRef}
         whileHover={{ y: -4 }}
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        className="relative rounded-2xl overflow-hidden bg-[#0f0f0e] border border-white/[0.06] group-hover:border-white/20 transition-colors duration-300 h-full"
+        className={`relative rounded-2xl overflow-hidden bg-[#0b0b0a] h-full ${
+          wide ? "aspect-[4/3] md:aspect-[16/9]" : "aspect-[4/3]"
+        }`}
       >
-        <div className="h-full flex flex-col p-3 md:p-4 pb-0 md:pb-0">
-          {MediaWindow}
-          {Title}
+        {/* Экран — медиа на всю карточку */}
+        <div className="absolute inset-0">{MediaLayer}</div>
+        {/* Затемнения для читаемости подписей поверх яркого медиа */}
+        <div aria-hidden className="absolute inset-x-0 top-0 h-16 md:h-20 bg-gradient-to-b from-black/60 to-transparent z-[1] pointer-events-none" />
+        <div aria-hidden className="absolute inset-x-0 bottom-0 h-28 md:h-36 bg-gradient-to-t from-black/85 via-black/45 to-transparent z-[1] pointer-events-none" />
+        {HoverArrow}
+        {/* Подписи экрана. pointer-events-none — чтобы ховер доходил до
+            канваса с кубами (его mouseenter живёт на самом канвасе).
+            Шапка: компания слева, тег-строка справа — одним LED-шрифтом.
+            Низ: только тайтл, без чипов. */}
+        <div className="relative z-[2] h-full flex flex-col p-4 md:p-5 pointer-events-none">
+          <div className="flex items-start justify-between gap-4">
+            <div className="text-white/75 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+              {showCompany && (
+                <>
+                  <span className="sr-only">{project.company}</span>
+                  <LedText text={project.company} className="h-[9px] md:h-[10px] w-auto" />
+                </>
+              )}
+            </div>
+            {showTags && project.tags.length > 0 && (
+              <div className="text-white/55 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+                <span className="sr-only">{project.tags.slice(0, 2).join(", ")}</span>
+                <LedText text={project.tags.slice(0, 2).join(" · ")} className="h-[9px] md:h-[10px] w-auto" />
+              </div>
+            )}
+          </div>
+          <div className="mt-auto flex flex-col items-center text-center pb-1 md:pb-1.5">
+            <h3 className="text-white max-w-full drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
+              <LedLines
+                text={project.title}
+                center
+                maxChars={featured ? 28 : wide ? 26 : 22}
+                lineClass={
+                  featured
+                    ? "h-[18px] md:h-[24px]"
+                    : wide
+                      ? "h-[16px] md:h-[21px]"
+                      : "h-[15px] md:h-[18px]"
+                }
+              />
+            </h3>
+          </div>
         </div>
       </motion.article>
     </Link>

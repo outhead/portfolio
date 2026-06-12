@@ -7,7 +7,7 @@ import LedText from "@/components/LedText";
 import { LedBoard, LedCounter, LedLines, type LedLine } from "@/components/LedBoard";
 import { Oled, PixelGlyph, GLYPH_ORG, GLYPH_GRID, GLYPH_CODE } from "@/components/OledKit";
 import FinalCTA from "@/components/FinalCTA";
-import PillsBackdrop from "@/components/PillsBackdrop";
+import PixelCubePile from "@/components/PixelCubePile";
 import { TypographyFix } from "@/components/TypographyFix";
 import { workProjects } from "@/data/projects";
 import { Plus } from "lucide-react";
@@ -995,18 +995,14 @@ export default function PreviewHome() {
 
             {/* ── В цифрах: LED-счётчики + тихий граф из точек ── */}
             <motion.div variants={fadeUp} className="col-span-12 lg:col-span-5">
-              <Oled className="h-full p-5 md:p-7">
-                <div className="relative mb-6 text-white/40">
-                  <span className="sr-only">В цифрах</span>
-                  <LedText text="В цифрах" className="h-[10px] w-auto" />
-                </div>
-                <div className="relative flex justify-center gap-10 md:gap-14">
+              <Oled className="h-full p-5 md:p-7 flex items-center">
+                <div className="relative w-full flex justify-center gap-10 md:gap-14">
                   {[
                     { v: "30", l: "запусков" },
                     { v: "7", l: "лет опыта" },
                     { v: "27", l: "команд" },
                   ].map((m) => (
-                    <div key={m.l} className="flex flex-col gap-3">
+                    <div key={m.l} className="flex flex-col gap-4">
                       <LedCounter value={m.v} tone="#C9A66B" />
                       <span className="text-white/40">
                         <span className="sr-only">{m.l}</span>
@@ -1146,30 +1142,42 @@ export default function PreviewHome() {
           <div className="grid md:grid-cols-3 gap-4 md:gap-5 mt-4 md:mt-5">
             {mainProjects[2] && (
               <motion.div variants={fadeUp} className="md:col-span-2">
-                <ProjectCard project={mainProjects[2]} index={2} wide />
+                {/* showTags=false: у менторской карточки теги решили не показывать */}
+                <ProjectCard project={mainProjects[2]} index={2} wide showTags={false} />
               </motion.div>
             )}
             <motion.div variants={fadeUp}>
+              {/* Плитка-«экран» в одном языке с кейсами: зелёная дот-матрица
+                  на всю площадь, лейбл сверху, тайтл и «Смотреть» внизу.
+                  В покое — тихая сетка, на ховере сыплются зелёные кубики. */}
               <Link href="/experiments" data-ym-goal="nav_experiments" data-ym-goal-params='{"placement":"work_grid"}' className="no-underline group block h-full">
-                <div className="relative h-full min-h-[280px] md:min-h-[340px] rounded-2xl overflow-hidden border border-white/[0.06] group-hover:border-[#A6FF00]/40 bg-[#0f0f0e] transition-colors duration-300 p-6 md:p-7 flex flex-col justify-between">
-                  <PillsBackdrop />
-                  <div className="relative z-[2]">
-                    <div className="text-white/70 mb-3">
-                      <span className="sr-only">Эксперименты</span>
-                      <LedText text="Эксперименты" className="h-[10px] w-auto" />
-                    </div>
-                    <h3 className="text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)] flex flex-col gap-[7px] md:gap-[9px]">
-                      <span className="sr-only">Код, WebGL, шейдеры.</span>
-                      <LedText text="Код," scale={2} dot={1.45} className="h-[16px] md:h-[20px] w-auto" />
-                      <LedText text="WebGL," scale={2} dot={1.45} className="h-[16px] md:h-[20px] w-auto" />
-                      <LedText text="шейдеры." scale={2} dot={1.45} className="h-[16px] md:h-[20px] w-auto" />
-                    </h3>
+                <div className="relative h-full min-h-[280px] md:min-h-[340px] rounded-2xl overflow-hidden bg-[#0b0b0a]">
+                  <div className="absolute inset-0">
+                    <PixelCubePile color="#A6FF00" pitch={5.2} maxCubes={26} />
                   </div>
-                  <span className="relative z-[2] inline-flex items-center gap-2 text-white/74 group-hover:text-[#A6FF00] transition-colors mt-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
-                    <span className="sr-only">Смотреть</span>
-                    <LedText text="Смотреть" className="h-[10px] w-auto" />
-                    <LedText text="→" className="h-[12px] w-auto group-hover:translate-x-1 transition-transform" />
-                  </span>
+                  <div aria-hidden className="absolute inset-x-0 top-0 h-16 md:h-20 bg-gradient-to-b from-black/60 to-transparent z-[1] pointer-events-none" />
+                  <div aria-hidden className="absolute inset-x-0 bottom-0 h-28 md:h-36 bg-gradient-to-t from-black/85 via-black/45 to-transparent z-[1] pointer-events-none" />
+                  <div className="absolute bottom-3 right-3 md:bottom-4 md:right-4 w-9 h-9 md:w-10 md:h-10 rounded-full border border-white/20 flex items-center justify-center bg-black/30 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0 z-[3] pointer-events-none">
+                    <ArrowUpRight className="w-4 h-4 text-white/90" strokeWidth={2} />
+                  </div>
+                  {/* pointer-events-none — ховер проходит до канваса с кубами.
+                      Низ — только тайтл, как у кейсов. */}
+                  <div className="relative z-[2] h-full flex flex-col p-4 md:p-5 pointer-events-none">
+                    <div className="text-white/75 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+                      <span className="sr-only">Эксперименты</span>
+                      <LedText text="Эксперименты" className="h-[9px] md:h-[10px] w-auto" />
+                    </div>
+                    <div className="mt-auto flex flex-col items-center text-center pb-1 md:pb-1.5">
+                      <h3 className="text-white max-w-full drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
+                        <LedLines
+                          text="Код, WebGL, шейдеры."
+                          center
+                          maxChars={12}
+                          lineClass="h-[15px] md:h-[18px]"
+                        />
+                      </h3>
+                    </div>
+                  </div>
                 </div>
               </Link>
             </motion.div>
