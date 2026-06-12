@@ -1101,7 +1101,7 @@ export default function PreviewHome() {
                             <span className="sr-only">{item.label}</span>
                             <LedText text={item.label} className="h-[11px] w-auto" />
                           </span>
-                          <span className="text-[11px] md:text-[12px] tracking-[0.06em] uppercase text-white/45">
+                          <span className="font-service text-[12px] md:text-[13px] tracking-[0.06em] uppercase text-white/45">
                             {item.note}
                           </span>
                         </span>

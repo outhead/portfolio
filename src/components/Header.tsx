@@ -3,10 +3,42 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { FileDown, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import LedLogo from "@/components/LedLogo";
 import LedText from "@/components/LedText";
+import { PixelGlyph } from "@/components/OledKit";
+
+/** Пиксельный «документ со стрелкой вниз» — иконка CV в языке LED-точек. */
+const GLYPH_FILE_DOWN = [
+  "11111100",
+  "10000110",
+  "10000111",
+  "10000001",
+  "10011001",
+  "10011001",
+  "10111101",
+  "10011001",
+  "11111111",
+];
+
+/** Пиксельное подчёркивание — ряд LED-точек вместо сплошной линии. */
+function PixelUnderline({ active }: { active: boolean }) {
+  return (
+    <span
+      aria-hidden
+      className={`absolute -bottom-1.5 left-0 h-[3px] text-[#A6FF00] transition-all duration-300 ${
+        active ? "w-full" : "w-0 group-hover:w-full"
+      }`}
+      style={{
+        backgroundImage: "radial-gradient(circle, currentColor 1.1px, transparent 1.3px)",
+        backgroundSize: "5px 3px",
+        backgroundPosition: "0 50%",
+        backgroundRepeat: "repeat-x",
+      }}
+    />
+  );
+}
 
 const navLinks: Array<{ href: string; label: string; goal: string }> = [
   { href: "/#portfolio", label: "Работы", goal: "nav_portfolio" },
@@ -114,9 +146,7 @@ export default function Header() {
                 }`}
               >
                 <LedText text={link.label} className="h-[11px] 2xl:h-[12px] w-auto" />
-                <span className={`absolute -bottom-1 left-0 h-px bg-[#A6FF00] transition-all duration-300 ${
-                  isActive ? "w-full" : "w-0 group-hover:w-full"
-                }`} />
+                <PixelUnderline active={isActive} />
               </Link>
             );
           })}
@@ -131,7 +161,7 @@ export default function Header() {
             aria-label="Скачать CV"
             className="inline-flex items-center gap-1.5 text-white/65 no-underline hover:text-white transition-colors border border-white/[0.08] hover:border-white/25 rounded px-3 py-2 min-h-[44px]"
           >
-            <FileDown className="w-3.5 h-3.5 text-[#A6FF00]" strokeWidth={2} />
+            <PixelGlyph rows={GLYPH_FILE_DOWN} className="h-[13px] w-auto text-[#A6FF00]" />
             <LedText text="CV" className="h-[11px] w-auto" />
           </Link>
         </div>
@@ -184,7 +214,7 @@ export default function Header() {
                   aria-label="Скачать CV"
                   className="inline-flex items-center gap-2 text-white/40 no-underline hover:text-white/60 transition-colors mt-2 pt-4 border-t border-white/[0.06] min-h-[44px]"
                 >
-                  <FileDown className="w-4 h-4 text-[#A6FF00]" strokeWidth={2} />
+                  <PixelGlyph rows={GLYPH_FILE_DOWN} className="h-[14px] w-auto text-[#A6FF00]" />
                   <LedText text="Скачать CV" className="h-[12px] w-auto" />
                 </Link>
               </nav>

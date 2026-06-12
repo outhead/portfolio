@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+/* Служебный слой — пиксельный Handjet (var ставится next/font на <body>).
+   font-mono тоже мапим на него: все font-mono лейблы по сайту переключаются разом. */
+@theme {
+  --font-mono: var(--font-service), ui-monospace, monospace;
+}
+
+.font-service {
+  font-family: var(--font-service), var(--font-body), monospace;
+}
+
 /* === FONTS === */
 @font-face {
   font-family: "Bebas Neue";
@@ -62,7 +72,7 @@ button:focus-visible {
 
 /* === SECTION LABELS (legacy — used by some components) === */
 .section-label {
-  font-family: var(--font-body), monospace;
+  font-family: var(--font-service), var(--font-body), monospace;
   font-size: 10px;
   letter-spacing: 0.15em;
   text-transform: uppercase;
