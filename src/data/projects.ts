@@ -843,6 +843,12 @@ export const projects: Project[] = [
           { value: "SVG", label: "точки вместо букв" },
           { value: "33", label: "файла на сайте" },
         ],
+        videoBlock: {
+          src: "/videos/led-demo.mp4",
+          poster: "/videos/led-demo.png",
+          alt: "Скринкаст: слово набирается на LED-табло, крутятся точка и детализация",
+          cta: true,
+        },
       },
       {
         title: "Час с агентом",
@@ -867,6 +873,8 @@ export const projects: Project[] = [
     links: [
       { category: "Демо", label: "Живое табло — набери своё слово", url: "/led", kind: "site" },
       { category: "Демо", label: "Весь сайт как демо — главная", url: "/", kind: "site" },
+      { category: "Код", label: "Репозиторий led-font на GitHub (MIT)", url: "https://github.com/outhead/led-font", kind: "github" },
+      { category: "Код", label: "Standalone-демо — outhead.github.io/led-font", url: "https://outhead.github.io/led-font/", kind: "site" },
     ],
   },
   {

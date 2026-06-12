@@ -9,6 +9,7 @@ import { useState } from "react";
 import Link from "next/link";
 import LedText from "@/components/LedText";
 import { LedLines } from "@/components/LedBoard";
+import GlyphEditor from "@/components/GlyphEditor";
 
 const MAX_LEN = 24;
 
@@ -16,6 +17,7 @@ export default function LedDemo() {
   const [text, setText] = useState("Привет");
   const [dot, setDot] = useState(1.45);
   const [scale, setScale] = useState(2);
+  const [tab, setTab] = useState<"word" | "glyph">("word");
 
   const shown = text.trim() || "...";
 
@@ -37,6 +39,29 @@ export default function LedDemo() {
           </p>
         </div>
 
+        {/* Вкладки: слово / конструктор глифа */}
+        <div className="flex gap-2">
+          {([["word", "Слово"], ["glyph", "Свой глиф"]] as const).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setTab(id)}
+              className={`px-5 py-2.5 rounded-full border transition-colors ${
+                tab === id
+                  ? "border-[#A6FF00]/60 text-[#A6FF00] bg-[#A6FF00]/10"
+                  : "border-white/15 text-white/55 hover:text-white hover:border-white/30"
+              }`}
+            >
+              <span className="sr-only">{label}</span>
+              <LedText text={label} className="h-[10px] w-auto" />
+            </button>
+          ))}
+        </div>
+
+        {tab === "glyph" && <GlyphEditor />}
+
+        {tab === "word" && (
+        <>
         {/* Табло */}
         <div
           className="relative rounded-2xl bg-[#0b0b0a] overflow-hidden min-h-[220px] md:min-h-[300px] flex items-center justify-center px-6 py-10"
@@ -102,6 +127,8 @@ export default function LedDemo() {
             <span className="w-12 text-right text-[13px] tabular-nums font-service">×{scale}</span>
           </label>
         </div>
+        </>
+        )}
 
         {/* Низ */}
         <div className="mt-auto pt-10">
