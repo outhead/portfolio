@@ -466,7 +466,7 @@ function CareerHoverList() {
               type="button"
               onClick={toggle}
               aria-expanded={isExpanded}
-              className="md:hidden w-full flex items-center gap-4 px-5 py-4 text-left"
+              className="md:hidden w-full flex items-center gap-3 px-5 py-[18px] text-left"
             >
               <span
                 className={`shrink-0 w-2 h-2 rounded-full ${
@@ -474,16 +474,16 @@ function CareerHoverList() {
                 }`}
                 aria-hidden
               />
-              <span className="shrink-0 text-white/70 w-[88px]">
+              <span className="shrink-0 text-white/70 w-[76px]">
                 <span className="sr-only">{job.year}</span>
                 <LedText text={job.year} className="h-[9px] w-auto" />
               </span>
-              <span className="flex-1 min-w-0 flex flex-col">
+              <span className="flex-1 min-w-0 flex flex-col gap-1">
                 <span className="text-white">
                   <span className="sr-only">{job.company}</span>
                   <LedText text={job.company} className="h-[11px] w-auto" />
                 </span>
-                <span className="text-[14px] text-white/72 leading-tight">
+                <span className="font-service text-[15px] tracking-[0.02em] text-white/60 leading-tight">
                   {job.role}
                 </span>
               </span>
@@ -512,7 +512,7 @@ function CareerHoverList() {
                   <span className="sr-only">{job.company}</span>
                   <LedText text={job.company} className="h-[12px] w-auto" />
                 </span>
-                <span className="text-[15px] text-white/72 leading-tight truncate">
+                <span className="font-service text-[16px] tracking-[0.02em] text-white/60 leading-tight truncate">
                   {job.role}
                 </span>
               </span>
@@ -556,7 +556,7 @@ function CareerHoverList() {
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  <div className="px-5 pb-4 pl-[calc(20px+8px+16px+88px)]">
+                  <div className="px-5 pb-5 pl-[calc(20px+8px+12px)]">
                     <p className="text-[16px] text-white/78 leading-relaxed mb-3">
                       {job.scope}
                     </p>
@@ -650,8 +650,22 @@ function ServiceTile({ tile }: { tile: ServiceTileData }) {
     <motion.div
       ref={tileRef}
       variants={fadeUp}
-      className="group relative w-full h-full rounded-2xl border border-white/[0.06] bg-[#0f0f0e] hover:border-white/[0.2] transition-colors p-6 md:p-8 flex flex-col gap-5 md:gap-6 min-h-[360px] md:min-h-[420px] overflow-hidden"
+      className="group isolate relative w-full h-full rounded-2xl border border-white/[0.06] bg-[#0f0f0e] hover:border-white/[0.2] transition-colors p-6 md:p-8 flex flex-col gap-5 md:gap-6 min-h-[360px] md:min-h-[420px] overflow-hidden"
     >
+      {/* Пиксельное поле — как у кейсов: дот-паттерн за анимацией, маска по центру */}
+      <div
+        aria-hidden
+        className="absolute inset-0 -z-10 pointer-events-none"
+        style={{
+          backgroundImage:
+            "radial-gradient(rgba(255,255,255,0.06) 1.1px, transparent 1.2px)",
+          backgroundSize: "13px 13px",
+          maskImage:
+            "radial-gradient(ellipse 78% 60% at 50% 48%, black, transparent 75%)",
+          WebkitMaskImage:
+            "radial-gradient(ellipse 78% 60% at 50% 48%, black, transparent 75%)",
+        }}
+      />
       {/* Верх: index / icon / label */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -919,7 +933,7 @@ export default function PreviewHome() {
                 <h1 className="sr-only">
                   7 лет развиваю людей, команды, визуал, сервисы — дизайн-директор Егор Шугаев
                 </h1>
-                <p className="mt-5 md:mt-6 max-w-[460px] text-[14px] md:text-[16px] leading-relaxed text-white/60 font-light">
+                <p className="font-service mt-5 md:mt-6 max-w-[460px] text-[16px] md:text-[19px] leading-snug tracking-[0.02em] text-white/60">
                   От стратегии и культуры до AI и цифровых продуктов.
                 </p>
                 <div className="mt-5 md:mt-6 flex flex-wrap items-center gap-3">
@@ -1386,7 +1400,7 @@ export default function PreviewHome() {
                 <span className="mb-5 text-[#C9A66B]/70" aria-hidden>
                   <LedText text='"' scale={2} dot={1.45} className="h-[18px] w-auto" />
                 </span>
-                <p className="text-white/75 text-[15px] md:text-[16px] leading-relaxed">
+                <p className="text-white/75 text-[15px] md:text-[16px] leading-relaxed mb-7 md:mb-8">
                   {t.quote}
                 </p>
                 {/* mt-auto прижимает подпись к низу карточки — выравнивает подписи в обоих кейсах */}

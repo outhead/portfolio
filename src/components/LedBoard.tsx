@@ -97,7 +97,10 @@ export function LedBoard({
 
   const colOff = (cols: number) =>
     align === "center" ? pad + Math.floor((fieldCols - pad * 2 - cols) / 2) : pad;
-  const rowOff = (li: number) => pad + li * (ROWS_LINE + GAP);
+  // Вертикальное центрирование: когда поле выше текста (minRows растянул табло),
+  // опускаем строки на половину свободного места, иначе текст лип бы к верху.
+  const vExtra = Math.max(0, Math.floor((fieldRows - textRows) / 2));
+  const rowOff = (li: number) => pad + vExtra + li * (ROWS_LINE + GAP);
 
   return (
     <svg
