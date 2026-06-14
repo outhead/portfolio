@@ -34,7 +34,10 @@ html.js-scroll-smooth {
 body {
   background: #000;
   color: #fff;
-  font-family: var(--font-body), "Onest", -apple-system, sans-serif;
+  /* Эксперимент: Handjet (пиксельный) как основной body-шрифт по всему сайту,
+     включая кейсы. Onest остаётся фолбэком. */
+  font-family: var(--font-service), var(--font-body), "Onest", -apple-system, sans-serif;
+  letter-spacing: 0.01em;
   -webkit-font-smoothing: antialiased;
 }
 

@@ -556,7 +556,7 @@ function CareerHoverList() {
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  <div className="px-5 pb-5 pl-[calc(20px+8px+12px)]">
+                  <div className="px-5 pt-0.5 pb-5">
                     <p className="text-[16px] text-white/78 leading-relaxed mb-3">
                       {job.scope}
                     </p>
