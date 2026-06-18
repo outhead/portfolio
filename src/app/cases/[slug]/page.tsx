@@ -394,7 +394,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
 
                 {/* Video-блок во всю ширину + CTA «Попробовать самому» рядом */}
                 {section.videoBlock && (
-                  <div className="mt-10 md:mt-12">
+                  <div className={`mt-10 md:mt-12 ${section.videoBlock.narrow ? "max-w-2xl mx-auto" : ""}`}>
                     <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-black">
                       {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
                       <video

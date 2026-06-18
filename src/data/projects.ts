@@ -100,7 +100,7 @@ export interface Project {
      * Если `cta: true` и у проекта задан `tryUrl` — рядом рендерится
      * кнопка «Попробовать самому».
      */
-    videoBlock?: { src: string; poster?: string; alt?: string; cta?: boolean };
+    videoBlock?: { src: string; poster?: string; alt?: string; cta?: boolean; narrow?: boolean };
     screenshots?: Screenshot[];
     /** Override `screenshotsMode` проекта для этой секции. */
     screenshotsMode?: "web" | "phone";
@@ -773,6 +773,15 @@ export const projects: Project[] = [
           { value: "2 агента", label: "сессия + self-review" },
           { value: "ретро", label: "по прошлой сессии" },
         ],
+      },
+      {
+        title: "Как это выглядит",
+        videoBlock: {
+          src: "/videos/mentorship-demo.mp4",
+          poster: "/videos/mentorship-demo-poster.jpg",
+          alt: "Демо: страница менти со структурой сессии, договорённостями, задачами и рекомендациями",
+          narrow: true,
+        },
       },
       {
         title: "Open-source шаблон",
