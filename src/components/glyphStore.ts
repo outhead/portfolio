@@ -13,6 +13,7 @@ export type SavedGlyph = {
   cols: number;
   rows: number;
   bitmap: string[]; // строки вида "01110" — формат LED_GLYPHS
+  hidden: boolean; // скрыт сообществом (по умолчанию не показывается)
   at: number;
 };
 
@@ -28,20 +29,21 @@ const TABLE = "glyphs";
 
 export const PAGE = 24;
 
-type Row = { id: string; cols: number; rows: number; bitmap: string[]; created_at: string };
+type Row = { id: string; cols: number; rows: number; bitmap: string[]; hidden: boolean; created_at: string };
 const toGlyph = (r: Row): SavedGlyph => ({
   id: r.id,
   cols: r.cols,
   rows: r.rows,
   bitmap: r.bitmap,
+  hidden: !!r.hidden,
   at: Date.parse(r.created_at) || 0,
 });
 
-/** Страница галереи: свежие сверху. */
+/** Страница галереи: свежие сверху. Возвращает и скрытые — UI прячет их по умолчанию. */
 export async function loadGlyphs(limit = PAGE, offset = 0): Promise<SavedGlyph[]> {
   try {
     const res = await fetch(
-      `${REST}/${TABLE}?select=id,cols,rows,bitmap,created_at&order=created_at.desc&limit=${limit}&offset=${offset}`,
+      `${REST}/${TABLE}?select=id,cols,rows,bitmap,hidden,created_at&order=created_at.desc&limit=${limit}&offset=${offset}`,
       { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }, cache: "no-store" },
     );
     if (!res.ok) throw new Error("sb");
@@ -51,12 +53,30 @@ export async function loadGlyphs(limit = PAGE, offset = 0): Promise<SavedGlyph[]
   }
 }
 
+/** Скрыть/раскрыть глиф ото всех (краудсорс-модерация — может любой). */
+export async function setGlyphHidden(id: string, hidden: boolean): Promise<boolean> {
+  try {
+    const res = await fetch(`${REST}/${TABLE}?id=eq.${id}`, {
+      method: "PATCH",
+      headers: {
+        apikey: SB_KEY,
+        Authorization: `Bearer ${SB_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ hidden }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 export type SaveResult = { ok: boolean; duplicate?: boolean; entry?: SavedGlyph };
 
 /** Публикует глиф в общую галерею. 409 → такой уже есть. */
 export async function saveGlyph(bitmap: string[], cols: number, rows: number): Promise<SaveResult> {
   try {
-    const res = await fetch(`${REST}/${TABLE}?select=id,cols,rows,bitmap,created_at`, {
+    const res = await fetch(`${REST}/${TABLE}?select=id,cols,rows,bitmap,hidden,created_at`, {
       method: "POST",
       headers: {
         apikey: SB_KEY,

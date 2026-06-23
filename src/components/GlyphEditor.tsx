@@ -13,6 +13,7 @@ import {
   type SavedGlyph,
   loadGlyphs,
   saveGlyph,
+  setGlyphHidden,
   isBlank,
   sigOf,
   PAGE,
@@ -62,6 +63,7 @@ export default function GlyphEditor() {
   const [saved, setSaved] = useState<SavedGlyph[]>([]);
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [showHidden, setShowHidden] = useState(false);
   const drawing = useRef<null | boolean>(null); // что «красим» при драге
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -138,6 +140,14 @@ export default function GlyphEditor() {
       setSaveState("error");
       setTimeout(() => setSaveState("idle"), 2200);
     }
+  };
+
+  // Краудсорс-модерация: скрыть/раскрыть ото всех (оптимистично + откат при ошибке)
+  const toggleHidden = async (g: SavedGlyph) => {
+    const next = !g.hidden;
+    setSaved((prev) => prev.map((x) => (x.id === g.id ? { ...x, hidden: next } : x)));
+    const ok = await setGlyphHidden(g.id, next);
+    if (!ok) setSaved((prev) => prev.map((x) => (x.id === g.id ? { ...x, hidden: g.hidden } : x)));
   };
 
   const loadInto = (g: SavedGlyph) => {
@@ -319,49 +329,88 @@ export default function GlyphEditor() {
         </div>
       </div>
 
-      {/* Общая галерея */}
-      <div className="border-t border-white/[0.06] pt-5">
-        <div className="flex items-baseline gap-3 mb-3">
-          <span className="text-white/45">
-            <LedText text="Общая галерея" className="h-[9px] w-auto" />
-          </span>
-          {saved.length > 0 && (
-            <span className="text-[12px] tabular-nums text-white/25">{saved.length}{hasMore ? "+" : ""}</span>
-          )}
-        </div>
-        {saved.length === 0 ? (
-          <p className="text-[13px] text-white/30">
-            Пока пусто. Нарисуй что-нибудь и нажми «Сохранить в галерею» — глиф
-            появится здесь у всех.
-          </p>
-        ) : (
-          <>
-            <div className="flex flex-wrap gap-2.5">
-              {saved.map((g) => (
+      {/* Общая галерея с краудсорс-модерацией */}
+      {(() => {
+        const hiddenCount = saved.filter((g) => g.hidden).length;
+        const shown = showHidden ? saved : saved.filter((g) => !g.hidden);
+        return (
+          <div className="border-t border-white/[0.06] pt-5">
+            <div className="flex items-baseline gap-3 mb-1 flex-wrap">
+              <span className="text-white/45">
+                <LedText text="Общая галерея" className="h-[9px] w-auto" />
+              </span>
+              {shown.length > 0 && (
+                <span className="text-[12px] tabular-nums text-white/25">
+                  {shown.length}
+                  {hasMore ? "+" : ""}
+                </span>
+              )}
+              {hiddenCount > 0 && (
                 <button
-                  key={g.id}
                   type="button"
-                  onClick={() => loadInto(g)}
-                  title="Открыть в редакторе крупно"
-                  className="flex items-center justify-center rounded-lg border border-white/[0.08] bg-black px-3 py-3 min-w-[56px] text-white/85 hover:border-[#A6FF00]/45 hover:text-[#A6FF00] transition-colors"
+                  onClick={() => setShowHidden((v) => !v)}
+                  className="text-[12px] text-white/40 hover:text-white/70 transition-colors underline underline-offset-2"
                 >
-                  <GlyphPreview bitmap={g.bitmap} h={g.rows > 9 ? 34 : 26} />
+                  {showHidden ? "не показывать скрытые" : `показать скрытые (${hiddenCount})`}
                 </button>
-              ))}
+              )}
             </div>
-            {hasMore && (
-              <button
-                type="button"
-                onClick={loadMore}
-                disabled={loadingMore}
-                className="mt-4 px-5 py-2.5 rounded-full border border-white/15 text-white/55 text-[13px] hover:text-white hover:border-white/35 transition-colors disabled:opacity-40"
-              >
-                {loadingMore ? "Загружаю…" : "Показать ещё"}
-              </button>
+            <p className="text-[12px] text-white/30 mb-3">
+              Скрыть может любой — глиф пропадёт у всех. Раскрыть тоже может любой.
+            </p>
+            {shown.length === 0 ? (
+              <p className="text-[13px] text-white/30">
+                {saved.length === 0
+                  ? "Пока пусто. Нарисуй что-нибудь и нажми «Сохранить в галерею» — глиф появится здесь у всех."
+                  : "Всё скрыто. Нажми «показать скрытые», чтобы посмотреть."}
+              </p>
+            ) : (
+              <>
+                <div className="flex flex-wrap gap-2.5">
+                  {shown.map((g) => (
+                    <div
+                      key={g.id}
+                      className={`group relative flex items-center justify-center rounded-lg border bg-black px-3 py-3 min-w-[56px] transition-colors ${
+                        g.hidden
+                          ? "border-white/[0.06] text-white/30 opacity-60"
+                          : "border-white/[0.08] text-white/85 hover:border-[#A6FF00]/45 hover:text-[#A6FF00]"
+                      }`}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => loadInto(g)}
+                        title="Открыть в редакторе крупно"
+                        className="flex items-center justify-center"
+                      >
+                        <GlyphPreview bitmap={g.bitmap} h={g.rows > 9 ? 34 : 26} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => toggleHidden(g)}
+                        title={g.hidden ? "Раскрыть для всех" : "Скрыть ото всех"}
+                        aria-label={g.hidden ? "Раскрыть глиф" : "Скрыть глиф"}
+                        className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-black border border-white/20 text-white/55 text-[11px] leading-none opacity-0 group-hover:opacity-100 hover:text-white hover:border-white/50 transition-opacity flex items-center justify-center"
+                      >
+                        {g.hidden ? "↺" : "×"}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                {hasMore && (
+                  <button
+                    type="button"
+                    onClick={loadMore}
+                    disabled={loadingMore}
+                    className="mt-4 px-5 py-2.5 rounded-full border border-white/15 text-white/55 text-[13px] hover:text-white hover:border-white/35 transition-colors disabled:opacity-40"
+                  >
+                    {loadingMore ? "Загружаю…" : "Показать ещё"}
+                  </button>
+                )}
+              </>
             )}
-          </>
-        )}
-      </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
