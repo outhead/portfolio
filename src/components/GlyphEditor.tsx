@@ -3,8 +3,8 @@
 /* ─────────────────────────────────────────────────────────────────
  * GlyphEditor — конструктор глифов для LED-движка.
  * Сетка 5×7 / 9×7 / 16×16, рисование точками (клик/драг),
- * живое мини-превью «как в шрифте» рядом, сохранение в браузерную
- * галерею «Мои глифы», импорт PNG по контрасту, экспорт строк-битмап.
+ * живое мини-превью «как в шрифте» рядом, публикация в ОБЩУЮ галерею
+ * (Supabase), листание галереи, импорт PNG, экспорт строк-битмап.
  * ──────────────────────────────────────────────────────────────── */
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -12,11 +12,10 @@ import LedText from "@/components/LedText";
 import {
   type SavedGlyph,
   loadGlyphs,
-  seedDefaults,
-  addGlyph,
-  removeGlyph,
+  saveGlyph,
   isBlank,
-  isDuplicate,
+  sigOf,
+  PAGE,
 } from "@/components/glyphStore";
 
 type Size = { label: string; cols: number; rows: number };
@@ -53,26 +52,42 @@ function GlyphPreview({ bitmap, h = 24 }: { bitmap: string[]; h?: number }) {
   );
 }
 
+type SaveState = "idle" | "saving" | "saved" | "dup" | "error";
+
 export default function GlyphEditor() {
   const [size, setSize] = useState<Size>(SIZES[0]);
   const [grid, setGrid] = useState<boolean[]>(() => new Array(SIZES[0].cols * SIZES[0].rows).fill(false));
   const [copied, setCopied] = useState(false);
-  const [saveState, setSaveState] = useState<"idle" | "saved" | "dup">("idle");
+  const [saveState, setSaveState] = useState<SaveState>("idle");
   const [saved, setSaved] = useState<SavedGlyph[]>([]);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const drawing = useRef<null | boolean>(null); // что «красим» при драге
   const fileRef = useRef<HTMLInputElement>(null);
 
-  // Галерея «Мои глифы»: засев примеров + синхронизация между редакторами
+  // Общая галерея: первая страница при монтировании
   useEffect(() => {
-    setSaved(seedDefaults());
-    const sync = () => setSaved(loadGlyphs());
-    window.addEventListener("led-glyphs-changed", sync);
-    window.addEventListener("storage", sync);
+    let alive = true;
+    loadGlyphs(PAGE, 0).then((list) => {
+      if (!alive) return;
+      setSaved(list);
+      setHasMore(list.length === PAGE);
+    });
     return () => {
-      window.removeEventListener("led-glyphs-changed", sync);
-      window.removeEventListener("storage", sync);
+      alive = false;
     };
   }, []);
+
+  const loadMore = async () => {
+    setLoadingMore(true);
+    const next = await loadGlyphs(PAGE, saved.length);
+    setSaved((prev) => {
+      const seen = new Set(prev.map((g) => g.id));
+      return [...prev, ...next.filter((g) => !seen.has(g.id))];
+    });
+    setHasMore(next.length === PAGE);
+    setLoadingMore(false);
+  };
 
   const reset = (s: Size) => {
     setSize(s);
@@ -92,8 +107,8 @@ export default function GlyphEditor() {
   }
   const exportText = `[\n  ${rowsOut.map((r) => `"${r}"`).join(",\n  ")},\n]`;
   const isEmpty = isBlank(rowsOut);
-  // дубль — точно такой же глиф уже в галерее; пересчитывается на каждый рендер
-  const dup = !isEmpty && isDuplicate(rowsOut);
+  // дубль среди уже загруженных (полную проверку делает БД по уникальной сигнатуре)
+  const localDup = !isEmpty && saved.some((g) => sigOf(g.bitmap) === sigOf(rowsOut));
 
   const copy = async () => {
     try {
@@ -103,16 +118,26 @@ export default function GlyphEditor() {
     } catch {}
   };
 
-  const save = () => {
-    if (isEmpty) return;
-    if (isDuplicate(rowsOut)) {
+  const save = async () => {
+    if (isEmpty || saveState === "saving") return;
+    if (localDup) {
       setSaveState("dup");
       setTimeout(() => setSaveState("idle"), 1600);
       return;
     }
-    setSaved(addGlyph(rowsOut, size.cols, size.rows));
-    setSaveState("saved");
-    setTimeout(() => setSaveState("idle"), 1500);
+    setSaveState("saving");
+    const res = await saveGlyph(rowsOut, size.cols, size.rows);
+    if (res.ok) {
+      if (res.entry) setSaved((prev) => [res.entry!, ...prev]);
+      setSaveState("saved");
+      setTimeout(() => setSaveState("idle"), 1500);
+    } else if (res.duplicate) {
+      setSaveState("dup");
+      setTimeout(() => setSaveState("idle"), 1600);
+    } else {
+      setSaveState("error");
+      setTimeout(() => setSaveState("idle"), 2200);
+    }
   };
 
   const loadInto = (g: SavedGlyph) => {
@@ -148,6 +173,17 @@ export default function GlyphEditor() {
     };
     img.src = URL.createObjectURL(file);
   };
+
+  const saveLabel =
+    saveState === "saving"
+      ? "Публикую…"
+      : saveState === "saved"
+      ? "В галерее ✓"
+      : saveState === "dup" || localDup
+      ? "Уже есть"
+      : saveState === "error"
+      ? "Ошибка, ещё раз"
+      : "Сохранить в галерею";
 
   return (
     <div className="flex flex-col gap-6">
@@ -228,11 +264,11 @@ export default function GlyphEditor() {
             <button
               type="button"
               onClick={save}
-              disabled={isEmpty || dup}
-              title={dup ? "Точно такой глиф уже сохранён" : undefined}
+              disabled={isEmpty || localDup || saveState === "saving"}
+              title={localDup ? "Точно такой глиф уже в общей галерее" : undefined}
               className="px-5 py-2.5 rounded-full bg-[#A6FF00] text-black text-[13px] font-medium hover:bg-[#b8ff33] transition-colors disabled:opacity-35 disabled:cursor-not-allowed"
             >
-              {saveState === "saved" ? "Сохранено ✓" : dup ? "Уже сохранён" : "Сохранить глиф"}
+              {saveLabel}
             </button>
             <button
               type="button"
@@ -267,9 +303,9 @@ export default function GlyphEditor() {
               }}
             />
           </div>
-          <p className="text-[13px] text-white/40 max-w-[420px]">
-            Картинка уляжется в сетку по контрасту — дальше дорисовывай точками.
-            Битмапу можно вставить прямо в{" "}
+          <p className="text-[13px] text-white/40 max-w-[440px]">
+            «Сохранить в галерею» — глиф увидят все: галерея общая. Картинка уляжется
+            в сетку по контрасту, битмапу можно вставить прямо в{" "}
             <a
               href="https://github.com/outhead/led-font"
               target="_blank"
@@ -283,48 +319,47 @@ export default function GlyphEditor() {
         </div>
       </div>
 
-      {/* Галерея «Мои глифы» */}
+      {/* Общая галерея */}
       <div className="border-t border-white/[0.06] pt-5">
         <div className="flex items-baseline gap-3 mb-3">
           <span className="text-white/45">
-            <LedText text="Мои глифы" className="h-[9px] w-auto" />
+            <LedText text="Общая галерея" className="h-[9px] w-auto" />
           </span>
           {saved.length > 0 && (
-            <span className="text-[12px] tabular-nums text-white/25">{saved.length}</span>
+            <span className="text-[12px] tabular-nums text-white/25">{saved.length}{hasMore ? "+" : ""}</span>
           )}
         </div>
         {saved.length === 0 ? (
           <p className="text-[13px] text-white/30">
-            Пусто. Нарисуй что-нибудь и нажми «Сохранить глиф» — появится здесь
-            маленькой превьюшкой и переживёт перезагрузку.
+            Пока пусто. Нарисуй что-нибудь и нажми «Сохранить в галерею» — глиф
+            появится здесь у всех.
           </p>
         ) : (
-          <div className="flex flex-wrap gap-2.5">
-            {saved.map((g) => (
-              <div
-                key={g.id}
-                className="group relative flex items-center justify-center rounded-lg border border-white/[0.08] bg-black px-3 py-3 min-w-[56px] text-white/85 hover:border-[#A6FF00]/45 hover:text-[#A6FF00] transition-colors"
-              >
+          <>
+            <div className="flex flex-wrap gap-2.5">
+              {saved.map((g) => (
                 <button
+                  key={g.id}
                   type="button"
                   onClick={() => loadInto(g)}
                   title="Открыть в редакторе крупно"
-                  className="flex items-center justify-center"
+                  className="flex items-center justify-center rounded-lg border border-white/[0.08] bg-black px-3 py-3 min-w-[56px] text-white/85 hover:border-[#A6FF00]/45 hover:text-[#A6FF00] transition-colors"
                 >
                   <GlyphPreview bitmap={g.bitmap} h={g.rows > 9 ? 34 : 26} />
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setSaved(removeGlyph(g.id))}
-                  title="Удалить"
-                  aria-label="Удалить глиф"
-                  className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-black border border-white/20 text-white/50 text-[12px] leading-none opacity-0 group-hover:opacity-100 hover:text-white hover:border-white/50 transition-opacity flex items-center justify-center"
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+            {hasMore && (
+              <button
+                type="button"
+                onClick={loadMore}
+                disabled={loadingMore}
+                className="mt-4 px-5 py-2.5 rounded-full border border-white/15 text-white/55 text-[13px] hover:text-white hover:border-white/35 transition-colors disabled:opacity-40"
+              >
+                {loadingMore ? "Загружаю…" : "Показать ещё"}
+              </button>
+            )}
+          </>
         )}
       </div>
     </div>

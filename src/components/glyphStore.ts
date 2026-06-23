@@ -1,6 +1,11 @@
 /* ─────────────────────────────────────────────────────────────────
- * glyphStore — сохранённые пользователем глифы LED-конструктора.
- * Живут в localStorage браузера, общие для /led и мини-рисовалки в кейсе.
+ * glyphStore — общая галерея глифов LED-конструктора (Supabase PostgREST).
+ * Глифы шарятся между всеми посетителями. Публикация мгновенная,
+ * модерация — флагом hidden на стороне БД. Дубли (та же битмапа) режутся
+ * уникальной сигнатурой в таблице → POST вернёт 409.
+ *
+ * В проде ходим через свой домен (/sb/rest проксирует на Supabase —
+ * *.supabase.co блокируется в РФ без VPN). В dev — напрямую.
  * ──────────────────────────────────────────────────────────────── */
 
 export type SavedGlyph = {
@@ -8,99 +13,66 @@ export type SavedGlyph = {
   cols: number;
   rows: number;
   bitmap: string[]; // строки вида "01110" — формат LED_GLYPHS
-  ts: number;
+  at: number;
 };
 
-const KEY = "led-font-glyphs-v1";
-const SEED_KEY = "led-font-seeded-v1";
-const MAX = 40;
+const SB_URL =
+  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://hvkygaghhxgaolxemndr.supabase.co";
+const SB_KEY =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2a3lnYWdoaHhnYW9seGVtbmRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzMDYwNjAsImV4cCI6MjA5NDg4MjA2MH0.IoRNKO3Jb51k1XA2y7-Q-PSaxpPhBj56G1SZJaKKau4";
 
-/* Примеры-глифы, которыми засеивается галерея при первом заходе.
- * Первый — 16×16 пиксель-арт, нарисованный в конструкторе. */
-const DEFAULT_GLYPHS: { cols: number; rows: number; bitmap: string[] }[] = [
-  {
-    cols: 16,
-    rows: 16,
-    bitmap: [
-      "0111100110011110",
-      "1000010110100001",
-      "1011010110101101",
-      "1000010110100001",
-      "0111100110011110",
-      "0000000110000000",
-      "1010101111010101",
-      "1010101111010101",
-      "0000001100000000",
-      "1111001111001111",
-      "0000011001100000",
-      "1110110110110111",
-      "0001100000011000",
-      "1011001001001101",
-      "0110011001100110",
-      "1100111001110011",
-    ],
-  },
-];
+const DEV = process.env.NODE_ENV === "development";
+const REST = DEV ? `${SB_URL}/rest/v1` : "/sb/rest";
+const TABLE = "glyphs";
 
-/** Засевает галерею примерами один раз (пока пользователь не очистил флаг). */
-export function seedDefaults(): SavedGlyph[] {
-  if (typeof window === "undefined") return [];
+export const PAGE = 24;
+
+type Row = { id: string; cols: number; rows: number; bitmap: string[]; created_at: string };
+const toGlyph = (r: Row): SavedGlyph => ({
+  id: r.id,
+  cols: r.cols,
+  rows: r.rows,
+  bitmap: r.bitmap,
+  at: Date.parse(r.created_at) || 0,
+});
+
+/** Страница галереи: свежие сверху. */
+export async function loadGlyphs(limit = PAGE, offset = 0): Promise<SavedGlyph[]> {
   try {
-    if (window.localStorage.getItem(SEED_KEY)) return loadGlyphs();
-    const existing = loadGlyphs();
-    const seeded: SavedGlyph[] = DEFAULT_GLYPHS.map((g, i) => ({
-      id: `seed-${i}`,
-      cols: g.cols,
-      rows: g.rows,
-      bitmap: g.bitmap,
-      ts: Date.now() - (DEFAULT_GLYPHS.length - i),
-    }));
-    const next = [...existing, ...seeded].slice(0, MAX);
-    persistGlyphs(next);
-    window.localStorage.setItem(SEED_KEY, "1");
-    return next;
-  } catch {
-    return loadGlyphs();
-  }
-}
-
-export function loadGlyphs(): SavedGlyph[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(KEY);
-    const list = raw ? (JSON.parse(raw) as SavedGlyph[]) : [];
-    return Array.isArray(list) ? list : [];
+    const res = await fetch(
+      `${REST}/${TABLE}?select=id,cols,rows,bitmap,created_at&order=created_at.desc&limit=${limit}&offset=${offset}`,
+      { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }, cache: "no-store" },
+    );
+    if (!res.ok) throw new Error("sb");
+    return ((await res.json()) as Row[]).map(toGlyph);
   } catch {
     return [];
   }
 }
 
-export function persistGlyphs(list: SavedGlyph[]) {
-  if (typeof window === "undefined") return;
+export type SaveResult = { ok: boolean; duplicate?: boolean; entry?: SavedGlyph };
+
+/** Публикует глиф в общую галерею. 409 → такой уже есть. */
+export async function saveGlyph(bitmap: string[], cols: number, rows: number): Promise<SaveResult> {
   try {
-    window.localStorage.setItem(KEY, JSON.stringify(list.slice(0, MAX)));
-    // чтобы другие смонтированные редакторы на той же странице обновились
-    window.dispatchEvent(new Event("led-glyphs-changed"));
-  } catch {}
-}
-
-export function addGlyph(bitmap: string[], cols: number, rows: number): SavedGlyph[] {
-  const entry: SavedGlyph = {
-    id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-    cols,
-    rows,
-    bitmap,
-    ts: Date.now(),
-  };
-  const next = [entry, ...loadGlyphs()].slice(0, MAX);
-  persistGlyphs(next);
-  return next;
-}
-
-export function removeGlyph(id: string): SavedGlyph[] {
-  const next = loadGlyphs().filter((g) => g.id !== id);
-  persistGlyphs(next);
-  return next;
+    const res = await fetch(`${REST}/${TABLE}?select=id,cols,rows,bitmap,created_at`, {
+      method: "POST",
+      headers: {
+        apikey: SB_KEY,
+        Authorization: `Bearer ${SB_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify({ bitmap, cols, rows }),
+    });
+    if (res.status === 409) return { ok: false, duplicate: true };
+    if (!res.ok) return { ok: false };
+    const ins = (await res.json()) as Row[];
+    return { ok: true, entry: ins[0] ? toGlyph(ins[0]) : undefined };
+  } catch {
+    return { ok: false };
+  }
 }
 
 /** Пустой ли глиф (ни одной зажжённой точки) — нечего сохранять. */
@@ -108,8 +80,7 @@ export function isBlank(bitmap: string[]): boolean {
   return !bitmap.some((row) => row.includes("1"));
 }
 
-/** Уже есть ли точно такой глиф в галерее (та же битмапа) — чтобы не плодить дубли. */
-export function isDuplicate(bitmap: string[]): boolean {
-  const key = bitmap.join("|");
-  return loadGlyphs().some((g) => g.bitmap.join("|") === key);
+/** Сигнатура битмапы — для клиентской проверки дубля среди уже загруженных. */
+export function sigOf(bitmap: string[]): string {
+  return bitmap.join("|");
 }
