@@ -16,6 +16,7 @@ import {
   addGlyph,
   removeGlyph,
   isBlank,
+  isDuplicate,
 } from "@/components/glyphStore";
 
 type Size = { label: string; cols: number; rows: number };
@@ -56,7 +57,7 @@ export default function GlyphEditor() {
   const [size, setSize] = useState<Size>(SIZES[0]);
   const [grid, setGrid] = useState<boolean[]>(() => new Array(SIZES[0].cols * SIZES[0].rows).fill(false));
   const [copied, setCopied] = useState(false);
-  const [justSaved, setJustSaved] = useState(false);
+  const [saveState, setSaveState] = useState<"idle" | "saved" | "dup">("idle");
   const [saved, setSaved] = useState<SavedGlyph[]>([]);
   const drawing = useRef<null | boolean>(null); // что «красим» при драге
   const fileRef = useRef<HTMLInputElement>(null);
@@ -91,6 +92,8 @@ export default function GlyphEditor() {
   }
   const exportText = `[\n  ${rowsOut.map((r) => `"${r}"`).join(",\n  ")},\n]`;
   const isEmpty = isBlank(rowsOut);
+  // дубль — точно такой же глиф уже в галерее; пересчитывается на каждый рендер
+  const dup = !isEmpty && isDuplicate(rowsOut);
 
   const copy = async () => {
     try {
@@ -102,9 +105,14 @@ export default function GlyphEditor() {
 
   const save = () => {
     if (isEmpty) return;
+    if (isDuplicate(rowsOut)) {
+      setSaveState("dup");
+      setTimeout(() => setSaveState("idle"), 1600);
+      return;
+    }
     setSaved(addGlyph(rowsOut, size.cols, size.rows));
-    setJustSaved(true);
-    setTimeout(() => setJustSaved(false), 1500);
+    setSaveState("saved");
+    setTimeout(() => setSaveState("idle"), 1500);
   };
 
   const loadInto = (g: SavedGlyph) => {
@@ -220,10 +228,11 @@ export default function GlyphEditor() {
             <button
               type="button"
               onClick={save}
-              disabled={isEmpty}
+              disabled={isEmpty || dup}
+              title={dup ? "Точно такой глиф уже сохранён" : undefined}
               className="px-5 py-2.5 rounded-full bg-[#A6FF00] text-black text-[13px] font-medium hover:bg-[#b8ff33] transition-colors disabled:opacity-35 disabled:cursor-not-allowed"
             >
-              {justSaved ? "Сохранено ✓" : "Сохранить глиф"}
+              {saveState === "saved" ? "Сохранено ✓" : dup ? "Уже сохранён" : "Сохранить глиф"}
             </button>
             <button
               type="button"

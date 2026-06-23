@@ -107,3 +107,9 @@ export function removeGlyph(id: string): SavedGlyph[] {
 export function isBlank(bitmap: string[]): boolean {
   return !bitmap.some((row) => row.includes("1"));
 }
+
+/** Уже есть ли точно такой глиф в галерее (та же битмапа) — чтобы не плодить дубли. */
+export function isDuplicate(bitmap: string[]): boolean {
+  const key = bitmap.join("|");
+  return loadGlyphs().some((g) => g.bitmap.join("|") === key);
+}
