@@ -52,7 +52,7 @@ export default function KodFinal() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [youAt, setYouAt] = useState<number | null>(null);
-  const [othersOnly, setOthersOnly] = useState(false);
+  const [othersOnly, setOthersOnly] = useState(true); // по умолчанию прячем друзей/тестеров
   const [showFb, setShowFb] = useState(false);   // панель отзыва раскрыта
   const [showWall, setShowWall] = useState(false); // стена отзывов раскрыта
 
@@ -85,6 +85,7 @@ export default function KodFinal() {
       telegram: telegram.trim(),
       feedback: feedback.trim(),
       published: publish,
+      hints: hintsUsed,
     });
     setEntries(top);
     setYouAt(at);
@@ -258,7 +259,14 @@ export default function KodFinal() {
                         {e.name}
                         {e.tester ? <span className="ml-2 text-[10px] tracking-[0.1em] uppercase text-[#C9A66B]/70 align-middle">друг/тест</span> : null}
                       </span>
-                      <span className="text-[12px] text-white/45 whitespace-nowrap tabular-nums">{fmtQuestTime(e.timeMs)}</span>
+                      <span className="text-[12px] text-white/45 whitespace-nowrap tabular-nums inline-flex items-center gap-1.5">
+                        {fmtQuestTime(e.timeMs)}
+                        {e.hints > 0 ? (
+                          <span className="text-[#C9A66B]/80" title={`${e.hints} подсказок · штраф +${e.hints * 30}с`}>
+                            +{e.hints}
+                          </span>
+                        ) : null}
+                      </span>
                     </li>
                   );
                 })}

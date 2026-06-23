@@ -2,8 +2,14 @@
 // Хранит время прохождения ВСЕГО квеста. Текущие записи помечены tester=true
 // (друзья/тестировщики). Новые игроки добавляются с tester=false.
 
-export type LbEntry = { name: string; timeMs: number; at: number; tester: boolean };
+export type LbEntry = { name: string; timeMs: number; hints: number; at: number; tester: boolean };
 export type FbEntry = { name: string; feedback: string; at: number };
+
+// Штраф за подсказку: к ВРЕМЕНИ ДЛЯ РАНЖИРОВАНИЯ прибавляется 30с за каждую.
+// Реальное время показываем честно, штраф — отдельной пометкой (решение Егора).
+export const HINT_PENALTY_MS = 30_000;
+export const adjustedMs = (e: { timeMs: number; hints: number }): number =>
+  e.timeMs + (e.hints || 0) * HINT_PENALTY_MS;
 
 const SB_URL =
   process.env.NEXT_PUBLIC_SUPABASE_URL || "https://hvkygaghhxgaolxemndr.supabase.co";
@@ -12,10 +18,11 @@ const SB_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2a3lnYWdoaHhnYW9seGVtbmRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzMDYwNjAsImV4cCI6MjA5NDg4MjA2MH0.IoRNKO3Jb51k1XA2y7-Q-PSaxpPhBj56G1SZJaKKau4";
 const SB_TABLE = "leaderboard";
 
-type SbRow = { name: string; time_ms: number; created_at: string; tester: boolean };
+type SbRow = { name: string; time_ms: number; hints: number; created_at: string; tester: boolean };
 const toEntry = (r: SbRow): LbEntry => ({
   name: r.name,
   timeMs: r.time_ms,
+  hints: r.hints || 0,
   at: Date.parse(r.created_at) || 0,
   tester: !!r.tester,
 });
@@ -23,17 +30,18 @@ const toEntry = (r: SbRow): LbEntry => ({
 export async function loadBoard(): Promise<LbEntry[]> {
   try {
     const res = await fetch(
-      `${SB_URL}/rest/v1/${SB_TABLE}?select=name,time_ms,created_at,tester&order=time_ms.asc&limit=100`,
+      `${SB_URL}/rest/v1/${SB_TABLE}?select=name,time_ms,hints,created_at,tester&limit=100`,
       { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }, cache: "no-store" }
     );
     if (!res.ok) throw new Error("sb");
-    return ((await res.json()) as SbRow[]).map(toEntry);
+    // Сортируем по ВРЕМЕНИ СО ШТРАФОМ за подсказки (а не по чистому времени).
+    return ((await res.json()) as SbRow[]).map(toEntry).sort((a, b) => adjustedMs(a) - adjustedMs(b));
   } catch {
     return [];
   }
 }
 
-type SaveExtra = { telegram?: string; feedback?: string; published?: boolean };
+type SaveExtra = { telegram?: string; feedback?: string; published?: boolean; hints?: number };
 
 export async function saveScore(
   name: string,
@@ -44,7 +52,11 @@ export async function saveScore(
   const t = Math.max(200, Math.min(3_599_000, Math.round(timeMs)));
   const tg = (extra.telegram || "").trim().slice(0, 80);
   const fb = (extra.feedback || "").trim().slice(0, 500);
-  const body: Record<string, unknown> = { name: name.slice(0, 20), time_ms: t };
+  const body: Record<string, unknown> = {
+    name: name.slice(0, 20),
+    time_ms: t,
+    hints: Math.max(0, Math.min(100, Math.round(extra.hints || 0))),
+  };
   if (tg) body.telegram = tg;
   if (fb) {
     body.feedback = fb;
