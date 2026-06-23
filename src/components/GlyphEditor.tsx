@@ -1,29 +1,79 @@
 "use client";
 
 /* ─────────────────────────────────────────────────────────────────
- * GlyphEditor — мини-конструктор глифов для LED-движка.
- * Сетка 5×7 (или крупнее), рисование точками (клик/драг),
- * импорт PNG по контрасту, экспорт строк-битмап для LED_GLYPHS.
- * Фаза 2 из кейса led-font-engine.
+ * GlyphEditor — конструктор глифов для LED-движка.
+ * Сетка 5×7 / 9×7 / 16×16, рисование точками (клик/драг),
+ * живое мини-превью «как в шрифте» рядом, сохранение в браузерную
+ * галерею «Мои глифы», импорт PNG по контрасту, экспорт строк-битмап.
  * ──────────────────────────────────────────────────────────────── */
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import LedText from "@/components/LedText";
+import {
+  type SavedGlyph,
+  loadGlyphs,
+  seedDefaults,
+  addGlyph,
+  removeGlyph,
+  isBlank,
+} from "@/components/glyphStore";
 
-const SIZES = [
+type Size = { label: string; cols: number; rows: number };
+
+const SIZES: Size[] = [
   { label: "5×7 — буква", cols: 5, rows: 7 },
   { label: "9×7 — иконка", cols: 9, rows: 7 },
   { label: "16×16 — пиксель-арт", cols: 16, rows: 16 },
-] as const;
+];
+
+/* Мини-превью глифа: горящие точки SVG-кружками (как в реальном шрифте). */
+function GlyphPreview({ bitmap, h = 24 }: { bitmap: string[]; h?: number }) {
+  const rows = bitmap.length;
+  const cols = bitmap[0]?.length ?? 0;
+  const P = 4;
+  const dot = 1.5;
+  const lit: { x: number; y: number }[] = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (bitmap[r][c] === "1") lit.push({ x: c * P + P / 2, y: r * P + P / 2 });
+    }
+  }
+  return (
+    <svg
+      viewBox={`0 0 ${cols * P} ${rows * P}`}
+      style={{ height: h, width: "auto" }}
+      aria-hidden
+      focusable="false"
+    >
+      {lit.map((p, i) => (
+        <circle key={i} cx={p.x} cy={p.y} r={dot} fill="currentColor" />
+      ))}
+    </svg>
+  );
+}
 
 export default function GlyphEditor() {
-  const [size, setSize] = useState<(typeof SIZES)[number]>(SIZES[0]);
-  const [grid, setGrid] = useState<boolean[]>(() => new Array(5 * 7).fill(false));
+  const [size, setSize] = useState<Size>(SIZES[0]);
+  const [grid, setGrid] = useState<boolean[]>(() => new Array(SIZES[0].cols * SIZES[0].rows).fill(false));
   const [copied, setCopied] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
+  const [saved, setSaved] = useState<SavedGlyph[]>([]);
   const drawing = useRef<null | boolean>(null); // что «красим» при драге
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const reset = (s: (typeof SIZES)[number]) => {
+  // Галерея «Мои глифы»: засев примеров + синхронизация между редакторами
+  useEffect(() => {
+    setSaved(seedDefaults());
+    const sync = () => setSaved(loadGlyphs());
+    window.addEventListener("led-glyphs-changed", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("led-glyphs-changed", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+
+  const reset = (s: Size) => {
     setSize(s);
     setGrid(new Array(s.cols * s.rows).fill(false));
   };
@@ -40,6 +90,7 @@ export default function GlyphEditor() {
     rowsOut.push(s);
   }
   const exportText = `[\n  ${rowsOut.map((r) => `"${r}"`).join(",\n  ")},\n]`;
+  const isEmpty = isBlank(rowsOut);
 
   const copy = async () => {
     try {
@@ -47,6 +98,24 @@ export default function GlyphEditor() {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {}
+  };
+
+  const save = () => {
+    if (isEmpty) return;
+    setSaved(addGlyph(rowsOut, size.cols, size.rows));
+    setJustSaved(true);
+    setTimeout(() => setJustSaved(false), 1500);
+  };
+
+  const loadInto = (g: SavedGlyph) => {
+    const s: Size =
+      SIZES.find((x) => x.cols === g.cols && x.rows === g.rows) ??
+      { label: `${g.cols}×${g.rows}`, cols: g.cols, rows: g.rows };
+    setSize(s);
+    const next = new Array(g.cols * g.rows).fill(false);
+    for (let r = 0; r < g.rows; r++)
+      for (let c = 0; c < g.cols; c++) next[r * g.cols + c] = g.bitmap[r]?.[c] === "1";
+    setGrid(next);
   };
 
   // Импорт PNG: даунскейл в сетку, порог по яркости (с альфой)
@@ -60,7 +129,6 @@ export default function GlyphEditor() {
       ctx.imageSmoothingEnabled = true;
       ctx.drawImage(img, 0, 0, size.cols, size.rows);
       const d = ctx.getImageData(0, 0, size.cols, size.rows).data;
-      // средняя яркость как порог — работает и для тёмных, и для светлых картинок
       const lum: number[] = [];
       for (let i = 0; i < size.cols * size.rows; i++) {
         const a = d[i * 4 + 3] / 255;
@@ -126,8 +194,22 @@ export default function GlyphEditor() {
           ))}
         </div>
 
-        {/* Экспорт */}
+        {/* Действия + живое превью + экспорт */}
         <div className="flex-1 flex flex-col gap-4 min-w-0">
+          {/* Живое мини-превью «как в шрифте» */}
+          <div className="flex items-center gap-4">
+            <span className="text-white/35 shrink-0">
+              <LedText text="Как в шрифте" className="h-[8px] w-auto" />
+            </span>
+            <div className="flex items-center justify-center min-w-[44px] min-h-[40px] px-3 py-2 rounded-lg border border-white/[0.08] bg-black text-[#A6FF00]">
+              {isEmpty ? (
+                <span className="text-[12px] text-white/25">пусто</span>
+              ) : (
+                <GlyphPreview bitmap={rowsOut} h={size.rows > 9 ? 40 : 26} />
+              )}
+            </div>
+          </div>
+
           <div className="text-white/40">
             <LedText text="Битмапа для LED_GLYPHS" className="h-[9px] w-auto" />
           </div>
@@ -137,8 +219,16 @@ export default function GlyphEditor() {
           <div className="flex flex-wrap gap-3">
             <button
               type="button"
+              onClick={save}
+              disabled={isEmpty}
+              className="px-5 py-2.5 rounded-full bg-[#A6FF00] text-black text-[13px] font-medium hover:bg-[#b8ff33] transition-colors disabled:opacity-35 disabled:cursor-not-allowed"
+            >
+              {justSaved ? "Сохранено ✓" : "Сохранить глиф"}
+            </button>
+            <button
+              type="button"
               onClick={copy}
-              className="px-5 py-2.5 rounded-full bg-[#A6FF00] text-black text-[13px] font-medium hover:bg-[#b8ff33] transition-colors"
+              className="px-5 py-2.5 rounded-full border border-white/20 text-white/70 text-[13px] hover:text-white hover:border-white/40 transition-colors"
             >
               {copied ? "Скопировано" : "Скопировать"}
             </button>
@@ -182,6 +272,51 @@ export default function GlyphEditor() {
             .
           </p>
         </div>
+      </div>
+
+      {/* Галерея «Мои глифы» */}
+      <div className="border-t border-white/[0.06] pt-5">
+        <div className="flex items-baseline gap-3 mb-3">
+          <span className="text-white/45">
+            <LedText text="Мои глифы" className="h-[9px] w-auto" />
+          </span>
+          {saved.length > 0 && (
+            <span className="text-[12px] tabular-nums text-white/25">{saved.length}</span>
+          )}
+        </div>
+        {saved.length === 0 ? (
+          <p className="text-[13px] text-white/30">
+            Пусто. Нарисуй что-нибудь и нажми «Сохранить глиф» — появится здесь
+            маленькой превьюшкой и переживёт перезагрузку.
+          </p>
+        ) : (
+          <div className="flex flex-wrap gap-2.5">
+            {saved.map((g) => (
+              <div
+                key={g.id}
+                className="group relative flex items-center justify-center rounded-lg border border-white/[0.08] bg-black px-3 py-3 min-w-[56px] text-white/85 hover:border-[#A6FF00]/45 hover:text-[#A6FF00] transition-colors"
+              >
+                <button
+                  type="button"
+                  onClick={() => loadInto(g)}
+                  title="Открыть в редакторе крупно"
+                  className="flex items-center justify-center"
+                >
+                  <GlyphPreview bitmap={g.bitmap} h={g.rows > 9 ? 34 : 26} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSaved(removeGlyph(g.id))}
+                  title="Удалить"
+                  aria-label="Удалить глиф"
+                  className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-black border border-white/20 text-white/50 text-[12px] leading-none opacity-0 group-hover:opacity-100 hover:text-white hover:border-white/50 transition-opacity flex items-center justify-center"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

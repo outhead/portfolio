@@ -13,6 +13,7 @@ import WIPOverlay from "@/components/WIPOverlay";
 import DecryptApproach from "@/components/DecryptApproach";
 import LedText from "@/components/LedText";
 import { LedLines } from "@/components/LedBoard";
+import FontSpecimen from "@/components/FontSpecimen";
 
 /* Пиксельный лейбл секций кейса — единый язык с табло главной */
 function CaseLabel({
@@ -306,6 +307,9 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                     <div className="max-w-3xl">{renderProse(section.content)}</div>
                   )
                 )}
+
+                {/* Интерактивный спесимен LED-шрифта (только led-font-engine) */}
+                {section.specimen && <FontSpecimen />}
 
                 {/* Timeline — горизонтальная шкала событий.
                     Если ≤4 точек — равномерный grid на десктопе.
