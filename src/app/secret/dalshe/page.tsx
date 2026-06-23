@@ -400,11 +400,6 @@ export default function SecretDalshePage() {
         ) : (
           /* ─── Игра (ход / момент победы) ─── */
           <div className="w-full max-w-[460px] mx-auto flex flex-col items-center text-center">
-            <p className="text-white/40 mb-3">
-              <span className="sr-only">Крестики-нолики · Загадка №2</span>
-              <LedText text="Крестики-нолики · Загадка №2" className="h-[9px] w-auto" />
-            </p>
-
             {phase === "celebrate" ? (
               <>
                 <h1 className="text-[#A6FF00] mb-6">
@@ -414,8 +409,12 @@ export default function SecretDalshePage() {
               </>
             ) : (
               <>
-                {/* Шапка фикс-высоты (плашка №2 — снаружи) → поле на одной высоте с L2/L3 */}
-                <div className="flex flex-col items-center" style={{ minHeight: "clamp(78px, 12vw, 118px)" }}>
+                {/* Шапка фикс-высоты (лейбл внутри) → поле на одной Y с L2/L3 */}
+                <div className="flex flex-col items-center" style={{ minHeight: "clamp(108px, 17vw, 150px)" }}>
+                  <p className="text-white/40 mb-3">
+                    <span className="sr-only">Крестики-нолики · Загадка №2</span>
+                    <LedText text="Крестики-нолики · Загадка №2" className="h-[9px] w-auto" />
+                  </p>
                   <h1 className="mb-3">
                     <LedLines text="Обыграй компьютер" center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
                   </h1>

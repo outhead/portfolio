@@ -275,7 +275,13 @@ export default function KodFinal() {
             </div>
           ) : null}
 
-          {/* ─── 4. Отзывы + канал — доступны всегда после победы ─── */}
+          {/* ─── Дальше: кооп — сразу под таблицей, чтобы не теряться на телефоне ─── */}
+          <div className="mb-8 flex flex-col items-center">
+            <p className="text-[13px] text-white/45 mb-3 max-w-xs">Есть ещё одна. Но в одиночку её не пройти.</p>
+            <QuestButton href="/secret/pair" arrow>Кооп-загадка</QuestButton>
+          </div>
+
+          {/* ─── Отзывы + канал — доступны всегда после победы ─── */}
           <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
             {fb.length > 0 ? (
               <QuestButton variant="tertiary" onClick={() => setShowWall((v) => !v)}>
@@ -287,7 +293,7 @@ export default function KodFinal() {
             ) : null}
           </div>
 
-          {/* ─── 5. Стена отзывов (по кнопке) ─── */}
+          {/* ─── Стена отзывов (по кнопке) ─── */}
           {showWall && fb.length > 0 ? (
             <div className="w-full max-w-[420px] mx-auto mb-8 text-left">
               <p className="text-white/40 mb-3">
@@ -305,11 +311,6 @@ export default function KodFinal() {
             </div>
           ) : null}
 
-          {/* ─── 5. Дальше ─── */}
-          <div className="mb-4 flex flex-col items-center">
-            <p className="text-[13px] text-white/45 mb-3 max-w-xs">Есть ещё одна. Но в одиночку её не пройти.</p>
-            <QuestButton href="/secret/pair" arrow>Кооп-загадка</QuestButton>
-          </div>
         </div>
       )}
     </main>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
+import LedText from "@/components/LedText";
 
 /**
  * Единая кнопка квеста. Три уровня иерархии + общий вид, чтобы кнопки
@@ -52,7 +53,15 @@ export default function QuestButton({
   className?: string;
 }) {
   const cls = `${base} ${styles[variant]} ${className}`;
-  const inner = (
+  // primary/secondary — лейбл нашим LED-шрифтом в точках (currentColor); tertiary — обычным текстом.
+  const led = variant !== "tertiary" && typeof children === "string";
+  const inner = led ? (
+    <>
+      <span className="sr-only">{children as string}</span>
+      <LedText text={children as string} className="h-[11px] w-auto" />
+      {arrow ? <LedText text="→" className="h-[12px] w-auto" /> : null}
+    </>
+  ) : (
     <>
       {children}
       {arrow ? <span aria-hidden>→</span> : null}
