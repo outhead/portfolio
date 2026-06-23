@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import confetti from "canvas-confetti";
 import QuestBackground from "@/components/QuestBackground";
+import HintButton from "@/components/HintButton";
 
 /**
  * Крестики L3 — «Этого не достаточно».
@@ -54,15 +55,7 @@ export default function Dalshe3() {
   const [solved, setSolved] = useState(false);
   const [lost, setLost] = useState(false);
   const [thinking, setThinking] = useState(false);
-  const [hint, setHint] = useState(false);
-  const [hint2, setHint2] = useState(false);
   const over = solved || lost;
-
-  useEffect(() => {
-    const t = setTimeout(() => setHint(true), 8000);
-    const t2 = setTimeout(() => setHint2(true), 18000);
-    return () => { clearTimeout(t); clearTimeout(t2); };
-  }, []);
 
   const [dragId, setDragId] = useState<number | null>(null);
   const [off, setOff] = useState({ x: 0, y: 0 });
@@ -238,11 +231,13 @@ export default function Dalshe3() {
             <p className="mt-5 text-sm text-[#C9A66B]">Компьютер собрал свою линию. Начни заново.</p>
           ) : null}
 
-          <p className="mt-5 text-[13px] text-[#C9A66B]/85 max-w-xs transition-opacity duration-700" style={{ opacity: hint && !over ? 1 : 0 }}>
-            {hint2
-              ? "Фигуры можно перетаскивать. Перетащи крестик прямо на слово «не»."
-              : "А кто сказал, что играть надо по правилам? Условие можно изменить."}
-          </p>
+          <HintButton
+            className="mt-5"
+            hints={[
+              "А кто сказал, что играть надо по правилам? Условие можно изменить.",
+              "Фигуры можно перетаскивать. Перетащи крестик прямо на слово «не».",
+            ]}
+          />
 
           <button type="button" onClick={reset}
             className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white/70 hover:border-white/40 hover:text-white transition-colors">

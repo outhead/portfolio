@@ -21,7 +21,7 @@ const PW = 96, PH = 14;      // ракетка (горизонтальная)
 const MARGIN = 26;
 const BOTTOM_Y = FH - MARGIN - PH; // верхняя грань нижней ракетки
 const TOP_Y = MARGIN;              // верхняя грань верхней ракетки
-const WIN_SCORE = 5;
+const WIN_SCORE = 3;
 const BASE = 3.4;            // стартовая скорость (в ~1.5 раза медленнее прежней)
 const MAXV = 8;              // потолок скорости (px за шаг 60 Гц)
 const ACC = 1.04;            // ускорение на каждом отскоке
@@ -65,7 +65,6 @@ export default function PongPage() {
   const pw2 = useRef(PW);            // ширина верхней ракетки
   const balls = useRef<Ball[]>([{ x: FW / 2, y: FH / 2, vx: 0, vy: 0, last: 0 }]);
   const boost = useRef<Boost | null>(null);
-  const x2Until = useRef(0);
   const sizeUntil = useRef<[number, number]>([0, 0]); // [p1,p2] expiry
   const nextBoostAt = useRef(0);
   const boostGoneAt = useRef(0);
@@ -119,9 +118,9 @@ export default function PongPage() {
     balls.current = [{ x: FW / 2, y: FH / 2, vx: (Math.random() * 2 - 1) * 2.2, vy: dir * BASE, last: dir > 0 ? 1 : 0 }];
     boost.current = null;
     stuck.current = null; stickArmed.current = [0, 0];
-    x2Until.current = 0; sizeUntil.current = [0, 0];
+    sizeUntil.current = [0, 0];
     pw1.current = PW; pw2.current = PW;
-    nextBoostAt.current = performance.now() + 6000 + Math.random() * 6000;
+    nextBoostAt.current = performance.now() + 2500 + Math.random() * 3000;
   }
 
   // на мобиле прячем глобальный подвал/шапку, чтобы понг влезал и был выше.
@@ -716,7 +715,7 @@ export default function PongPage() {
             last: s.last,
           });
         }
-        x2Until.current = now + 10000;
+        // намеренно НЕ ставим срок жизни мультибола — мячи остаются до гола
       } else if (type === "stick") {
         // взведена 12с: следующий приём этой ракеткой — прилипание
         stickArmed.current[owner] = now + 12000;
@@ -856,12 +855,8 @@ export default function PongPage() {
       }
 
       if (host && phaseRef.current === "playing") {
-        // истечение бустов
-        if (x2Until.current && now > x2Until.current && balls.current.length > 1) {
-          balls.current = [balls.current[0]];
-          x2Until.current = 0;
-          if (stuck.current && !balls.current.includes(stuck.current.b)) stuck.current = null;
-        }
+        // истечение бустов. Мультибол (x2) НЕ снимаем по таймеру — лишние мячи
+        // живут вместе до тех пор, пока не вылетят в гол (Егор: «два шарика играют постоянно»).
         if (sizeUntil.current[0] && now > sizeUntil.current[0]) { pw1.current = PW; sizeUntil.current[0] = 0; }
         if (sizeUntil.current[1] && now > sizeUntil.current[1]) { pw2.current = PW; sizeUntil.current[1] = 0; }
         // спавн/деспавн буста
@@ -870,11 +865,12 @@ export default function PongPage() {
           boost.current = {
             x: 60 + Math.random() * (FW - 120),
             y: FH * 0.32 + Math.random() * FH * 0.36,
-            type: rr < 0.34 ? "x2" : rr < 0.67 ? "size" : "stick",
+            // мультибол (x2) выпадает чаще остальных — это «второй шарик», которого Егор хочет больше
+            type: rr < 0.5 ? "x2" : rr < 0.8 ? "size" : "stick",
           };
-          boostGoneAt.current = now + 9000;
+          boostGoneAt.current = now + 10000;
         }
-        if (boost.current && now > boostGoneAt.current) { boost.current = null; nextBoostAt.current = now + 8000 + Math.random() * 6000; }
+        if (boost.current && now > boostGoneAt.current) { boost.current = null; nextBoostAt.current = now + 3000 + Math.random() * 3500; }
 
         // прилипший мяч следует за ракеткой владельца.
         // Запуск: владелец отпустил палец (живой флаг из ввода/пакетов) или таймаут 2.5с
@@ -948,7 +944,7 @@ export default function PongPage() {
           // сбор буста
           if (boost.current && Math.hypot(b.x - boost.current.x, b.y - boost.current.y) < 26) {
             activate(boost.current.type, b.last); boost.current = null;
-            nextBoostAt.current = now + 8000 + Math.random() * 6000;
+            nextBoostAt.current = now + 3000 + Math.random() * 3500;
           }
         }
         // голы — убираем вылетевшие мячи

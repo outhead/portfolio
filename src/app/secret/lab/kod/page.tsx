@@ -2,7 +2,7 @@
 
 import LedText from "@/components/LedText";
 import { LedLines } from "@/components/LedBoard";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import confetti from "canvas-confetti";
 import {
@@ -11,11 +11,13 @@ import {
   saveScore,
   fmtQuestTime,
   questElapsed,
+  questHints,
   clearQuestStart,
   type LbEntry,
   type FbEntry,
 } from "../../leaderboard";
 import QuestBackground from "@/components/QuestBackground";
+import HintButton from "@/components/HintButton";
 
 // Телеграм-канал для кнопки «подписаться» и вейтлиста. Пусто → кнопка скрыта.
 const TG_CHANNEL = "https://t.me/aiegorka";
@@ -38,10 +40,9 @@ export default function KodFinal() {
   const [entry, setEntry] = useState("");
   const [won, setWon] = useState(false);
   const [wrong, setWrong] = useState(false);
-  const [hint, setHint] = useState(false);
-  const [hint2, setHint2] = useState(false);
 
   const [winMs, setWinMs] = useState<number | null>(null);
+  const [hintsUsed, setHintsUsed] = useState(0);
   const [entries, setEntries] = useState<LbEntry[]>([]);
   const [fb, setFb] = useState<FbEntry[]>([]);
   const [name, setName] = useState("");
@@ -55,12 +56,6 @@ export default function KodFinal() {
   const [showFb, setShowFb] = useState(false);   // панель отзыва раскрыта
   const [showWall, setShowWall] = useState(false); // стена отзывов раскрыта
 
-  useEffect(() => {
-    const id = setTimeout(() => setHint(true), 10000);
-    const id2 = setTimeout(() => setHint2(true), 22000);
-    return () => { clearTimeout(id); clearTimeout(id2); };
-  }, []);
-
   const push = (d: string) => {
     if (won || entry.length >= 4) return;
     const next = entry + d;
@@ -69,6 +64,7 @@ export default function KodFinal() {
       if (next === CODE) {
         setTimeout(() => {
           setWinMs(questElapsed());
+          setHintsUsed(questHints());
           setWon(true);
           celebrate();
           loadBoard().then(setEntries);
@@ -146,11 +142,13 @@ export default function KodFinal() {
             <span className="w-16 h-16" />
           </div>
 
-          <p className="mt-8 text-[13px] text-[#C9A66B]/85 transition-opacity duration-700 min-h-[20px] max-w-[280px]" style={{ opacity: hint ? 1 : 0 }}>
-            {hint2
-              ? "Пролистай в самый низ — загляни в подвал."
-              : "Подбирать не нужно. Цифры спрятаны где-то на странице."}
-          </p>
+          <HintButton
+            className="mt-8"
+            hints={[
+              "Подбирать не нужно. Цифры спрятаны где-то на странице.",
+              "Пролистай в самый низ — загляни в подвал.",
+            ]}
+          />
         </div>
 
         {/* Разгадка — в самом «подвале»: надо пролистать вниз (на телефоне — пара экранов) */}
@@ -175,6 +173,11 @@ export default function KodFinal() {
           {winMs != null ? (
             <p className="text-[15px] text-white/80 mb-8">
               Весь квест за <span className="text-[#A6FF00] tabular-nums">{fmtQuestTime(winMs)}</span>
+              {hintsUsed > 0 ? (
+                <> · подсказок: <span className="text-[#C9A66B] tabular-nums">{hintsUsed}</span></>
+              ) : (
+                <> · <span className="text-[#A6FF00]">без подсказок</span></>
+              )}
             </p>
           ) : (
             <p className="text-sm text-white/50 mb-8">Код был в заголовке вкладки. (Время не засчитано — квест начат не с шифра.)</p>
@@ -201,6 +204,9 @@ export default function KodFinal() {
                       className="w-4 h-4 accent-[#A6FF00] cursor-pointer" />
                     Опубликовать на стене прошедших
                   </label>
+                  <p className="px-1 -mt-1 text-[12px] text-white/35">
+                    {publish ? "Отзыв появится на стене ниже и его увидит Егор." : "Без галочки отзыв увидит только Егор."}
+                  </p>
                   <input
                     type="text" value={telegram} onChange={(e) => setTelegram(e.target.value)}
                     maxLength={80} placeholder="Телеграм — позову на новые игры (необязательно)" aria-label="Телеграм"
@@ -215,38 +221,22 @@ export default function KodFinal() {
               </button>
               {!showFb ? (
                 <button type="button" onClick={() => setShowFb(true)}
-                  className="text-[13px] text-white/40 hover:text-[#A6FF00] transition-colors">
-                  + оставить отзыв
+                  className="text-[13px] text-white/45 hover:text-[#A6FF00] transition-colors underline decoration-white/20 underline-offset-4">
+                  написать отзыв Егору
                 </button>
               ) : null}
+              <p className="text-[12px] text-white/30">Имя необязательно — таблица лидеров ниже в любом случае.</p>
             </div>
           ) : null}
 
-          {/* ─── 2. После отправки: статус + действия ─── */}
+          {/* ─── 2. После отправки: статус ─── */}
           {submitted ? (
-            <div className="w-full max-w-[420px] mx-auto mb-8 flex flex-col items-center gap-4">
-              <p className="text-[15px] text-white/75">Ты в таблице{telegram.trim() ? " · добавлю в вейтлист" : ""}. Спасибо, что дошёл.</p>
-              <div className="flex flex-wrap items-center justify-center gap-2.5">
-                {fb.length > 0 ? (
-                  <button type="button" onClick={() => setShowWall((v) => !v)}
-                    className="inline-flex items-center px-5 py-2.5 rounded-full border border-white/15 text-white/70 hover:border-white/40 hover:text-white transition-colors">
-                    {showWall ? "скрыть отзывы" : `отзывы · ${fb.length}`}
-                  </button>
-                ) : null}
-                {TG_CHANNEL ? (
-                  <a href={TG_CHANNEL} target="_blank" rel="noopener noreferrer"
-                    className="inline-flex items-center px-5 py-2.5 rounded-full border border-[#A6FF00]/40 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
-                    <span className="sr-only">Канал</span>
-                    <LedText text="Канал" className="h-[9px] w-auto" />
-                  </a>
-                ) : null}
-              </div>
-            </div>
+            <p className="text-[15px] text-white/75 mb-6 max-w-[420px]">Ты в таблице{telegram.trim() ? " · добавлю в вейтлист" : ""}. Спасибо, что дошёл.</p>
           ) : null}
 
-          {/* ─── 3. Лидерборд (после отправки) ─── */}
-          {submitted && entries.length > 0 ? (
-            <div className="w-full max-w-[380px] mx-auto mb-8 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5">
+          {/* ─── 3. Лидерборд — виден сразу после победы ─── */}
+          {entries.length > 0 ? (
+            <div className="w-full max-w-[380px] mx-auto mb-6 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-white/40">
                   <span className="sr-only">Быстрее всех</span>
@@ -278,8 +268,25 @@ export default function KodFinal() {
             </div>
           ) : null}
 
-          {/* ─── 4. Стена отзывов (по кнопке) ─── */}
-          {submitted && showWall && fb.length > 0 ? (
+          {/* ─── 4. Отзывы + канал — доступны всегда после победы ─── */}
+          <div className="flex flex-wrap items-center justify-center gap-2.5 mb-8">
+            {fb.length > 0 ? (
+              <button type="button" onClick={() => setShowWall((v) => !v)}
+                className="inline-flex items-center px-5 py-2.5 rounded-full border border-white/15 text-white/70 hover:border-white/40 hover:text-white transition-colors">
+                {showWall ? "скрыть отзывы" : `отзывы · ${fb.length}`}
+              </button>
+            ) : null}
+            {TG_CHANNEL ? (
+              <a href={TG_CHANNEL} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center px-5 py-2.5 rounded-full border border-[#A6FF00]/40 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
+                <span className="sr-only">Канал</span>
+                <LedText text="Канал" className="h-[9px] w-auto" />
+              </a>
+            ) : null}
+          </div>
+
+          {/* ─── 5. Стена отзывов (по кнопке) ─── */}
+          {showWall && fb.length > 0 ? (
             <div className="w-full max-w-[420px] mx-auto mb-8 text-left">
               <p className="text-white/40 mb-3">
                 <span className="sr-only">Стена прошедших</span>

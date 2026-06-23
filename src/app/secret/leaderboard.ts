@@ -108,9 +108,26 @@ export function markQuestStart() {
   if (typeof window === "undefined") return;
   if (!window.localStorage.getItem(QUEST_START_KEY)) {
     window.localStorage.setItem(QUEST_START_KEY, String(Date.now()));
+    window.localStorage.setItem(HINTS_KEY, "0"); // новый заход — обнуляем подсказки
   }
 }
 export function clearQuestStart() {
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(QUEST_START_KEY);
+}
+
+// ─── Счётчик подсказок за весь квест ───
+// Сквозной: считается на всех экранах (шифр, крестики, терминал), показывается в финале.
+export const HINTS_KEY = "quest_hints";
+export function questHints(): number {
+  if (typeof window === "undefined") return 0;
+  const n = Number(window.localStorage.getItem(HINTS_KEY));
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
+// Вызывается один раз на каждую ВПЕРВЫЕ раскрытую подсказку. Возвращает новое значение.
+export function bumpHint(): number {
+  if (typeof window === "undefined") return 0;
+  const n = questHints() + 1;
+  window.localStorage.setItem(HINTS_KEY, String(n));
+  return n;
 }

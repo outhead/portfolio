@@ -7,6 +7,7 @@ import { ArrowLeft } from "lucide-react";
 import confetti from "canvas-confetti";
 import { markQuestStart } from "./leaderboard";
 import QuestBackground from "@/components/QuestBackground";
+import HintButton from "@/components/HintButton";
 
 function celebrate() {
   const colors = ["#A6FF00", "#D9FF66", "#ECFFB3", "#FFFFFF"];
@@ -90,13 +91,6 @@ export default function SecretPage() {
   useEffect(() => {
     if (isSecretFound) celebrate();
   }, [isSecretFound]);
-
-  // Подсказка появляется через 8 секунд, если пользователь не двигал слайдер
-  const [showHint, setShowHint] = useState(false);
-  useEffect(() => {
-    const t = setTimeout(() => setShowHint(true), 8000);
-    return () => clearTimeout(t);
-  }, []);
 
   return (
     <main
@@ -206,14 +200,15 @@ export default function SecretPage() {
               <LedText text={String(SHIFT_MAX)} className="h-[9px] w-auto" />
             </div>
 
-            {/* Подсказка после 8 сек */}
-            <p
-              className={`mt-8 md:mt-10 text-sm md:text-[15px] text-white/55 max-w-md mx-auto text-center transition-opacity duration-700 ${
-                showHint && !isSolved && !isSecretFound ? "opacity-100" : "opacity-0"
-              }`}
-            >
-              Подсказка: настоящий сдвиг — двузначное число.
-            </p>
+            {/* Подсказка — по кнопке */}
+            <HintButton
+              className="mt-8 md:mt-10"
+              disabled={isSolved || isSecretFound}
+              hints={[
+                "Настоящий сдвиг — двузначное число.",
+                "Ползунка не хватает. Кликни по самому числу и впиши его вручную.",
+              ]}
+            />
 
             {/* Сообщение после разгадки */}
             {isSolved ? (

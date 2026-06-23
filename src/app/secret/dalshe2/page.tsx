@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import confetti from "canvas-confetti";
 import QuestBackground from "@/components/QuestBackground";
+import HintButton from "@/components/HintButton";
 
 /**
  * Крестики L2 — «Собери три в ряд».
@@ -215,8 +216,16 @@ export default function Dalshe2() {
             <p className="mt-5 text-sm text-[#C9A66B]">Компьютер собрал свою линию. Начни заново.</p>
           ) : null}
 
+          <HintButton
+            className="mt-5"
+            hints={[
+              "Честно идеального соперника не одолеть. Лазейка не в ходах.",
+              "Фигуры можно перетаскивать. Перетащи свои крестики в ряд.",
+            ]}
+          />
+
           <button type="button" onClick={reset}
-            className="mt-8 inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white/70 hover:border-white/40 hover:text-white transition-colors">
+            className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white/70 hover:border-white/40 hover:text-white transition-colors">
             <span className="sr-only">Начать заново</span><LedText text="Начать заново" className="h-[10px] w-auto" />
           </button>
         </div>

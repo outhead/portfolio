@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import confetti from "canvas-confetti";
 import QuestBackground from "@/components/QuestBackground";
+import HintButton from "@/components/HintButton";
 
 // Игровое поле — решётка 5×5 (координаты 0..4).
 // «Официальное» поле 3×3 — это центральные клетки (1..3, 1..3).
@@ -229,7 +230,6 @@ export default function SecretDalshePage() {
   const [winLine, setWinLine] = useState<{ cells: string[]; color: string } | null>(null);
   const [round, setRound] = useState(0);
   const [phase, setPhase] = useState<Phase>("play");
-  const [lossCount, setLossCount] = useState(0); // число проигрышей/ничьих → эскалация подсказки «за рамкой»
 
   const startRef = useRef<number | null>(null);
   const compTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -241,14 +241,6 @@ export default function SecretDalshePage() {
       if (phaseTimer.current) clearTimeout(phaseTimer.current);
     };
   }, []);
-
-  // После проигрыша/ничьи — намёк, что играть нужно не по правилам поля.
-  // Считаем неудачи: 1-я → мягкий намёк, 2-я+ → прямая подсказка.
-  const countedRef = useRef(false);
-  useEffect(() => {
-    if (over && !won && !countedRef.current) { countedRef.current = true; setLossCount((n) => n + 1); }
-    if (!over) countedRef.current = false;
-  }, [over, won]);
 
   function triggerWin(cells: string[]) {
     setOver(true);
@@ -446,13 +438,14 @@ export default function SecretDalshePage() {
                     {status}
                   </p>
                 ) : null}
-                {lossCount > 0 && !won ? (
-                  <p className="mt-3 text-[13px] md:text-sm text-[#C9A66B]/90 max-w-xs">
-                    {lossCount >= 2
-                      ? "Поле не заканчивается на рамке. Кликни по клеткам снаружи и собери ряд там."
-                      : "Честно его не обыграть. Мысли «out of the box»."}
-                  </p>
-                ) : null}
+                <HintButton
+                  className="mt-3"
+                  disabled={won}
+                  hints={[
+                    "Честно его не обыграть. Мысли «out of the box».",
+                    "Поле не заканчивается на рамке. Кликни по клеткам снаружи и собери ряд там.",
+                  ]}
+                />
                 <button
                   type="button"
                   onClick={reset}
