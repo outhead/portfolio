@@ -3,10 +3,10 @@
 import LedText from "@/components/LedText";
 import { LedLines } from "@/components/LedBoard";
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import confetti from "canvas-confetti";
 import QuestBackground from "@/components/QuestBackground";
 import HintButton from "@/components/HintButton";
+import QuestButton from "@/components/QuestButton";
 
 /**
  * Крестики L3 — «Этого не достаточно».
@@ -239,10 +239,9 @@ export default function Dalshe3() {
             ]}
           />
 
-          <button type="button" onClick={reset}
-            className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white/70 hover:border-white/40 hover:text-white transition-colors">
-            <span className="sr-only">Начать заново</span><LedText text="Начать заново" className="h-[10px] w-auto" />
-          </button>
+          <QuestButton variant="secondary" onClick={reset} className="mt-6">
+            Начать заново
+          </QuestButton>
         </div>
       ) : (
         <div className="relative z-[1] w-full max-w-[420px] mx-auto flex flex-col items-center text-center">
@@ -253,9 +252,7 @@ export default function Dalshe3() {
           <h1 className="text-[#A6FF00] mb-8">
             <LedLines text="Это решение" center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
           </h1>
-          <Link href="/secret/lab/kod" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
-            <span className="sr-only">Дальше</span><LedText text="Дальше" className="h-[10px] w-auto" /><LedText text="→" className="h-[11px] w-auto" />
-          </Link>
+          <QuestButton href="/secret/lab/kod" arrow>Дальше</QuestButton>
         </div>
       )}
     </main>

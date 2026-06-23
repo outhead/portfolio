@@ -3,9 +3,9 @@
 import LedText from "@/components/LedText";
 import { LedLines } from "@/components/LedBoard";
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import confetti from "canvas-confetti";
 import QuestBackground from "@/components/QuestBackground";
+import QuestButton from "@/components/QuestButton";
 
 export default function PairDone() {
   // переносим комнату/роль в пинг-понг — играем тем же составом, без новой ссылки
@@ -37,9 +37,7 @@ export default function PairDone() {
         </p>
         <div className="mb-8 flex flex-col items-center">
           <p className="text-[13px] text-white/45 mb-3 max-w-xs">Раз уж вы вдвоём — сыграйте.</p>
-          <Link href={pongHref} className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
-            <span className="sr-only">Пинг-понг</span><LedText text="Пинг-понг" className="h-[10px] w-auto" /><LedText text="→" className="h-[11px] w-auto" />
-          </Link>
+          <QuestButton href={pongHref} arrow>Пинг-понг</QuestButton>
         </div>
       </div>
     </main>

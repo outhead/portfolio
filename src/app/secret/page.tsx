@@ -2,12 +2,11 @@
 
 import LedText from "@/components/LedText";
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import confetti from "canvas-confetti";
 import { markQuestStart } from "./leaderboard";
 import QuestBackground from "@/components/QuestBackground";
 import HintButton from "@/components/HintButton";
+import QuestButton from "@/components/QuestButton";
 
 function celebrate() {
   const colors = ["#A6FF00", "#D9FF66", "#ECFFB3", "#FFFFFF"];
@@ -219,13 +218,9 @@ export default function SecretPage() {
                 <p className="mt-3 text-[13px] md:text-sm text-[#C9A66B]/90 max-w-lg">
                   Видишь число в строке? Впиши его в счётчик сдвига.
                 </p>
-                <Link
-                  href="/"
-                  className="mt-6 inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2.2} />
-                  <span className="sr-only">Вернуться</span><LedText text="Вернуться" className="h-[10px] w-auto" />
-                </Link>
+                <QuestButton href="/" variant="tertiary" className="mt-6">
+                  ← Вернуться
+                </QuestButton>
               </div>
             ) : null}
 
@@ -238,14 +233,9 @@ export default function SecretPage() {
               <p className="text-base md:text-lg text-white/70 max-w-lg leading-relaxed">
                 Ты вышел за рамки. Но сможешь ли повторить свой успех?
               </p>
-              <Link
-                href={QUEST2_HREF}
-                data-ym-goal="quest2_open"
-                className="mt-7 inline-flex items-center gap-2 px-7 py-3.5 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
-              >
-                <span className="sr-only">Дальше</span><LedText text="Дальше" className="h-[10px] w-auto" />
-                <LedText text="→" className="h-[11px] w-auto" />
-              </Link>
+              <QuestButton href={QUEST2_HREF} ymGoal="quest2_open" arrow className="mt-7">
+                Дальше
+              </QuestButton>
             </div>
           )}
         </div>

@@ -7,6 +7,7 @@ import Link from "next/link";
 import confetti from "canvas-confetti";
 import { pairCall, pairState } from "./pairApi";
 import QuestBackground from "@/components/QuestBackground";
+import QuestButton from "@/components/QuestButton";
 
 /**
  * Кооп-загадка. Двое, разные IP.
@@ -244,14 +245,9 @@ export default function PairPage() {
             <p className="text-[12px] text-white/30 max-w-xs mb-4">
               Вы с напарником за одним VPN или одной сетью? Тогда я обознался.
             </p>
-            <button
-              type="button"
-              onClick={() => { setPhase("loading"); joinPair(tokenRef.current || new URLSearchParams(window.location.search).get("s") || "", true); }}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors"
-            >
-              <span className="sr-only">Мы правда вдвоём</span>
-              <LedText text="Мы правда вдвоём" className="h-[10px] w-auto" />
-            </button>
+            <QuestButton onClick={() => { setPhase("loading"); joinPair(tokenRef.current || new URLSearchParams(window.location.search).get("s") || "", true); }}>
+              Мы правда вдвоём
+            </QuestButton>
           </>
         ) : null}
 
@@ -289,10 +285,7 @@ export default function PairPage() {
                 {!joined ? (
                   <>
                     <p className="text-[13px] text-white/50 mb-3">Отправь ссылку второму игроку (на другом устройстве):</p>
-                    <button type="button" onClick={copy}
-                      className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors">
-                      <span className="leading-none translate-y-[1px]">{copied ? "скопировано" : "копировать ссылку"}</span>
-                    </button>
+                    <QuestButton onClick={copy}>{copied ? "скопировано" : "копировать ссылку"}</QuestButton>
                     <p className="mt-4 text-[11px] text-white/30 break-all max-w-xs">{shareUrl}</p>
                   </>
                 ) : (
@@ -303,9 +296,7 @@ export default function PairPage() {
               <div className="mt-10 flex flex-col items-center">
                 <p className="text-[#A6FF00] mb-2 flex justify-center"><span className="sr-only">Сошлось!</span><LedText text="Сошлось!" scale={2} dot={1.45} className="h-[20px] md:h-[26px] w-auto" /></p>
                 <p className="text-[13px] text-white/55 max-w-xs">Вы сделали это вдвоём. Финал открыт у обоих.</p>
-                <Link href={`/secret/pair/done?room=${token}&host=1`} className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
-                  <span className="sr-only">Дальше</span><LedText text="Дальше" className="h-[10px] w-auto" /><LedText text="→" className="h-[11px] w-auto" />
-                </Link>
+                <QuestButton href={`/secret/pair/done?room=${token}&host=1`} arrow className="mt-6">Дальше</QuestButton>
               </div>
             )}
           </>
@@ -367,9 +358,7 @@ export default function PairPage() {
               <div className="mt-10 flex flex-col items-center">
                 <p className="text-[#A6FF00] mb-2 flex justify-center"><span className="sr-only">Сошлось!</span><LedText text="Сошлось!" scale={2} dot={1.45} className="h-[20px] md:h-[26px] w-auto" /></p>
                 <p className="text-[13px] text-white/55 max-w-xs">Вы сделали это вдвоём. Финал открыт у обоих.</p>
-                <Link href={`/secret/pair/done?room=${token}`} className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
-                  <span className="sr-only">Дальше</span><LedText text="Дальше" className="h-[10px] w-auto" /><LedText text="→" className="h-[11px] w-auto" />
-                </Link>
+                <QuestButton href={`/secret/pair/done?room=${token}`} arrow className="mt-6">Дальше</QuestButton>
               </div>
             )}
           </>

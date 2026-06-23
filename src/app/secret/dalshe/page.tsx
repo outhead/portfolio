@@ -3,10 +3,10 @@
 import LedText from "@/components/LedText";
 import { LedLines } from "@/components/LedBoard";
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import confetti from "canvas-confetti";
 import QuestBackground from "@/components/QuestBackground";
 import HintButton from "@/components/HintButton";
+import QuestButton from "@/components/QuestButton";
 
 // Игровое поле — решётка 5×5 (координаты 0..4).
 // «Официальное» поле 3×3 — это центральные клетки (1..3, 1..3).
@@ -389,21 +389,12 @@ export default function SecretDalshePage() {
             </p>
 
             <div className="flex flex-wrap items-center justify-center gap-3">
-              <Link
-                href="/secret/dalshe2"
-                data-ym-goal="quest2_solved"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
-              >
-                <span className="sr-only">Следующая загадка</span><LedText text="Следующая загадка" className="h-[10px] w-auto" />
-                <LedText text="→" className="h-[11px] w-auto" />
-              </Link>
-              <button
-                type="button"
-                onClick={reset}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white/70 hover:border-white/40 hover:text-white transition-colors"
-              >
-                <span className="sr-only">Сыграть снова</span><LedText text="Сыграть снова" className="h-[10px] w-auto" />
-              </button>
+              <QuestButton href="/secret/dalshe2" ymGoal="quest2_solved" arrow>
+                Следующая загадка
+              </QuestButton>
+              <QuestButton variant="secondary" onClick={reset}>
+                Сыграть снова
+              </QuestButton>
             </div>
           </div>
         ) : (
@@ -446,14 +437,9 @@ export default function SecretDalshePage() {
                     "Поле не заканчивается на рамке. Кликни по клеткам снаружи и собери ряд там.",
                   ]}
                 />
-                <button
-                  type="button"
-                  onClick={reset}
-                  className="mt-5 inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white/70 hover:border-white/40 hover:text-white transition-colors"
-                >
-                  <span className="sr-only">{over ? "Повторить" : "Начать заново"}</span>
-                  <LedText text={over ? "Повторить" : "Начать заново"} className="h-[10px] w-auto" />
-                </button>
+                <QuestButton variant="secondary" onClick={reset} className="mt-5">
+                  {over ? "Повторить" : "Начать заново"}
+                </QuestButton>
               </>
             )}
           </div>

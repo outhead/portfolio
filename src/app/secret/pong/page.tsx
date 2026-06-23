@@ -1,6 +1,7 @@
 "use client";
 
 import LedText from "@/components/LedText";
+import QuestButton from "@/components/QuestButton";
 import { useEffect, useRef, useState } from "react";
 import confetti from "canvas-confetti";
 import { connectP2P, type P2PHandle } from "./rtc";
@@ -1116,10 +1117,7 @@ export default function PongPage() {
                     <>
                       <p className="text-[15px] text-white/80 mb-1">Жду соперника</p>
                       <p className="text-[13px] text-white/45 mb-5 max-w-xs">Кинь ссылку другу — игра начнётся, когда он откроет.</p>
-                      <button type="button" onClick={copy}
-                        className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors">
-                        <span className="leading-none translate-y-[1px]">{copied ? "скопировано" : "копировать ссылку"}</span>
-                      </button>
+                      <QuestButton onClick={copy}>{copied ? "скопировано" : "копировать ссылку"}</QuestButton>
                     </>
                   ) : (
                     <p className="text-white/70 text-sm">Жду, пока напарник откроет пинг-понг…</p>
@@ -1140,10 +1138,7 @@ export default function PongPage() {
                       className="h-[20px] sm:h-[26px] w-auto"
                     />
                   </p>
-                  <button type="button" onClick={rematch}
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors">
-                    <span className="leading-none translate-y-[1px]">{role === "host" ? "Реванш" : "Запросить реванш"}</span>
-                  </button>
+                  <QuestButton onClick={rematch}>{role === "host" ? "Реванш" : "Запросить реванш"}</QuestButton>
                 </>
               ) : null}
 

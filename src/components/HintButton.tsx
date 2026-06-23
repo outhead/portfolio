@@ -42,7 +42,7 @@ export default function HintButton({
         <button
           type="button"
           onClick={reveal}
-          className="text-[12px] tracking-[0.08em] uppercase text-white/35 hover:text-[#A6FF00] border border-white/12 hover:border-[#A6FF00]/40 rounded-full px-4 py-2 transition-colors"
+          className="text-[13px] text-white/45 hover:text-[#A6FF00] underline decoration-white/20 underline-offset-4 px-2 py-1.5 transition-colors"
         >
           {label}
         </button>

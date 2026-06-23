@@ -3,7 +3,6 @@
 import LedText from "@/components/LedText";
 import { LedLines } from "@/components/LedBoard";
 import { useState } from "react";
-import Link from "next/link";
 import confetti from "canvas-confetti";
 import {
   loadBoard,
@@ -18,6 +17,7 @@ import {
 } from "../../leaderboard";
 import QuestBackground from "@/components/QuestBackground";
 import HintButton from "@/components/HintButton";
+import QuestButton from "@/components/QuestButton";
 
 // Телеграм-канал для кнопки «подписаться» и вейтлиста. Пусто → кнопка скрыта.
 const TG_CHANNEL = "https://t.me/aiegorka";
@@ -215,15 +215,14 @@ export default function KodFinal() {
                 </div>
               ) : null}
 
-              <button type="button" onClick={submit} disabled={submitting}
-                className="mt-1 inline-flex items-center justify-center px-6 py-3.5 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors disabled:opacity-50">
-                <span className="leading-none translate-y-[1px]">{submitting ? "..." : "В таблицу"}</span>
-              </button>
+              <QuestButton onClick={submit} disabled={submitting} className="mt-1">
+                {submitting ? "..." : "В таблицу"}
+              </QuestButton>
               {!showFb ? (
-                <button type="button" onClick={() => setShowFb(true)}
-                  className="text-[13px] text-white/45 hover:text-[#A6FF00] transition-colors underline decoration-white/20 underline-offset-4">
+                <QuestButton variant="tertiary" onClick={() => setShowFb(true)}
+                  className="underline decoration-white/20 underline-offset-4">
                   написать отзыв Егору
-                </button>
+                </QuestButton>
               ) : null}
               <p className="text-[12px] text-white/30">Имя необязательно — таблица лидеров ниже в любом случае.</p>
             </div>
@@ -269,19 +268,14 @@ export default function KodFinal() {
           ) : null}
 
           {/* ─── 4. Отзывы + канал — доступны всегда после победы ─── */}
-          <div className="flex flex-wrap items-center justify-center gap-2.5 mb-8">
+          <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
             {fb.length > 0 ? (
-              <button type="button" onClick={() => setShowWall((v) => !v)}
-                className="inline-flex items-center px-5 py-2.5 rounded-full border border-white/15 text-white/70 hover:border-white/40 hover:text-white transition-colors">
+              <QuestButton variant="tertiary" onClick={() => setShowWall((v) => !v)}>
                 {showWall ? "скрыть отзывы" : `отзывы · ${fb.length}`}
-              </button>
+              </QuestButton>
             ) : null}
             {TG_CHANNEL ? (
-              <a href={TG_CHANNEL} target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center px-5 py-2.5 rounded-full border border-[#A6FF00]/40 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
-                <span className="sr-only">Канал</span>
-                <LedText text="Канал" className="h-[9px] w-auto" />
-              </a>
+              <QuestButton href={TG_CHANNEL} external variant="secondary">Канал</QuestButton>
             ) : null}
           </div>
 
@@ -306,9 +300,7 @@ export default function KodFinal() {
           {/* ─── 5. Дальше ─── */}
           <div className="mb-4 flex flex-col items-center">
             <p className="text-[13px] text-white/45 mb-3 max-w-xs">Есть ещё одна. Но в одиночку её не пройти.</p>
-            <Link href="/secret/pair" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
-              <span className="sr-only">Кооп-загадка</span><LedText text="Кооп-загадка" className="h-[10px] w-auto" /><LedText text="→" className="h-[11px] w-auto" />
-            </Link>
+            <QuestButton href="/secret/pair" arrow>Кооп-загадка</QuestButton>
           </div>
         </div>
       )}
