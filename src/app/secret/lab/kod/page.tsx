@@ -23,11 +23,11 @@ import QuestButton from "@/components/QuestButton";
 const TG_CHANNEL = "https://t.me/aiegorka";
 
 /**
- * Финал квеста — «Код на виду» (Notpron). Код 4688 спрятан в заголовке вкладки.
+ * Финал квеста — «Код на виду» (Notpron). Код 4488 спрятан в заголовке вкладки.
  * После ввода — финальный лидерборд по ВРЕМЕНИ ПРОХОЖДЕНИЯ ВСЕГО КВЕСТА.
  * Текущие записи помечены как друзья/тестировщики (можно скрыть и увидеть остальных).
  */
-const CODE = "4688";
+const CODE = "4488";
 
 function celebrate() {
   const colors = ["#A6FF00", "#D9FF66", "#ECFFB3", "#FFFFFF"];
@@ -155,8 +155,8 @@ export default function KodFinal() {
         <div aria-hidden style={{ height: "128vh" }} />
         <div className="relative z-[1] w-full max-w-[440px] mx-auto text-center pb-4">
           <p className="text-white/25">
-            <span className="sr-only">Сектор 4 · Узел 6 · Шлюз 8 · Ключ 8</span>
-            <LedText text="Сектор 4 · Узел 6 · Шлюз 8 · Ключ 8" className="h-[9px] w-auto" />
+            <span className="sr-only">Сектор 4 · Узел 4 · Шлюз 8 · Ключ 8</span>
+            <LedText text="Сектор 4 · Узел 4 · Шлюз 8 · Ключ 8" className="h-[9px] w-auto" />
           </p>
           <p className="mt-2 text-[10px] tracking-[0.2em] uppercase text-white/12">Терминал #0000 · служебная метка</p>
         </div>
