@@ -37,12 +37,12 @@ export async function pairCall(
   }
 }
 
-export type PairState = { switches: string; joined: boolean; solved: boolean };
+export type PairState = { switches: string; joined: boolean; solved: boolean; react: string | null };
 
 export async function pairState(id: string): Promise<PairState | null> {
   try {
     const res = await fetch(
-      `${REST}/pair_session?id=eq.${id}&select=switches,joined,solved`,
+      `${REST}/pair_session?id=eq.${id}&select=switches,joined,solved,react`,
       { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }, cache: "no-store" }
     );
     const rows = (await res.json()) as PairState[];
@@ -50,4 +50,9 @@ export async function pairState(id: string): Promise<PairState | null> {
   } catch {
     return null;
   }
+}
+
+// Отправить реакцию напарнику. by — своя сторона ("a" смотрящий / "b" контроллер).
+export async function sendReaction(id: string, by: "a" | "b", type: "up" | "poop") {
+  return pairCall("react", { id, by, type });
 }

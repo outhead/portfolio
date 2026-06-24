@@ -5,9 +5,10 @@ import { LedLines } from "@/components/LedBoard";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import confetti from "canvas-confetti";
-import { pairCall, pairState } from "./pairApi";
+import { pairCall, pairState, sendReaction } from "./pairApi";
 import QuestBackground from "@/components/QuestBackground";
 import QuestButton from "@/components/QuestButton";
+import PixelArt, { THUMB_UP, POOP } from "@/components/PixelArt";
 
 /**
  * Кооп-загадка. Двое, разные IP.
@@ -86,6 +87,9 @@ export default function PairPage() {
   const [solved, setSolved] = useState(false);
   const [copied, setCopied] = useState(false);
   const [token, setToken] = useState(""); // код пары — переиспользуем как комнату для пинг-понга
+  const [incoming, setIncoming] = useState<{ type: "up" | "poop"; k: number } | null>(null); // прилетевшая реакция
+  const lastReactTs = useRef(0);
+  const reactInit = useRef(false);
 
   const targetRef = useRef("");
   const claimedRef = useRef(false);
@@ -168,9 +172,30 @@ export default function PairPage() {
           celebrate();
         }
       }
+      // реакция напарника (формат "by:type:ts"); при первом опросе только запоминаем,
+      // чтобы не показывать старую реакцию при заходе
+      if (st.react) {
+        const [by, type, tsStr] = st.react.split(":");
+        const ts = Number(tsStr) || 0;
+        const mySide = targetRef.current ? "a" : "b";
+        if (!reactInit.current) { reactInit.current = true; lastReactTs.current = ts; }
+        else if (ts > lastReactTs.current) {
+          lastReactTs.current = ts;
+          if (by !== mySide && (type === "up" || type === "poop")) {
+            setIncoming({ type: type as "up" | "poop", k: ts });
+          }
+        }
+      }
     }, 1000);
     return () => clearInterval(iv);
   }, [id, solved]);
+
+  // прилетевшая реакция живёт ~1.6с
+  useEffect(() => {
+    if (!incoming) return;
+    const t = setTimeout(() => setIncoming(null), 1600);
+    return () => clearTimeout(t);
+  }, [incoming]);
 
   async function flip(i: number) {
     if (solved) return;
@@ -212,12 +237,54 @@ export default function PairPage() {
     } catch { /* ignore */ }
   }
 
+  // реакции напарнику: смотрящий — сторона "a", контроллер — "b"
+  function react(type: "up" | "poop") {
+    if (!id) return;
+    try { navigator.vibrate?.(8); } catch { /* */ }
+    sendReaction(id, phase === "viewer" ? "a" : "b", type);
+  }
+  const reactionBar = (
+    <div className="mt-7 flex items-center justify-center gap-3">
+      <span className="text-[11px] text-white/30">кинуть напарнику:</span>
+      <button type="button" onClick={() => react("up")} aria-label="Палец вверх"
+        className="p-2 rounded-xl border border-white/12 hover:border-[#A6FF00]/50 active:scale-90 transition">
+        <PixelArt rows={THUMB_UP} color="#A6FF00" className="h-6 w-auto block" />
+      </button>
+      <button type="button" onClick={() => react("poop")} aria-label="Какашка"
+        className="p-2 rounded-xl border border-white/12 hover:border-[#B07A46]/70 active:scale-90 transition">
+        <PixelArt rows={POOP} color="#B07A46" className="h-6 w-auto block" />
+      </button>
+    </div>
+  );
+
   return (
     <main className="relative bg-black text-white overflow-y-auto flex flex-col items-center px-5 pt-[88px] pb-16" style={{ minHeight: "100dvh" }}>
       <QuestBackground palette="violet" opacity={0.34} />
       <div aria-hidden className="absolute inset-0 pointer-events-none opacity-60" style={{
         background: "radial-gradient(ellipse 55% 45% at 50% 35%, rgba(166,255,0,0.06), transparent 60%)",
       }} />
+
+      {/* прилетевшая реакция от напарника */}
+      {incoming ? (
+        <div key={incoming.k} className="fixed inset-0 z-30 pointer-events-none flex items-center justify-center">
+          <PixelArt
+            rows={incoming.type === "up" ? THUMB_UP : POOP}
+            color={incoming.type === "up" ? "#A6FF00" : "#B07A46"}
+            className="h-40 w-auto react-pop"
+          />
+        </div>
+      ) : null}
+
+      <style jsx>{`
+        @keyframes reactPop {
+          0% { transform: translateY(24px) scale(0.4); opacity: 0; }
+          16% { transform: translateY(0) scale(1.14); opacity: 1; }
+          30% { transform: translateY(0) scale(1); opacity: 1; }
+          72% { opacity: 1; }
+          100% { transform: translateY(-72px) scale(1); opacity: 0; }
+        }
+        :global(.react-pop) { animation: reactPop 1.6s ease-out forwards; }
+      `}</style>
 
       <div className="relative z-[1] w-full max-w-[480px] mx-auto flex flex-col items-center text-center">
         <p className="text-white/40 mb-5">
@@ -289,7 +356,10 @@ export default function PairPage() {
                     <p className="mt-4 text-[12px] text-white/30 break-all max-w-xs">{shareUrl}</p>
                   </>
                 ) : (
-                  <p className="text-[14px] text-[#A6FF00]">Напарник на связи. Диктуй порядок.</p>
+                  <>
+                    <p className="text-[14px] text-[#A6FF00]">Напарник на связи. Диктуй порядок.</p>
+                    {reactionBar}
+                  </>
                 )}
               </div>
             ) : (
@@ -353,7 +423,10 @@ export default function PairPage() {
             </div>
 
             {!solved ? (
-              <p className="mt-10 text-[14px] text-white/40">Напарник скажет, когда сойдётся.</p>
+              <>
+                <p className="mt-10 text-[14px] text-white/40">Напарник скажет, когда сойдётся.</p>
+                {reactionBar}
+              </>
             ) : (
               <div className="mt-10 flex flex-col items-center">
                 <p className="text-[#A6FF00] mb-2 flex justify-center"><span className="sr-only">Сошлось!</span><LedText text="Сошлось!" scale={2} dot={1.45} className="h-[20px] md:h-[26px] w-auto" /></p>
