@@ -1394,9 +1394,22 @@ export default function PreviewHome() {
               <motion.div
                 key={t.name}
                 variants={fadeUp}
-                className="shrink-0 w-[85vw] sm:w-[60vw] md:w-auto snap-start md:snap-align-none relative h-full p-6 md:p-7 rounded-2xl border border-white/[0.06] bg-[#0f0f0e] hover:border-[#A6FF00]/20 transition-colors duration-300 flex flex-col"
+                className="shrink-0 w-[85vw] sm:w-[60vw] md:w-auto snap-start md:snap-align-none relative h-full p-6 md:p-7 rounded-2xl border border-white/[0.06] bg-[#0f0f0e] hover:border-[#A6FF00]/20 transition-colors duration-300 flex flex-col overflow-hidden"
               >
-                <span className="mb-5 text-[#C9A66B]/70" aria-hidden>
+                <div
+                  aria-hidden
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    backgroundImage:
+                      "radial-gradient(rgba(255,255,255,0.07) 1.1px, transparent 1.2px)",
+                    backgroundSize: "13px 13px",
+                    maskImage:
+                      "radial-gradient(ellipse 70% 80% at 90% 8%, black, transparent 70%)",
+                    WebkitMaskImage:
+                      "radial-gradient(ellipse 70% 80% at 90% 8%, black, transparent 70%)",
+                  }}
+                />
+                <span className="relative mb-5 text-[#C9A66B]/70" aria-hidden>
                   <LedText text='"' scale={2} dot={1.45} className="h-[18px] w-auto" />
                 </span>
                 <p className="text-white/75 text-[16px] md:text-[16px] leading-relaxed mb-7 md:mb-8">
