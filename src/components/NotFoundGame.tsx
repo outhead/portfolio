@@ -4,6 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import LedText from "@/components/LedText";
 import { layoutLedText } from "@/components/ledFont";
+import { loadSnakeBoard, saveSnakeScore, type SnakeEntry } from "@/components/snakeBoard";
+
+const NAME_KEY = "nf_snake_name";
 
 const ACCENT = "#A6FF00";
 const GOLD = "#C9A66B";
@@ -23,7 +26,123 @@ export default function NotFoundGame() {
   const [best, setBest] = useState(0);
   const [over, setOver] = useState(false);
   const [started, setStarted] = useState(false);
+  const [shareMsg, setShareMsg] = useState("");
+  const [name, setName] = useState("");
+  const [board, setBoard] = useState<SnakeEntry[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const restartRef = useRef<() => void>(() => {});
+
+  useEffect(() => {
+    try {
+      const n = localStorage.getItem(NAME_KEY);
+      if (n) setName(n);
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    if (over) {
+      loadSnakeBoard().then(setBoard);
+    } else {
+      setSubmitted(false);
+    }
+  }, [over]);
+
+  const submitScore = async () => {
+    if (submitting || submitted) return;
+    setSubmitting(true);
+    try {
+      localStorage.setItem(NAME_KEY, name.trim());
+    } catch {}
+    const b = await saveSnakeScore(name, score);
+    setBoard(b);
+    setSubmitted(true);
+    setSubmitting(false);
+  };
+
+  const buildShareCanvas = () => {
+    const S = 1080;
+    const cv = document.createElement("canvas");
+    cv.width = S;
+    cv.height = S;
+    const c = cv.getContext("2d");
+    if (!c) return cv;
+
+    c.fillStyle = "#050505";
+    c.fillRect(0, 0, S, S);
+    c.fillStyle = "rgba(255,255,255,0.045)";
+    for (let y = 56; y < S; y += 26)
+      for (let x = 56; x < S; x += 26) {
+        c.beginPath();
+        c.arc(x, y, 1.5, 0, Math.PI * 2);
+        c.fill();
+      }
+
+    const led = (text: string, cy: number, pitch: number, color: string) => {
+      const { dots, cols, rows } = layoutLedText(text, 1);
+      const w = cols * pitch;
+      const sx = S / 2 - w / 2;
+      const sy = cy - (rows * pitch) / 2;
+      c.fillStyle = color;
+      for (const d of dots) {
+        if (!d.lit) continue;
+        c.beginPath();
+        c.arc(sx + d.col * pitch + pitch / 2, sy + d.row * pitch + pitch / 2, pitch * 0.42, 0, Math.PI * 2);
+        c.fill();
+      }
+    };
+
+    led("404", 320, 30, GOLD);
+    led(`СЧЁТ ${score}`, 600, 17, ACCENT);
+    if (best > 0) led(`РЕКОРД ${best}`, 712, 11, "rgba(201,166,107,0.85)");
+
+    c.fillStyle = ACCENT;
+    for (let i = 0; i < 11; i++) {
+      c.globalAlpha = 0.25 + i * 0.07;
+      c.beginPath();
+      c.arc(S / 2 - 130 + i * 26, 838, 8, 0, Math.PI * 2);
+      c.fill();
+    }
+    c.globalAlpha = 1;
+
+    const host = (typeof location !== "undefined" ? location.host : "").toUpperCase() || "EGORADI";
+    led(host, 968, 9, "rgba(255,255,255,0.5)");
+    return cv;
+  };
+
+  const handleShare = async () => {
+    setShareMsg("");
+    const cv = buildShareCanvas();
+    const host = typeof location !== "undefined" ? location.host : "";
+    const text = `Змейка на 404: счёт ${score}${best > 0 ? `, рекорд ${best}` : ""}${host ? ` — ${host}` : ""}`;
+    const blob: Blob | null = await new Promise((res) => cv.toBlob((b) => res(b), "image/png"));
+    if (!blob) return;
+    const file = new File([blob], "404-snake.png", { type: "image/png" });
+
+    const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
+    try {
+      if (nav.canShare && nav.canShare({ files: [file] })) {
+        await nav.share({ files: [file], text, title: "404 — змейка" });
+        return;
+      }
+    } catch {
+      return; // пользователь отменил шеринг
+    }
+
+    // фолбэк: скачать PNG + скопировать текст
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "404-snake.png";
+    a.click();
+    URL.revokeObjectURL(url);
+    try {
+      await navigator.clipboard.writeText(text);
+      setShareMsg("Картинка сохранена · счёт скопирован");
+    } catch {
+      setShareMsg("Картинка сохранена");
+    }
+  };
 
   useEffect(() => {
     const wrap = wrapRef.current;
@@ -428,7 +547,7 @@ export default function NotFoundGame() {
       )}
 
       {over && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 text-center px-5">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 text-center px-5 py-10 overflow-y-auto">
           <p className="text-white/70">
             <span className="sr-only">Игра окончена. Счёт {score}.</span>
             <LedText text="ТУПИК" className="h-[16px] md:h-[22px] w-auto mx-auto" />
@@ -436,14 +555,79 @@ export default function NotFoundGame() {
           <p className="text-white/40">
             <LedText text={`СЧЁТ ${score}${best > 0 ? `   РЕКОРД ${best}` : ""}`} className="h-[10px] w-auto mx-auto" />
           </p>
-          <button
-            type="button"
-            onClick={() => restartRef.current()}
-            className="inline-flex items-center gap-2 rounded-lg px-6 py-3 bg-[#A6FF00] text-black hover:bg-[#B8FF33] transition-colors"
-          >
-            <span className="sr-only">Ещё раз</span>
-            <LedText text="ЕЩЁ РАЗ" className="h-[11px] w-auto" />
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => restartRef.current()}
+              className="inline-flex items-center gap-2 rounded-lg px-6 py-3 bg-[#A6FF00] text-black hover:bg-[#B8FF33] transition-colors"
+            >
+              <span className="sr-only">Ещё раз</span>
+              <LedText text="ЕЩЁ РАЗ" className="h-[11px] w-auto" />
+            </button>
+            <button
+              type="button"
+              onClick={handleShare}
+              className="inline-flex items-center gap-2 rounded-lg px-6 py-3 bg-white/[0.06] text-white/75 hover:bg-white/[0.12] transition-colors"
+            >
+              <span className="sr-only">Поделиться</span>
+              <LedText text="ПОДЕЛИТЬСЯ" className="h-[11px] w-auto" />
+            </button>
+          </div>
+          {shareMsg && (
+            <p className="text-white/40 -mt-1">
+              <LedText text={shareMsg} className="h-[8px] w-auto mx-auto" />
+            </p>
+          )}
+
+          {/* Лидерборд змейки */}
+          <div className="mt-2 w-full max-w-[340px] rounded-2xl border border-white/[0.08] bg-[#0c0c0b]/80 backdrop-blur-sm p-5">
+            <p className="text-[#A6FF00]/70 mb-4 flex justify-center">
+              <LedText text="РЕЙТИНГ ЗМЕЙКИ" className="h-[9px] w-auto" />
+            </p>
+
+            {score > 0 && !submitted && (
+              <div className="flex items-center gap-2 mb-4">
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && submitScore()}
+                  maxLength={20}
+                  placeholder="Имя"
+                  className="flex-1 min-w-0 bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 text-[14px] text-white/85 placeholder:text-white/30 outline-none focus:border-[#A6FF00]/40"
+                />
+                <button
+                  type="button"
+                  onClick={submitScore}
+                  disabled={submitting}
+                  className="shrink-0 rounded-lg px-4 py-2.5 bg-[#A6FF00] text-black hover:bg-[#B8FF33] disabled:opacity-50 transition-colors"
+                >
+                  <LedText text={submitting ? "..." : "В РЕЙТИНГ"} className="h-[9px] w-auto" />
+                </button>
+              </div>
+            )}
+            {submitted && (
+              <p className="text-white/45 mb-4 flex justify-center">
+                <LedText text="ТВОЙ СЧЁТ В РЕЙТИНГЕ" className="h-[8px] w-auto" />
+              </p>
+            )}
+
+            <ol className="space-y-1.5 text-left">
+              {board.length === 0 && (
+                <li className="text-white/30 text-[13px] text-center py-2">Пока пусто — будь первым</li>
+              )}
+              {board.slice(0, 7).map((e, i) => (
+                <li
+                  key={`${e.name}-${e.at}-${i}`}
+                  className="flex items-center gap-3 text-[13.5px] tabular-nums"
+                >
+                  <span className="w-5 text-right text-white/35">{i + 1}</span>
+                  <span className="flex-1 min-w-0 truncate text-white/75">{e.name}</span>
+                  <span className="text-[#A6FF00]/85 font-medium">{e.score}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+
           <Link
             href="/"
             className="inline-flex items-center gap-2 rounded-lg px-6 py-2.5 bg-white/[0.06] text-white/70 hover:bg-white/[0.1] transition-colors no-underline"
