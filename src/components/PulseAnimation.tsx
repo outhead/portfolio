@@ -2,32 +2,65 @@
 
 import { useEffect, useRef, useState } from "react";
 
-export type PulseVariant = "wave" | "shockwave" | "spiral";
+export type PulseVariant = "rain" | "build" | "radar";
 
 interface PulseAnimationProps {
   variant: PulseVariant;
-  /** Реверс направления анимации. Для spiral — пульс идёт от края к центру. */
+  /** Реверс направления. Для radar — луч крутится в обратную сторону. */
   reverse?: boolean;
   className?: string;
   /** Принудительная активация анимации (вместе с hover). Используется для мобильного scroll-trigger. */
   active?: boolean;
 }
 
-const W = 180;
-const H = 180;
+const W = 150;
+const H = 150;
 const cx = W / 2;
 const cy = H / 2;
-const dotRings = [
-  { radius: 15, count: 6 },
-  { radius: 30, count: 12 },
-  { radius: 45, count: 18 },
-  { radius: 60, count: 24 },
-  { radius: 75, count: 30 },
-];
+
+// ── Квадратная dot-matrix сетка, обрезанная в круг ──────────────────
+// Точки лежат на узлах регулярной сетки (как LED-табло), круг — маска по
+// радиусу. В анимациях позиции НЕ двигаются — меняются только яркость и
+// (где нужно) размер, поэтому сетка всегда читается.
+const STEP = 11; // шаг сетки, px
+const GRID_R = 6; // колец сетки от центра → ~13 точек по диаметру
+const MAX_R = GRID_R * STEP; // 66 — радиус круга-маски
+const TAU = Math.PI * 2;
+const BASE_SIZE = 1.7;
+
+type Dot = { x: number; y: number; r: number; ang: number; gx: number; gy: number };
+const dots: Dot[] = (() => {
+  const out: Dot[] = [];
+  for (let gy = -GRID_R; gy <= GRID_R; gy++) {
+    for (let gx = -GRID_R; gx <= GRID_R; gx++) {
+      const r = Math.hypot(gx, gy) * STEP;
+      if (r > MAX_R + 0.5) continue; // маска круга
+      out.push({ x: cx + gx * STEP, y: cy + gy * STEP, r, ang: Math.atan2(gy, gx), gx, gy });
+    }
+  }
+  return out;
+})();
+
+const ss = (v: number) => {
+  const c = Math.max(0, Math.min(1, v));
+  return c * c * (3 - 2 * c);
+};
+const seed = (n: number) => {
+  const s = Math.sin(n * 127.1) * 43758.5453;
+  return s - Math.floor(s);
+};
+
+// Порядок зажигания для «сборки»: от центра к краю, с лёгким рандомом внутри кольца.
+const buildOrder: number[] = (() => {
+  const idx = dots.map((_, i) => i).sort((a, b) => dots[a].r - dots[b].r || seed(a) - seed(b));
+  const rank = new Array<number>(dots.length);
+  idx.forEach((di, r) => (rank[di] = r));
+  return rank;
+})();
 
 /** Pulse-анимации для плиток «Услуги & экспертиза»:
- *  - default: статичный кадр (t=0), точки серые
- *  - hover ближайшего .group-родителя: запускается RAF-анимация, точки зелёные #A6FF00 */
+ *  - default: статичный кадр, точки серые
+ *  - hover ближайшего .group-родителя / active: RAF-анимация, точки зелёные #A6FF00 */
 export default function PulseAnimation({ variant, reverse = false, className, active = false }: PulseAnimationProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hover, setHover] = useState(false);
@@ -53,207 +86,82 @@ export default function PulseAnimation({ variant, reverse = false, className, ac
     };
   }, []);
 
-  // RAF-loop при hover/active; статичный кадр t=0 без них
+  // RAF-loop при hover/active; статичный кадр без них
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    canvas.width = W;
-    canvas.height = H;
+
+    const DPR = Math.min(2, typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1);
+    canvas.width = W * DPR;
+    canvas.height = H * DPR;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 
     const fill = (a: number) =>
       isPlaying
         ? `rgba(166, 255, 0, ${Math.max(0, Math.min(1, a))})`
         : `rgba(255, 255, 255, ${Math.max(0, Math.min(1, a * 0.55))})`;
 
-    const drawWave = (t: number) => {
-      ctx.clearRect(0, 0, W, H);
+    const dot = (d: Dot, op: number, size: number) => {
       ctx.beginPath();
-      ctx.arc(cx, cy, 2, 0, Math.PI * 2);
-      ctx.fillStyle = fill(0.9);
+      ctx.arc(d.x, d.y, size, 0, TAU);
+      ctx.fillStyle = fill(op);
       ctx.fill();
-      dotRings.forEach((ring, ri) => {
-        for (let i = 0; i < ring.count; i++) {
-          const a = (i / ring.count) * Math.PI * 2;
-          const rp = Math.sin(t * 2 - ri * 0.4) * 3;
-          const x = cx + Math.cos(a) * (ring.radius + rp);
-          const y = cy + Math.sin(a) * (ring.radius + rp);
-          const op =
-            0.4 + ((Math.sin(t * 2 - ri * 0.4 + i * 0.2) + 1) / 2) * 0.6;
-          ctx.beginPath();
-          ctx.arc(x, y, 2, 0, Math.PI * 2);
-          ctx.fillStyle = fill(op);
-          ctx.fill();
-        }
-      });
     };
 
-    const drawShockwave = (t: number) => {
+    // Дождь — колонки точек «падают» сверху вниз со своей скоростью (matrix).
+    const drawRain = (t: number) => {
       ctx.clearRect(0, 0, W, H);
-      const waveSpeed = 30;
-      const waveThickness = 40;
-      const maxDotRadius = dotRings[dotRings.length - 1].radius;
-      const maxAnimatedRadius = maxDotRadius + waveThickness;
-      const rotMagnitude = 0.15;
-      const rotSpeedFactor = 3;
-
-      ctx.beginPath();
-      ctx.arc(cx, cy, 1.5, 0, Math.PI * 2);
-      ctx.fillStyle = fill(0.8);
-      ctx.fill();
-
-      const wavefront = (t * waveSpeed) % maxAnimatedRadius;
-      dotRings.forEach((ring) => {
-        for (let i = 0; i < ring.count; i++) {
-          const baseAngle = (i / ring.count) * Math.PI * 2;
-          const baseRadius = ring.radius;
-          const dist = baseRadius - wavefront;
-          let pf = 0;
-          if (Math.abs(dist) < waveThickness / 2) {
-            pf = Math.cos((dist / (waveThickness / 2)) * (Math.PI / 2));
-            pf = Math.max(0, pf);
-          }
-          let cur = baseAngle;
-          if (pf > 0.01) {
-            cur += pf * Math.sin(t * rotSpeedFactor + i * 0.5) * rotMagnitude;
-          }
-          const ds = 1.5 + pf * 1.8;
-          const x = cx + Math.cos(cur) * baseRadius;
-          const y = cy + Math.sin(cur) * baseRadius;
-          const op = 0.2 + pf * 0.7;
-          ctx.beginPath();
-          ctx.arc(x, y, ds, 0, Math.PI * 2);
-          ctx.fillStyle = fill(op);
-          ctx.fill();
-        }
-      });
+      const cyc = GRID_R * 2 + 7;
+      const trail = 3.2;
+      for (const d of dots) {
+        const col = d.gx + GRID_R;
+        const spd = 3.2 + seed(col) * 2.2;
+        const off = seed(col * 7.3) * cyc;
+        const head = ((t * spd + off) % cyc) - GRID_R - 1;
+        const dy = head - d.gy;
+        const e = dy >= 0 ? Math.exp(-dy / trail) : 0;
+        dot(d, 0.12 + ss(e) * 0.84, BASE_SIZE);
+      }
     };
 
-    const drawSpiral = (t: number) => {
-      // Спираль через ту же сетку из 5 концентрических колец + центральная точка.
-      // Фронт стартует на (maxR + lead) — внешнее кольцо плавно нарастает,
-      // затем идёт к центру; центральная точка — финальный пик цикла.
+    // Сборка — точки набираются от центра к краю, затем плавный сброс (прогресс).
+    const drawBuild = (t: number) => {
       ctx.clearRect(0, 0, W, H);
+      const cyc = 2.4;
+      const tc = t % cyc;
+      const frac = tc < 1.8 ? ss(tc / 1.8) : 1 - ss((tc - 1.8) / 0.6);
+      const fillN = frac * dots.length;
+      for (let i = 0; i < dots.length; i++) {
+        const e = Math.max(0, Math.min(1, fillN - buildOrder[i]));
+        dot(dots[i], 0.12 + e * 0.78, BASE_SIZE);
+      }
+    };
 
-      const maxR = 75; // максимальный радиус (внешнее кольцо)
-      const lead = 28; // запас перед внешним кольцом — плавный fade-in
-      const radialSpeed = 62; // px/sec — чуть быстрее предыдущего 45
-      const cycleSpan = maxR + lead + 50; // длина цикла + пауза после центра
-      const cycleDuration = cycleSpan / radialSpeed;
-      const angularSpeed = 1.2; // рад/с — закручивание во время полёта к центру
-      const twistFactor = 0.025;
-      const armWidth = Math.PI / 1.8;
-      const numArms = 2;
+    // Радар — вращающийся луч с затухающим хвостом.
+    const drawRadar = (t: number) => {
+      ctx.clearRect(0, 0, W, H);
       const dir = reverse ? -1 : 1;
-
-      // Время в текущем цикле
-      const tCycle = t % cycleDuration;
-
-      // Асимметричный gaussian профиль вспышки во времени:
-      // плавный разгон ДО пересечения фронта (σPre) и длинный хвост ПОСЛЕ (σPost).
-      // Большие σ → переходы мягче. Подобраны под чуть более быстрый radialSpeed.
-      const σPre = 0.42;
-      const σPost = 0.78;
-
-      dotRings.forEach((ring) => {
-        for (let i = 0; i < ring.count; i++) {
-          const baseAngle = (i / ring.count) * Math.PI * 2;
-          const x = cx + Math.cos(baseAngle) * ring.radius;
-          const y = cy + Math.sin(baseAngle) * ring.radius;
-
-          // Когда фронт пересёк это кольцо в текущем цикле (с учётом lead)
-          const tPass = (maxR + lead - ring.radius) / radialSpeed;
-          const timeSincePass = tCycle - tPass;
-
-          // Профиль яркости во времени — гауссиан с разными σ до/после пика
-          const σ = timeSincePass < 0 ? σPre : σPost;
-          const timeProfile = Math.exp(
-            -(timeSincePass * timeSincePass) / (2 * σ * σ)
-          );
-
-          // Угловой компонент — плавный cos-bell, без резких границ
-          let bestPf = 0;
-          for (let arm = 0; arm < numArms; arm++) {
-            const armOffset = (arm / numArms) * Math.PI * 2;
-            const armAngleAtPass =
-              dir * (t - timeSincePass) * angularSpeed +
-              ring.radius * twistFactor +
-              armOffset;
-
-            let da = baseAngle - armAngleAtPass;
-            da = ((da % (Math.PI * 2)) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
-
-            // Плавный cos-bell без жёсткого if-обреза
-            let angularGate = Math.cos(
-              Math.min(Math.abs(da), Math.PI / 2) /
-                (armWidth / 2) *
-                (Math.PI / 2)
-            );
-            angularGate = Math.max(0, angularGate);
-
-            const pf = angularGate * timeProfile;
-            if (pf > bestPf) bestPf = pf;
-          }
-          // Двойное smoothstep — ещё более мягкая кривая на концах
-          const ss = bestPf * bestPf * (3 - 2 * bestPf);
-          const eased = ss * ss * (3 - 2 * ss);
-
-          const baseSize = 2;
-          const baseOpacity = 0.25;
-          const flashSize = eased * 2.6;
-          const flashOpacity = eased * 0.7;
-
-          const dotSize = baseSize + flashSize;
-          const op = Math.min(1, baseOpacity + flashOpacity);
-          ctx.beginPath();
-          ctx.arc(x, y, dotSize, 0, Math.PI * 2);
-          ctx.fillStyle = fill(op);
-          ctx.fill();
-        }
-      });
-
-      // Центральная точка — финальный пик цикла. Фронт доходит до неё последней,
-      // когда tCycle = (maxR + lead) / radialSpeed.
-      const tPassCenter = (maxR + lead) / radialSpeed;
-      const tsCenter = tCycle - tPassCenter;
-      const σC = tsCenter < 0 ? σPre : σPost;
-      const centerProfile = Math.exp(-(tsCenter * tsCenter) / (2 * σC * σC));
-      const ssC = centerProfile * centerProfile * (3 - 2 * centerProfile);
-      const easedC = ssC * ssC * (3 - 2 * ssC);
-      const centerSize = 2 + easedC * 4;
-      const centerOp = Math.min(1, 0.35 + easedC * 0.65);
-      ctx.beginPath();
-      ctx.arc(cx, cy, centerSize, 0, Math.PI * 2);
-      ctx.fillStyle = fill(centerOp);
-      ctx.fill();
+      const sweep = ((t * 1.7 * dir) % TAU + TAU) % TAU;
+      const width = 2.2;
+      for (const d of dots) {
+        let da = (d.ang - sweep) * dir;
+        da = ((da % TAU) + TAU) % TAU;
+        const e = Math.exp(-da / width);
+        dot(d, 0.14 + ss(e) * 0.82, BASE_SIZE);
+      }
     };
 
     const drawDefault = () => {
-      // Единый статичный кадр для всех вариантов:
-      // 5 концентрических колец точек одного размера и opacity, серые.
       ctx.clearRect(0, 0, W, H);
-      ctx.beginPath();
-      ctx.arc(cx, cy, 2, 0, Math.PI * 2);
-      ctx.fillStyle = fill(0.5);
-      ctx.fill();
-      dotRings.forEach((ring) => {
-        for (let i = 0; i < ring.count; i++) {
-          const a = (i / ring.count) * Math.PI * 2;
-          const x = cx + Math.cos(a) * ring.radius;
-          const y = cy + Math.sin(a) * ring.radius;
-          ctx.beginPath();
-          ctx.arc(x, y, 2, 0, Math.PI * 2);
-          ctx.fillStyle = fill(0.45);
-          ctx.fill();
-        }
-      });
+      for (const d of dots) dot(d, 0.45, BASE_SIZE);
     };
 
     const drawAt = (t: number) => {
-      if (variant === "wave") drawWave(t);
-      else if (variant === "shockwave") drawShockwave(t);
-      else drawSpiral(t);
+      if (variant === "rain") drawRain(t);
+      else if (variant === "build") drawBuild(t);
+      else drawRadar(t);
     };
 
     let time = 0;
@@ -273,7 +181,6 @@ export default function PulseAnimation({ variant, reverse = false, className, ac
       };
       rafId = requestAnimationFrame(loop);
     } else {
-      // Статика: единый базовый кадр (одинаковый для всех вариантов)
       drawDefault();
     }
 
@@ -286,8 +193,7 @@ export default function PulseAnimation({ variant, reverse = false, className, ac
   return (
     <canvas
       ref={canvasRef}
-      width={W}
-      height={H}
+      style={{ width: W, height: H }}
       className={className}
       aria-hidden
     />
