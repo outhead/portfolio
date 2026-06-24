@@ -76,6 +76,7 @@ export default function PongPage() {
   const jetFx = useRef<[boolean, boolean]>([false, false]);   // кто СЕЙЧАС дует (для визуала, у гостя — из пакета)
   const blowArmed = useRef<[boolean, boolean]>([false, false]); // у кого буст взведён (индикатор готовности)
   const hadMatch = useRef(false); // был ли уже завершённый матч → следующий идёт в магнитном поле
+  const soloRef = useRef(false);  // одиночная тренировка против ИИ (?solo=1 / ?solo=field)
   const nextBoostAt = useRef(0);
   const boostGoneAt = useRef(0);
   const sc = useRef<[number, number]>([0, 0]);
@@ -156,8 +157,21 @@ export default function PongPage() {
       ? (params.get("host") === "1" ? "host" : "guest")
       : (sParam ? "guest" : "host");
     roleRef.current = r; setRole(r);
-    // пресет режима из URL; дальше режимом владеет хост (тумблер + state-пакеты)
+    // пресет режима из URL; дальше режимом владеет хост (прогрессия + state-пакеты)
     if (params.get("mode") === "field") setModeBoth("field");
+
+    // ─── Одиночная тренировка (?solo=1 или ?solo=field) ───
+    // Без сети: хост против простого ИИ. Сразу старт, поле/бусты/струя — для проверки в одиночку.
+    const soloParam = params.get("solo");
+    if (soloParam === "1" || soloParam === "field") {
+      soloRef.current = true;
+      roleRef.current = "host"; setRole("host");
+      setShareUrl("");
+      if (soloParam === "field") setModeBoth("field");
+      const t = setTimeout(() => { if (phaseRef.current !== "playing") startMatch(); }, 500);
+      return () => clearTimeout(t);
+    }
+
     if (!code) code = rndCode();
     if (r === "host" && !room) setShareUrl(`${window.location.origin}/secret/pong?s=${code}`);
 
@@ -352,8 +366,9 @@ export default function PongPage() {
   function startMatch(keepScore = false) {
     if (!keepScore) {
       sc.current = [0, 0]; setScore([0, 0]);
-      // прогрессия: первый матч — классика, после первого завершённого — магнитное поле
-      setModeBoth(hadMatch.current ? "field" : "classic");
+      // в одиночной тренировке режим фиксирован тем, что в URL; иначе — прогрессия
+      // (первый матч классика, после первого завершённого — магнитное поле)
+      if (!soloRef.current) setModeBoth(hadMatch.current ? "field" : "classic");
     }
     winnerRef.current = null; setWinner(null);
     px1.current = (FW - PW) / 2; px2.current = (FW - PW) / 2;
@@ -866,6 +881,15 @@ export default function PongPage() {
         px2Eff.current = clamp(px2.current + px2Vel.current * age, 0, FW - pw2.current);
       }
 
+      // одиночная тренировка: верхнюю ракетку ведёт простой ИИ за ближайшим летящим к нему мячом
+      if (soloRef.current && host && phaseRef.current === "playing") {
+        let target = FW / 2, best = Infinity;
+        for (const b of balls.current) { if (b.vy < 0 && b.y < best) { best = b.y; target = b.x; } }
+        const c = px2.current + pw2.current / 2;
+        px2.current = clamp(px2.current + clamp(target - c, -6.5, 6.5), 0, FW - pw2.current);
+        px2Eff.current = px2.current; px2At.current = now;
+      }
+
       // гость: мяч летит локально по последним известным скоростям (dead reckoning).
       // Стены И ракетки отбиваем предсказательно (без ACC) — иначе между пакетами мяч
       // визуально проходит сквозь ракетку, а потом телепортируется. Хост скорректирует.
@@ -1198,6 +1222,9 @@ export default function PongPage() {
                       <p className="text-[16px] text-white/80 mb-1">Жду соперника</p>
                       <p className="text-[14px] text-white/45 mb-5 max-w-xs">Кинь ссылку другу — игра начнётся, когда он откроет.</p>
                       <QuestButton onClick={copy}>{copied ? "скопировано" : "копировать ссылку"}</QuestButton>
+                      <QuestButton href="/secret/pong?solo=field" variant="tertiary" className="mt-4">
+                        тренировка одному
+                      </QuestButton>
                     </>
                   ) : (
                     <p className="text-white/70 text-sm">Жду, пока напарник откроет пинг-понг…</p>
