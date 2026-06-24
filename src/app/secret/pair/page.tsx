@@ -5,10 +5,10 @@ import { LedLines } from "@/components/LedBoard";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import confetti from "canvas-confetti";
-import { pairCall, pairState, sendReaction } from "./pairApi";
+import { pairCall, pairState, sendReaction, type ReactionType } from "./pairApi";
 import QuestBackground from "@/components/QuestBackground";
 import QuestButton from "@/components/QuestButton";
-import PixelArt, { THUMB_UP, POOP } from "@/components/PixelArt";
+import PixelArt, { REACTION_ART } from "@/components/PixelArt";
 
 /**
  * Кооп-загадка. Двое, разные IP.
@@ -87,7 +87,7 @@ export default function PairPage() {
   const [solved, setSolved] = useState(false);
   const [copied, setCopied] = useState(false);
   const [token, setToken] = useState(""); // код пары — переиспользуем как комнату для пинг-понга
-  const [incoming, setIncoming] = useState<{ type: "up" | "poop"; k: number } | null>(null); // прилетевшая реакция
+  const [incoming, setIncoming] = useState<{ type: ReactionType; k: number } | null>(null); // прилетевшая реакция
   const lastReactTs = useRef(0);
   const reactInit = useRef(false);
 
@@ -181,8 +181,8 @@ export default function PairPage() {
         if (!reactInit.current) { reactInit.current = true; lastReactTs.current = ts; }
         else if (ts > lastReactTs.current) {
           lastReactTs.current = ts;
-          if (by !== mySide && (type === "up" || type === "poop")) {
-            setIncoming({ type: type as "up" | "poop", k: ts });
+          if (by !== mySide && REACTION_ART[type]) {
+            setIncoming({ type: type as ReactionType, k: ts });
           }
         }
       }
@@ -238,22 +238,33 @@ export default function PairPage() {
   }
 
   // реакции напарнику: смотрящий — сторона "a", контроллер — "b"
-  function react(type: "up" | "poop") {
+  function react(type: ReactionType) {
     if (!id) return;
     try { navigator.vibrate?.(8); } catch { /* */ }
     sendReaction(id, phase === "viewer" ? "a" : "b", type);
   }
+  const REACTIONS: { type: ReactionType; label: string }[] = [
+    { type: "up", label: "Палец вверх" },
+    { type: "left", label: "Левее" },
+    { type: "right", label: "Правее" },
+    { type: "poop", label: "Какашка" },
+  ];
   const reactionBar = (
-    <div className="mt-7 flex items-center justify-center gap-3">
-      <span className="text-[11px] text-white/30">кинуть напарнику:</span>
-      <button type="button" onClick={() => react("up")} aria-label="Палец вверх"
-        className="p-2 rounded-xl border border-white/12 hover:border-[#A6FF00]/50 active:scale-90 transition">
-        <PixelArt rows={THUMB_UP} color="#A6FF00" className="h-6 w-auto block" />
-      </button>
-      <button type="button" onClick={() => react("poop")} aria-label="Какашка"
-        className="p-2 rounded-xl border border-white/12 hover:border-[#B07A46]/70 active:scale-90 transition">
-        <PixelArt rows={POOP} color="#B07A46" className="h-6 w-auto block" />
-      </button>
+    <div className="mt-8 flex flex-col items-center gap-2.5">
+      <span className="text-[11px] uppercase tracking-[0.12em] text-white/35">кинь реакцию напарнику</span>
+      <div className="flex items-center justify-center gap-2.5">
+        {REACTIONS.map((r) => (
+          <button
+            key={r.type}
+            type="button"
+            onClick={() => react(r.type)}
+            aria-label={r.label}
+            className="w-14 h-14 inline-flex items-center justify-center rounded-2xl border border-white/20 bg-white/[0.06] hover:bg-white/[0.12] hover:border-[#A6FF00]/50 active:scale-90 transition-all"
+          >
+            <PixelArt art={REACTION_ART[r.type]} className="h-8 w-auto block" />
+          </button>
+        ))}
+      </div>
     </div>
   );
 
@@ -267,11 +278,7 @@ export default function PairPage() {
       {/* прилетевшая реакция от напарника */}
       {incoming ? (
         <div key={incoming.k} className="fixed inset-0 z-30 pointer-events-none flex items-center justify-center">
-          <PixelArt
-            rows={incoming.type === "up" ? THUMB_UP : POOP}
-            color={incoming.type === "up" ? "#A6FF00" : "#B07A46"}
-            className="h-40 w-auto react-pop"
-          />
+          <PixelArt art={REACTION_ART[incoming.type]} className="h-44 w-auto react-pop" />
         </div>
       ) : null}
 

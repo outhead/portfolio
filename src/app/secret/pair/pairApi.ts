@@ -52,7 +52,8 @@ export async function pairState(id: string): Promise<PairState | null> {
   }
 }
 
+export type ReactionType = "up" | "poop" | "left" | "right";
 // Отправить реакцию напарнику. by — своя сторона ("a" смотрящий / "b" контроллер).
-export async function sendReaction(id: string, by: "a" | "b", type: "up" | "poop") {
+export async function sendReaction(id: string, by: "a" | "b", type: ReactionType) {
   return pairCall("react", { id, by, type });
 }

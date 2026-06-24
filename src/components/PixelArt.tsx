@@ -1,56 +1,98 @@
 /**
- * Пиксель-арт иконки для реакций кооп-загадки (палец вверх / какашка).
- * Рисуем сеткой квадратов через SVG (crispEdges), цвет — currentColor по умолчанию
- * или явный fill. Стиль — в тон LED/пиксельной графике сайта.
+ * Пиксель-арт иконки реакций кооп-загадки: палец вверх, какашка, рука влево/вправо.
+ * Многоцветные битмапы (символ → цвет в палитре), рендер сеткой квадратов через SVG.
  */
+export type Pixmap = { rows: string[]; palette: Record<string, string> };
 
-// 1 — закрашенный пиксель. Палец вверх (12×12).
-export const THUMB_UP = [
-  ".....XX.....",
-  "....X..X....",
-  "....X..X....",
-  "....X..X....",
-  "....X..XXXX.",
-  ".XXXX.....X.",
-  ".X........X.",
-  ".X........X.",
-  ".X........X.",
-  ".X.......X..",
-  ".X......X...",
-  ".XXXXXXX....",
-];
+const HAND: Record<string, string> = { X: "#F6C445", o: "#B5851F" };
+const POO: Record<string, string> = { X: "#966335", d: "#5F3C18", w: "#FFFFFF", k: "#141414" };
 
-// Какашка (12×12) — мордочка-куча с острым верхом.
-export const POOP = [
-  ".....XX.....",
-  "....XXXX....",
-  "...XX..XX...",
-  "...X....X...",
-  "..XX....XX..",
-  "..X......X..",
-  ".XX......XX.",
-  ".X........X.",
-  ".X........X.",
-  "XX........XX",
-  "X..........X",
-  "XXXXXXXXXXXX",
-];
+export const THUMB_UP: Pixmap = {
+  palette: HAND,
+  rows: [
+    "................",
+    ".......XXX......",
+    "......XXoXX.....",
+    "......XXoXX.....",
+    "......XXoXX.....",
+    "...XXXXXoXXXX...",
+    "..Xo........oX..",
+    "..Xo.XXXXXX.oX..",
+    "..Xo........oX..",
+    "..Xo.XXXXXX.oX..",
+    "..Xo........oX..",
+    "..Xo.XXXXXX.oX..",
+    "..XXo......ooX..",
+    "...XXXXXXXXXX...",
+    "....oooooooo....",
+    "................",
+  ],
+};
 
-export default function PixelArt({
-  rows,
-  color = "currentColor",
-  className,
-}: {
-  rows: string[];
-  color?: string;
-  className?: string;
-}) {
-  const h = rows.length;
-  const w = rows[0]?.length ?? 0;
+export const POOP: Pixmap = {
+  palette: POO,
+  rows: [
+    "................",
+    ".......XX.......",
+    "......XXXX......",
+    ".....XXddXX.....",
+    "....XXXXXXXX....",
+    "...XXXXXXXXXX...",
+    "..XXwwXXXXwwXX..",
+    "..XXwkXXXXwkXX..",
+    "..XXXXXXXXXXXX..",
+    ".XXXXXXXXXXXXXX.",
+    ".XXXkXXXXXXkXXX.",
+    ".XXXXkkkkkkXXXX.",
+    ".XXXXXXXXXXXXXX.",
+    "XXXXXXXXXXXXXXXX",
+    ".XXXXXXXXXXXXXX.",
+    "................",
+  ],
+};
+
+export const POINT_RIGHT: Pixmap = {
+  palette: HAND,
+  rows: [
+    "................",
+    "................",
+    "....XXXXX.......",
+    "...XoooooX......",
+    "...XoooooXXXXX..",
+    "...XooooooooooX.",
+    "...XooooooooooX.",
+    "...XoooooXXXXX..",
+    "...XoooooX......",
+    "...XoooooX......",
+    "....XXXXX.......",
+    "................",
+    "................",
+    "................",
+    "................",
+    "................",
+  ],
+};
+
+export const POINT_LEFT: Pixmap = {
+  palette: HAND,
+  rows: POINT_RIGHT.rows.map((r) => [...r].reverse().join("")),
+};
+
+export const REACTION_ART: Record<string, Pixmap> = {
+  up: THUMB_UP,
+  poop: POOP,
+  left: POINT_LEFT,
+  right: POINT_RIGHT,
+};
+
+export default function PixelArt({ art, className }: { art: Pixmap; className?: string }) {
+  const h = art.rows.length;
+  const w = art.rows[0]?.length ?? 0;
   const cells: React.ReactNode[] = [];
-  rows.forEach((r, y) => {
-    for (let x = 0; x < r.length; x++) {
-      if (r[x] === "X") cells.push(<rect key={`${x}-${y}`} x={x} y={y} width={1} height={1} fill={color} />);
+  art.rows.forEach((row, y) => {
+    for (let x = 0; x < row.length; x++) {
+      const c = art.palette[row[x]];
+      if (c) cells.push(<rect key={`${x}-${y}`} x={x} y={y} width={1} height={1} fill={c} />);
     }
   });
   return (
