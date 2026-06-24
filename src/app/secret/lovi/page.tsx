@@ -366,7 +366,7 @@ export default function SecretLoviPage() {
               <LedLines text="Найди выход" center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
             </h1>
             {startRef.current != null && <div className="text-[#A6FF00] flex justify-center"><LedText text={fmtTime(elapsed)} className="h-[11px] md:h-[12px] w-auto" /></div>}
-            <p className="mt-4 text-[13px] text-[#C9A66B]/85 transition-opacity duration-700" style={{ opacity: hintMove ? 1 : 0 }}>
+            <p className="mt-4 text-[14px] text-[#C9A66B]/85 transition-opacity duration-700" style={{ opacity: hintMove ? 1 : 0 }}>
               Тут тесно. Потяни экран — мир больше, чем кажется.
             </p>
           </>
@@ -398,7 +398,7 @@ export default function SecretLoviPage() {
             <h1 className="text-[#A6FF00] mb-4">
               <LedLines text="Нашёл" center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
             </h1>
-            <p className="text-[15px] text-white/80 mb-8">
+            <p className="text-[16px] text-white/80 mb-8">
               Время: <span className="text-[#A6FF00] tabular-nums">{winMs != null ? fmtTime(winMs) : ""}</span>
             </p>
 
@@ -408,7 +408,7 @@ export default function SecretLoviPage() {
                   type="text" value={name} onChange={(e) => setName(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") submitScore(); }}
                   maxLength={20} placeholder="Твоё имя" aria-label="Имя для таблицы лидеров"
-                  className="flex-1 bg-white/[0.06] border border-white/15 rounded-full px-5 py-3 text-[15px] text-white text-center sm:text-left placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors"
+                  className="flex-1 bg-white/[0.06] border border-white/15 rounded-full px-5 py-3 text-[16px] text-white text-center sm:text-left placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors"
                 />
                 <button type="button" onClick={submitScore} disabled={submitting}
                   className="inline-flex items-center justify-center px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors disabled:opacity-50">
@@ -431,7 +431,7 @@ export default function SecretLoviPage() {
                         <span className="w-5 text-white/35">
                           <LedText text={String(i + 1)} className="h-[9px] w-auto" />
                         </span>
-                        <span className="flex-1 text-[15px] truncate">{e.name}</span>
+                        <span className="flex-1 text-[16px] truncate">{e.name}</span>
                         <span className="text-[12px] text-white/45 whitespace-nowrap tabular-nums">{fmtTime(e.timeMs)}</span>
                       </li>
                     );

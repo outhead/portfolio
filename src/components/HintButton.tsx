@@ -32,7 +32,7 @@ export default function HintButton({
   return (
     <div className={`flex flex-col items-center gap-3 ${className}`}>
       <p
-        className="text-[13px] text-[#C9A66B]/85 transition-opacity duration-500 min-h-[20px] max-w-[280px] text-center"
+        className="text-[14px] text-[#C9A66B]/85 transition-opacity duration-500 min-h-[20px] max-w-[280px] text-center"
         style={{ opacity: text ? 1 : 0 }}
         aria-live="polite"
       >
@@ -42,7 +42,7 @@ export default function HintButton({
         <button
           type="button"
           onClick={reveal}
-          className="text-[13px] text-white/45 hover:text-[#A6FF00] underline decoration-white/20 underline-offset-4 px-2 py-1.5 transition-colors"
+          className="text-[14px] text-white/45 hover:text-[#A6FF00] underline decoration-white/20 underline-offset-4 px-2 py-1.5 transition-colors"
         >
           {label}
         </button>

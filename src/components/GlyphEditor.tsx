@@ -267,7 +267,7 @@ export default function GlyphEditor() {
           <div className="text-white/40">
             <LedText text="Битмапа для LED_GLYPHS" className="h-[9px] w-auto" />
           </div>
-          <pre className="text-[13px] leading-relaxed text-[#A6FF00]/80 bg-white/[0.03] border border-white/[0.08] rounded-xl p-4 overflow-x-auto font-service">
+          <pre className="text-[14px] leading-relaxed text-[#A6FF00]/80 bg-white/[0.03] border border-white/[0.08] rounded-xl p-4 overflow-x-auto font-service">
             {exportText}
           </pre>
           <div className="flex flex-wrap gap-3">
@@ -276,28 +276,28 @@ export default function GlyphEditor() {
               onClick={save}
               disabled={isEmpty || localDup || saveState === "saving"}
               title={localDup ? "Точно такой глиф уже в общей галерее" : undefined}
-              className="px-5 py-2.5 rounded-full bg-[#A6FF00] text-black text-[13px] font-medium hover:bg-[#b8ff33] transition-colors disabled:opacity-35 disabled:cursor-not-allowed"
+              className="px-5 py-2.5 rounded-full bg-[#A6FF00] text-black text-[14px] font-medium hover:bg-[#b8ff33] transition-colors disabled:opacity-35 disabled:cursor-not-allowed"
             >
               {saveLabel}
             </button>
             <button
               type="button"
               onClick={copy}
-              className="px-5 py-2.5 rounded-full border border-white/20 text-white/70 text-[13px] hover:text-white hover:border-white/40 transition-colors"
+              className="px-5 py-2.5 rounded-full border border-white/20 text-white/70 text-[14px] hover:text-white hover:border-white/40 transition-colors"
             >
               {copied ? "Скопировано" : "Скопировать"}
             </button>
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
-              className="px-5 py-2.5 rounded-full border border-white/20 text-white/70 text-[13px] hover:text-white hover:border-white/40 transition-colors"
+              className="px-5 py-2.5 rounded-full border border-white/20 text-white/70 text-[14px] hover:text-white hover:border-white/40 transition-colors"
             >
               Импорт PNG
             </button>
             <button
               type="button"
               onClick={() => reset(size)}
-              className="px-5 py-2.5 rounded-full border border-white/10 text-white/40 text-[13px] hover:text-white/70 transition-colors"
+              className="px-5 py-2.5 rounded-full border border-white/10 text-white/40 text-[14px] hover:text-white/70 transition-colors"
             >
               Очистить
             </button>
@@ -313,7 +313,7 @@ export default function GlyphEditor() {
               }}
             />
           </div>
-          <p className="text-[13px] text-white/40 max-w-[440px]">
+          <p className="text-[14px] text-white/40 max-w-[440px]">
             «Сохранить в галерею» — глиф увидят все: галерея общая. Картинка уляжется
             в сетку по контрасту, битмапу можно вставить прямо в{" "}
             <a
@@ -359,7 +359,7 @@ export default function GlyphEditor() {
               Скрыть может любой — глиф пропадёт у всех. Раскрыть тоже может любой.
             </p>
             {shown.length === 0 ? (
-              <p className="text-[13px] text-white/30">
+              <p className="text-[14px] text-white/30">
                 {saved.length === 0
                   ? "Пока пусто. Нарисуй что-нибудь и нажми «Сохранить в галерею» — глиф появится здесь у всех."
                   : "Всё скрыто. Нажми «показать скрытые», чтобы посмотреть."}
@@ -389,7 +389,7 @@ export default function GlyphEditor() {
                         onClick={() => toggleHidden(g)}
                         title={g.hidden ? "Раскрыть для всех" : "Скрыть ото всех"}
                         aria-label={g.hidden ? "Раскрыть глиф" : "Скрыть глиф"}
-                        className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-black border border-white/20 text-white/55 text-[11px] leading-none opacity-0 group-hover:opacity-100 hover:text-white hover:border-white/50 transition-opacity flex items-center justify-center"
+                        className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-black border border-white/20 text-white/55 text-[12px] leading-none opacity-0 group-hover:opacity-100 hover:text-white hover:border-white/50 transition-opacity flex items-center justify-center"
                       >
                         {g.hidden ? "↺" : "×"}
                       </button>
@@ -401,7 +401,7 @@ export default function GlyphEditor() {
                     type="button"
                     onClick={loadMore}
                     disabled={loadingMore}
-                    className="mt-4 px-5 py-2.5 rounded-full border border-white/15 text-white/55 text-[13px] hover:text-white hover:border-white/35 transition-colors disabled:opacity-40"
+                    className="mt-4 px-5 py-2.5 rounded-full border border-white/15 text-white/55 text-[14px] hover:text-white hover:border-white/35 transition-colors disabled:opacity-40"
                   >
                     {loadingMore ? "Загружаю…" : "Показать ещё"}
                   </button>

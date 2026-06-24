@@ -212,10 +212,10 @@ export default function SecretPage() {
             {/* Сообщение после разгадки */}
             {isSolved ? (
               <div className="mt-8 md:mt-10 flex flex-col items-center text-center">
-                <p className="text-sm md:text-[15px] text-white/65 max-w-lg">
+                <p className="text-sm md:text-[16px] text-white/65 max-w-lg">
                   Это ещё не конец, скорее самое начало. Ну разве что ты не решишь сдаться.
                 </p>
-                <p className="mt-3 text-[13px] md:text-sm text-[#C9A66B]/90 max-w-lg">
+                <p className="mt-3 text-[14px] md:text-sm text-[#C9A66B]/90 max-w-lg">
                   Видишь число в строке? Впиши его в счётчик сдвига.
                 </p>
                 <QuestButton href="/" variant="tertiary" className="mt-6">

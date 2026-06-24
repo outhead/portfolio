@@ -176,7 +176,7 @@ export default function FontSpecimen() {
               className="flex-1 accent-[#A6FF00]"
               aria-label="Радиус точки"
             />
-            <span className="w-10 text-right text-[13px] tabular-nums">{dot.toFixed(2)}</span>
+            <span className="w-10 text-right text-[14px] tabular-nums">{dot.toFixed(2)}</span>
           </label>
           <label className="flex items-center gap-3 text-white/45">
             <span className="w-24 shrink-0">
@@ -192,7 +192,7 @@ export default function FontSpecimen() {
               className="flex-1 accent-[#A6FF00]"
               aria-label="Апскейл битмапы"
             />
-            <span className="w-10 text-right text-[13px] tabular-nums">×{scale}</span>
+            <span className="w-10 text-right text-[14px] tabular-nums">×{scale}</span>
           </label>
         </div>
       </div>
@@ -226,7 +226,7 @@ export default function FontSpecimen() {
           </section>
         ))}
 
-        <div className="text-[13px] text-white/35 leading-relaxed">
+        <div className="text-[14px] text-white/35 leading-relaxed">
           Весь набор — кириллица, латиница, цифры и знаки. Всё, что выше, нарисовано
           прямо сейчас тем же движком 5×7, что рендерит весь сайт: это не картинки, а карта
           зажжённых диодов.
@@ -261,7 +261,7 @@ export default function FontSpecimen() {
             onChange={(e) => setTester(e.target.value)}
             placeholder="Набери своё…"
             aria-label="Текст для спесимена"
-            className="flex-1 bg-white/[0.04] border border-white/15 focus:border-[#A6FF00]/60 outline-none rounded-xl px-4 py-3 text-[15px] text-white placeholder:text-white/30 transition-colors"
+            className="flex-1 bg-white/[0.04] border border-white/15 focus:border-[#A6FF00]/60 outline-none rounded-xl px-4 py-3 text-[16px] text-white placeholder:text-white/30 transition-colors"
           />
           <div className="flex gap-2">
             {SAMPLES.map((s) => (

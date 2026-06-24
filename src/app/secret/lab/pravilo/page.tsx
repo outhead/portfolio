@@ -113,7 +113,7 @@ export default function PraviloProto() {
             })}
           </div>
 
-          <p className="mt-10 text-[13px] text-[#C9A66B]/85 transition-opacity duration-700 min-h-[20px]" style={{ opacity: hint || flash ? 1 : 0 }}>
+          <p className="mt-10 text-[14px] text-[#C9A66B]/85 transition-opacity duration-700 min-h-[20px]" style={{ opacity: hint || flash ? 1 : 0 }}>
             {flash ?? "Перетасовки тут не помогут. Лишнее — за край."}
           </p>
         </div>

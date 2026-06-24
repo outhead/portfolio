@@ -50,7 +50,7 @@ export default function ZapretProto() {
             <h1 className="mb-4">
               <LedLines text="Тупик" center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
             </h1>
-            <p className="text-sm md:text-[15px] text-white/60 leading-relaxed max-w-sm">
+            <p className="text-sm md:text-[16px] text-white/60 leading-relaxed max-w-sm">
               {MESSAGES[presses]}
             </p>
           </div>
@@ -67,7 +67,7 @@ export default function ZapretProto() {
           <button
             type="button"
             onClick={() => { setExitShake(true); setTimeout(() => setExitShake(false), 400); }}
-            className={`mt-6 text-[13px] tracking-[0.12em] uppercase transition-all ${exitShake ? "translate-x-1 text-[#C9A66B]" : "text-white/40 hover:text-white/60"}`}
+            className={`mt-6 text-[14px] tracking-[0.12em] uppercase transition-all ${exitShake ? "translate-x-1 text-[#C9A66B]" : "text-white/40 hover:text-white/60"}`}
           >
             {exitShake ? "выхода тут нет" : "Выйти →"}
           </button>

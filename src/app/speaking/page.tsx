@@ -129,7 +129,7 @@ export default function SpeakingPage() {
             <span className="sr-only">Видео и интервью</span>
             <LedText text="Видео и интервью" className="h-[11px] w-auto" />
           </span>
-          <span className="text-[13px] md:text-[14px] text-white/35 tabular-nums">
+          <span className="text-[14px] md:text-[14px] text-white/35 tabular-nums">
             {TALKS.length}
           </span>
         </motion.div>
@@ -169,7 +169,7 @@ export default function SpeakingPage() {
                     <span className="sr-only">{talk.era}</span>
                     <LedText text={talk.era} className="h-[8px] md:h-[9px] w-auto" />
                   </div>
-                  <div className="text-[15px] md:text-[16px] text-white/85 leading-snug group-hover:text-white transition-colors">
+                  <div className="text-[16px] md:text-[16px] text-white/85 leading-snug group-hover:text-white transition-colors">
                     {talk.label}
                   </div>
                 </div>
@@ -197,14 +197,14 @@ export default function SpeakingPage() {
                 <LedText text="Менторство и курсы" className="h-[11px] w-auto" />
               </div>
             </div>
-            <ul className="space-y-2.5 text-[15px] md:text-[16px] text-white/65 leading-relaxed mb-5">
+            <ul className="space-y-2.5 text-[16px] md:text-[16px] text-white/65 leading-relaxed mb-5">
               <li>30+ менти за&nbsp;карьеру (включая АД-период)</li>
               <li>ВШЭ — читал курс по&nbsp;прикладному ИИ</li>
               <li>Воркшопы для&nbsp;продуктовых команд</li>
             </ul>
             <Link
               href="mailto:egor.outhead@gmail.com?subject=Менторство"
-              className="inline-flex items-center gap-2 text-[14px] md:text-[15px] tracking-[0.04em] text-white/55 hover:text-[#A6FF00] transition-colors no-underline"
+              className="inline-flex items-center gap-2 text-[14px] md:text-[16px] tracking-[0.04em] text-white/55 hover:text-[#A6FF00] transition-colors no-underline"
             >
               Записаться <ArrowUpRight className="w-3.5 h-3.5" strokeWidth={2} />
             </Link>
@@ -219,13 +219,13 @@ export default function SpeakingPage() {
                 <LedText text="Telegram-канал" className="h-[11px] w-auto" />
               </div>
             </div>
-            <p className="text-[15px] md:text-[16px] text-white/65 leading-relaxed mb-5">
+            <p className="text-[16px] md:text-[16px] text-white/65 leading-relaxed mb-5">
               «Снятся ли Егору нейросети» — авторский канал про AI-инструменты для&nbsp;дизайнеров. Разборы Claude, Cursor, vibe-coding.
             </p>
             <Link
               href="https://t.me/aiegorka"
               target="_blank"
-              className="inline-flex items-center gap-2 text-[14px] md:text-[15px] tracking-[0.04em] text-white/55 hover:text-[#A6FF00] transition-colors no-underline"
+              className="inline-flex items-center gap-2 text-[14px] md:text-[16px] tracking-[0.04em] text-white/55 hover:text-[#A6FF00] transition-colors no-underline"
             >
               Читать канал <ArrowUpRight className="w-3.5 h-3.5" strokeWidth={2} />
             </Link>

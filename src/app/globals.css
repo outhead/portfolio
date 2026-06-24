@@ -10,14 +10,6 @@
   font-family: var(--font-service), var(--font-body), monospace;
 }
 
-/* === FONTS === */
-@font-face {
-  font-family: "Bebas Neue";
-  src: url("/fonts/BebasNeue-Bold.woff2") format("woff2");
-  font-weight: 700;
-  font-display: swap;
-}
-
 /* === BASE === */
 html {
   /* scroll-behavior: smooth вынесен в .js-scroll-smooth,
@@ -80,13 +72,6 @@ button:focus-visible {
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.55);
-}
-
-/* === HEADINGS === */
-.font-p95 {
-  font-family: "Bebas Neue", "Impact", sans-serif;
-  letter-spacing: 0.02em;
-  font-weight: 700;
 }
 
 /* Принудительный лаймовый цвет (перебивает наследование color/-webkit-text-fill-color) */

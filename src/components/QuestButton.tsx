@@ -20,11 +20,11 @@ const base =
 
 const styles: Record<Variant, string> = {
   primary:
-    "rounded-full px-6 py-3 text-[15px] bg-[#A6FF00] text-black hover:bg-[#B9FF33] active:bg-[#9AEB00] shadow-[0_0_26px_-8px_rgba(166,255,0,0.7)] disabled:opacity-50 disabled:pointer-events-none",
+    "rounded-full px-6 py-3 text-[16px] bg-[#A6FF00] text-black hover:bg-[#B9FF33] active:bg-[#9AEB00] shadow-[0_0_26px_-8px_rgba(166,255,0,0.7)] disabled:opacity-50 disabled:pointer-events-none",
   secondary:
-    "rounded-full px-6 py-3 text-[15px] border border-white/20 text-white/75 hover:border-white/45 hover:text-white disabled:opacity-50 disabled:pointer-events-none",
+    "rounded-full px-6 py-3 text-[16px] border border-white/20 text-white/75 hover:border-white/45 hover:text-white disabled:opacity-50 disabled:pointer-events-none",
   tertiary:
-    "text-[13px] text-white/45 hover:text-[#A6FF00] disabled:opacity-40 disabled:pointer-events-none",
+    "text-[14px] text-white/45 hover:text-[#A6FF00] disabled:opacity-40 disabled:pointer-events-none",
 };
 
 export default function QuestButton({

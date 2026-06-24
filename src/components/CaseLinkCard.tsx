@@ -39,8 +39,8 @@ export default function CaseLinkCard({ link, size = "md" }: CaseLinkCardProps) {
   const playSize = size === "sm" ? "w-7 h-7" : "w-9 h-9";
   const playIcon = size === "sm" ? "w-3 h-3" : "w-3.5 h-3.5";
   const padding = size === "sm" ? "p-3" : "p-4";
-  const labelText = size === "sm" ? "text-[13px]" : "text-sm";
-  const domainText = "text-[11px] tracking-[0.05em] text-white/30 mb-1.5 truncate uppercase";
+  const labelText = size === "sm" ? "text-[14px]" : "text-sm";
+  const domainText = "text-[12px] tracking-[0.05em] text-white/30 mb-1.5 truncate uppercase";
 
   return (
     <a

@@ -195,7 +195,7 @@ export default function Dalshe2() {
             <h1 className="mb-3">
               <LedLines text="Обыграй компьютер" center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
             </h1>
-            <p className="text-[13px] md:text-sm text-white/55 leading-relaxed max-w-sm">
+            <p className="text-[14px] md:text-sm text-white/55 leading-relaxed max-w-sm">
               Компьютер ходит первым и не любит проигрывать.
             </p>
           </div>

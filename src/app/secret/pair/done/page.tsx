@@ -32,11 +32,11 @@ export default function PairDone() {
         <h1 className="text-[#A6FF00] mb-6">
           <LedLines text="Готово" center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
         </h1>
-        <p className="text-[15px] text-white/70 max-w-sm leading-relaxed mb-8">
+        <p className="text-[16px] text-white/70 max-w-sm leading-relaxed mb-8">
           Это нельзя было пройти одному. Спасибо вам обоим — и тому, кто видел, и тому, кто щёлкал.
         </p>
         <div className="mb-8 flex flex-col items-center">
-          <p className="text-[13px] text-white/45 mb-3 max-w-xs">Раз уж вы вдвоём — сыграйте.</p>
+          <p className="text-[14px] text-white/45 mb-3 max-w-xs">Раз уж вы вдвоём — сыграйте.</p>
           <QuestButton href={pongHref} arrow>Пинг-понг</QuestButton>
         </div>
       </div>

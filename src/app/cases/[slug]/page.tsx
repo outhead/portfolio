@@ -140,7 +140,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
           <h1 className="mb-5 text-white">
             <LedLines text={project.title} maxChars={32} lineClass="h-[18px] md:h-[30px]" />
           </h1>
-          <p className="text-[15px] tracking-[0.05em] text-white/40 uppercase">
+          <p className="text-[16px] tracking-[0.05em] text-white/40 uppercase">
             {project.role} · {project.period}
           </p>
 
@@ -325,7 +325,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                             <div className="font-mono text-[12px] tracking-[0.1em] uppercase text-white/45 mt-1">
                               {t.date}
                             </div>
-                            <div className="text-sm md:text-[15px] text-white/90 font-medium leading-snug">
+                            <div className="text-sm md:text-[16px] text-white/90 font-medium leading-snug">
                               {t.title}
                             </div>
                             {t.note && (
@@ -346,7 +346,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                             <div className="font-mono text-[12px] tracking-[0.1em] uppercase text-white/45 mt-1">
                               {t.date}
                             </div>
-                            <div className="text-sm md:text-[15px] text-white/90 font-medium leading-snug">
+                            <div className="text-sm md:text-[16px] text-white/90 font-medium leading-snug">
                               {t.title}
                             </div>
                             {t.note && (
@@ -547,7 +547,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                   <li key={i}>
                     <a
                       href={`#section-${i + 1}`}
-                      className="group flex items-baseline gap-2 text-[15px] text-white/40 hover:text-white/85 transition-colors no-underline"
+                      className="group flex items-baseline gap-2 text-[16px] text-white/40 hover:text-white/85 transition-colors no-underline"
                     >
                       <span className="font-mono text-[12px] text-white/25 group-hover:text-white/60 flex-shrink-0">
                         {String(i + 1).padStart(2, "0")}

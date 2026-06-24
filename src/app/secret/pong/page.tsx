@@ -1115,8 +1115,8 @@ export default function PongPage() {
                 role === "host" ? (
                   shareUrl ? (
                     <>
-                      <p className="text-[15px] text-white/80 mb-1">Жду соперника</p>
-                      <p className="text-[13px] text-white/45 mb-5 max-w-xs">Кинь ссылку другу — игра начнётся, когда он откроет.</p>
+                      <p className="text-[16px] text-white/80 mb-1">Жду соперника</p>
+                      <p className="text-[14px] text-white/45 mb-5 max-w-xs">Кинь ссылку другу — игра начнётся, когда он откроет.</p>
                       <QuestButton onClick={copy}>{copied ? "скопировано" : "копировать ссылку"}</QuestButton>
                     </>
                   ) : (

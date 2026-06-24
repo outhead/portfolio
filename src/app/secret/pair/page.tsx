@@ -231,17 +231,17 @@ export default function PairPage() {
           <>
             <h1 className="mb-4 flex justify-center"><span className="sr-only">Сбой связи</span><LedText text="Сбой связи" scale={2} dot={1.45} className="h-[20px] md:h-[26px] w-auto" /></h1>
             <p className="text-white/55 text-sm mb-8 max-w-xs">Не удалось открыть сессию. Попробуй обновить страницу.</p>
-            <Link href="/secret/lab/kod" className="text-[13px] text-white/40 hover:text-white/70 no-underline">← К терминалу</Link>
+            <Link href="/secret/lab/kod" className="text-[14px] text-white/40 hover:text-white/70 no-underline">← К терминалу</Link>
           </>
         ) : null}
 
         {phase === "same_ip" ? (
           <>
             <h1 className="mb-5 flex justify-center"><span className="sr-only">Хм.</span><LedText text="Хм." scale={2} dot={1.45} className="h-[20px] md:h-[28px] w-auto" /></h1>
-            <p className="text-[15px] text-white/70 max-w-xs leading-relaxed mb-3">
+            <p className="text-[16px] text-white/70 max-w-xs leading-relaxed mb-3">
               Я вижу, как ты пытаешься меня обмануть. Тебе нужен кто-то — дальше, чем твоя вторая рука.
             </p>
-            <p className="text-[13px] text-white/35 max-w-xs mb-7">Придётся постараться по-настоящему.</p>
+            <p className="text-[14px] text-white/35 max-w-xs mb-7">Придётся постараться по-настоящему.</p>
             <p className="text-[12px] text-white/30 max-w-xs mb-4">
               Вы с напарником за одним VPN или одной сетью? Тогда я обознался.
             </p>
@@ -264,7 +264,7 @@ export default function PairPage() {
             <h1 className="mb-3">
               <LedLines text="Ты видишь, как надо" center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
             </h1>
-            <p className="text-[13px] text-white/55 max-w-sm mb-8">
+            <p className="text-[14px] text-white/55 max-w-sm mb-8">
               Переключить тумблеры можешь не ты. Диктуй напарнику нужный порядок.
             </p>
 
@@ -284,9 +284,9 @@ export default function PairPage() {
               <div className="mt-10 w-full flex flex-col items-center">
                 {!joined ? (
                   <>
-                    <p className="text-[13px] text-white/50 mb-3">Отправь ссылку второму игроку (на другом устройстве):</p>
+                    <p className="text-[14px] text-white/50 mb-3">Отправь ссылку второму игроку (на другом устройстве):</p>
                     <QuestButton onClick={copy}>{copied ? "скопировано" : "копировать ссылку"}</QuestButton>
-                    <p className="mt-4 text-[11px] text-white/30 break-all max-w-xs">{shareUrl}</p>
+                    <p className="mt-4 text-[12px] text-white/30 break-all max-w-xs">{shareUrl}</p>
                   </>
                 ) : (
                   <p className="text-[14px] text-[#A6FF00]">Напарник на связи. Диктуй порядок.</p>
@@ -295,7 +295,7 @@ export default function PairPage() {
             ) : (
               <div className="mt-10 flex flex-col items-center">
                 <p className="text-[#A6FF00] mb-2 flex justify-center"><span className="sr-only">Сошлось!</span><LedText text="Сошлось!" scale={2} dot={1.45} className="h-[20px] md:h-[26px] w-auto" /></p>
-                <p className="text-[13px] text-white/55 max-w-xs">Вы сделали это вдвоём. Финал открыт у обоих.</p>
+                <p className="text-[14px] text-white/55 max-w-xs">Вы сделали это вдвоём. Финал открыт у обоих.</p>
                 <QuestButton href={`/secret/pair/done?room=${token}&host=1`} arrow className="mt-6">Дальше</QuestButton>
               </div>
             )}
@@ -308,7 +308,7 @@ export default function PairPage() {
             <h1 className="mb-3">
               <LedLines text="Ты переключаешь" center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
             </h1>
-            <p className="text-[13px] text-white/55 max-w-sm mb-10">
+            <p className="text-[14px] text-white/55 max-w-sm mb-10">
               Порядок видит напарник. Слушай его и щёлкай тумблеры.
             </p>
 
@@ -353,11 +353,11 @@ export default function PairPage() {
             </div>
 
             {!solved ? (
-              <p className="mt-10 text-[13px] text-white/40">Напарник скажет, когда сойдётся.</p>
+              <p className="mt-10 text-[14px] text-white/40">Напарник скажет, когда сойдётся.</p>
             ) : (
               <div className="mt-10 flex flex-col items-center">
                 <p className="text-[#A6FF00] mb-2 flex justify-center"><span className="sr-only">Сошлось!</span><LedText text="Сошлось!" scale={2} dot={1.45} className="h-[20px] md:h-[26px] w-auto" /></p>
-                <p className="text-[13px] text-white/55 max-w-xs">Вы сделали это вдвоём. Финал открыт у обоих.</p>
+                <p className="text-[14px] text-white/55 max-w-xs">Вы сделали это вдвоём. Финал открыт у обоих.</p>
                 <QuestButton href={`/secret/pair/done?room=${token}`} arrow className="mt-6">Дальше</QuestButton>
               </div>
             )}

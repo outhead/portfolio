@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import LedText from "@/components/LedText";
 
 /**
  * Бесконечный ряд компаний с auto-scroll + drag-to-spin (с инерцией).
@@ -162,15 +163,18 @@ export default function CompanyMarquee() {
           className="pointer-events-none absolute inset-y-0 right-0 w-16 md:w-24 z-10"
           style={{ background: "linear-gradient(to left, rgba(10,10,10,1), rgba(10,10,10,0))" }}
         />
+        <span className="sr-only">{COMPANIES.join(", ")}</span>
         <div ref={trackRef} className="flex items-center whitespace-nowrap will-change-transform">
           {Array.from({ length: N_COPIES }, (_, loopIdx) => (
             <div key={loopIdx} className="flex items-center shrink-0" aria-hidden={loopIdx > 0}>
               {COMPANIES.map((name) => (
                 <span key={name + loopIdx} className="flex items-center">
-                  <span className="font-p95 text-[22px] md:text-[32px] lg:text-[40px] tracking-[0.04em] uppercase text-white/80 leading-none px-6 md:px-10">
-                    {name}
-                  </span>
-                  <span aria-hidden className="text-white/20 text-2xl md:text-3xl select-none leading-none">
+                  <LedText
+                    text={name}
+                    dot={1.6}
+                    className="h-[24px] md:h-[32px] lg:h-[40px] w-auto text-white/80 px-6 md:px-10"
+                  />
+                  <span aria-hidden className="text-white/20 text-[24px] md:text-[32px] select-none leading-none">
                     ·
                   </span>
                 </span>

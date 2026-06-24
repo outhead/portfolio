@@ -483,7 +483,7 @@ function CareerHoverList() {
                   <span className="sr-only">{job.company}</span>
                   <LedText text={job.company} className="h-[11px] w-auto" />
                 </span>
-                <span className="font-service text-[15px] tracking-[0.02em] text-white/60 leading-tight">
+                <span className="font-service text-[16px] tracking-[0.02em] text-white/60 leading-tight">
                   {job.role}
                 </span>
               </span>
@@ -533,7 +533,7 @@ function CareerHoverList() {
                       {job.details.map((d) => (
                         <li
                           key={d}
-                          className="flex items-start gap-2 text-[15px] text-white/72 leading-snug"
+                          className="flex items-start gap-2 text-[16px] text-white/72 leading-snug"
                         >
                           <span className="mt-[7px] h-px w-2 shrink-0 bg-white/30" />
                           <span>{d}</span>
@@ -703,7 +703,7 @@ function ServiceTile({ tile }: { tile: ServiceTileData }) {
 
       {/* Описание — прижато к низу карточки (на место бывших items),
           mt-auto выравнивает низ всех 3 карточек по горизонтали. */}
-      <p className="text-[15px] md:text-[16px] leading-relaxed text-white/74">
+      <p className="text-[16px] md:text-[16px] leading-relaxed text-white/74">
         {body}
       </p>
     </motion.div>
@@ -832,7 +832,7 @@ function Toolbox() {
             className="mb-8 md:mb-10 flex items-baseline gap-3"
           >
             <SectionLabel>ИНСТРУМЕНТЫ</SectionLabel>
-            <span className="text-[14px] md:text-[15px] text-white/40 tracking-[0.06em]">
+            <span className="text-[14px] md:text-[16px] text-white/40 tracking-[0.06em]">
               которые я использую каждый день
             </span>
           </motion.div>
@@ -933,7 +933,7 @@ export default function PreviewHome() {
                 <h1 className="sr-only">
                   7 лет развиваю людей, команды, визуал, сервисы — дизайн-директор Егор Шугаев
                 </h1>
-                <p className="font-service mt-5 md:mt-6 max-w-[460px] text-[16px] md:text-[19px] leading-snug tracking-[0.02em] text-white/60">
+                <p className="font-service mt-5 md:mt-6 max-w-[460px] text-[16px] md:text-[20px] leading-snug tracking-[0.02em] text-white/60">
                   От стратегии и культуры до AI и цифровых продуктов.
                 </p>
                 <div className="mt-5 md:mt-6 flex flex-wrap items-center gap-3">
@@ -1115,7 +1115,7 @@ export default function PreviewHome() {
                             <span className="sr-only">{item.label}</span>
                             <LedText text={item.label} className="h-[11px] w-auto" />
                           </span>
-                          <span className="font-service text-[12px] md:text-[13px] tracking-[0.06em] uppercase text-white/45">
+                          <span className="font-service text-[12px] md:text-[14px] tracking-[0.06em] uppercase text-white/45">
                             {item.note}
                           </span>
                         </span>
@@ -1400,7 +1400,7 @@ export default function PreviewHome() {
                 <span className="mb-5 text-[#C9A66B]/70" aria-hidden>
                   <LedText text='"' scale={2} dot={1.45} className="h-[18px] w-auto" />
                 </span>
-                <p className="text-white/75 text-[15px] md:text-[16px] leading-relaxed mb-7 md:mb-8">
+                <p className="text-white/75 text-[16px] md:text-[16px] leading-relaxed mb-7 md:mb-8">
                   {t.quote}
                 </p>
                 {/* mt-auto прижимает подпись к низу карточки — выравнивает подписи в обоих кейсах */}
@@ -1415,7 +1415,7 @@ export default function PreviewHome() {
                     />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-[15px] text-white font-medium leading-tight">{t.name}</div>
+                    <div className="text-[16px] text-white font-medium leading-tight">{t.name}</div>
                     <div className="text-[12.5px] text-white/50 mt-1 leading-snug">{t.role}</div>
                   </div>
                 </div>
@@ -1488,7 +1488,7 @@ export default function PreviewHome() {
                       <h3 className="text-white mb-5 max-w-sm">
                         <LedLines text={t.title} maxChars={24} lineClass="h-[14px] md:h-[17px]" />
                       </h3>
-                      <p className="text-[15px] md:text-[16px] text-white/72 leading-relaxed max-w-md">
+                      <p className="text-[16px] md:text-[16px] text-white/72 leading-relaxed max-w-md">
                         {t.body}
                       </p>
                     </div>
@@ -1550,13 +1550,13 @@ export default function PreviewHome() {
 
             <motion.div variants={fadeUp} className="flex flex-col">
               <div className="space-y-4 md:space-y-5 max-w-2xl">
-                <p className="text-[15px] md:text-[16px] text-white/70 leading-relaxed">
+                <p className="text-[16px] md:text-[16px] text-white/70 leading-relaxed">
                   Пришёл в дизайн из&nbsp;полиграфии и&nbsp;остался в&nbsp;нём по простой причине: мне нравится узнавать первопричины потребностей пользователей и&nbsp;решений бизнеса, искать провалы, растить людей и&nbsp;цифры. В&nbsp;какой-то момент это оказалось не побочным интересом, а&nbsp;рабочей профессией.
                 </p>
-                <p className="text-[15px] md:text-[16px] text-white/70 leading-relaxed">
+                <p className="text-[16px] md:text-[16px] text-white/70 leading-relaxed">
                   Сейчас мне интересна связка «дизайн и&nbsp;AI». Менторю дизайнеров и&nbsp;лидов, экспериментирую сам, пишу код. Иногда поделки получаются криво, но это часть процесса.
                 </p>
-                <p className="text-[15px] md:text-[16px] text-white/70 leading-relaxed">
+                <p className="text-[16px] md:text-[16px] text-white/70 leading-relaxed">
                   Работаю от&nbsp;задачи: строю и&nbsp;автоматизирую процессы, влезаю глубоко — от&nbsp;стратегии до&nbsp;ревью макетов. Задача руководителя, как я&nbsp;её вижу, — дать команде ясность: кто чем занят и&nbsp;зачем. Тогда люди действуют увереннее, а&nbsp;не на&nbsp;ощупь.
                 </p>
               </div>

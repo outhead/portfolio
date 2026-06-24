@@ -90,7 +90,7 @@ export default function FontsLab() {
               key={v.id}
               type="button"
               onClick={() => setVariant(v)}
-              className={`px-4 py-2 rounded-full border transition-colors text-[13px] tracking-[0.04em] ${
+              className={`px-4 py-2 rounded-full border transition-colors text-[14px] tracking-[0.04em] ${
                 variant.id === v.id
                   ? "border-[#A6FF00]/60 text-[#A6FF00] bg-[#A6FF00]/10"
                   : "border-white/15 text-white/60 hover:text-white hover:border-white/30"
@@ -100,7 +100,7 @@ export default function FontsLab() {
               {v.name}
             </button>
           ))}
-          <label className="ml-2 inline-flex items-center gap-2 text-[13px] text-white/50 cursor-pointer select-none">
+          <label className="ml-2 inline-flex items-center gap-2 text-[14px] text-white/50 cursor-pointer select-none">
             <input
               type="checkbox"
               checked={applyBody}
@@ -122,7 +122,7 @@ export default function FontsLab() {
               <div key={m.l} className="flex flex-col gap-4">
                 <LedCounter value={m.v} tone="#C9A66B" />
                 <span
-                  className="text-[12px] md:text-[13px] uppercase tracking-[0.08em] text-white/40"
+                  className="text-[12px] md:text-[14px] uppercase tracking-[0.08em] text-white/40"
                   style={service}
                 >
                   {m.l}
@@ -154,7 +154,7 @@ export default function FontsLab() {
                   <LedText text={item.label} className="h-[11px] w-auto" />
                 </span>
                 <span
-                  className="text-[12px] md:text-[13px] uppercase tracking-[0.06em] text-white/45"
+                  className="text-[12px] md:text-[14px] uppercase tracking-[0.06em] text-white/45"
                   style={service}
                 >
                   {item.note}
@@ -169,7 +169,7 @@ export default function FontsLab() {
           <h2 className="text-white">
             <LedLines text="Сейчас мне интересна связка дизайн и AI" maxChars={26} lineClass="h-[13px] md:h-[15px]" />
           </h2>
-          <p className="max-w-[560px] text-[15px] md:text-[16px] leading-relaxed text-white/70" style={body}>
+          <p className="max-w-[560px] text-[16px] md:text-[16px] leading-relaxed text-white/70" style={body}>
             Менторю дизайнеров и лидов, экспериментирую сам, пишу код. Иногда
             поделки получаются криво, но это часть процесса. От стратегии и
             культуры до AI и цифровых продуктов.
@@ -189,7 +189,7 @@ export default function FontsLab() {
 
         {/* ── Контрольная строка: цифры/латиница/кириллица ── */}
         <Oled className="p-6 md:p-8">
-          <div className="text-[13px] leading-loose text-white/60" style={service}>
+          <div className="text-[14px] leading-loose text-white/60" style={service}>
             АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЭЮЯ абвгдежзиклмноп 0123456789 — B2C / B2E ·
             EdTech · 30+ менти · CX-24 · «ёлки» (скобки) [метки] 17:45
           </div>

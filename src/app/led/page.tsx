@@ -31,7 +31,7 @@ export default function LedDemo() {
             <span className="sr-only">Набери своё слово</span>
             <LedLines text="Набери своё слово" maxChars={20} lineClass="h-[16px] md:h-[20px]" />
           </h1>
-          <p className="text-[14px] md:text-[15px] text-white/55 max-w-[480px]">
+          <p className="text-[14px] md:text-[16px] text-white/55 max-w-[480px]">
             Тот же движок, что рисует весь этот сайт: 89 глифов 5×7, рендер
             точками. Текст ниже — не шрифт, а карта зажжённых диодов.
           </p>
@@ -83,7 +83,7 @@ export default function LedDemo() {
               className="flex-1 accent-[#A6FF00]"
               aria-label="Радиус точки"
             />
-            <span className="w-12 text-right text-[13px] tabular-nums font-service">{dot.toFixed(2)}</span>
+            <span className="w-12 text-right text-[14px] tabular-nums font-service">{dot.toFixed(2)}</span>
           </label>
           <label className="flex items-center gap-4 text-white/50">
             <span className="w-28 shrink-0">
@@ -99,7 +99,7 @@ export default function LedDemo() {
               className="flex-1 accent-[#A6FF00]"
               aria-label="Апскейл битмапы"
             />
-            <span className="w-12 text-right text-[13px] tabular-nums font-service">×{scale}</span>
+            <span className="w-12 text-right text-[14px] tabular-nums font-service">×{scale}</span>
           </label>
         </div>
 

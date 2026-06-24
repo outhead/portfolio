@@ -384,7 +384,7 @@ export default function SecretDalshePage() {
               <LedLines text="Победа" center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
             </h1>
 
-            <p className="text-sm md:text-[15px] text-white/60 mb-8 max-w-xs">
+            <p className="text-sm md:text-[16px] text-white/60 mb-8 max-w-xs">
               Ты выиграл там, где выиграть нельзя. Дальше — сложнее.
             </p>
 
@@ -418,13 +418,13 @@ export default function SecretDalshePage() {
                   <h1 className="mb-3">
                     <LedLines text="Обыграй компьютер" center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
                   </h1>
-                  <p className="text-[13px] md:text-sm text-white/55 leading-relaxed max-w-sm">
+                  <p className="text-[14px] md:text-sm text-white/55 leading-relaxed max-w-sm">
                     Компьютер ходит первым и не любит проигрывать.
                   </p>
                 </div>
                 {board}
                 {status ? (
-                  <p className={`mt-5 text-sm md:text-[15px] ${won ? "text-[#A6FF00]" : "text-white/70"}`}>
+                  <p className={`mt-5 text-sm md:text-[16px] ${won ? "text-[#A6FF00]" : "text-white/70"}`}>
                     {status}
                   </p>
                 ) : null}

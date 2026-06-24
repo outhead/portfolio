@@ -141,7 +141,7 @@ export default function MentoringPage() {
                 <h3 className="mb-4 text-white">
                   <LedLines text={format.title} maxChars={18} lineClass="h-[13px] md:h-[15px]" />
                 </h3>
-                <p className="text-[14px] md:text-[15px] text-white/60 leading-relaxed mb-6">
+                <p className="text-[14px] md:text-[16px] text-white/60 leading-relaxed mb-6">
                   {format.description}
                 </p>
                 <div className="mt-auto pt-4 border-t border-white/[0.06] text-[#C9A66B]/80">
@@ -170,7 +170,7 @@ export default function MentoringPage() {
                   <span className="sr-only">{item.title}</span>
                   <LedText text={item.title} className="h-[11px] md:h-[12px] w-auto" />
                 </h3>
-                <p className="text-[14px] md:text-[15px] text-white/60 leading-relaxed">
+                <p className="text-[14px] md:text-[16px] text-white/60 leading-relaxed">
                   {item.text}
                 </p>
               </div>
@@ -194,7 +194,7 @@ export default function MentoringPage() {
               <h3 className="text-white mb-4">
                 <LedLines text="Напишите мне" maxChars={20} lineClass="h-[13px] md:h-[15px]" />
               </h3>
-              <p className="text-[14px] md:text-[15px] text-white/60 leading-relaxed mb-7 max-w-md">
+              <p className="text-[14px] md:text-[16px] text-white/60 leading-relaxed mb-7 max-w-md">
                 Расскажите коротко о себе, что хотите обсудить и какой формат
                 интересен. Я отвечу в течение дня.
               </p>
@@ -227,7 +227,7 @@ export default function MentoringPage() {
                 <h3 className="text-white mb-4">
                   <LedLines text="Или время в календаре" maxChars={22} lineClass="h-[13px] md:h-[15px]" />
                 </h3>
-                <p className="text-[14px] md:text-[15px] text-white/60 leading-relaxed mb-6 max-w-md">
+                <p className="text-[14px] md:text-[16px] text-white/60 leading-relaxed mb-6 max-w-md">
                   Ссылка откроется в Cal.com — выберите удобный слот для встречи.
                 </p>
                 <Link
@@ -259,7 +259,7 @@ export default function MentoringPage() {
                         <span className="sr-only">{row.k}</span>
                         <LedText text={row.k} className="h-[8px] w-auto" />
                       </div>
-                      <div className="text-[15px] text-white/70">{row.v}</div>
+                      <div className="text-[16px] text-white/70">{row.v}</div>
                     </div>
                   ))}
                 </div>
@@ -293,7 +293,7 @@ export default function MentoringPage() {
                     <LedLines text={p.title} maxChars={26} lineClass="h-[16px] md:h-[22px]" />
                   </h3>
                 </div>
-                <p className="text-sm md:text-[15px] text-white/60 leading-relaxed max-w-2xl">
+                <p className="text-sm md:text-[16px] text-white/60 leading-relaxed max-w-2xl">
                   {p.body}
                 </p>
               </div>

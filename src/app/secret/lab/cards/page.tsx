@@ -54,7 +54,7 @@ function RainCard() {
 
 function TagChip({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center px-3 py-1.5 rounded-full border border-white/15 bg-black/40 text-[12px] md:text-[13px] tracking-[0.08em] uppercase text-white/80 leading-[1.2] backdrop-blur-sm">
+    <span className="inline-flex items-center px-3 py-1.5 rounded-full border border-white/15 bg-black/40 text-[12px] md:text-[14px] tracking-[0.08em] uppercase text-white/80 leading-[1.2] backdrop-blur-sm">
       {children}
     </span>
   );
@@ -238,7 +238,7 @@ export default function CardsLabPage() {
                   <LedText text={b.name} className="h-[8px] w-auto" />
                 </div>
               </div>
-              <span className="text-[11px] tracking-[0.06em] uppercase text-white/40 text-center">{b.name} · {b.color}</span>
+              <span className="text-[12px] tracking-[0.06em] uppercase text-white/40 text-center">{b.name} · {b.color}</span>
             </div>
           ))}
         </div>
@@ -306,7 +306,7 @@ export default function CardsLabPage() {
               <div className="w-full max-w-[180px] rounded-xl border border-white/[0.08] bg-black/40 overflow-hidden p-2">
                 <PixelCube3D color={MTS_RED} logoSrc="/images/logos/mts.svg" grid={40} mode={mode} className="w-full" />
               </div>
-              <span className="text-[11px] tracking-[0.06em] uppercase text-white/40 text-center">{label}</span>
+              <span className="text-[12px] tracking-[0.06em] uppercase text-white/40 text-center">{label}</span>
             </div>
           ))}
         </div>

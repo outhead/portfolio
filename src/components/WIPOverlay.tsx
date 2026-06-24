@@ -50,7 +50,7 @@ export default function WIPOverlay({
             <LedLines text={title} accent="." maxChars={24} lineClass="h-[16px] md:h-[20px]" />
           </h2>
 
-          <p className="mt-4 md:mt-5 text-sm md:text-[15px] text-white/65 leading-relaxed">
+          <p className="mt-4 md:mt-5 text-sm md:text-[16px] text-white/65 leading-relaxed">
             {description}
           </p>
 

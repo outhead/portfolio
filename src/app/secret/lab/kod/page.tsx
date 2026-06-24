@@ -115,7 +115,7 @@ export default function KodFinal() {
           <h1 className="mb-2">
             <LedLines text="Введи код" center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
           </h1>
-          <p className="text-[13px] text-white/40 mb-8">Терминал #0000 · доступ закрыт</p>
+          <p className="text-[14px] text-white/40 mb-8">Терминал #0000 · доступ закрыт</p>
 
           <div className={`flex gap-3 mb-8 transition-transform ${wrong ? "translate-x-1" : ""}`} style={wrong ? { color: "#C9A66B" } : undefined}>
             {[0, 1, 2, 3].map((i) => (
@@ -172,7 +172,7 @@ export default function KodFinal() {
             <LedLines text="Доступ" center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
           </h1>
           {winMs != null ? (
-            <p className="text-[15px] text-white/80 mb-8">
+            <p className="text-[16px] text-white/80 mb-8">
               Весь квест за <span className="text-[#A6FF00] tabular-nums">{fmtQuestTime(winMs)}</span>
               {hintsUsed > 0 ? (
                 <> · подсказок: <span className="text-[#C9A66B] tabular-nums">{hintsUsed}</span></>
@@ -190,7 +190,7 @@ export default function KodFinal() {
               <input
                 type="text" value={name} onChange={(e) => setName(e.target.value)}
                 maxLength={20} placeholder="Твоё имя" aria-label="Имя для таблицы лидеров"
-                className="bg-white/[0.06] border border-white/15 rounded-full px-5 py-3.5 text-[15px] text-white text-center placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors"
+                className="bg-white/[0.06] border border-white/15 rounded-full px-5 py-3.5 text-[16px] text-white text-center placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors"
               />
 
               {showFb ? (
@@ -198,9 +198,9 @@ export default function KodFinal() {
                   <textarea
                     value={feedback} onChange={(e) => setFeedback(e.target.value)}
                     maxLength={500} rows={3} placeholder="Что понравилось, что улучшить?" aria-label="Отзыв"
-                    className="bg-white/[0.06] border border-white/15 rounded-2xl px-5 py-3 text-[15px] text-white placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors resize-none"
+                    className="bg-white/[0.06] border border-white/15 rounded-2xl px-5 py-3 text-[16px] text-white placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors resize-none"
                   />
-                  <label className="flex items-center gap-2.5 px-1 text-[13px] text-white/55 cursor-pointer select-none">
+                  <label className="flex items-center gap-2.5 px-1 text-[14px] text-white/55 cursor-pointer select-none">
                     <input type="checkbox" checked={publish} onChange={(e) => setPublish(e.target.checked)}
                       className="w-4 h-4 accent-[#A6FF00] cursor-pointer" />
                     Опубликовать на стене прошедших
@@ -231,7 +231,7 @@ export default function KodFinal() {
 
           {/* ─── 2. После отправки: статус ─── */}
           {submitted ? (
-            <p className="text-[15px] text-white/75 mb-6 max-w-[420px]">Ты в таблице{telegram.trim() ? " · добавлю в вейтлист" : ""}. Спасибо, что дошёл.</p>
+            <p className="text-[16px] text-white/75 mb-6 max-w-[420px]">Ты в таблице{telegram.trim() ? " · добавлю в вейтлист" : ""}. Спасибо, что дошёл.</p>
           ) : null}
 
           {/* ─── 3. Лидерборд — виден сразу после победы ─── */}
@@ -243,7 +243,7 @@ export default function KodFinal() {
                   <LedText text="Быстрее всех" className="h-[8px] w-auto" />
                 </p>
                 <button type="button" onClick={() => setOthersOnly((v) => !v)}
-                  className="text-[11px] tracking-[0.08em] uppercase text-white/35 hover:text-[#A6FF00] transition-colors">
+                  className="text-[12px] tracking-[0.08em] uppercase text-white/35 hover:text-[#A6FF00] transition-colors">
                   {othersOnly ? "все" : "без друзей"}
                 </button>
               </div>
@@ -255,7 +255,7 @@ export default function KodFinal() {
                       <span className="w-5 text-white/35">
                         <LedText text={String(i + 1)} className="h-[9px] w-auto" />
                       </span>
-                      <span className="flex-1 text-[15px] truncate">
+                      <span className="flex-1 text-[16px] truncate">
                         {e.name}
                         {e.tester ? <span className="ml-2 text-[10px] tracking-[0.1em] uppercase text-[#C9A66B]/70 align-middle">друг/тест</span> : null}
                       </span>
@@ -277,7 +277,7 @@ export default function KodFinal() {
 
           {/* ─── Дальше: кооп — сразу под таблицей, чтобы не теряться на телефоне ─── */}
           <div className="mb-8 flex flex-col items-center">
-            <p className="text-[13px] text-white/45 mb-3 max-w-xs">Есть ещё одна. Но в одиночку её не пройти.</p>
+            <p className="text-[14px] text-white/45 mb-3 max-w-xs">Есть ещё одна. Но в одиночку её не пройти.</p>
             <QuestButton href="/secret/pair" arrow>Кооп-загадка</QuestButton>
           </div>
 
@@ -304,7 +304,7 @@ export default function KodFinal() {
                 {fb.map((f, i) => (
                   <div key={`${f.at}-${i}`} className="rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-3">
                     <p className="text-[14px] text-white/80 leading-snug break-words">{f.feedback}</p>
-                    <p className="mt-1.5 text-[11px] text-white/35">— {f.name}</p>
+                    <p className="mt-1.5 text-[12px] text-white/35">— {f.name}</p>
                   </div>
                 ))}
               </div>

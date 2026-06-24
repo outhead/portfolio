@@ -557,7 +557,7 @@ export default function FinalCTA() {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                  className="mt-3 md:mt-4 text-[13px] md:text-[14px] text-white/45 leading-relaxed max-w-md"
+                  className="mt-3 md:mt-4 text-[14px] md:text-[14px] text-white/45 leading-relaxed max-w-md"
                 >
                   А ещё, если вам стало интересно — я веду телеграм-канал.
                 </motion.p>
