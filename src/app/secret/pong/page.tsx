@@ -26,6 +26,10 @@ const WIN_SCORE = 3;
 const BASE = 3.4;            // стартовая скорость (в ~1.5 раза медленнее прежней)
 const MAXV = 8;              // потолок скорости (px за шаг 60 Гц)
 const ACC = 1.04;            // ускорение на каждом отскоке
+// Буст «плюс» (только field): держишь — выдуваешь струю, отталкивающую мяч.
+const JET_RANGE = 240;       // радиус действия струи (px)
+const JET_FORCE = 1.15;      // импульс у самой плашки (за шаг 60 Гц), спадает к краю радиуса
+const BLOW_MS = 10000;       // длительность буста
 
 type Phase = "connecting" | "waiting" | "count" | "playing" | "over";
 // Режимы: classic — обычный понг (по умолчанию), field — «магнитное поле»:
@@ -58,7 +62,8 @@ export default function PongPage() {
   const waitTimer = useRef<ReturnType<typeof setTimeout> | null>(null); // дебаунс ухода в «ожидание»
 
   type Ball = { x: number; y: number; vx: number; vy: number; last: 0 | 1 };
-  type Boost = { x: number; y: number; type: "x2" | "size" | "stick"; t?: number }; // t: остаток жизни 0..1 (для таймер-дуги у гостя)
+  type BoostType = "x2" | "size" | "stick" | "blow";
+  type Boost = { x: number; y: number; type: BoostType; t?: number }; // t: остаток жизни 0..1 (для таймер-дуги у гостя)
 
   const px1 = useRef((FW - PW) / 2); // нижняя ракетка (host)
   const px2 = useRef((FW - PW) / 2); // верхняя ракетка (guest)
@@ -67,6 +72,10 @@ export default function PongPage() {
   const balls = useRef<Ball[]>([{ x: FW / 2, y: FH / 2, vx: 0, vy: 0, last: 0 }]);
   const boost = useRef<Boost | null>(null);
   const sizeUntil = useRef<[number, number]>([0, 0]); // [p1,p2] expiry
+  const blowUntil = useRef<[number, number]>([0, 0]); // [p1,p2] срок буста-струи «плюс»
+  const jetFx = useRef<[boolean, boolean]>([false, false]);   // кто СЕЙЧАС дует (для визуала, у гостя — из пакета)
+  const blowArmed = useRef<[boolean, boolean]>([false, false]); // у кого буст взведён (индикатор готовности)
+  const hadMatch = useRef(false); // был ли уже завершённый матч → следующий идёт в магнитном поле
   const nextBoostAt = useRef(0);
   const boostGoneAt = useRef(0);
   const sc = useRef<[number, number]>([0, 0]);
@@ -120,6 +129,7 @@ export default function PongPage() {
     boost.current = null;
     stuck.current = null; stickArmed.current = [0, 0];
     sizeUntil.current = [0, 0];
+    blowUntil.current = [0, 0]; jetFx.current = [false, false]; blowArmed.current = [false, false];
     pw1.current = PW; pw2.current = PW;
     nextBoostAt.current = performance.now() + 2500 + Math.random() * 3000;
   }
@@ -176,6 +186,8 @@ export default function PongPage() {
       pw1.current = payload.pw1; pw2.current = payload.pw2;
       boost.current = payload.boost || null;
       stuckNet.current = payload.stuck || null;
+      jetFx.current = [payload.jet?.[0] === 1, payload.jet?.[1] === 1];
+      blowArmed.current = [payload.blow?.[0] === 1, payload.blow?.[1] === 1];
       if (payload.s1 !== sc.current[0] || payload.s2 !== sc.current[1]) {
         sc.current = [payload.s1, payload.s2]; setScore([payload.s1, payload.s2]);
       }
@@ -338,7 +350,11 @@ export default function PongPage() {
   }
 
   function startMatch(keepScore = false) {
-    if (!keepScore) { sc.current = [0, 0]; setScore([0, 0]); }
+    if (!keepScore) {
+      sc.current = [0, 0]; setScore([0, 0]);
+      // прогрессия: первый матч — классика, после первого завершённого — магнитное поле
+      setModeBoth(hadMatch.current ? "field" : "classic");
+    }
     winnerRef.current = null; setWinner(null);
     px1.current = (FW - PW) / 2; px2.current = (FW - PW) / 2;
     startCountdown(Math.random() < 0.5 ? 1 : -1);
@@ -405,7 +421,7 @@ export default function PongPage() {
     };
 
     // иконки бустов — рисуем руками, без текста
-    const boostIcon = (t: "x2" | "size" | "stick", x: number, y: number, c: string) => {
+    const boostIcon = (t: BoostType, x: number, y: number, c: string) => {
       ctx.fillStyle = c; ctx.strokeStyle = c; ctx.lineWidth = 2; ctx.lineCap = "round";
       if (t === "x2") {
         ctx.beginPath(); ctx.arc(x - 5, y, 3.6, 0, Math.PI * 2); ctx.fill();
@@ -418,13 +434,20 @@ export default function PongPage() {
         ctx.moveTo(x + 9, y); ctx.lineTo(x + 5, y - 4);
         ctx.moveTo(x + 9, y); ctx.lineTo(x + 5, y + 4);
         ctx.stroke();
-      } else {
+      } else if (t === "stick") {
         ctx.beginPath();
         ctx.arc(x, y - 1, 6, Math.PI, 0, false);
         ctx.moveTo(x - 6, y - 1); ctx.lineTo(x - 6, y + 4);
         ctx.moveTo(x + 6, y - 1); ctx.lineTo(x + 6, y + 4);
         ctx.stroke();
         ctx.fillRect(x - 7.6, y + 4, 3.2, 3); ctx.fillRect(x + 4.4, y + 4, 3.2, 3);
+      } else {
+        // blow «плюс» — знак плюса
+        ctx.lineWidth = 2.4;
+        ctx.beginPath();
+        ctx.moveTo(x, y - 7); ctx.lineTo(x, y + 7);
+        ctx.moveTo(x - 7, y); ctx.lineTo(x + 7, y);
+        ctx.stroke();
       }
     };
 
@@ -558,10 +581,37 @@ export default function PongPage() {
       paddle(meX, meW, false, true, meHit);
       paddle(opX, opW, true, false, opHit);
 
+      // ─── струя «плюс»: индикатор готовности на своей плашке + поток частиц ───
+      if (modeRef.current === "field") {
+        const ownIdx = host ? 0 : 1;
+        for (const p of [0, 1] as const) {
+          const cxC = p === 0 ? px1.current + pw1.current / 2 : px2Eff.current + pw2.current / 2;
+          const sx = cxC, sy = yv(p === 0 ? BOTTOM_Y : TOP_Y + PH);
+          const toCenter = sy > FH / 2 ? -1 : 1;
+          if (jetFx.current[p] && !reducedMotion) {
+            const w = p === 0 ? pw1.current : pw2.current;
+            sparks(sx + (Math.random() - 0.5) * w * 0.85, sy, "#7CC4FF", 4, 3.4, (Math.random() - 0.5) * 0.7, toCenter);
+          }
+          if (blowArmed.current[p] && p === ownIdx) {
+            const pulse = 0.5 + 0.5 * Math.sin(nowMs / 180);
+            const iy = sy + toCenter * 24;
+            ctx.save();
+            ctx.globalAlpha = 0.45 + 0.45 * pulse;
+            ctx.strokeStyle = "#7CC4FF"; ctx.lineWidth = 2; ctx.lineCap = "round";
+            ctx.beginPath();
+            ctx.moveTo(sx, iy - 5); ctx.lineTo(sx, iy + 5);
+            ctx.moveTo(sx - 5, iy); ctx.lineTo(sx + 5, iy);
+            ctx.stroke();
+            ctx.restore();
+            ctx.globalAlpha = 1;
+          }
+        }
+      }
+
       // буст-чип: иконка в круге, вращающееся пунктирное кольцо, таймер-дуга,
       // появление со scale-перелётом и электрическим треском
       const bst = boost.current;
-      const boostColor = (t: "x2" | "size" | "stick") => t === "x2" ? "#FFD60A" : t === "size" ? "#33C7FF" : "#FF6EC7";
+      const boostColor = (t: BoostType) => t === "x2" ? "#FFD60A" : t === "size" ? "#33C7FF" : t === "stick" ? "#FF6EC7" : "#7CC4FF";
       if (bst && !prevBoostRef.current) {
         boostBornAt.current = nowMs;
         sparks(bst.x, yv(bst.y), boostColor(bst.type), 18, 3.2);
@@ -699,7 +749,7 @@ export default function PongPage() {
       } else flashRef.current = 0;
     };
 
-    const activate = (type: "x2" | "size" | "stick", owner: 0 | 1) => {
+    const activate = (type: BoostType, owner: 0 | 1) => {
       const now = performance.now();
       if (type === "x2") {
         const cur = balls.current.length;
@@ -720,9 +770,12 @@ export default function PongPage() {
       } else if (type === "stick") {
         // взведена 12с: следующий приём этой ракеткой — прилипание
         stickArmed.current[owner] = now + 12000;
-      } else {
+      } else if (type === "size") {
         if (owner === 0) { pw1.current = PW * 1.5; sizeUntil.current[0] = now + 10000; }
         else { pw2.current = PW * 1.5; sizeUntil.current[1] = now + 10000; }
+      } else {
+        // blow «плюс»: 10с можно зажать палец/ЛКМ и выдувать струю
+        blowUntil.current[owner] = now + BLOW_MS;
       }
     };
 
@@ -863,11 +916,15 @@ export default function PongPage() {
         // спавн/деспавн буста
         if (!boost.current && now > nextBoostAt.current) {
           const rr = Math.random();
+          // в магнитном поле — только два шарика (x2) или струя «плюс» (blow);
+          // size/stick там не выпадают (решение Егора)
+          const type: BoostType = modeRef.current === "field"
+            ? (rr < 0.5 ? "x2" : "blow")
+            : (rr < 0.5 ? "x2" : rr < 0.8 ? "size" : "stick");
           boost.current = {
             x: 60 + Math.random() * (FW - 120),
             y: FH * 0.32 + Math.random() * FH * 0.36,
-            // мультибол (x2) выпадает чаще остальных — это «второй шарик», которого Егор хочет больше
-            type: rr < 0.5 ? "x2" : rr < 0.8 ? "size" : "stick",
+            type,
           };
           boostGoneAt.current = now + 10000;
         }
@@ -881,6 +938,31 @@ export default function PongPage() {
           else { st.b.x = clamp(px2Eff.current + st.off, R, FW - R); st.b.y = TOP_Y + PH + R; }
           const holderDown = st.owner === 0 ? pressed : guestDown.current;
           if (now > st.until || (!holderDown && now > st.since + 220)) onReleaseRef.current(st.owner);
+        }
+
+        // ─── струя «плюс» (только field): держишь палец/ЛКМ → поток отталкивает мяч ───
+        blowArmed.current = [blowUntil.current[0] > now, blowUntil.current[1] > now];
+        const jetting: [boolean, boolean] = [
+          modeRef.current === "field" && blowArmed.current[0] && pressed,
+          modeRef.current === "field" && blowArmed.current[1] && guestDown.current,
+        ];
+        jetFx.current = jetting;
+        for (const p of [0, 1] as const) {
+          if (!jetting[p]) continue;
+          const cx = p === 0 ? px1.current + pw1.current / 2 : px2Eff.current + pw2.current / 2;
+          const cy = p === 0 ? BOTTOM_Y : TOP_Y + PH;
+          const dirY = p === 0 ? -1 : 1; // дует в сторону соперника
+          for (const b of balls.current) {
+            if (stuck.current?.b === b) continue;
+            const dx = b.x - cx, dy = b.y - cy;
+            if (dirY < 0 ? dy > 24 : dy < -24) continue; // только мяч перед плашкой
+            const dist = Math.hypot(dx, dy) || 1;
+            if (dist > JET_RANGE) continue;
+            const kk = 1 - dist / JET_RANGE;
+            b.vx += (dx / dist) * JET_FORCE * kk * 0.7;
+            b.vy += dirY * JET_FORCE * kk;
+            b.vx = clamp(b.vx, -MAXV, MAXV); b.vy = clamp(b.vy, -MAXV, MAXV);
+          }
         }
 
         const W1 = pw1.current, W2 = pw2.current;
@@ -962,6 +1044,7 @@ export default function PongPage() {
           if (sc.current[0] >= WIN_SCORE || sc.current[1] >= WIN_SCORE) {
             const w = sc.current[0] > sc.current[1] ? 0 : 1;
             winnerRef.current = w; setWinner(w); setPhaseBoth("over");
+            hadMatch.current = true; // следующий матч — в магнитном поле
             balls.current = []; boost.current = null; stuck.current = null;
           } else if (balls.current.length === 0) {
             startCountdown(Math.random() < 0.5 ? 1 : -1);
@@ -998,6 +1081,8 @@ export default function PongPage() {
             stuck: stuck.current ? { i: balls.current.indexOf(stuck.current.b), owner: stuck.current.owner, off: Math.round(stuck.current.off) } : null,
             s1: sc.current[0], s2: sc.current[1], phase: phaseRef.current, count: countRef.current,
             mode: modeRef.current === "field" ? 1 : 0,
+            jet: [jetFx.current[0] ? 1 : 0, jetFx.current[1] ? 1 : 0],
+            blow: [blowArmed.current[0] ? 1 : 0, blowArmed.current[1] ? 1 : 0],
             winner: phaseRef.current === "over" ? (sc.current[0] > sc.current[1] ? 0 : 1) : null,
           };
           if (p2p) {
@@ -1036,11 +1121,6 @@ export default function PongPage() {
     else if (useP2P.current) p2pRef.current?.sendCtl({ event: "rematch", payload: {} });
     else chRef.current?.send("rematch", {});
   }
-  // тумблер режима — только хост, на экранах ожидания/конца матча
-  function toggleMode() {
-    setModeBoth(modeRef.current === "field" ? "classic" : "field");
-  }
-
   const mine = role === "host" ? score[0] : score[1];
   const theirs = role === "host" ? score[1] : score[0];
   const iWon = winner === (role === "host" ? 0 : 1);
@@ -1142,15 +1222,15 @@ export default function PongPage() {
                 </>
               ) : null}
 
-              {/* выбор режима — хост, пока игра не идёт; второй режим, не дефолт */}
+              {/* прогрессия режимов: первый раунд классика, дальше магнитное поле */}
               {role === "host" && (phase === "waiting" || phase === "over") ? (
-                <button type="button" onClick={toggleMode}
-                  className="mt-5 text-white/35 hover:text-white/70 transition-colors">
-                  режим:{" "}
-                  <span className={mode === "field" ? "text-[#A6FF00]" : "text-white/70"}>
-                    {mode === "field" ? "⌁ магнитное поле" : "классика"}
-                  </span>
-                </button>
+                <p className="mt-5 text-[12px] text-white/35 max-w-xs">
+                  {phase === "over" ? (
+                    <>реванш — в режиме <span className="text-[#A6FF00]">⌁ магнитное поле</span></>
+                  ) : (
+                    <>первый раунд — классика, дальше <span className="text-[#A6FF00]">⌁ магнитное поле</span></>
+                  )}
+                </p>
               ) : null}
             </div>
           ) : null}
@@ -1158,7 +1238,7 @@ export default function PongPage() {
 
         <p className="hidden sm:block mt-3 text-[12px] text-white/40 max-w-xs">Двигай ракетку (внизу) пальцем или ←→. Мяч летит — отбивай. До {WIN_SCORE}.</p>
         {mode === "field" ? (
-          <p className="mt-2 text-[12px] text-[#A6FF00]/55 max-w-xs">Магнитное поле сносит мяч — читай течение по линиям фона.</p>
+          <p className="mt-2 text-[12px] text-[#A6FF00]/55 max-w-xs">Магнитное поле сносит мяч. Поймал «+» — держи палец/ЛКМ и сдувай мяч струёй (10с).</p>
         ) : null}
       </div>
     </main>
