@@ -999,17 +999,17 @@ export default function PreviewHome() {
                   От стратегии и культуры до AI и цифровых продуктов.
                 </p>
                 <div className="mt-5 md:mt-6 flex flex-wrap items-center gap-3">
-                  <Link
-                    href="https://t.me/egoradi"
-                    target="_blank"
-                    data-ym-goal="cta_telegram"
+                  <button
+                    type="button"
+                    data-open-booking
+                    data-ym-goal="open_booking"
                     data-ym-goal-params='{"placement":"hero"}'
-                    className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-[#A6FF00] text-black hover:bg-white transition-colors no-underline"
+                    className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-[#A6FF00] text-black hover:bg-white transition-colors"
                   >
                     <span className="sr-only">Обсудить проект</span>
                     <LedText text="Обсудить проект" className="h-[11px] w-auto" />
                     <LedText text="→" className="h-[13px] w-auto" />
-                  </Link>
+                  </button>
                   <Link
                     href="#portfolio"
                     data-ym-goal="hero_view_cases"

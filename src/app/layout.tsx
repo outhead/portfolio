@@ -11,6 +11,7 @@ const cozette = localFont({
   variable: "--font-cozette",
 });
 import Footer from "@/components/Footer";
+import BookingModal from "@/components/BookingModal";
 import YandexMetrika from "@/components/YandexMetrika";
 import ScrollGoals from "@/components/ScrollGoals";
 
@@ -185,6 +186,7 @@ export default function RootLayout({
         <Header />
         <main id="main-content">{children}</main>
         <Footer />
+        <BookingModal />
         <YandexMetrika />
         <ScrollGoals />
       </body>
