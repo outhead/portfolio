@@ -69,12 +69,15 @@ export default function KodFinal() {
   async function submit() {
     if (submitting || submitted || winMs == null) return;
     setSubmitting(true);
-    const { entries: top, at } = await saveScore(name.trim() || "Гость", winMs, { hints: hintsUsed });
+    const { entries: top, at, id } = await saveScore(name.trim() || "Гость", winMs, { hints: hintsUsed });
     setEntries(top);
     setYouAt(at);
     setSubmitted(true);
     setSubmitting(false);
-    try { localStorage.setItem("quest_name", name.trim()); } catch { /* */ } // имя → в кооп и понг
+    try {
+      localStorage.setItem("quest_name", name.trim()); // имя → в кооп и понг
+      if (id) localStorage.setItem("quest_row_id", id); // строка в рейтинге → урезать время в делёже
+    } catch { /* */ }
     clearQuestStart(); // следующий заход — новый отсчёт
   }
 

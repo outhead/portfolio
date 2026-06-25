@@ -71,7 +71,7 @@ export async function saveScore(
   name: string,
   timeMs: number,
   extra: SaveExtra = {}
-): Promise<{ entries: LbEntry[]; at: number }> {
+): Promise<{ entries: LbEntry[]; at: number; id: string | null }> {
   // RLS принимает time_ms в диапазоне 200..3 600 000 — подстрахуемся.
   const t = Math.max(200, Math.min(3_599_000, Math.round(timeMs)));
   const tg = (extra.telegram || "").trim().slice(0, 80);
@@ -87,9 +87,9 @@ export async function saveScore(
     body.published = !!extra.published; // публикуем на доске только с согласия
   }
   let at = Date.now();
+  let id: string | null = null;
   try {
-    // ?select=created_at — не запрашиваем обратно telegram (колонка закрыта для anon).
-    const res = await fetch(`${SB_URL}/rest/v1/${SB_TABLE}?select=created_at`, {
+    const res = await fetch(`${SB_URL}/rest/v1/${SB_TABLE}?select=id,created_at`, {
       method: "POST",
       headers: {
         apikey: SB_KEY,
@@ -100,13 +100,14 @@ export async function saveScore(
       body: JSON.stringify(body),
     });
     if (res.ok) {
-      const ins = (await res.json()) as { created_at?: string }[];
+      const ins = (await res.json()) as { id?: string; created_at?: string }[];
       if (ins[0]?.created_at) at = Date.parse(ins[0].created_at);
+      if (ins[0]?.id) id = ins[0].id;
     }
   } catch {
     /* ignore */
   }
-  return { entries: await loadBoard(), at };
+  return { entries: await loadBoard(), at, id };
 }
 
 // Публичная доска отзывов — только опубликованные, без telegram.

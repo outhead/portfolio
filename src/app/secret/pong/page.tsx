@@ -8,10 +8,6 @@ import { connectP2P, type P2PHandle } from "./rtc";
 import { connectRelay, type Relay } from "./pongRelay";
 import MagneticWaves from "./MagneticWaves";
 import { FW, FH, FIELD_STRENGTH, FIELD_FADE_PX, flowAngle } from "./field";
-import { submitFeedback } from "../leaderboard";
-
-// Телеграм-канал для вейтлиста после игр.
-const TG_CHANNEL = "https://t.me/aiegorka";
 
 /**
  * Сетевой ретро-пинг-понг (двое, по ссылке или сразу из кооп-пары через ?room=).
@@ -67,13 +63,6 @@ export default function PongPage() {
   const [myName, setMyName] = useState(""); // своё имя (для подписи)
   const [roomCode, setRoomCode] = useState(""); // код комнаты — для перехода в дуэль тем же составом
   const myNameRef = useRef(""); // своё имя (localStorage quest_name), шлём в hello
-  // вейтлист/отзыв после ВТОРОГО матча (поле-режим)
-  const overCountRef = useRef(0);
-  const [followOpen, setFollowOpen] = useState(false);
-  const [fbTg, setFbTg] = useState("");
-  const [fbText, setFbText] = useState("");
-  const [fbSending, setFbSending] = useState(false);
-  const [fbDone, setFbDone] = useState(false);
   const relayPeers = useRef(false); // на релее видно соперника (count>=2)
   const waitTimer = useRef<ReturnType<typeof setTimeout> | null>(null); // дебаунс ухода в «ожидание»
 
@@ -1199,27 +1188,6 @@ export default function PongPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, winner]);
 
-  // после ВТОРОГО матча (поле-режим) предлагаем оставить телеграм/отзыв
-  useEffect(() => {
-    if (phase === "over") {
-      overCountRef.current += 1;
-      if (overCountRef.current >= 2) setFollowOpen(true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase]);
-
-  async function sendFollow() {
-    if (fbSending || fbDone || (!fbTg.trim() && !fbText.trim())) return;
-    setFbSending(true);
-    const ok = await submitFeedback(myNameRef.current || "Гость", {
-      telegram: fbTg.trim(),
-      feedback: fbText.trim(),
-      published: true,
-    });
-    setFbSending(false);
-    if (ok) setFbDone(true);
-  }
-
   return (
     <main className="pong-page relative bg-black text-white overflow-hidden flex flex-col items-center px-4 pt-[60px] sm:pt-[68px] pb-4" style={{ minHeight: "100dvh" }}>
       {/* режим «магнитное поле»: живой фон-течение (сквозь полупрозрачный канвас) */}
@@ -1341,26 +1309,6 @@ export default function PongPage() {
             </div>
           ) : null}
         </div>
-
-        {followOpen && phase === "over" ? (
-          <div className="relative z-[1] w-full max-w-[360px] mx-auto mt-4 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 text-center">
-            {fbDone ? (
-              <p className="text-[14px] text-[#A6FF00]">Спасибо! Если оставил телеграм — позову на новые игры.</p>
-            ) : (
-              <>
-                <p className="text-[14px] text-white/75 mb-3">Понравилось? Оставь телеграм — позову на новые игры и расскажу о проектах.</p>
-                <input value={fbTg} onChange={(e) => setFbTg(e.target.value)} maxLength={80} placeholder="Телеграм / ник" aria-label="Телеграм"
-                  className="w-full mb-2 bg-white/[0.06] border border-white/15 rounded-full px-4 py-2.5 text-[14px] text-white text-center placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors" />
-                <textarea value={fbText} onChange={(e) => setFbText(e.target.value)} maxLength={500} rows={2} placeholder="Отзыв (необязательно)" aria-label="Отзыв"
-                  className="w-full mb-3 bg-white/[0.06] border border-white/15 rounded-xl px-4 py-2.5 text-[14px] text-white placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors resize-none" />
-                <div className="flex items-center justify-center gap-3">
-                  <QuestButton onClick={sendFollow} disabled={fbSending || (!fbTg.trim() && !fbText.trim())}>{fbSending ? "..." : "Оставить"}</QuestButton>
-                  <QuestButton href={TG_CHANNEL} external variant="secondary">Канал</QuestButton>
-                </div>
-              </>
-            )}
-          </div>
-        ) : null}
 
         <p className="hidden sm:block mt-3 text-[12px] text-white/40 max-w-xs">Двигай ракетку (внизу) пальцем или ←→. Мяч летит — отбивай. До {WIN_SCORE}.</p>
         {mode === "field" ? (
