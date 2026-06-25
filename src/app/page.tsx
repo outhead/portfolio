@@ -1281,7 +1281,7 @@ export default function PreviewHome() {
                 title: "Строю дизайн-функции",
                 Icon: Users,
                 accent: "#C9A66B",
-                animation: "bricks" as PulseVariant,
+                animation: "network" as PulseVariant,
                 body:
                   "Собираю команды под задачу, выстраиваю процессы, культуру и дизайн-систему. Нанимаю на рост, развиваю лидов, защищаю бюджет. Когда ухожу, стараюсь оставить функцию, которая продолжает расти без меня.",
                 items: [

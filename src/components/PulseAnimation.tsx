@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-export type PulseVariant = "bricks" | "target" | "ai";
+export type PulseVariant = "network" | "target" | "ai";
 
 interface PulseAnimationProps {
   variant: PulseVariant;
@@ -49,32 +49,23 @@ const seed = (n: number) => {
 };
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 
-// ── Кирпичная кладка: брики по 2 (период 3: кирпич-кирпич-раствор),
-//    ряды со смещением шва (ложковая кладка). Кирпич зажигается целиком —
-//    обе точки пары вместе. mortar — пустой промежуток. ────────────────
-const brick = (() => {
-  const mortar = new Array<boolean>(dots.length).fill(false);
-  const order = new Array<number>(dots.length).fill(0);
-  const brickKey = new Array<number>(dots.length).fill(-1);
+// ── Змейка-сеть: серпантинный путь по узлам сетки (ряды змейкой), вдоль
+//    которого зажигаются связи-прожилки. Соседние узлы пути всегда смежны. ─
+const netPath: number[] = (() => {
+  const byRow = new Map<number, number[]>();
   dots.forEach((d, i) => {
-    const rowFromBottom = GRID_R - d.gy;
-    const offset = rowFromBottom % 2 ? 1 : 0; // смещение шва через ряд
-    const c = d.gx + GRID_R + offset;
-    const pos = ((c % 3) + 3) % 3;
-    if (pos === 2) {
-      mortar[i] = true; // каждый третий столбец — раствор
-    } else {
-      brickKey[i] = rowFromBottom * 1000 + Math.floor(c / 3); // id кирпича
-    }
+    const a = byRow.get(d.gy) ?? [];
+    a.push(i);
+    byRow.set(d.gy, a);
   });
-  // уникальные кирпичи снизу вверх, слева направо
-  const keys = Array.from(new Set(brickKey.filter((k) => k >= 0))).sort((a, b) => a - b);
-  const rankOf = new Map<number, number>();
-  keys.forEach((k, r) => rankOf.set(k, r));
-  dots.forEach((_, i) => {
-    if (!mortar[i]) order[i] = rankOf.get(brickKey[i]) ?? 0;
+  const rows = [...byRow.keys()].sort((a, b) => a - b);
+  const path: number[] = [];
+  rows.forEach((gy, ri) => {
+    const a = byRow.get(gy)!.sort((p, q) => dots[p].gx - dots[q].gx);
+    if (ri % 2) a.reverse(); // змейка: чётные слева-направо, нечётные наоборот
+    path.push(...a);
   });
-  return { mortar, order, count: keys.length };
+  return path;
 })();
 
 // ── Глиф «AI» для ремесла: 9×7, по центру сетки ─────────────────────
@@ -145,38 +136,29 @@ export default function PulseAnimation({ variant, reverse = false, className, ac
       ctx.fill();
     };
 
-    // Кирпичная стена: строится снизу вверх (по кирпичу за раз), стоит,
-    // затем чисто пересобирается. Раствор — пустые промежутки.
-    const drawBricks = (t: number) => {
+    // Змейка-сеть: голова бежит по узлам, за ней зажигаются связи-прожилки,
+    // постепенно собирая связанную структуру. Доходит до конца, держит, сброс.
+    const drawNetwork = (t: number) => {
       ctx.clearRect(0, 0, W, H);
-      const CYC = 4.2;
+      const L = netPath.length;
+      const CYC = 4.8;
       const tc = t % CYC;
-      let n: number;
+      let p: number;
       let resetK = 1;
-      if (tc < 2.4) {
-        n = ss(tc / 2.4) * brick.count;
+      if (tc < 3.2) {
+        p = ss(tc / 3.2) * L;
       } else {
-        n = brick.count;
-        if (tc >= 3.4) resetK = 1 - ss((tc - 3.4) / 0.8); // плавный сброс
+        p = L;
+        if (tc >= 4.0) resetK = 1 - ss((tc - 4.0) / 0.8);
       }
-      for (let i = 0; i < dots.length; i++) {
-        if (brick.mortar[i]) {
-          dot(dots[i], 0.04 * resetK, BASE_SIZE * 0.7);
-          continue;
-        }
-        const appear = n - brick.order[i];
-        let op: number, size: number;
-        if (appear <= 0) {
-          op = 0.1;
-          size = BASE_SIZE * 0.85;
-        } else {
-          const e = Math.min(1, appear * 0.8);
-          const land = appear * 0.7;
-          const pop = Math.exp(-(land * land)); // вспышка в момент укладки
-          op = 0.18 + e * 0.64 + pop * 0.3;
-          size = BASE_SIZE + e * 0.7 + pop * 1.6;
-        }
-        dot(dots[i], op * resetK, size);
+      // узлы (без соединительных линий — только точки)
+      for (let k = 0; k < L; k++) {
+        const nk = clamp01(p - k);
+        const hd = Math.abs(k - p);
+        const glow = Math.exp(-((hd / 1.4) ** 2)); // светящаяся голова змейки
+        const op = (0.1 + nk * 0.5 + glow * 0.45) * resetK;
+        const size = BASE_SIZE + nk * 0.3 + glow * 1.9;
+        dot(dots[netPath[k]], op, size);
       }
     };
 
@@ -256,7 +238,7 @@ export default function PulseAnimation({ variant, reverse = false, className, ac
     };
 
     const drawAt = (t: number) => {
-      if (variant === "bricks") drawBricks(t);
+      if (variant === "network") drawNetwork(t);
       else if (variant === "target") drawTarget(t);
       else drawAi(t);
     };
