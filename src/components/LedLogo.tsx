@@ -26,8 +26,11 @@ const ROWS = LOGO_BITMAP.length;
 const PITCH = 4; // шаг сетки в юнитах viewBox
 const R = 1.5; // радиус диода
 const BASE = 0.07; // яркость незажжённого диода (фоновая сетка)
-const GRAY = 0.5; // яркость второй части (приглушённой)
-const LOGO_SPLIT = 21; // колонка: до неё ярко, после — приглушённо (подобрать при желании)
+const GRAY = 0.5; // яркость правой (приглушённой) части
+// Зелёный квадрат с «ЕШ» в центре — колонки SQ_START..SQ_END. Слева от него белая
+// часть (ярко), справа — серая (приглушённо).
+const SQ_START = 21;
+const SQ_END = 35;
 const GREEN = "#A6FF00";
 const WHITE = "#FFFFFF";
 
@@ -38,12 +41,14 @@ type Dot = {
   cy: number;
   lit: boolean;
   max: number;
+  green: boolean;
 };
 
 function buildDots(): { dots: Dot[]; cols: number } {
   const cols = LOGO_BITMAP[0].length;
   const dots: Dot[] = [];
   for (let c = 0; c < cols; c++) {
+    const inSquare = c >= SQ_START && c <= SQ_END;
     for (let r = 0; r < ROWS; r++) {
       dots.push({
         col: c,
@@ -51,7 +56,8 @@ function buildDots(): { dots: Dot[]; cols: number } {
         cx: c * PITCH + PITCH / 2,
         cy: r * PITCH + PITCH / 2,
         lit: LOGO_BITMAP[r][c] === "1",
-        max: c < LOGO_SPLIT ? 1 : GRAY,
+        max: c > SQ_END ? GRAY : 1, // правая часть серая, квадрат и левая — полная яркость
+        green: inSquare,
       });
     }
   }
@@ -151,7 +157,7 @@ export default function LedLogo({ className }: { className?: string }) {
         } else if (textDirty) {
           for (let i = 0; i < N; i++) {
             const d = DOTS[i];
-            set(i, d.lit ? d.max : BASE, WHITE);
+            set(i, d.lit ? d.max : BASE, d.green ? GREEN : WHITE);
           }
           textDirty = false;
         }
@@ -171,7 +177,7 @@ export default function LedLogo({ className }: { className?: string }) {
             const d = DOTS[i];
             if (!d.lit) continue;
             const k = Math.min(Math.max((t - dOut[i]) / 0.22, 0), 1);
-            set(i, Math.max(BASE, d.max * (1 - k)), WHITE);
+            set(i, Math.max(BASE, d.max * (1 - k)), d.green ? GREEN : WHITE);
           }
         } else if (phase === "in") {
           for (let i = 0; i < N; i++) {
@@ -181,7 +187,7 @@ export default function LedLogo({ className }: { className?: string }) {
               continue;
             }
             const k = Math.min(Math.max((t - dIn[i]) / 0.22, 0), 1);
-            set(i, Math.max(BASE, d.max * k), WHITE);
+            set(i, Math.max(BASE, d.max * k), d.green ? GREEN : WHITE);
           }
         } else if (phase === "fxwave") {
           const front = -8 + p * (COLS + ROWS * 0.6 + 16);
@@ -258,7 +264,7 @@ export default function LedLogo({ className }: { className?: string }) {
           cx={d.cx}
           cy={d.cy}
           r={R}
-          fill={WHITE}
+          fill={d.green ? GREEN : WHITE}
           style={{ opacity: d.lit ? d.max : BASE }}
         />
       ))}
