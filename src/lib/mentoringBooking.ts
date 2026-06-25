@@ -35,6 +35,8 @@ export type Slot = {
 export type DayGroup = {
   key: string; // YYYY-MM-DD (МСК)
   label: string; // «Пн, 7 июля»
+  wd: string; // «Пн»
+  dShort: string; // «7 июл»
   slots: Slot[];
 };
 
@@ -42,6 +44,10 @@ const WD_RU = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
 const MON_RU = [
   "января", "февраля", "марта", "апреля", "мая", "июня",
   "июля", "августа", "сентября", "октября", "ноября", "декабря",
+];
+const MON_SHORT = [
+  "янв", "фев", "мар", "апр", "мая", "июн",
+  "июл", "авг", "сен", "окт", "ноя", "дек",
 ];
 
 /** Поля даты в МСК для абсолютного момента ms. */
@@ -127,7 +133,13 @@ export async function loadFreeSlots(): Promise<DayGroup[]> {
     const key = `${p.y}-${String(p.m + 1).padStart(2, "0")}-${String(p.day).padStart(2, "0")}`;
     let g = groups.get(key);
     if (!g) {
-      g = { key, label: `${WD_RU[p.wd]}, ${p.day} ${MON_RU[p.m]}`, slots: [] };
+      g = {
+        key,
+        label: `${WD_RU[p.wd]}, ${p.day} ${MON_RU[p.m]}`,
+        wd: WD_RU[p.wd],
+        dShort: `${p.day} ${MON_SHORT[p.m]}`,
+        slots: [],
+      };
       groups.set(key, g);
     }
     g.slots.push(s);
