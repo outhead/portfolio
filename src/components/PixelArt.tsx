@@ -11,21 +11,21 @@ export const THUMB_UP: Pixmap = {
   sweep: "btt",
   rows: [
     "................",
-    "................",
-    "....XX..........",
-    "...XXXX.........",
-    "...XXXX.........",
-    "...XXXX.........",
-    "...XXXX.........",
-    "...XXXXXXXX.....",
-    "...XXXXXXXXX....",
-    "...XXXXXXXXXX...",
-    "...XXXXXXXXXX...",
-    "...XX.......X...",
-    "...XXXXXXXXXX...",
-    "...XX.......X...",
+    ".......XX.......",
+    "......XXXX......",
+    "......XXXX......",
+    "......XXXX......",
+    "......XXXX......",
+    "......XXXX......",
     "....XXXXXXXX....",
-    ".....XXXXXX.....",
+    "...XXXXXXXXXX...",
+    "..XXXXXXXXXXXX..",
+    "..XX........XX..",
+    "..XXXXXXXXXXXX..",
+    "..XX........XX..",
+    "...XXXXXXXXXX...",
+    "....XXXXXXXX....",
+    "...XXXXXXXXX....",
   ],
 };
 
@@ -34,20 +34,20 @@ export const POOP: Pixmap = {
   rows: [
     "................",
     "................",
-    "................",
+    "........X.......",
     ".......XXX......",
     ".......XXX......",
     "......XXXXX.....",
     ".....XXXXXXX....",
-    "......XXXXX.....",
+    ".....XXXXXXX....",
+    ".....XXXXXXX....",
     "....XX.XXX.XX...",
     "....XX.XXX.XX...",
-    "....XXXXXXXXX...",
+    ".....XXXXXXX....",
     "...XXXXXXXXXXX..",
-    "..XXX...X...XXX.",
-    ".XXXXXX...XXXXXX",
-    "..XXXXXXXXXXXXX.",
+    "..XXXX.....XXXX.",
     "...XXXXXXXXXXX..",
+    ".....XXXXXXX....",
   ],
 };
 
@@ -117,8 +117,7 @@ export default function PixelArt({
           : undefined;
         const cls = animate ? "led-dot" : undefined;
         cells.push(
-          <circle key={`g${x}-${y}`} cx={cx} cy={cy} r={0.62} fill={color} opacity={0.2} className={cls} style={style} />,
-          <circle key={`d${x}-${y}`} cx={cx} cy={cy} r={0.4} fill={color} className={cls} style={style} />
+          <circle key={`d${x}-${y}`} cx={cx} cy={cy} r={0.42} fill={color} className={cls} style={style} />
         );
       } else if (grid) {
         cells.push(<circle key={`u${x}-${y}`} cx={cx} cy={cy} r={0.12} fill={color} opacity={0.12} />);
