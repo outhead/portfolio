@@ -106,6 +106,9 @@ export default function PongPage() {
   const flashRef = useRef(0);                                         // вспышка на гол
   const shakeRef = useRef(0);                                         // тряска поля
   const prevScoreFx = useRef<[number, number]>([0, 0]);
+  // рендер-сглаживание: гасим рывки сетевых коррекций (визуально, физику не трогаем)
+  const rOppX = useRef<number | null>(null);             // сглаженная X чужой ракетки
+  const rBalls = useRef<{ x: number; y: number }[]>([]); // сглаженные позиции мячей (у гостя)
   // ─── буст-липучка ───
   const stickArmed = useRef<[number, number]>([0, 0]);  // expiry «взведённости» по игрокам [host, guest]
   const stuck = useRef<{ b: Ball; owner: 0 | 1; off: number; until: number; since: number; spd: number } | null>(null); // у хоста (spd — скорость на входе, с ней же отлипнет)
@@ -314,25 +317,26 @@ export default function PongPage() {
       room: code,
       role: r,
       onMessage: (m) => {
-        if (m.event === "state") { lastP2pAt.current = performance.now(); applyState(m.payload); }
-        else if (m.event === "paddle") { lastP2pAt.current = performance.now(); applyPaddle(m.payload); }
+        if (m.event === "state") { if (accept("p2p")) applyState(m.payload); }
+        else if (m.event === "paddle") { if (accept("p2p")) applyPaddle(m.payload); }
         else if (m.event === "hello") handleHello(m.payload);
         else if (m.event === "rematch") { if (roleRef.current === "host") startMatch(); }
         else if (m.event === "hit") applyHitRef.current(m.payload);
         else if (m.event === "release") onReleaseRef.current(1);
-        else if (m.event === "ping") onPing(m.payload);
+        else if (m.event === "ping") replyPong("p2p", (m.payload as { t?: number })?.t ?? 0);
         else if (m.event === "pong") onPong(m.payload);
       },
       onOpen: () => {
         useP2P.current = true;
-        setTransport("p2p");
+        recompute();
         if (roleRef.current === "guest") p2pRef.current?.sendCtl({ event: "hello", payload: { id: myId.current, name: myNameRef.current } });
         evalConn();
       },
       onClose: () => {
         // P2P отвалился — НЕ роняем игру, если релей ещё держит соперника
         useP2P.current = false;
-        setTransport("relay");
+        pingP2P.current = null;
+        recompute();
         evalConn();
       },
     });
@@ -344,6 +348,8 @@ export default function PongPage() {
 
     ch.onPeers((count) => {
       relayPeers.current = count >= 2;
+      if (count < 2) pingRelay.current = null;
+      recompute();
       evalConn();
     });
 
@@ -371,9 +377,11 @@ export default function PongPage() {
     }, 1500);
 
     const pingT = setInterval(() => {
-      if (!(useP2P.current || relayPeers.current)) { setPing(null); return; }
-      sendVia("ping", { t: performance.now() });
-    }, 1500);
+      const now = performance.now();
+      if (useP2P.current) p2pRef.current?.sendCtl({ event: "ping", payload: { t: now, via: "p2p" } });
+      if (relayPeers.current) chRef.current?.send("ping", { t: now, via: "relay" });
+      if (!useP2P.current && !relayPeers.current) { setPing(null); pingP2P.current = null; pingRelay.current = null; }
+    }, 1200);
 
     ch.onOpen(() => {
       // на (ре)коннекте релея активную игру НЕ сбрасываем; ожидание — только на старте
@@ -646,8 +654,13 @@ export default function PongPage() {
           capsule(px, py, sw, sh); ctx.fill(); ctx.globalAlpha = 1;
         }
       };
+      // сглаживание чужой ракетки (адаптивно к пингу): сильнее гасим при плохой связи
+      const curPing = primaryRef.current === "p2p" ? pingP2P.current : pingRelay.current;
+      const ease = clamp(0.62 - (curPing ?? 70) / 450, 0.16, 0.6);
+      if (rOppX.current == null || Math.abs(opX - rOppX.current) > 140) rOppX.current = opX;
+      else rOppX.current += (opX - rOppX.current) * Math.min(1, ease * 1.4);
       paddle(meX, meW, false, true, meHit);
-      paddle(opX, opW, true, false, opHit);
+      paddle(rOppX.current, opW, true, false, opHit);
 
       // ─── струя «плюс»: индикатор готовности на своей плашке + поток частиц ───
       if (modeRef.current === "field") {
@@ -714,11 +727,22 @@ export default function PongPage() {
         }
       }
 
+      // сглаживаем рендер мячей у гостя (логику-физику не трогаем)
+      if (!host) {
+        const rb = rBalls.current;
+        balls.current.forEach((b, i) => {
+          if (!rb[i] || Math.hypot(b.x - rb[i].x, b.y - rb[i].y) > 140) rb[i] = { x: b.x, y: b.y };
+          else { rb[i].x += (b.x - rb[i].x) * ease; rb[i].y += (b.y - rb[i].y) * ease; }
+        });
+        rb.length = balls.current.length;
+      }
+      const bpos = (b: Ball, i: number) => (!host && rBalls.current[i]) ? rBalls.current[i] : b;
+
       // шлейф мяча — сплошная лента, на скорости вытягивается и уходит в лайм
       if (playing && !reducedMotion) {
         balls.current.forEach((b, i) => {
           const tr = (trailRef.current[i] ||= []);
-          tr.push({ x: b.x, y: b.y });
+          const p = bpos(b, i); tr.push({ x: p.x, y: p.y });
           if (tr.length > 10) tr.shift();
         });
         trailRef.current.length = balls.current.length;
@@ -775,8 +799,9 @@ export default function PongPage() {
       ctx.globalAlpha = 1;
 
       // мячи: световое гало + лёгкое вытяжение по вектору скорости
-      for (const b of balls.current) {
-        const sx = b.x, sy = yv(b.y);
+      balls.current.forEach((b, i) => {
+        const p = bpos(b, i);
+        const sx = p.x, sy = yv(p.y);
         const spd = Math.hypot(b.vx, b.vy);
         const sf = clamp(spd / (MAXV * 1.2), 0, 1);
         const g = ctx.createRadialGradient(sx, sy, R * 0.4, sx, sy, R * 2.4);
@@ -793,7 +818,7 @@ export default function PongPage() {
         ctx.fillStyle = "#fff";
         ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
-      }
+      });
 
       // всплывающие «+1» у ворот
       for (const f of floats.current) {
@@ -1141,8 +1166,8 @@ export default function PongPage() {
       // сеть: P2P — 60 Гц (дёшево, напрямую), relay — 30 Гц (бережём квоты Supabase,
       // dead reckoning гостя гладко заполняет промежутки)
       const ch = chRef.current;
-      const p2p = useP2P.current;
-      if (t - lastSend > (p2p ? 15 : 33)) {
+      const prim = primaryRef.current === "p2p" && useP2P.current ? "p2p" : "relay";
+      if (t - lastSend > (prim === "p2p" ? 15 : 33)) {
         lastSend = t;
         if (host) {
           const statePayload = {
@@ -1162,17 +1187,22 @@ export default function PongPage() {
             blow: [blowArmed.current[0] ? 1 : 0, blowArmed.current[1] ? 1 : 0],
             winner: phaseRef.current === "over" ? (sc.current[0] > sc.current[1] ? 0 : 1) : null,
           };
-          if (p2p) {
+          if (prim === "p2p") {
             p2pRef.current?.sendFast({ event: "state", payload: statePayload });
-            // зеркало в релей пореже — спасает односторонний P2P
-            if (t - lastMirror > 100) { lastMirror = t; ch?.send("state", statePayload); }
-          } else ch?.send("state", statePayload);
+            if (t - lastMirror > 100) { lastMirror = t; ch?.send("state", statePayload); } // зеркало в запасной
+          } else {
+            ch?.send("state", statePayload);
+            if (useP2P.current && t - lastMirror > 100) { lastMirror = t; p2pRef.current?.sendFast({ event: "state", payload: statePayload }); }
+          }
         } else {
           const pp = { x: px2.current, v: Math.round(myVel.current * 100) / 100, d: pressed ? 1 : 0 };
-          if (p2p) {
+          if (prim === "p2p") {
             p2pRef.current?.sendFast({ event: "paddle", payload: pp });
             if (t - lastMirror > 100) { lastMirror = t; ch?.send("paddle", pp); }
-          } else ch?.send("paddle", pp);
+          } else {
+            ch?.send("paddle", pp);
+            if (useP2P.current && t - lastMirror > 100) { lastMirror = t; p2pRef.current?.sendFast({ event: "paddle", payload: pp }); }
+          }
         }
       }
       draw();

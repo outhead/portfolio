@@ -141,7 +141,13 @@ export default function DuelPage() {
   const lastStateAt = useRef(0);
   const hostSeenAt = useRef(0);
   const peerGuestId = useRef<string | null>(null);
-  const lastP2pAt = useRef(0);
+  // авто-выбор транспорта по задержке: меряем пинг p2p и релея, основной — кто быстрее
+  const pingP2P = useRef<number | null>(null);
+  const pingRelay = useRef<number | null>(null);
+  const primaryRef = useRef<"relay" | "p2p">("relay");
+  // рендер-сглаживание (визуально, физику не трогаем)
+  const rOppX = useRef<number | null>(null);
+  const rBalls = useRef<{ x: number; y: number }[]>([]);
 
   // действия стрельбы (привязка обновляется из игрового эффекта)
   const fireRef = useRef<() => void>(() => {});
@@ -238,22 +244,44 @@ export default function DuelPage() {
           (phaseRef.current === "waiting" || phaseRef.current === "connecting")) resumeOrStart();
     };
 
-    const p2pFresh = () => useP2P.current && performance.now() - lastP2pAt.current < 700;
-    ch.on("state", (payload) => { if (p2pFresh()) return; applyState(payload); });
-    ch.on("paddle", (payload) => { if (p2pFresh()) return; applyPaddle(payload); });
+    // основной транспорт по пингам; приём с обоих, запасной только если основной молчит >700мс
+    const lastRecv: Record<"p2p" | "relay", number> = { p2p: 0, relay: 0 };
+    const recompute = () => {
+      const p = useP2P.current ? pingP2P.current : null;
+      const rl = relayPeers.current ? pingRelay.current : null;
+      let next = primaryRef.current;
+      if (!useP2P.current) next = "relay";
+      else if (p == null && rl == null) next = "p2p";
+      else if (p == null) next = "relay";
+      else if (rl == null) next = "p2p";
+      else if (primaryRef.current === "p2p" && rl < p - 30) next = "relay";
+      else if (primaryRef.current === "relay" && p < rl - 30) next = "p2p";
+      primaryRef.current = next;
+      setTransport(next);
+      setPing(next === "p2p" ? pingP2P.current : pingRelay.current);
+    };
+    const accept = (via: "p2p" | "relay") => {
+      const now = performance.now();
+      lastRecv[via] = now;
+      const prim = primaryRef.current;
+      return via === prim || now - lastRecv[prim] > 700;
+    };
+    ch.on("state", (payload) => { if (accept("relay")) applyState(payload); });
+    ch.on("paddle", (payload) => { if (accept("relay")) applyPaddle(payload); });
     ch.on("rematch", () => { if (roleRef.current === "host") startMatch(); });
     ch.on("fire", () => { if (roleRef.current === "host") guestFireRef.current(); });
-    // ─── измерение пинга: эхо ping→pong по текущему транспорту ───
-    const sendVia = (event: string, payload: Record<string, unknown>) => {
-      if (useP2P.current) p2pRef.current?.sendCtl({ event, payload });
-      else chRef.current?.send(event, payload);
-    };
-    const onPing = (p: unknown) => sendVia("pong", { t: (p as { t?: number })?.t ?? 0 });
+    // ─── пинг: эхо по тому же транспорту, тег via сохраняем ───
+    const replyPong = (via: "p2p" | "relay", t: number) =>
+      via === "p2p" ? p2pRef.current?.sendCtl({ event: "pong", payload: { t, via } })
+                    : chRef.current?.send("pong", { t, via });
     const onPong = (p: unknown) => {
-      const t = (p as { t?: number })?.t;
-      if (typeof t === "number" && t > 0) setPing(Math.round(performance.now() - t));
+      const d = (p ?? {}) as { t?: number; via?: "p2p" | "relay" };
+      if (typeof d.t !== "number" || d.t <= 0) return;
+      const rtt = Math.round(performance.now() - d.t);
+      if (d.via === "p2p") pingP2P.current = rtt; else pingRelay.current = rtt;
+      recompute();
     };
-    ch.on("ping", onPing);
+    ch.on("ping", (p) => replyPong("relay", (p as { t?: number })?.t ?? 0));
     ch.on("pong", onPong);
     const handleHello = (payload: unknown) => {
       const p = (payload ?? {}) as { id?: string; h?: number; name?: string };
@@ -289,23 +317,24 @@ export default function DuelPage() {
       room: code,
       role: r,
       onMessage: (m) => {
-        if (m.event === "state") { lastP2pAt.current = performance.now(); applyState(m.payload); }
-        else if (m.event === "paddle") { lastP2pAt.current = performance.now(); applyPaddle(m.payload); }
+        if (m.event === "state") { if (accept("p2p")) applyState(m.payload); }
+        else if (m.event === "paddle") { if (accept("p2p")) applyPaddle(m.payload); }
         else if (m.event === "hello") handleHello(m.payload);
         else if (m.event === "rematch") { if (roleRef.current === "host") startMatch(); }
         else if (m.event === "fire") { if (roleRef.current === "host") guestFireRef.current(); }
-        else if (m.event === "ping") onPing(m.payload);
+        else if (m.event === "ping") replyPong("p2p", (m.payload as { t?: number })?.t ?? 0);
         else if (m.event === "pong") onPong(m.payload);
       },
       onOpen: () => {
         useP2P.current = true;
-        setTransport("p2p");
+        recompute();
         if (roleRef.current === "guest") p2pRef.current?.sendCtl({ event: "hello", payload: { id: myId.current, name: myNameRef.current } });
         evalConn();
       },
       onClose: () => {
         useP2P.current = false;
-        setTransport("relay");
+        pingP2P.current = null;
+        recompute();
         evalConn();
       },
     });
@@ -316,6 +345,8 @@ export default function DuelPage() {
 
     ch.onPeers((cnt) => {
       relayPeers.current = cnt >= 2;
+      if (cnt < 2) pingRelay.current = null;
+      recompute();
       evalConn();
     });
 
@@ -341,9 +372,11 @@ export default function DuelPage() {
     }, 1500);
 
     const pingT = setInterval(() => {
-      if (!(useP2P.current || relayPeers.current)) { setPing(null); return; }
-      sendVia("ping", { t: performance.now() });
-    }, 1500);
+      const now = performance.now();
+      if (useP2P.current) p2pRef.current?.sendCtl({ event: "ping", payload: { t: now, via: "p2p" } });
+      if (relayPeers.current) chRef.current?.send("ping", { t: now, via: "relay" });
+      if (!useP2P.current && !relayPeers.current) { setPing(null); pingP2P.current = null; pingRelay.current = null; }
+    }, 1200);
 
     ch.onOpen(() => {
       if (phaseRef.current === "connecting") setPhaseBoth("waiting");
@@ -590,8 +623,19 @@ export default function DuelPage() {
         ctx.shadowBlur = 0;
         if (hit > 0) { ctx.globalAlpha = 0.35 * hit; ctx.fillStyle = "#fff"; capsule(px, py, sw, sh); ctx.fill(); ctx.globalAlpha = 1; }
       };
-      paddle(px1.current, pw1.current, meIdx === 0, 0);
-      paddle(host ? px2Eff.current : px2.current, pw2.current, meIdx === 1, 1);
+      // сглаживание чужой ракетки (адаптивно к пингу)
+      const curPing = primaryRef.current === "p2p" ? pingP2P.current : pingRelay.current;
+      const ease = clamp(0.62 - (curPing ?? 70) / 450, 0.16, 0.6);
+      const oppX = host ? px2Eff.current : px1.current;
+      if (rOppX.current == null || Math.abs(oppX - rOppX.current) > 140) rOppX.current = oppX;
+      else rOppX.current += (oppX - rOppX.current) * Math.min(1, ease * 1.4);
+      if (host) {
+        paddle(px1.current, pw1.current, true, 0);
+        paddle(rOppX.current, pw2.current, false, 1);
+      } else {
+        paddle(rOppX.current, pw1.current, false, 0);
+        paddle(px2.current, pw2.current, true, 1);
+      }
 
       // бонусы (пачкой)
       for (const bst of boosts.current) {
@@ -626,11 +670,22 @@ export default function DuelPage() {
         ctx.shadowBlur = 0;
       }
 
+      // сглаживаем рендер мячей у гостя (логику-физику не трогаем)
+      if (!host) {
+        const rb = rBalls.current;
+        balls.current.forEach((b, i) => {
+          if (!rb[i] || Math.hypot(b.x - rb[i].x, b.y - rb[i].y) > 140) rb[i] = { x: b.x, y: b.y };
+          else { rb[i].x += (b.x - rb[i].x) * ease; rb[i].y += (b.y - rb[i].y) * ease; }
+        });
+        rb.length = balls.current.length;
+      }
+      const bpos = (b: Ball, i: number) => (!host && rBalls.current[i]) ? rBalls.current[i] : b;
+
       // шлейф мяча
       if (playing && !reducedMotion) {
         balls.current.forEach((b, i) => {
           const tr = (trailRef.current[i] ||= []);
-          tr.push({ x: b.x, y: b.y });
+          const p = bpos(b, i); tr.push({ x: p.x, y: p.y });
           if (tr.length > 10) tr.shift();
         });
         trailRef.current.length = balls.current.length;
@@ -676,21 +731,22 @@ export default function DuelPage() {
       ctx.globalAlpha = 1;
 
       // мячи
-      for (const b of balls.current) {
+      balls.current.forEach((b, i) => {
+        const p = bpos(b, i);
         const spd = Math.hypot(b.vx, b.vy);
         const sf = clamp(spd / (MAXV * 1.2), 0, 1);
-        const g = ctx.createRadialGradient(b.x, b.y, R * 0.4, b.x, b.y, R * 2.4);
+        const g = ctx.createRadialGradient(p.x, p.y, R * 0.4, p.x, p.y, R * 2.4);
         g.addColorStop(0, `rgba(255,255,255,${(0.16 + 0.1 * sf).toFixed(2)})`);
         g.addColorStop(1, "rgba(255,255,255,0)");
         ctx.fillStyle = g;
-        ctx.beginPath(); ctx.arc(b.x, b.y, R * 2.4, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(p.x, p.y, R * 2.4, 0, Math.PI * 2); ctx.fill();
         ctx.save();
-        ctx.translate(b.x, b.y);
+        ctx.translate(p.x, p.y);
         if (spd > 0.5) { ctx.rotate(Math.atan2(b.vy, b.vx)); ctx.scale(1 + 0.16 * sf, 1 - 0.1 * sf); }
         ctx.fillStyle = "#fff";
         ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
-      }
+      });
 
       // «+1»
       for (const f of floats.current) {
@@ -926,8 +982,8 @@ export default function DuelPage() {
       const host = roleRef.current === "host";
 
       const ch = chRef.current;
-      const p2p = useP2P.current;
-      if (t - lastSend > (p2p ? 15 : 33)) {
+      const prim = primaryRef.current === "p2p" && useP2P.current ? "p2p" : "relay";
+      if (t - lastSend > (prim === "p2p" ? 15 : 33)) {
         lastSend = t;
         if (host) {
           const statePayload = {
@@ -944,16 +1000,22 @@ export default function DuelPage() {
             s1: sc.current[0], s2: sc.current[1], phase: phaseRef.current, count: countRef.current,
             winner: phaseRef.current === "over" ? (sc.current[0] > sc.current[1] ? 0 : 1) : null,
           };
-          if (p2p) {
+          if (prim === "p2p") {
             p2pRef.current?.sendFast({ event: "state", payload: statePayload });
             if (t - lastMirror > 100) { lastMirror = t; ch?.send("state", statePayload); }
-          } else ch?.send("state", statePayload);
+          } else {
+            ch?.send("state", statePayload);
+            if (useP2P.current && t - lastMirror > 100) { lastMirror = t; p2pRef.current?.sendFast({ event: "state", payload: statePayload }); }
+          }
         } else {
           const pp = { x: px2.current, v: Math.round(myVel.current * 100) / 100 };
-          if (p2p) {
+          if (prim === "p2p") {
             p2pRef.current?.sendFast({ event: "paddle", payload: pp });
             if (t - lastMirror > 100) { lastMirror = t; ch?.send("paddle", pp); }
-          } else ch?.send("paddle", pp);
+          } else {
+            ch?.send("paddle", pp);
+            if (useP2P.current && t - lastMirror > 100) { lastMirror = t; p2pRef.current?.sendFast({ event: "paddle", payload: pp }); }
+          }
         }
       }
       draw();
