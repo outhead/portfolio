@@ -195,9 +195,9 @@ export default function NotFoundGame() {
       if (tt <= 0.01) return;
       ctx.globalCompositeOperation = "lighter";
       const c = therm(tt);
-      for (let k = 2; k >= 1; k--) sdot(x, y, 1.8 * k * (0.5 + 0.5 * tt), c, tt * 0.15 * k);
-      sdot(x, y, 1.5, c, tt);
-      if (tt > 0.75) sdot(x, y, 0.9, [166, 255, 20], (tt - 0.75) / 0.25);
+      for (let k = 2; k >= 1; k--) sdot(x, y, 2.0 * k * (0.55 + 0.5 * tt), c, tt * 0.22 * k);
+      sdot(x, y, 1.7, c, Math.min(1, tt * 1.2));
+      if (tt > 0.7) sdot(x, y, 1.0, [180, 255, 40], (tt - 0.7) / 0.3);
       ctx.globalCompositeOperation = "source-over";
     };
     const foodDot = (x: number, y: number, pu: number) => {
@@ -362,21 +362,21 @@ export default function NotFoundGame() {
         }
 
       if (mode === "intro") {
-        const breathe = 0.42 + 0.1 * Math.sin(ts * 2);
+        const breathe = 0.62 + 0.12 * Math.sin(ts * 2);
         for (const d of four) {
           const c = cxy(d.x, d.y);
           cell(c.x, c.y, breathe);
         }
         for (const d of zeroLoop) {
           const c = cxy(d.x, d.y);
-          cell(c.x, c.y, 0.16);
+          cell(c.x, c.y, 0.3);
         }
         ih += dt * 8;
         const P = zeroLoop.length, La = 6;
         for (let i = 0; i < La; i++) {
           const idx = ((Math.floor(ih) - i) % P + P) % P;
           const c = cxy(zeroLoop[idx].x, zeroLoop[idx].y);
-          cell(c.x, c.y, 0.4 + (1 - i / La) * 0.85);
+          cell(c.x, c.y, 0.55 + (1 - i / La) * 0.7);
         }
         raf = requestAnimationFrame(frame);
         return;
@@ -406,7 +406,7 @@ export default function NotFoundGame() {
       // змейка: накал-градиент по телу (голова раскалена → хвост остывает)
       const L = snake.length;
       for (let i = L - 1; i >= 0; i--) {
-        const tt = mode === "dead" ? 0 : lerp(0.3, 1.25, L > 1 ? 1 - i / (L - 1) : 1);
+        const tt = mode === "dead" ? 0 : lerp(0.45, 1.25, L > 1 ? 1 - i / (L - 1) : 1);
         if (tt > 0.01) {
           const c = cxy(snake[i].x, snake[i].y);
           cell(c.x, c.y, tt);
@@ -473,9 +473,9 @@ export default function NotFoundGame() {
   }, []);
 
   return (
-    <section className="relative z-[1] min-h-[100svh] bg-black flex flex-col items-center justify-center px-5 py-10 select-none overflow-hidden">
+    <section className="relative z-[1] min-h-[calc(100svh-5rem)] bg-black flex flex-col items-center justify-center px-5 py-6 select-none overflow-hidden">
       <div className="w-full max-w-[760px] flex flex-col items-center">
-        <div ref={wrapRef} className="relative w-full h-[clamp(300px,58vh,460px)]">
+        <div ref={wrapRef} className="relative w-full h-[clamp(240px,46vh,400px)]">
           <canvas ref={canvasRef} className="absolute inset-0 w-full h-full touch-none" aria-hidden />
 
           {/* HUD счёта во время игры */}
