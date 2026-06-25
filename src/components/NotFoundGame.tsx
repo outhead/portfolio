@@ -473,9 +473,9 @@ export default function NotFoundGame() {
   }, []);
 
   return (
-    <section className="relative z-[1] min-h-[calc(100svh-5rem)] bg-black flex flex-col items-center justify-center px-5 py-6 select-none overflow-hidden">
+    <section className="relative z-[1] min-h-[calc(100svh-5rem)] bg-black flex flex-col items-center justify-start px-5 pt-8 md:pt-12 pb-6 select-none overflow-hidden">
       <div className="w-full max-w-[760px] flex flex-col items-center">
-        <div ref={wrapRef} className="relative w-full h-[clamp(240px,46vh,400px)]">
+        <div ref={wrapRef} className="relative w-full h-[clamp(240px,46vh,400px)] rounded-xl border border-white/20 overflow-hidden">
           <canvas ref={canvasRef} className="absolute inset-0 w-full h-full touch-none" aria-hidden />
 
           {/* HUD счёта во время игры */}
