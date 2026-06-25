@@ -6,21 +6,16 @@ import { useState } from "react";
 import confetti from "canvas-confetti";
 import {
   loadBoard,
-  loadFeedback,
   saveScore,
   fmtQuestTime,
   questElapsed,
   questHints,
   clearQuestStart,
   type LbEntry,
-  type FbEntry,
 } from "../../leaderboard";
 import QuestBackground from "@/components/QuestBackground";
 import HintButton from "@/components/HintButton";
 import QuestButton from "@/components/QuestButton";
-
-// Телеграм-канал для кнопки «подписаться» и вейтлиста. Пусто → кнопка скрыта.
-const TG_CHANNEL = "https://t.me/aiegorka";
 
 /**
  * Финал квеста — «Код на виду» (Notpron). Код 4488 спрятан в заголовке вкладки.
@@ -44,17 +39,11 @@ export default function KodFinal() {
   const [winMs, setWinMs] = useState<number | null>(null);
   const [hintsUsed, setHintsUsed] = useState(0);
   const [entries, setEntries] = useState<LbEntry[]>([]);
-  const [fb, setFb] = useState<FbEntry[]>([]);
   const [name, setName] = useState("");
-  const [telegram, setTelegram] = useState("");
-  const [feedback, setFeedback] = useState("");
-  const [publish, setPublish] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [youAt, setYouAt] = useState<number | null>(null);
   const [othersOnly, setOthersOnly] = useState(true); // по умолчанию прячем друзей/тестеров
-  const [showFb, setShowFb] = useState(false);   // панель отзыва раскрыта
-  const [showWall, setShowWall] = useState(false); // стена отзывов раскрыта
 
   const push = (d: string) => {
     if (won || entry.length >= 4) return;
@@ -68,7 +57,6 @@ export default function KodFinal() {
           setWon(true);
           celebrate();
           loadBoard().then(setEntries);
-          loadFeedback().then(setFb);
         }, 150);
       } else {
         setWrong(true);
@@ -81,18 +69,12 @@ export default function KodFinal() {
   async function submit() {
     if (submitting || submitted || winMs == null) return;
     setSubmitting(true);
-    const { entries: top, at } = await saveScore(name.trim() || "Гость", winMs, {
-      telegram: telegram.trim(),
-      feedback: feedback.trim(),
-      published: publish,
-      hints: hintsUsed,
-    });
+    const { entries: top, at } = await saveScore(name.trim() || "Гость", winMs, { hints: hintsUsed });
     setEntries(top);
     setYouAt(at);
     setSubmitted(true);
     setSubmitting(false);
-    try { localStorage.setItem("quest_name", name.trim()); } catch { /* */ } // имя → префилл в понге
-    if (feedback.trim() && publish) { setShowWall(true); loadFeedback().then(setFb); } // показать доску со своим отзывом
+    try { localStorage.setItem("quest_name", name.trim()); } catch { /* */ } // имя → в кооп и понг
     clearQuestStart(); // следующий заход — новый отсчёт
   }
 
@@ -194,45 +176,16 @@ export default function KodFinal() {
                 className="bg-white/[0.06] border border-white/15 rounded-full px-5 py-3.5 text-[16px] text-white text-center placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors"
               />
 
-              {showFb ? (
-                <div className="flex flex-col gap-2.5 text-left animate-[fadeIn_.3s_ease]">
-                  <textarea
-                    value={feedback} onChange={(e) => setFeedback(e.target.value)}
-                    maxLength={500} rows={3} placeholder="Что понравилось, что улучшить?" aria-label="Отзыв"
-                    className="bg-white/[0.06] border border-white/15 rounded-2xl px-5 py-3 text-[16px] text-white placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors resize-none"
-                  />
-                  <label className="flex items-center gap-2.5 px-1 text-[14px] text-white/55 cursor-pointer select-none">
-                    <input type="checkbox" checked={publish} onChange={(e) => setPublish(e.target.checked)}
-                      className="w-4 h-4 accent-[#A6FF00] cursor-pointer" />
-                    Опубликовать на стене прошедших
-                  </label>
-                  <p className="px-1 -mt-1 text-[12px] text-white/35">
-                    {publish ? "Отзыв появится на стене ниже и его увидит Егор." : "Без галочки отзыв увидит только Егор."}
-                  </p>
-                  <input
-                    type="text" value={telegram} onChange={(e) => setTelegram(e.target.value)}
-                    maxLength={80} placeholder="Телеграм — позову на новые игры (необязательно)" aria-label="Телеграм"
-                    className="bg-white/[0.06] border border-white/15 rounded-full px-5 py-3 text-[14px] text-white placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors"
-                  />
-                </div>
-              ) : null}
-
               <QuestButton onClick={submit} disabled={submitting} className="mt-1">
                 {submitting ? "..." : "В таблицу"}
               </QuestButton>
-              {!showFb ? (
-                <QuestButton variant="tertiary" onClick={() => setShowFb(true)}
-                  className="underline decoration-white/20 underline-offset-4">
-                  написать отзыв Егору
-                </QuestButton>
-              ) : null}
               <p className="text-[12px] text-white/30">Имя необязательно — таблица лидеров ниже в любом случае.</p>
             </div>
           ) : null}
 
           {/* ─── 2. После отправки: статус ─── */}
           {submitted ? (
-            <p className="text-[16px] text-white/75 mb-6 max-w-[420px]">Ты в таблице{telegram.trim() ? " · добавлю в вейтлист" : ""}. Спасибо, что дошёл.</p>
+            <p className="text-[16px] text-white/75 mb-6 max-w-[420px]">Ты в таблице. Спасибо, что дошёл.</p>
           ) : null}
 
           {/* ─── 3. Лидерборд — виден сразу после победы ─── */}
@@ -276,41 +229,11 @@ export default function KodFinal() {
             </div>
           ) : null}
 
-          {/* ─── Дальше: кооп — сразу под таблицей, чтобы не теряться на телефоне ─── */}
+          {/* ─── Дальше: кооп — сразу под таблицей ─── */}
           <div className="mb-8 flex flex-col items-center">
             <p className="text-[14px] text-white/45 mb-3 max-w-xs">Есть ещё одна. Но в одиночку её не пройти.</p>
             <QuestButton href="/secret/pair" arrow>Кооп-загадка</QuestButton>
           </div>
-
-          {/* ─── Отзывы + канал — доступны всегда после победы ─── */}
-          <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
-            {fb.length > 0 ? (
-              <QuestButton variant="tertiary" onClick={() => setShowWall((v) => !v)}>
-                {showWall ? "скрыть отзывы" : `отзывы · ${fb.length}`}
-              </QuestButton>
-            ) : null}
-            {TG_CHANNEL ? (
-              <QuestButton href={TG_CHANNEL} external variant="secondary">Канал</QuestButton>
-            ) : null}
-          </div>
-
-          {/* ─── Стена отзывов (по кнопке) ─── */}
-          {showWall && fb.length > 0 ? (
-            <div className="w-full max-w-[420px] mx-auto mb-8 text-left">
-              <p className="text-white/40 mb-3">
-                <span className="sr-only">Стена прошедших</span>
-                <LedText text="Стена прошедших" className="h-[8px] w-auto" />
-              </p>
-              <div className="flex flex-col gap-2.5">
-                {fb.map((f, i) => (
-                  <div key={`${f.at}-${i}`} className="rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-3">
-                    <p className="text-[14px] text-white/80 leading-snug break-words">{f.feedback}</p>
-                    <p className="mt-1.5 text-[12px] text-white/35">— {f.name}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : null}
 
         </div>
       )}

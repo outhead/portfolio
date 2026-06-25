@@ -41,6 +41,30 @@ export async function loadBoard(): Promise<LbEntry[]> {
   }
 }
 
+// Отзыв/вейтлист ПОСЛЕ игр (пинг-понг). Пишем отдельной строкой, скрытой из таблицы
+// (tester=true → по умолчанию не видна), но отзыв попадает на «стену прошедших».
+export async function submitFeedback(
+  name: string,
+  extra: { telegram?: string; feedback?: string; published?: boolean }
+): Promise<boolean> {
+  const tg = (extra.telegram || "").trim().slice(0, 80);
+  const fb = (extra.feedback || "").trim().slice(0, 500);
+  if (!tg && !fb) return false;
+  const body: Record<string, unknown> = { name: (name || "Гость").slice(0, 20), time_ms: 3_599_000, tester: true };
+  if (tg) body.telegram = tg;
+  if (fb) { body.feedback = fb; body.published = extra.published !== false; }
+  try {
+    const res = await fetch(`${SB_URL}/rest/v1/${SB_TABLE}`, {
+      method: "POST",
+      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 type SaveExtra = { telegram?: string; feedback?: string; published?: boolean; hints?: number };
 
 export async function saveScore(
