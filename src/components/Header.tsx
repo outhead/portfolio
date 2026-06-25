@@ -27,7 +27,7 @@ function PixelUnderline({ active }: { active: boolean }) {
   return (
     <span
       aria-hidden
-      className={`absolute -bottom-1.5 left-0 h-[3px] text-[#A6FF00] transition-all duration-300 ${
+      className={`absolute -bottom-0.5 left-0 h-[3px] text-[#A6FF00] transition-all duration-300 ${
         active ? "w-full" : "w-0 group-hover:w-full"
       }`}
       style={{
