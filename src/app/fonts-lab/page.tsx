@@ -16,6 +16,7 @@ import {
   Rubik_Glitch,
   Tektur,
 } from "next/font/google";
+import localFont from "next/font/local";
 import LedText from "@/components/LedText";
 import { LedLines, LedCounter } from "@/components/LedBoard";
 import { Oled } from "@/components/OledKit";
@@ -51,6 +52,22 @@ const tektur = Tektur({
   weight: ["400", "500"],
   variable: "--font-lab-tektur",
 });
+// Локальные аутентичные битмапы с кириллицей (скачаны Егором, лежат в public/fonts)
+const ibmVga = localFont({
+  src: "../../../public/fonts/int10h_ibm_vga_8x16.woff",
+  variable: "--font-lab-vga",
+  display: "swap",
+});
+const cozette = localFont({
+  src: "../../../public/fonts/CozetteVector.ttf",
+  variable: "--font-lab-cozette",
+  display: "swap",
+});
+const unifont = localFont({
+  src: "../../../public/fonts/unifont-17.0.04.otf",
+  variable: "--font-lab-unifont",
+  display: "swap",
+});
 
 const VARIANTS = [
   { id: "plex", name: "IBM Plex Mono", css: "var(--font-lab-plex)" },
@@ -59,6 +76,9 @@ const VARIANTS = [
   { id: "r80", name: "Rubik 80s Fade", css: "var(--font-lab-r80)" },
   { id: "rgl", name: "Rubik Glitch", css: "var(--font-lab-rgl)" },
   { id: "tektur", name: "Tektur", css: "var(--font-lab-tektur)" },
+  { id: "vga", name: "IBM VGA · CP866 (DOS/Norton)", css: "var(--font-lab-vga)" },
+  { id: "cozette", name: "Cozette", css: "var(--font-lab-cozette)" },
+  { id: "unifont", name: "GNU Unifont", css: "var(--font-lab-unifont)" },
 ] as const;
 
 export default function FontsLab() {
@@ -70,7 +90,7 @@ export default function FontsLab() {
 
   return (
     <main
-      className={`min-h-screen bg-black text-white px-5 md:px-[8%] py-24 ${plexMono.variable} ${handjet.variable} ${rubikPixels.variable} ${rubik80s.variable} ${rubikGlitch.variable} ${tektur.variable}`}
+      className={`min-h-screen bg-black text-white px-5 md:px-[8%] py-24 ${plexMono.variable} ${handjet.variable} ${rubikPixels.variable} ${rubik80s.variable} ${rubikGlitch.variable} ${tektur.variable} ${ibmVga.variable} ${cozette.variable} ${unifont.variable}`}
     >
       <div className="max-w-[1100px] mx-auto flex flex-col gap-10">
         {/* Шапка лаборатории */}

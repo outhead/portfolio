@@ -34,7 +34,7 @@ export default function ParticlePortrait({
   frames,
   depthSrc,
   depthScale = 0.55,
-  count = 7000,
+  count = 5500,
   color = [235, 238, 230],
   bulge = 0.42,
   relief = 0.06,
@@ -46,6 +46,7 @@ export default function ParticlePortrait({
 }: ParticlePortraitProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const url = src || (frames && frames[0]) || "/images/hero-portrait.png";
+  const colorKey = color.join(",");
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -132,34 +133,39 @@ export default function ParticlePortrait({
     }
 
     const img = new Image();
-    img.crossOrigin = "anonymous";
     let depthImg: HTMLImageElement | null = null;
     let need = depthSrc ? 2 : 1;
     let got = 0;
     const onReady = () => { if (++got >= need) { build(img, depthImg); start(); } };
     img.onload = onReady;
+    img.onerror = onReady;
     img.src = url;
     if (depthSrc) {
       depthImg = new Image();
-      depthImg.crossOrigin = "anonymous";
       depthImg.onload = onReady;
-      depthImg.onerror = () => { depthImg = null; need = 1; onReady(); };
+      depthImg.onerror = () => { depthImg = null; need = Math.max(1, need - 1); onReady(); };
       depthImg.src = depthSrc;
     }
 
     // ── размер ────────────────────────────────────────────────────
     let dpr = 1, cssW = 1, cssH = 1, scale = 1, cx = 0, cy = 0;
+    let W2 = 1, H2 = 1;
+    let imgData: ImageData | null = null;
+    let buf32: Uint32Array | null = null;
     function resize() {
       const rect = canvas!.getBoundingClientRect();
       dpr = Math.min(window.devicePixelRatio || 1, 2);
       cssW = Math.max(1, rect.width);
       cssH = Math.max(1, rect.height);
-      canvas!.width = Math.round(cssW * dpr);
-      canvas!.height = Math.round(cssH * dpr);
-      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
-      scale = Math.min(cssW, cssH / aspect) * 0.96;
-      cx = cssW / 2;
-      cy = cssH - (cssH - scale * aspect) / 2 - (scale * aspect) / 2;
+      W2 = Math.round(cssW * dpr);
+      H2 = Math.round(cssH * dpr);
+      canvas!.width = W2;
+      canvas!.height = H2;
+      imgData = ctx!.createImageData(W2, H2);
+      buf32 = new Uint32Array(imgData.data.buffer);
+      scale = Math.min(cssW, cssH / aspect) * 0.95 * dpr; // в device-пикселях
+      cx = W2 / 2;
+      cy = H2 / 2;
     }
 
     // ── частицы ───────────────────────────────────────────────────
@@ -192,7 +198,7 @@ export default function ParticlePortrait({
     eventTarget.addEventListener("pointerleave", onLeave);
 
     // ── цикл ──────────────────────────────────────────────────────
-    let raf = 0, stopped = false, lt = 0, spin = 0;
+    let raf = 0, stopped = false, lt = 0, spin = 0, needResize = false;
     const K = 5.5, DAMP = 4.0, fLen = 2.4;
 
     function start() {
@@ -208,6 +214,7 @@ export default function ParticlePortrait({
       let dt = (now - lt) / 1000; lt = now;
       if (dt > 0.05) dt = 0.05;
       if (!inited || !built) return;
+      if (needResize) { resize(); needResize = false; }
 
       const target = assembleOnHover ? hoverT : 1;
       // плавная сборка/распад
@@ -245,30 +252,38 @@ export default function ParticlePortrait({
         sZ[i] = z2; sPe[i] = per;
       }
 
-      for (let i = 1; i < N; i++) {
-        const oi = order[i], zi = sZ[oi]; let j = i - 1;
-        while (j >= 0 && sZ[order[j]] > zi) { order[j + 1] = order[j]; j--; }
-        order[j + 1] = oi;
-      }
-
-      ctx!.clearRect(0, 0, cssW, cssH);
-      for (let k = 0; k < N; k++) {
-        const i = order[k];
+      // Рендер прямой записью в пиксельный буфер: один putImageData/кадр,
+      // без тысяч вызовов canvas. Глубина — через яркость (без сортировки).
+      if (!buf32 || !imgData) return;
+      buf32.fill(0);
+      const dInv = 1 / (bulge * 2);
+      const rgb = CR | (CG << 8) | (CB << 16);
+      for (let i = 0; i < N; i++) {
         const per = sPe[i];
-        const dN = Math.max(0, Math.min(1, (sZ[i] + bulge) / (bulge * 2)));
-        // в покое точки тусклее и ровнее; собрано — яркость по лицу
+        let dN = (sZ[i] + bulge) * dInv;
+        if (dN < 0) dN = 0; else if (dN > 1) dN = 1;
         const bright = 0.35 + 0.65 * fb[i];
         const a = (0.18 + 0.82 * (asmE * bright + (1 - asmE) * 0.4)) * (0.5 + 0.5 * dN);
-        if (a < 0.015) continue;
-        const r = (0.7 + (asmE * fb[i] + (1 - asmE) * 0.3) * 1.7) * per * (0.7 + 0.3 * dN);
-        ctx!.fillStyle = `rgba(${CR},${CG},${CB},${a.toFixed(3)})`;
-        ctx!.beginPath();
-        ctx!.arc(sX[i], sY[i], r, 0, 6.283);
-        ctx!.fill();
+        if (a < 0.02) continue;
+        let s = ((0.7 + (asmE * fb[i] + (1 - asmE) * 0.3) * 1.7) * per * (0.7 + 0.3 * dN) * dpr) | 0;
+        if (s < 1) s = 1; else if (s > 6) s = 6;
+        const col = rgb | (((a * 255) | 0) << 24);
+        const dx = sX[i] | 0, dy = sY[i] | 0;
+        const half = s >> 1;
+        const y0 = dy - half, x0 = dx - half;
+        for (let yy = y0; yy < y0 + s; yy++) {
+          if (yy < 0 || yy >= H2) continue;
+          const row = yy * W2;
+          for (let xx = x0; xx < x0 + s; xx++) {
+            if (xx < 0 || xx >= W2) continue;
+            buf32[row + xx] = col;
+          }
+        }
       }
+      ctx!.putImageData(imgData, 0, 0);
     }
 
-    const ro = new ResizeObserver(resize);
+    const ro = new ResizeObserver(() => { needResize = true; });
     ro.observe(canvas);
 
     return () => {
@@ -279,7 +294,8 @@ export default function ParticlePortrait({
       eventTarget.removeEventListener("pointerenter", onEnter);
       eventTarget.removeEventListener("pointerleave", onLeave);
     };
-  }, [url, depthSrc, depthScale, count, color, bulge, relief, tilt, gamma, assembleOnHover, trackingRef]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [url, depthSrc, depthScale, count, colorKey, bulge, relief, tilt, gamma, assembleOnHover, trackingRef]);
 
   return (
     <canvas
