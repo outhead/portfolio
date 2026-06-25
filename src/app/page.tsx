@@ -652,20 +652,6 @@ function ServiceTile({ tile }: { tile: ServiceTileData }) {
       variants={fadeUp}
       className="group isolate relative w-full h-full rounded-2xl border border-white/[0.06] bg-[#0f0f0e] hover:border-white/[0.2] transition-colors p-6 md:p-8 flex flex-col gap-5 md:gap-6 min-h-[360px] md:min-h-[420px] overflow-hidden"
     >
-      {/* Пиксельное поле — как у кейсов: дот-паттерн за анимацией, маска по центру */}
-      <div
-        aria-hidden
-        className="absolute inset-0 -z-10 pointer-events-none"
-        style={{
-          backgroundImage:
-            "radial-gradient(rgba(255,255,255,0.06) 1.1px, transparent 1.2px)",
-          backgroundSize: "13px 13px",
-          maskImage:
-            "radial-gradient(ellipse 78% 60% at 50% 48%, black, transparent 75%)",
-          WebkitMaskImage:
-            "radial-gradient(ellipse 78% 60% at 50% 48%, black, transparent 75%)",
-        }}
-      />
       {/* Верх: index / icon / label */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">

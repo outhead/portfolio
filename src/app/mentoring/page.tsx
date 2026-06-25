@@ -1,6 +1,5 @@
 import LedText from "@/components/LedText";
 import { LedLines } from "@/components/LedBoard";
-import LedGrowth from "@/components/LedGrowth";
 import MentoringBooking from "@/components/MentoringBooking";
 import Link from "next/link";
 import ScrollReveal from "@/components/ScrollReveal";
@@ -122,10 +121,6 @@ export default function MentoringPage() {
             За плечами 7 лет управления в крупных компаниях, делюсь конкретными
             инструментами, а не общими советами.
           </p>
-
-          <div className="mt-10 md:mt-14 rounded-2xl border border-white/[0.06] bg-[#0c0c0b] p-4 md:p-6 overflow-hidden">
-            <LedGrowth className="block w-full h-[64px] md:h-[96px]" />
-          </div>
         </div>
       </section>
 
