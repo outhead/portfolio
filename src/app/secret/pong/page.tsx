@@ -62,8 +62,10 @@ export default function PongPage() {
   const p2pRef = useRef<P2PHandle | null>(null);
   const useP2P = useRef(false);
   const [transport, setTransport] = useState<"relay" | "p2p">("relay");
+  const [ping, setPing] = useState<number | null>(null); // RTT до соперника, мс
   const [oppName, setOppName] = useState(""); // имя соперника (из hello)
   const [myName, setMyName] = useState(""); // своё имя (для подписи)
+  const [roomCode, setRoomCode] = useState(""); // код комнаты — для перехода в дуэль тем же составом
   const myNameRef = useRef(""); // своё имя (localStorage quest_name), шлём в hello
   // вейтлист/отзыв после ВТОРОГО матча (поле-режим)
   const overCountRef = useRef(0);
@@ -188,6 +190,7 @@ export default function PongPage() {
     }
 
     if (!code) code = rndCode();
+    setRoomCode(code);
     if (r === "host" && !room) setShareUrl(`${window.location.origin}/secret/pong?s=${code}`);
 
     // Запасной транспорт — Cloudflare WS-релей (свой домен, доступен в РФ без VPN).
@@ -247,6 +250,18 @@ export default function PongPage() {
     ch.on("rematch", () => { if (roleRef.current === "host") startMatch(); });
     ch.on("hit", (payload) => { applyHitRef.current(payload as Record<string, unknown>); });
     ch.on("release", () => { onReleaseRef.current(1); });
+    // ─── измерение пинга: эхо ping→pong по текущему транспорту ───
+    const sendVia = (event: string, payload: Record<string, unknown>) => {
+      if (useP2P.current) p2pRef.current?.sendCtl({ event, payload });
+      else chRef.current?.send(event, payload);
+    };
+    const onPing = (p: unknown) => sendVia("pong", { t: (p as { t?: number })?.t ?? 0 });
+    const onPong = (p: unknown) => {
+      const t = (p as { t?: number })?.t;
+      if (typeof t === "number" && t > 0) setPing(Math.round(performance.now() - t));
+    };
+    ch.on("ping", onPing);
+    ch.on("pong", onPong);
     const handleHello = (payload: unknown) => {
       const p = (payload ?? {}) as { id?: string; h?: number; name?: string };
       if (p.h === 1) hostSeenAt.current = performance.now();
@@ -291,6 +306,8 @@ export default function PongPage() {
         else if (m.event === "rematch") { if (roleRef.current === "host") startMatch(); }
         else if (m.event === "hit") applyHitRef.current(m.payload);
         else if (m.event === "release") onReleaseRef.current(1);
+        else if (m.event === "ping") onPing(m.payload);
+        else if (m.event === "pong") onPong(m.payload);
       },
       onOpen: () => {
         useP2P.current = true;
@@ -339,6 +356,11 @@ export default function PongPage() {
       }
     }, 1500);
 
+    const pingT = setInterval(() => {
+      if (!(useP2P.current || relayPeers.current)) { setPing(null); return; }
+      sendVia("ping", { t: performance.now() });
+    }, 1500);
+
     ch.onOpen(() => {
       // на (ре)коннекте релея активную игру НЕ сбрасываем; ожидание — только на старте
       if (phaseRef.current === "connecting") setPhaseBoth("waiting");
@@ -351,6 +373,7 @@ export default function PongPage() {
     return () => {
       clearTimeout(connT);
       clearInterval(electT);
+      clearInterval(pingT);
       cancelWaiting();
       if (countTimer.current) clearInterval(countTimer.current);
       p2pRef.current?.close(); p2pRef.current = null;
@@ -1214,6 +1237,12 @@ export default function PongPage() {
           <span className="ml-2 normal-case tracking-normal" style={{ color: transport === "p2p" ? "rgba(166,255,0,0.65)" : "rgba(255,255,255,0.25)" }}>
             <span className={transport === "p2p" ? "animate-pulse" : ""}>●</span> {transport === "p2p" ? "p2p" : "сервер"}
           </span>
+          {ping != null ? (
+            <span className="ml-1.5 normal-case tracking-normal"
+              style={{ color: ping <= 120 ? "rgba(166,255,0,0.7)" : ping <= 200 ? "#FFD60A" : "#FF6B6B" }}>
+              {ping} мс
+            </span>
+          ) : null}
           {mode === "field" ? (
             <span className="ml-2 normal-case tracking-normal text-[#A6FF00]/65">⌁ поле</span>
           ) : null}
@@ -1235,6 +1264,12 @@ export default function PongPage() {
             <LedText text={myName || "ты"} className="h-[7px] sm:h-[8px] w-auto" />
           </span>
         </div>
+
+        {ping != null && ping > 200 ? (
+          <p className="text-[12px] text-[#FF6B6B] mb-2 max-w-xs leading-snug">
+            Высокий пинг ({ping} мс). С таким соединением нормально сыграть не выйдет — мяч будет дёргаться.
+          </p>
+        ) : null}
 
         {/* высотная посадка — канвас всегда влезает по вертикали и центрирован */}
         <div className="relative mx-auto" style={{ height: "min(62dvh, 600px)", aspectRatio: `${FW}/${FH}` }}>
@@ -1285,6 +1320,11 @@ export default function PongPage() {
                     />
                   </p>
                   <QuestButton onClick={rematch}>{role === "host" ? "Реванш" : "Запросить реванш"}</QuestButton>
+                  <QuestButton
+                    href={`/secret/duel${roomCode ? `?room=${roomCode}${role === "host" ? "&host=1" : ""}` : ""}`}
+                    variant="secondary" arrow className="mt-3">
+                    Дуэль-сквош
+                  </QuestButton>
                 </>
               ) : null}
 
