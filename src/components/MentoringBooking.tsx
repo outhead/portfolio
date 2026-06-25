@@ -121,8 +121,8 @@ export default function MentoringBooking() {
         <div>
           <p className="text-[13px] text-white/45 mb-3">Будни пн–чт, 18:00–21:00 МСК · ~60 минут</p>
 
-          {/* Дни — горизонтальная лента */}
-          <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 mb-4">
+          {/* Дни — сетка с переносом, все видны сразу */}
+          <div className="flex flex-wrap gap-2 mb-5">
             {groups.map((g) => {
               const active = g.key === dayKey;
               return (
@@ -131,7 +131,7 @@ export default function MentoringBooking() {
                   type="button"
                   onClick={() => setDayKey(g.key)}
                   className={
-                    "shrink-0 px-3.5 py-2 rounded-xl border text-center leading-tight transition-colors " +
+                    "px-3 py-2 rounded-xl border text-center leading-tight transition-colors " +
                     (active
                       ? "bg-white/[0.08] border-[#A6FF00]/50"
                       : "bg-black/30 border-white/10 hover:border-white/30")
@@ -162,7 +162,7 @@ export default function MentoringBooking() {
         </div>
       ) : (
         // ── Шаг 2: контакты ────────────────────────────────
-        <div className="space-y-3">
+        <div className="space-y-3 max-w-md">
           <button
             type="button"
             onClick={() => setStep("time")}
@@ -173,21 +173,23 @@ export default function MentoringBooking() {
             <span className="text-white/35 text-[13px]">· изменить</span>
           </button>
 
-          <input
-            className={inputCls}
-            placeholder="Имя"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            maxLength={120}
-            autoFocus
-          />
-          <input
-            className={inputCls}
-            placeholder="Telegram или email — как связаться"
-            value={contact}
-            onChange={(e) => setContact(e.target.value)}
-            maxLength={200}
-          />
+          <div className="grid sm:grid-cols-2 gap-3">
+            <input
+              className={inputCls}
+              placeholder="Имя"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={120}
+              autoFocus
+            />
+            <input
+              className={inputCls}
+              placeholder="Telegram или email"
+              value={contact}
+              onChange={(e) => setContact(e.target.value)}
+              maxLength={200}
+            />
+          </div>
           <input
             className={inputCls}
             placeholder="Что обсудить? (необязательно)"
