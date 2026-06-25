@@ -64,8 +64,27 @@ export default function GlyphEditor() {
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [showHidden, setShowHidden] = useState(false);
+  const [showPaste, setShowPaste] = useState(false);
+  const [pasteText, setPasteText] = useState("");
   const drawing = useRef<null | boolean>(null); // что «красим» при драге
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Загрузка битмапы из кода: принимает массив "01..." / строки точками (. и X/#),
+  // в любом форматировании (с кавычками, скобками, запятыми). Размер — по строкам.
+  const loadFromCode = (text: string) => {
+    const raw = text.replace(/[xX#]/g, "1").replace(/\./g, "0");
+    const tokens = raw.split(/[^01]+/).filter(Boolean);
+    if (!tokens.length) return;
+    const cols = Math.max(...tokens.map((t) => t.length));
+    const rows = tokens.length;
+    const padded = tokens.map((t) => t.padEnd(cols, "0").slice(0, cols));
+    const s: Size =
+      SIZES.find((x) => x.cols === cols && x.rows === rows) ?? { label: `${cols}×${rows}`, cols, rows };
+    setSize(s);
+    setGrid(padded.flatMap((t) => [...t].map((ch) => ch === "1")));
+    setShowPaste(false);
+    setPasteText("");
+  };
 
   // Общая галерея: первая страница при монтировании
   useEffect(() => {
@@ -296,6 +315,13 @@ export default function GlyphEditor() {
             </button>
             <button
               type="button"
+              onClick={() => setShowPaste((v) => !v)}
+              className="px-5 py-2.5 rounded-full border border-white/20 text-white/70 text-[14px] hover:text-white hover:border-white/40 transition-colors"
+            >
+              Из кода
+            </button>
+            <button
+              type="button"
               onClick={() => reset(size)}
               className="px-5 py-2.5 rounded-full border border-white/10 text-white/40 text-[14px] hover:text-white/70 transition-colors"
             >
@@ -313,6 +339,36 @@ export default function GlyphEditor() {
               }}
             />
           </div>
+
+          {showPaste ? (
+            <div className="flex flex-col gap-2">
+              <textarea
+                value={pasteText}
+                onChange={(e) => setPasteText(e.target.value)}
+                rows={6}
+                placeholder={'Вставь битмапу: строки из 0/1 (или . и X), можно с кавычками и запятыми. Размер сетки определится сам.'}
+                className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl p-3 text-[13px] leading-relaxed text-[#A6FF00]/80 font-service outline-none focus:border-[#A6FF00]/40"
+              />
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => loadFromCode(pasteText)}
+                  disabled={!pasteText.trim()}
+                  className="px-5 py-2.5 rounded-full bg-[#A6FF00] text-black text-[14px] font-medium hover:bg-[#b8ff33] transition-colors disabled:opacity-35"
+                >
+                  Загрузить в сетку
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setShowPaste(false); setPasteText(""); }}
+                  className="px-5 py-2.5 rounded-full border border-white/15 text-white/50 text-[14px] hover:text-white/80 transition-colors"
+                >
+                  Отмена
+                </button>
+              </div>
+            </div>
+          ) : null}
+
           <p className="text-[14px] text-white/40 max-w-[440px]">
             «Сохранить в галерею» — глиф увидят все: галерея общая. Картинка уляжется
             в сетку по контрасту, битмапу можно вставить прямо в{" "}
