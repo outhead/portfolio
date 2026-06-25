@@ -91,6 +91,9 @@ export default function PairPage() {
   const [sent, setSent] = useState<{ type: ReactionType; k: number } | null>(null); // своя — «отправлено»
   const lastReactTs = useRef(0);
   const reactInit = useRef(false);
+  // Имя игрока: нужно для пинг-понга. Если его нет (гость по ссылке) — спрашиваем.
+  const [needName, setNeedName] = useState(false);
+  const [nameInput, setNameInput] = useState("");
 
   const targetRef = useRef("");
   const claimedRef = useRef(false);
@@ -204,6 +207,17 @@ export default function PairPage() {
     return () => clearTimeout(t);
   }, [sent]);
 
+  // нет имени (обычно гость по ссылке) → спросим перед игрой
+  useEffect(() => {
+    try { if (!(localStorage.getItem("quest_name") || "").trim()) setNeedName(true); } catch { /* */ }
+  }, []);
+  function saveName() {
+    const n = nameInput.trim().slice(0, 16);
+    if (!n) return;
+    try { localStorage.setItem("quest_name", n); } catch { /* */ }
+    setNeedName(false);
+  }
+
   async function flip(i: number) {
     if (solved) return;
     try { navigator.vibrate?.(10); } catch { /* iOS молчит — ок */ }
@@ -291,6 +305,21 @@ export default function PairPage() {
       <div aria-hidden className="absolute inset-0 pointer-events-none opacity-60" style={{
         background: "radial-gradient(ellipse 55% 45% at 50% 35%, rgba(166,255,0,0.06), transparent 60%)",
       }} />
+
+      {/* гейт имени: без имени в игру не пускаем (нужно для подписи в пинг-понге) */}
+      {needName ? (
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-6 text-center bg-black/85 backdrop-blur-sm">
+          <p className="text-white/40 mb-3"><LedText text="Как тебя зовут" className="h-[9px] w-auto" /></p>
+          <p className="text-[14px] text-white/50 mb-5 max-w-xs">Имя увидит напарник в игре.</p>
+          <input
+            type="text" value={nameInput} onChange={(e) => setNameInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") saveName(); }}
+            maxLength={16} placeholder="Имя" aria-label="Имя"
+            className="w-full max-w-[280px] bg-white/[0.06] border border-white/15 rounded-full px-5 py-3.5 text-[15px] text-white text-center placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors"
+          />
+          <QuestButton onClick={saveName} disabled={!nameInput.trim()} className="mt-4">Продолжить</QuestButton>
+        </div>
+      ) : null}
 
       {/* прилетевшая реакция от напарника — крупное LED-табло, точки загораются волной */}
       {incoming ? (

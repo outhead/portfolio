@@ -188,7 +188,8 @@ export default function KodFinal() {
           {winMs != null && !submitted ? (
             <div className="w-full max-w-[340px] mx-auto flex flex-col gap-3 mb-10">
               <input
-                type="text" value={name} onChange={(e) => setName(e.target.value)}
+                type="text" value={name}
+                onChange={(e) => { setName(e.target.value); try { localStorage.setItem("quest_name", e.target.value.trim()); } catch { /* */ } }}
                 maxLength={20} placeholder="Твоё имя" aria-label="Имя для таблицы лидеров"
                 className="bg-white/[0.06] border border-white/15 rounded-full px-5 py-3.5 text-[16px] text-white text-center placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors"
               />

@@ -58,6 +58,9 @@ export default function PongPage() {
   const p2pRef = useRef<P2PHandle | null>(null);
   const useP2P = useRef(false);
   const [transport, setTransport] = useState<"relay" | "p2p">("relay");
+  const [oppName, setOppName] = useState(""); // имя соперника (из hello)
+  const [myName, setMyName] = useState(""); // своё имя (для подписи)
+  const myNameRef = useRef(""); // своё имя (localStorage quest_name), шлём в hello
   const relayPeers = useRef(false); // на релее видно соперника (count>=2)
   const waitTimer = useRef<ReturnType<typeof setTimeout> | null>(null); // дебаунс ухода в «ожидание»
 
@@ -150,6 +153,7 @@ export default function PongPage() {
   // ─── подключение ───
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    try { const nm = (localStorage.getItem("quest_name") || "").trim().slice(0, 16); myNameRef.current = nm; setMyName(nm); } catch { /* */ }
     const room = params.get("room");
     const sParam = params.get("s");
     let code = room || sParam || "";
@@ -233,12 +237,13 @@ export default function PongPage() {
     ch.on("hit", (payload) => { applyHitRef.current(payload as Record<string, unknown>); });
     ch.on("release", () => { onReleaseRef.current(1); });
     const handleHello = (payload: unknown) => {
-      const p = (payload ?? {}) as { id?: string; h?: number };
+      const p = (payload ?? {}) as { id?: string; h?: number; name?: string };
       if (p.h === 1) hostSeenAt.current = performance.now();
       else if (p.id) peerGuestId.current = p.id;
+      if (p.name && p.name !== myNameRef.current) setOppName(p.name);
       if (roleRef.current === "host") {
         onHelloMsg();
-        chRef.current?.send("hello", { id: myId.current, h: 1 });
+        chRef.current?.send("hello", { id: myId.current, name: myNameRef.current, h: 1 });
       }
     };
     ch.on("hello", handleHello);
@@ -279,7 +284,7 @@ export default function PongPage() {
       onOpen: () => {
         useP2P.current = true;
         setTransport("p2p");
-        if (roleRef.current === "guest") p2pRef.current?.sendCtl({ event: "hello", payload: { id: myId.current } });
+        if (roleRef.current === "guest") p2pRef.current?.sendCtl({ event: "hello", payload: { id: myId.current, name: myNameRef.current } });
         evalConn();
       },
       onClose: () => {
@@ -308,7 +313,7 @@ export default function PongPage() {
       if (roleRef.current !== "guest") return;
       if (!(useP2P.current || relayPeers.current)) return;
       if (phaseRef.current !== "waiting" && phaseRef.current !== "connecting") return;
-      chRef.current?.send("hello", { id: myId.current });
+      chRef.current?.send("hello", { id: myId.current, name: myNameRef.current });
       const now = performance.now();
       if (
         now - lastStateAt.current > 4000 &&
@@ -318,7 +323,7 @@ export default function PongPage() {
       ) {
         roleRef.current = "host";
         setRole("host");
-        chRef.current?.send("hello", { id: myId.current, h: 1 });
+        chRef.current?.send("hello", { id: myId.current, name: myNameRef.current, h: 1 });
         resumeOrStart();
       }
     }, 1500);
@@ -327,7 +332,7 @@ export default function PongPage() {
       // на (ре)коннекте релея активную игру НЕ сбрасываем; ожидание — только на старте
       if (phaseRef.current === "connecting") setPhaseBoth("waiting");
       if (roleRef.current === "guest") {
-        const hi = () => chRef.current?.send("hello", { id: myId.current });
+        const hi = () => chRef.current?.send("hello", { id: myId.current, name: myNameRef.current });
         hi(); setTimeout(hi, 500); setTimeout(hi, 1400);
       }
     });
@@ -1183,7 +1188,7 @@ export default function PongPage() {
         </p>
         <div className="flex items-center justify-center gap-2.5 sm:gap-5 mb-2">
           <span className="text-white/40">
-            <LedText text="соперник" className="h-[7px] sm:h-[8px] w-auto" />
+            <LedText text={oppName || "соперник"} className="h-[7px] sm:h-[8px] w-auto" />
           </span>
           <span key={`t${theirs}`} className="text-white/80 score-pop inline-flex">
             <LedText text={String(theirs)} scale={2} dot={1.45} className="h-[16px] sm:h-[20px] w-auto" />
@@ -1194,7 +1199,9 @@ export default function PongPage() {
           <span key={`m${mine}`} className="text-[#A6FF00] score-pop inline-flex">
             <LedText text={String(mine)} scale={2} dot={1.45} className="h-[16px] sm:h-[20px] w-auto" />
           </span>
-          <span className="text-white/40 text-[10px] sm:text-xs uppercase tracking-[0.12em]">ты</span>
+          <span className="text-white/40">
+            <LedText text={myName || "ты"} className="h-[7px] sm:h-[8px] w-auto" />
+          </span>
         </div>
 
         {/* высотная посадка — канвас всегда влезает по вертикали и центрирован */}
