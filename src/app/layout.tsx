@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Onest, Handjet } from "next/font/google";
+import { Onest } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 
@@ -7,15 +7,6 @@ const bodyFont = Onest({
   subsets: ["latin", "cyrillic"],
   display: "swap",
   variable: "--font-body",
-});
-
-// Служебный слой (лейблы, подписи, ноты) — пиксельный Handjet.
-// Выбран в /fonts-lab 2026-06-12: единственный гибкий пиксельный с кириллицей.
-const serviceFont = Handjet({
-  subsets: ["latin", "cyrillic"],
-  weight: ["400", "500"],
-  display: "swap",
-  variable: "--font-service",
 });
 import Footer from "@/components/Footer";
 import YandexMetrika from "@/components/YandexMetrika";
@@ -182,7 +173,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`antialiased ${bodyFont.variable} ${serviceFont.variable}`}>
+      <body className={`antialiased ${bodyFont.variable}`}>
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[300] focus:bg-[#A6FF00] focus:text-black focus:px-4 focus:py-2 focus:rounded focus:text-sm focus:font-semibold"

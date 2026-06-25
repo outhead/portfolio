@@ -1,45 +1,50 @@
 "use client";
 
 /* ─────────────────────────────────────────────────────────────────
- * PixelPortrait — диодное табло-портрет.
- * Каждый «пиксель» = кругляш-диод (как LedBoard), высокая плотность.
- * Анимация: циклит несколько кадров (говорит / пишет / рисует)
- * с диодным переходом — яркость диодов перетекает кадр→кадр.
- * Один кадр = живёт лёгким мерцанием, без полос-переходов.
+ * PixelPortrait — бинарный табло-портрет.
+ * Каждая ячейка = символ 0/1, нарисованный теми же диодами 5×7,
+ * что и весь LED-движок сайта (ledFont). Яркость диодов = яркость
+ * портрета; тусклое поле цифр вокруг — как матрица.
+ * Анимация — флипбук по кадрам (перерисовка только на смене кадра).
  * ──────────────────────────────────────────────────────────────── */
 
 import { useEffect, useRef } from "react";
+import { LED_GLYPHS } from "@/components/ledFont";
+
+const G0 = LED_GLYPHS["0"];
+const G1 = LED_GLYPHS["1"];
 
 export type PixelPortraitProps = {
-  /** один или несколько кадров; >1 — циклятся */
   frames?: string[];
-  src?: string; // алиас для одного кадра
-  /** диодов по ширине */
+  src?: string;
+  /** цифр по ширине */
   cols?: number;
-  /** сколько держать кадр, мс */
+  /** мс на кадр */
   holdMs?: number;
-  /** длительность перехода между кадрами, мс */
-  morphMs?: number;
-  /** лёгкое мерцание диодов 0..1 */
-  flicker?: number;
   /** контраст теней */
   gamma?: number;
+  /** доля «живых» (изредка перещёлкивают 0↔1) 0..1 */
+  shimmer?: number;
   className?: string;
 };
 
 const LO: [number, number, number] = [12, 16, 10];
 const HI: [number, number, number] = [166, 255, 0];
+const DIM = "rgba(120,150,90,0.10)"; // поле невключённых цифр
 
-type Grid = { cols: number; rows: number; lum: Float32Array };
+// стабильный псевдослучай по координате
+function hash(x: number, y: number) {
+  const n = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
+  return n - Math.floor(n);
+}
 
 export default function PixelPortrait({
   frames,
   src = "/images/hero-portrait.png",
-  cols = 90,
+  cols = 56,
   holdMs = 90,
-  morphMs = 0,
-  flicker = 0,
   gamma = 0.95,
+  shimmer = 0,
   className = "",
 }: PixelPortraitProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -58,13 +63,17 @@ export default function PixelPortrait({
 
     let raf = 0;
     let stopped = false;
-    const grids: (Grid | null)[] = urls.map(() => null);
 
+    type Grid = { cols: number; rows: number; lum: Float32Array };
+    const grids: (Grid | null)[] = urls.map(() => null);
     const sampler = document.createElement("canvas");
     const sctx = sampler.getContext("2d", { willReadFrequently: true })!;
 
+    // цифры выше квадрата → меньше рядов, чтобы лицо не вытягивалось
+    const ROW_FACTOR = 0.62;
+
     function makeGrid(img: HTMLImageElement): Grid {
-      const ratio = img.height / img.width;
+      const ratio = (img.height / img.width) * ROW_FACTOR;
       const rows = Math.max(1, Math.round(cols * ratio));
       sampler.width = cols;
       sampler.height = rows;
@@ -99,13 +108,13 @@ export default function PixelPortrait({
       dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvas!.width = Math.max(1, Math.round(rect.width * dpr));
       canvas!.height = Math.max(1, Math.round(rect.height * dpr));
+      drawn = -1; // форсировать перерисовку
     }
 
     let cur = 0;
     let phaseStart = 0;
-    const fps = 30;
-    const frameInterval = 1000 / fps;
-    let last = 0;
+    let drawn = -1; // какой кадр уже нарисован
+    let shimmerTick = 0;
 
     function start() {
       fit();
@@ -113,89 +122,76 @@ export default function PixelPortrait({
       raf = requestAnimationFrame(loop);
     }
 
-    function activeGrids() {
-      const a = grids[cur];
-      const nextIdx = (cur + 1) % grids.length;
-      const b = grids[nextIdx] || a;
-      return { a, b, nextIdx };
-    }
-
     function loop(now: number) {
       if (stopped) return;
       raf = requestAnimationFrame(loop);
-      if (now - last < frameInterval) return;
-      last = now;
-
-      const { a, b, nextIdx } = activeGrids();
-      if (!a) return;
-
-      // фаза кадра: hold -> morph -> переключение
-      let t = 0; // 0..1 интерполяция a->b
-      if (grids.length > 1 && !reduce) {
-        const elapsed = now - phaseStart;
-        if (elapsed > holdMs + morphMs) {
-          cur = nextIdx;
-          phaseStart = now;
-        } else if (elapsed > holdMs) {
-          const m = (elapsed - holdMs) / morphMs;
-          t = m < 0.5 ? 2 * m * m : 1 - Math.pow(-2 * m + 2, 2) / 2; // easeInOut
-        }
+      const multi = grids.length > 1 && !reduce;
+      if (multi && now - phaseStart >= holdMs) {
+        cur = (cur + 1) % grids.length;
+        phaseStart = now;
       }
+      const needShimmer = shimmer > 0 && !reduce && now - shimmerTick > 120;
+      if (cur !== drawn || needShimmer) {
+        if (needShimmer) shimmerTick = now;
+        draw();
+        drawn = cur;
+      }
+    }
 
+    function draw() {
+      const g = grids[cur];
+      if (!g) return;
       const cw = canvas!.width;
       const ch = canvas!.height;
       ctx!.clearRect(0, 0, cw, ch);
-      ctx!.fillStyle = "#08090800";
 
-      const gcols = a.cols;
-      const grows = a.rows;
-      // вписать по ширине, прижать снизу
-      const boardRatio = grows / gcols;
+      const gx = 1; // зазор между цифрами в субпикселях
+      const gy = 1;
+      const dataW = g.cols * (5 + gx);
+      const dataH = g.rows * (7 + gy);
+      const boardRatio = dataH / dataW;
       let dw = cw;
       let dh = cw * boardRatio;
       if (dh > ch) {
         dh = ch;
         dw = ch / boardRatio;
       }
+      const sub = dw / dataW; // размер субпикселя
       const ox = (cw - dw) / 2;
-      const oy = ch - dh;
-      const cell = dw / gcols;
-      const rUnlit = cell * 0.16;
-      const useB = t > 0 && b;
+      const oy = ch - dh; // прижать снизу
+      const dot = sub * 0.42;
+      const cellW = (5 + gx) * sub;
+      const cellH = (7 + gy) * sub;
 
-      for (let y = 0; y < grows; y++) {
-        const py = oy + y * cell + cell / 2;
-        for (let x = 0; x < gcols; x++) {
-          const idx = y * gcols + x;
-          let l = a.lum[idx];
-          if (useB) l = l + (b!.lum[idx] - l) * t;
-          if (flicker > 0 && !reduce) {
-            // плавное мерцание: волна по координате+времени, без покадрового шума
-            const w = Math.sin((x * 1.3 + y * 0.7) + now * 0.004);
-            l *= 1 - flicker * 0.5 + ((w + 1) / 2) * flicker;
+      for (let y = 0; y < g.rows; y++) {
+        for (let x = 0; x < g.cols; x++) {
+          const l = g.lum[y * g.cols + x];
+          let useOne = hash(x, y) < 0.5;
+          if (shimmer > 0 && hash(x + shimmerTick * 0.01, y) < shimmer) useOne = !useOne;
+          const glyph = useOne ? G1 : G0;
+          const lit = l >= 0.07;
+          let fill: string;
+          if (lit) {
+            const cr = Math.round(LO[0] + (HI[0] - LO[0]) * Math.min(1, l));
+            const cg = Math.round(LO[1] + (HI[1] - LO[1]) * Math.min(1, l));
+            const cb = Math.round(LO[2] + (HI[2] - LO[2]) * Math.min(1, l));
+            fill = `rgb(${cr},${cg},${cb})`;
+          } else {
+            fill = DIM;
           }
-          const px = ox + x * cell + cell / 2;
-          if (l < 0.05) {
-            // невключённый диод — тёмная точка
-            ctx!.beginPath();
-            ctx!.fillStyle = "rgba(28,32,24,0.55)";
-            ctx!.arc(px, py, rUnlit, 0, 6.283);
-            ctx!.fill();
-            continue;
-          }
-          const r = cell * (0.28 + 0.22 * l);
-          const cr = Math.round(LO[0] + (HI[0] - LO[0]) * l);
-          const cg = Math.round(LO[1] + (HI[1] - LO[1]) * l);
-          const cb = Math.round(LO[2] + (HI[2] - LO[2]) * l);
-          ctx!.beginPath();
-          ctx!.fillStyle = `rgb(${cr},${cg},${cb})`;
-          ctx!.arc(px, py, r, 0, 6.283);
-          ctx!.fill();
-          if (l > 0.6) {
-            ctx!.beginPath();
-            ctx!.fillStyle = `rgba(166,255,0,${(l - 0.6) * 0.5})`;
-            ctx!.arc(px, py, r * 1.5, 0, 6.283);
-            ctx!.fill();
+          ctx!.fillStyle = fill;
+          const bx = ox + x * cellW;
+          const by = oy + y * cellH;
+          for (let r = 0; r < 7; r++) {
+            const row = glyph[r];
+            for (let c = 0; c < 5; c++) {
+              if (row[c] !== "1") continue;
+              const px = bx + c * sub + sub / 2;
+              const py = by + r * sub + sub / 2;
+              ctx!.beginPath();
+              ctx!.arc(px, py, dot, 0, 6.283);
+              ctx!.fill();
+            }
           }
         }
       }
@@ -209,14 +205,14 @@ export default function PixelPortrait({
       cancelAnimationFrame(raf);
       ro.disconnect();
     };
-  }, [list, cols, holdMs, morphMs, flicker, gamma]);
+  }, [list, cols, holdMs, gamma, shimmer]);
 
   return (
     <canvas
       ref={canvasRef}
       className={className}
       style={{ width: "100%", height: "100%", display: "block" }}
-      aria-label="Пиксельный портрет"
+      aria-label="Бинарный портрет"
       role="img"
     />
   );

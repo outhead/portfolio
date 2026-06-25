@@ -1281,7 +1281,7 @@ export default function PreviewHome() {
                 title: "Строю дизайн-функции",
                 Icon: Users,
                 accent: "#C9A66B",
-                animation: "rain" as PulseVariant,
+                animation: "bricks" as PulseVariant,
                 body:
                   "Собираю команды под задачу, выстраиваю процессы, культуру и дизайн-систему. Нанимаю на рост, развиваю лидов, защищаю бюджет. Когда ухожу, стараюсь оставить функцию, которая продолжает расти без меня.",
                 items: [
@@ -1299,7 +1299,7 @@ export default function PreviewHome() {
                 title: "Фокус на метриках",
                 Icon: Sparkles,
                 accent: "#C9A66B",
-                animation: "build" as PulseVariant,
+                animation: "target" as PulseVariant,
                 body:
                   "Работаю на число. Discovery, гипотезы, CJM, A/B, research внутри процесса. Умею считать дизайн и доказывать его ценность продакт-менеджеру и C-левелу. Делаю это в B2C-экосистемах, B2E-инструментах и в EdTech.",
                 items: [
@@ -1317,7 +1317,7 @@ export default function PreviewHome() {
                 title: "Оптимизирую процессы",
                 Icon: Code2,
                 accent: "#C9A66B",
-                animation: "radar" as PulseVariant,
+                animation: "ai" as PulseVariant,
                 body:
                   "Автоматизирую рутину, собираю AI-инструменты и агенты под конкретные задачи. Понимаю, что реально сделать руками и сколько это стоит в человеко-часах. Знаю, когда применять AI, а когда нанимать эксперта.",
                 items: [

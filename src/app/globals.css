@@ -1,13 +1,15 @@
 @import "tailwindcss";
 
-/* Служебный слой — пиксельный Handjet (var ставится next/font на <body>).
-   font-mono тоже мапим на него: все font-mono лейблы по сайту переключаются разом. */
+/* Текстовый слой — Onest. Пиксельная айдентика живёт в LED-компонентах
+   (SVG-геометрия, чёткая на любом DPR); векторный пиксель-шрифт на мелком
+   тексте мылил на не-Retina, поэтому из текста его убрали.
+   font-mono/.font-service оставлены как алиасы, чтобы не трогать разметку. */
 @theme {
-  --font-mono: var(--font-service), ui-monospace, monospace;
+  --font-mono: var(--font-body), ui-monospace, monospace;
 }
 
 .font-service {
-  font-family: var(--font-service), var(--font-body), monospace;
+  font-family: var(--font-body), -apple-system, sans-serif;
 }
 
 /* === BASE === */
@@ -26,9 +28,9 @@ html.js-scroll-smooth {
 body {
   background: #000;
   color: #fff;
-  /* Эксперимент: Handjet (пиксельный) как основной body-шрифт по всему сайту,
-     включая кейсы. Onest остаётся фолбэком. */
-  font-family: var(--font-service), var(--font-body), "Onest", -apple-system, sans-serif;
+  /* Основной шрифт сайта — Onest (чёткий на любом DPR). Пиксель — только в
+     LED-компонентах. */
+  font-family: var(--font-body), "Onest", -apple-system, sans-serif;
   letter-spacing: 0.01em;
   -webkit-font-smoothing: antialiased;
 }
@@ -67,7 +69,7 @@ button:focus-visible {
 
 /* === SECTION LABELS (legacy — used by some components) === */
 .section-label {
-  font-family: var(--font-service), var(--font-body), monospace;
+  font-family: var(--font-body), -apple-system, sans-serif;
   font-size: 10px;
   letter-spacing: 0.15em;
   text-transform: uppercase;
