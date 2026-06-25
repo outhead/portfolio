@@ -12,14 +12,20 @@ import { useEffect, useRef } from "react";
  * - prefers-reduced-motion: полная статика.
  */
 
-import { LED_GLYPHS as GLYPHS } from "@/components/ledFont";
-
-const TEXT = "ЕГОР ШУГАЕВ";
-const ROWS = 7;
+// Логотип — единый битмап (правка Егора через редактор глифов). 1 = зажжённый диод.
+const LOGO_BITMAP = [
+  "111101111011110111100111111111111111001000101010111011101110110",
+  "110001100011010110100110000100110011001000101010100010101000101",
+  "111101100011010110100110111101111011001010101110100011101110111",
+  "110001100011010111100110000101001011001010100010100010101000101",
+  "110001100011010110000110111101001011001010100010100010101000101",
+  "110001100011010110000110000100000011001010100010100010101000101",
+  "111101100011110110000111111111111111001111101110100010101110110",
+];
+const ROWS = LOGO_BITMAP.length;
 const PITCH = 4; // шаг сетки в юнитах viewBox
 const R = 1.5; // радиус диода
 const BASE = 0.07; // яркость незажжённого диода (фоновая сетка)
-const GRAY = 0.5; // яркость второго слова
 const GREEN = "#A6FF00";
 const WHITE = "#FFFFFF";
 
@@ -33,41 +39,21 @@ type Dot = {
 };
 
 function buildDots(): { dots: Dot[]; cols: number } {
+  const cols = LOGO_BITMAP[0].length;
   const dots: Dot[] = [];
-  let col = 0;
-  const spaceAt = TEXT.indexOf(" ");
-  for (let ci = 0; ci < TEXT.length; ci++) {
-    const g = GLYPHS[TEXT[ci]];
-    const w = g[0].length;
-    const max = ci < spaceAt ? 1 : GRAY;
-    for (let c = 0; c < w; c++) {
-      for (let r = 0; r < ROWS; r++) {
-        dots.push({
-          col: col + c,
-          row: r,
-          cx: (col + c) * PITCH + PITCH / 2,
-          cy: r * PITCH + PITCH / 2,
-          lit: g[r][c] === "1",
-          max,
-        });
-      }
-    }
-    col += w;
-    if (ci < TEXT.length - 1) {
-      for (let r = 0; r < ROWS; r++) {
-        dots.push({
-          col,
-          row: r,
-          cx: col * PITCH + PITCH / 2,
-          cy: r * PITCH + PITCH / 2,
-          lit: false,
-          max: 0,
-        });
-      }
-      col += 1;
+  for (let c = 0; c < cols; c++) {
+    for (let r = 0; r < ROWS; r++) {
+      dots.push({
+        col: c,
+        row: r,
+        cx: c * PITCH + PITCH / 2,
+        cy: r * PITCH + PITCH / 2,
+        lit: LOGO_BITMAP[r][c] === "1",
+        max: 1,
+      });
     }
   }
-  return { dots, cols: col };
+  return { dots, cols };
 }
 
 const { dots: DOTS, cols: COLS } = buildDots();
