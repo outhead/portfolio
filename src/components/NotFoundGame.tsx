@@ -510,7 +510,7 @@ export default function NotFoundGame() {
                 <p className="text-[#A6FF00]/70 mb-3 flex justify-center"><LedText text="РЕЙТИНГ ЗМЕЙКИ" className="h-[8px] w-auto" /></p>
                 {score > 0 && !submitted && (
                   <div className="flex items-center gap-2 mb-3">
-                    <input value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submitScore()} maxLength={20} placeholder="Имя"
+                    <input value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submitScore()} maxLength={32} placeholder="Имя"
                       className="flex-1 min-w-0 bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 text-[14px] text-white/85 placeholder:text-white/30 outline-none focus:border-[#A6FF00]/40" />
                     <button type="button" onClick={submitScore} disabled={submitting}
                       className="shrink-0 rounded-lg px-3.5 py-2.5 bg-[#A6FF00] text-black hover:bg-[#B8FF33] disabled:opacity-50 transition-colors">

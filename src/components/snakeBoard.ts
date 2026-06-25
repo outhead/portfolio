@@ -35,7 +35,7 @@ export async function saveSnakeScore(
   score: number
 ): Promise<SnakeEntry[]> {
   const body = {
-    name: (name || "Аноним").trim().slice(0, 20) || "Аноним",
+    name: (name || "Аноним").trim().slice(0, 32) || "Аноним",
     score: Math.max(0, Math.min(100000, Math.round(score))),
   };
   try {
