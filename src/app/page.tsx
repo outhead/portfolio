@@ -1,7 +1,6 @@
 "use client";
 
 import ProjectCard from "@/components/ProjectCard";
-import ParticleSphere from "@/components/ParticleSphere";
 import ParticlePortrait from "@/components/ParticlePortrait";
 import PulseAnimation, { type PulseVariant } from "@/components/PulseAnimation";
 import LedText from "@/components/LedText";
@@ -738,7 +737,6 @@ const tools: Array<{ name: string; icon: React.ReactNode }> = [
           x="12"
           y="16.5"
           textAnchor="middle"
-          fontFamily="Inter, system-ui, sans-serif"
           fontWeight="700"
           fontSize="11"
           className="fill-current group-hover:fill-[#31A8FF] transition-colors"
@@ -758,7 +756,6 @@ const tools: Array<{ name: string; icon: React.ReactNode }> = [
           x="12"
           y="16.5"
           textAnchor="middle"
-          fontFamily="Inter, system-ui, sans-serif"
           fontWeight="700"
           fontSize="11"
           className="fill-current group-hover:fill-[#FF9A00] transition-colors"
@@ -897,16 +894,25 @@ export default function PreviewHome() {
     if (bubbleTimer.current) window.clearTimeout(bubbleTimer.current);
     bubbleTimer.current = window.setTimeout(() => setBubbleOn(false), 4500);
   };
+  const revertTimer = useRef<number | null>(null);
+  const scheduleRevert = () => {
+    if (revertTimer.current) window.clearTimeout(revertTimer.current);
+    revertTimer.current = window.setTimeout(() => {
+      setHeroShape(0);
+      setClickedNums(new Set());
+      setClickedLogos(new Set());
+    }, 5000);
+  };
   const tapNum = (i: number) =>
     setClickedNums((prev) => {
       const n = new Set(prev); n.add(i);
-      if (n.size >= 3) setHeroShape(2); // все 3 числа → бас
+      if (n.size >= 3) { setHeroShape(2); scheduleRevert(); } // все 3 числа → бас
       return n;
     });
   const tapLogo = (k: string) =>
     setClickedLogos((prev) => {
       const n = new Set(prev); n.add(k);
-      if (n.size >= 3) setHeroShape(3); // все 3 логотипа (без первого) → глитч
+      if (n.size >= 3) { setHeroShape(3); scheduleRevert(); } // все 3 логотипа → глитч
       return n;
     });
 
@@ -1001,9 +1007,9 @@ export default function PreviewHome() {
                 </div>
                 <div className="mt-9 md:mt-auto md:pt-8 flex items-center gap-6 md:gap-10 flex-wrap">
                   <img src="/images/logos/ozon.svg" alt="Ozon" className="h-4 md:h-5 w-auto self-center brightness-0 invert opacity-55 hover:opacity-100 transition-opacity" />
-                  <img src="/images/logos/mts.svg" alt="МТС" className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity" />
-                  <img src="/images/logos/gazpromneft.svg" alt="Газпром нефть" className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity" />
-                  <img src="/images/logos/hse.svg" alt="ВШЭ" className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity" />
+                  <img onClick={() => tapLogo("mts")} src="/images/logos/mts.svg" alt="МТС" className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity cursor-pointer" />
+                  <img onClick={() => tapLogo("gpn")} src="/images/logos/gazpromneft.svg" alt="Газпром нефть" className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity cursor-pointer" />
+                  <img onClick={() => tapLogo("hse")} src="/images/logos/hse.svg" alt="ВШЭ" className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity cursor-pointer" />
                 </div>
               </Oled>
             </motion.div>
@@ -1019,21 +1025,44 @@ export default function PreviewHome() {
                     <LedText text="]" className="h-[10px] w-auto text-[#C9A66B]/70" />
                   </span>
                 </div>
-                <div ref={heroSphereRef} className="relative flex-1 min-h-[280px] md:min-h-[320px]">
-                  {/* Шар — белый: зелёный оставлен акцентам и действиям */}
-                  <ParticleSphere
+                <div
+                  ref={heroSphereRef}
+                  onClick={onPortraitTap}
+                  className="relative flex-1 min-h-[280px] md:min-h-[320px] cursor-pointer"
+                >
+                  {/* Портрет из частиц по карте глубины. Форма морфит по пасхалкам. */}
+                  <ParticlePortrait
                     className="absolute inset-0 w-full h-full"
                     trackingRef={heroSphereRef}
-                    sphereRadFactor={0.46}
-                    r={235}
-                    g={238}
-                    b={230}
-                    tapMessages={[
-                      "Воу. Интерактив.",
-                      "По сайту спрятаны пасхалки и мини-задания.",
-                      "Долистай до конца — там кнопка с сюрпризом.",
-                    ]}
+                    shapes={HERO_SHAPES}
+                    active={heroShape}
+                    count={5200}
+                    pointScale={0.55}
+                    tilt={0.5}
+                    assembleOnHover={false}
                   />
+                  <AnimatePresence>
+                    {bubbleOn && bubbleStage > 0 && HERO_BUBBLES[bubbleStage - 1] ? (
+                      <motion.div
+                        key="pp-bubble"
+                        initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                        className="pointer-events-none absolute left-1/2 top-1/2 z-[3] -translate-x-1/2 -translate-y-1/2 max-w-[86%] rounded-xl bg-[#1d1d1b]/95 px-5 py-3.5 shadow-[0_8px_30px_rgba(0,0,0,0.45)] backdrop-blur-sm"
+                      >
+                        <span className="sr-only">{HERO_BUBBLES[bubbleStage - 1]}</span>
+                        <span className="block text-white/90">
+                          <LedLines
+                            text={HERO_BUBBLES[bubbleStage - 1]}
+                            center
+                            maxChars={22}
+                            lineClass="h-[9px] md:h-[10px]"
+                          />
+                        </span>
+                      </motion.div>
+                    ) : null}
+                  </AnimatePresence>
                 </div>
                 <div className="flex items-center justify-between text-white/35">
                   <span aria-label="Москва">
@@ -1056,8 +1085,12 @@ export default function PreviewHome() {
                     { v: "30", l: "запусков" },
                     { v: "7", l: "лет опыта" },
                     { v: "27", l: "команд" },
-                  ].map((m) => (
-                    <div key={m.l} className="flex flex-col gap-4">
+                  ].map((m, i) => (
+                    <div
+                      key={m.l}
+                      onClick={() => tapNum(i)}
+                      className="flex flex-col gap-4 cursor-pointer select-none"
+                    >
                       <LedCounter value={m.v} tone="#C9A66B" />
                       <span className="text-white/40">
                         <span className="sr-only">{m.l}</span>
@@ -1076,6 +1109,8 @@ export default function PreviewHome() {
                 aria-label="Открыть кейс Газпром Нефть — CX Awards 2024"
                 data-ym-goal="case_open"
                 data-ym-goal-params='{"case_slug":"gazprom-neft","placement":"hero_award_tile"}'
+                onMouseEnter={() => setHeroShape(1)}
+                onMouseLeave={() => setHeroShape(0)}
                 className="block h-full no-underline group"
               >
                 <Oled className="h-full p-5 md:p-7 flex flex-col gap-6 transition-colors duration-300 group-hover:border-[#C9A66B]/30">
