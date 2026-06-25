@@ -26,6 +26,8 @@ const ROWS = LOGO_BITMAP.length;
 const PITCH = 4; // шаг сетки в юнитах viewBox
 const R = 1.5; // радиус диода
 const BASE = 0.07; // яркость незажжённого диода (фоновая сетка)
+const GRAY = 0.5; // яркость второй части (приглушённой)
+const LOGO_SPLIT = 21; // колонка: до неё ярко, после — приглушённо (подобрать при желании)
 const GREEN = "#A6FF00";
 const WHITE = "#FFFFFF";
 
@@ -49,7 +51,7 @@ function buildDots(): { dots: Dot[]; cols: number } {
         cx: c * PITCH + PITCH / 2,
         cy: r * PITCH + PITCH / 2,
         lit: LOGO_BITMAP[r][c] === "1",
-        max: 1,
+        max: c < LOGO_SPLIT ? 1 : GRAY,
       });
     }
   }
