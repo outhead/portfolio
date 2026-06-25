@@ -57,6 +57,7 @@ export default function PongPage() {
   // P2P: основной транспорт — WebRTC DataChannel; Supabase Realtime остаётся фолбэком
   const p2pRef = useRef<P2PHandle | null>(null);
   const useP2P = useRef(false);
+  const lastP2pAt = useRef(0); // время последнего P2P-пакета (фолбэк на релей)
   const [transport, setTransport] = useState<"relay" | "p2p">("relay");
   const [ping, setPing] = useState<number | null>(null); // RTT до соперника, мс
   const [oppName, setOppName] = useState(""); // имя соперника (из hello)
