@@ -30,6 +30,8 @@ export type ParticlePortraitProps = {
   /** масштаб размера точки (меньше = мельче зерно) */
   pointScale?: number;
   assembleOnHover?: boolean;
+  /** после первого наведения остаётся собранным (не разлетается) */
+  latchAssemble?: boolean;
   trackingRef?: RefObject<HTMLElement | null>;
   className?: string;
 };
@@ -49,6 +51,7 @@ export default function ParticlePortrait({
   gamma = 1.05,
   pointScale = 1,
   assembleOnHover = true,
+  latchAssemble = false,
   trackingRef,
   className = "",
 }: ParticlePortraitProps) {
@@ -211,8 +214,8 @@ export default function ParticlePortrait({
     eventTarget.addEventListener("pointerleave", onLeave);
 
     // ── цикл ──────────────────────────────────────────────────────
-    let raf = 0, stopped = false, lt = 0, spin = 0, needResize = false;
-    const K = 5.5, DAMP = 4.0, fLen = 2.4;
+    let raf = 0, stopped = false, lt = 0, spin = 0, needResize = false, everHovered = false;
+    const K = 3.6, DAMP = 3.4, fLen = 2.4;
 
     function start() {
       resize();
@@ -237,8 +240,9 @@ export default function ParticlePortrait({
       if (!s || !buf32 || !imgData) return;
       if (s.aspect !== curAspect) { curAspect = s.aspect; computeScale(); }
 
-      const target = assembleOnHover ? hoverT : 1;
-      assemble += (target - assemble) * Math.min(1, dt * 3.2);
+      if (hoverT > 0) everHovered = true;
+      const target = assembleOnHover ? (latchAssemble && everHovered ? 1 : hoverT) : 1;
+      assemble += (target - assemble) * Math.min(1, dt * 1.8);
       if (reduce) assemble = target;
       const asmE = assemble * assemble * (3 - 2 * assemble);
 
@@ -277,8 +281,8 @@ export default function ParticlePortrait({
       for (let i = 0; i < N; i++) {
         const per = sPe[i];
         let dN = (sZ[i] + bulge) * dInv; if (dN < 0) dN = 0; else if (dN > 1) dN = 1;
-        const bright = 0.35 + 0.65 * fbA[i];
-        const a = (0.18 + 0.82 * (asmE * bright + (1 - asmE) * 0.4)) * (0.5 + 0.5 * dN);
+        const bright = 0.45 + 0.55 * fbA[i];
+        const a = (0.3 + 0.7 * (asmE * bright + (1 - asmE) * 0.45)) * (0.55 + 0.45 * dN);
         if (a < 0.02) continue;
         let sz = ((0.7 + (asmE * fbA[i] + (1 - asmE) * 0.3) * 1.7) * per * (0.7 + 0.3 * dN) * dpr * pointScale) | 0;
         if (sz < 1) sz = 1; else if (sz > 6) sz = 6;
@@ -309,7 +313,7 @@ export default function ParticlePortrait({
       eventTarget.removeEventListener("pointerleave", onLeave);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [listKey, depthScale, count, color.join(","), bulge, relief, tilt, gamma, pointScale, assembleOnHover, trackingRef]);
+  }, [listKey, depthScale, count, color.join(","), bulge, relief, tilt, gamma, pointScale, assembleOnHover, latchAssemble, trackingRef]);
 
   return (
     <canvas

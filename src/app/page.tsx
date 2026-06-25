@@ -865,17 +865,22 @@ function Toolbox() {
 // ═══════════════════════════════════════════════════════════════════
 // PAGE
 // ═══════════════════════════════════════════════════════════════════
-const HERO_SHAPES = [
-  { src: "/images/hero-portrait.png", depth: "/images/hero-depth.png" }, // 0 рим-свет (я)
-  { src: "/images/face-c-portrait.png", depth: "/images/face-c-depth.png" }, // 1 награда
-  { src: "/images/face-e-portrait.png", depth: "/images/face-e-depth.png" }, // 2 бас
-  { src: "/images/face-d-portrait.png", depth: "/images/face-d-depth.png" }, // 3 глитч
-];
 const HERO_BUBBLES = [
   "Воу. Интерактив.",
   "По сайту спрятаны пасхалки и мини-задания.",
   "Жми на цифры и логотипы — портрет оживает.",
   "Долистай до конца — там кнопка с сюрпризом.",
+];
+const TEXT_START = 4; // индексы текст-форм начинаются здесь
+const HERO_SHAPES = [
+  { src: "/images/hero-portrait.png", depth: "/images/hero-depth.png" }, // 0 рим-свет (я)
+  { src: "/images/face-c-portrait.png", depth: "/images/face-c-depth.png" }, // 1 награда
+  { src: "/images/face-e-portrait.png", depth: "/images/face-e-depth.png" }, // 2 бас
+  { src: "/images/face-d-portrait.png", depth: "/images/face-d-depth.png" }, // 3 глитч
+  ...HERO_BUBBLES.map((_, i) => ({
+    src: `/images/txt-${i}-portrait.png`,
+    depth: `/images/txt-${i}-depth.png`,
+  })), // 4..7 фразы из частиц
 ];
 
 export default function PreviewHome() {
@@ -883,38 +888,57 @@ export default function PreviewHome() {
   // Пасхалки портрета: форма + наборы кликнутых чисел/логотипов
   const [heroShape, setHeroShape] = useState(0);
   const [clickedNums, setClickedNums] = useState<Set<number>>(new Set());
-  const [clickedLogos, setClickedLogos] = useState<Set<string>>(new Set());
   const [bubbleStage, setBubbleStage] = useState(0);
-  const [bubbleOn, setBubbleOn] = useState(false);
-  const bubbleTimer = useRef<number | null>(null);
 
-  const onPortraitTap = () => {
-    setBubbleStage((s) => Math.min(s + 1, HERO_BUBBLES.length));
-    setBubbleOn(true);
-    if (bubbleTimer.current) window.clearTimeout(bubbleTimer.current);
-    bubbleTimer.current = window.setTimeout(() => setBubbleOn(false), 4500);
-  };
   const revertTimer = useRef<number | null>(null);
-  const scheduleRevert = () => {
+  const scheduleRevert = (ms = 4500) => {
     if (revertTimer.current) window.clearTimeout(revertTimer.current);
-    revertTimer.current = window.setTimeout(() => {
-      setHeroShape(0);
-      setClickedNums(new Set());
-      setClickedLogos(new Set());
-    }, 5000);
+    revertTimer.current = window.setTimeout(() => setHeroShape(0), ms);
   };
+  const cancelRevert = () => {
+    if (revertTimer.current) window.clearTimeout(revertTimer.current);
+  };
+  // Клик по портрету → следующая фраза, собранная ИЗ ЧАСТИЦ. Авто-возврат.
+  const phraseIdx = useRef(0);
+  const onPortraitTap = () => {
+    const i = phraseIdx.current % HERO_BUBBLES.length;
+    phraseIdx.current = i + 1;
+    setBubbleStage(i + 1); // для скринридера
+    setHeroShape(TEXT_START + i);
+    scheduleRevert(4500);
+  };
+  // Бас — 3 числа в любом порядке, ЗАЛИПАЕТ (без авто-возврата)
   const tapNum = (i: number) =>
     setClickedNums((prev) => {
       const n = new Set(prev); n.add(i);
-      if (n.size >= 3) { setHeroShape(2); scheduleRevert(); } // все 3 числа → бас
+      if (n.size >= 3) { cancelRevert(); setHeroShape(2); }
       return n;
     });
-  const tapLogo = (k: string) =>
-    setClickedLogos((prev) => {
-      const n = new Set(prev); n.add(k);
-      if (n.size >= 3) { setHeroShape(3); scheduleRevert(); } // все 3 логотипа → глитч
-      return n;
-    });
+  // Награда — наведение, ЗАЛИПАЕТ
+  const showAward = () => { cancelRevert(); setHeroShape(1); };
+  // Глитч — точная последовательность логотипов, САМ пропадает
+  const LOGO_CODE = ["mts", "ozon", "gpn", "mts"];
+  const logoSeq = useRef<string[]>([]);
+  const tapLogo = (k: string) => {
+    const seq = [...logoSeq.current, k].slice(-LOGO_CODE.length);
+    logoSeq.current = seq;
+    if (seq.length === LOGO_CODE.length && seq.every((v, i) => v === LOGO_CODE[i])) {
+      setHeroShape(3);
+      scheduleRevert(5000);
+      logoSeq.current = [];
+    }
+  };
+  // Возврат к портрету — наведение на лого «ЕГОР ШУГАЕВ» в шапке (window-event)
+  useEffect(() => {
+    const home = () => {
+      cancelRevert();
+      setHeroShape(0);
+      setClickedNums(new Set());
+      logoSeq.current = [];
+    };
+    window.addEventListener("hero:home", home);
+    return () => window.removeEventListener("hero:home", home);
+  }, []);
 
   const heroLines: LedLine[] = [
     { text: "7 ЛЕТ", color: "#F2F4EF" },
@@ -1006,7 +1030,7 @@ export default function PreviewHome() {
                   </Link>
                 </div>
                 <div className="mt-9 md:mt-auto md:pt-8 flex items-center gap-6 md:gap-10 flex-wrap">
-                  <img src="/images/logos/ozon.svg" alt="Ozon" className="h-4 md:h-5 w-auto self-center brightness-0 invert opacity-55 hover:opacity-100 transition-opacity" />
+                  <img onClick={() => tapLogo("ozon")} src="/images/logos/ozon.svg" alt="Ozon" className="h-4 md:h-5 w-auto self-center brightness-0 invert opacity-55 hover:opacity-100 transition-opacity cursor-pointer" />
                   <img onClick={() => tapLogo("mts")} src="/images/logos/mts.svg" alt="МТС" className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity cursor-pointer" />
                   <img onClick={() => tapLogo("gpn")} src="/images/logos/gazpromneft.svg" alt="Газпром нефть" className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity cursor-pointer" />
                   <img onClick={() => tapLogo("hse")} src="/images/logos/hse.svg" alt="ВШЭ" className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity cursor-pointer" />
@@ -1018,7 +1042,10 @@ export default function PreviewHome() {
             <motion.div variants={fadeUp} className="col-span-12 lg:col-span-5">
               <Oled className="h-full p-5 md:p-7 flex flex-col gap-4">
                 <div className="flex items-center justify-between text-white/35">
-                  <span className="inline-flex items-center gap-2">
+                  <span
+                    onMouseEnter={() => { if (typeof window !== "undefined") window.dispatchEvent(new Event("hero:home")); }}
+                    className="inline-flex items-center gap-2 cursor-pointer"
+                  >
                     <span className="sr-only">Дизайн-директор</span>
                     <LedText text="[" className="h-[10px] w-auto text-[#C9A66B]/70" />
                     <LedText text="Дизайн-директор" className="h-[10px] w-auto" />
@@ -1036,33 +1063,17 @@ export default function PreviewHome() {
                     trackingRef={heroSphereRef}
                     shapes={HERO_SHAPES}
                     active={heroShape}
-                    count={5200}
-                    pointScale={0.55}
+                    count={6000}
+                    pointScale={0.6}
                     tilt={0.5}
-                    assembleOnHover={false}
+                    assembleOnHover
+                    latchAssemble
                   />
-                  <AnimatePresence>
-                    {bubbleOn && bubbleStage > 0 && HERO_BUBBLES[bubbleStage - 1] ? (
-                      <motion.div
-                        key="pp-bubble"
-                        initial={{ opacity: 0, y: 8, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                        className="pointer-events-none absolute left-1/2 top-1/2 z-[3] -translate-x-1/2 -translate-y-1/2 max-w-[86%] rounded-xl bg-[#1d1d1b]/95 px-5 py-3.5 shadow-[0_8px_30px_rgba(0,0,0,0.45)] backdrop-blur-sm"
-                      >
-                        <span className="sr-only">{HERO_BUBBLES[bubbleStage - 1]}</span>
-                        <span className="block text-white/90">
-                          <LedLines
-                            text={HERO_BUBBLES[bubbleStage - 1]}
-                            center
-                            maxChars={22}
-                            lineClass="h-[9px] md:h-[10px]"
-                          />
-                        </span>
-                      </motion.div>
-                    ) : null}
-                  </AnimatePresence>
+                  {/* Фразы собираются из самих частиц (форма-текст), не оверлеем.
+                      Озвучка для скринридера: */}
+                  <span aria-live="polite" className="sr-only">
+                    {bubbleStage > 0 ? HERO_BUBBLES[(bubbleStage - 1) % HERO_BUBBLES.length] : ""}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between text-white/35">
                   <span aria-label="Москва">
@@ -1109,8 +1120,7 @@ export default function PreviewHome() {
                 aria-label="Открыть кейс Газпром Нефть — CX Awards 2024"
                 data-ym-goal="case_open"
                 data-ym-goal-params='{"case_slug":"gazprom-neft","placement":"hero_award_tile"}'
-                onMouseEnter={() => setHeroShape(1)}
-                onMouseLeave={() => setHeroShape(0)}
+                onMouseEnter={showAward}
                 className="block h-full no-underline group"
               >
                 <Oled className="h-full p-5 md:p-7 flex flex-col gap-6 transition-colors duration-300 group-hover:border-[#C9A66B]/30">

@@ -92,6 +92,7 @@ const SHINE_DUR = 1.2; // длительность блика
 export default function LedLogo({ className }: { className?: string }) {
   const els = useRef<(SVGCircleElement | null)[]>([]);
   const shineWanted = useRef(false);
+  const hovering = useRef(false);
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -138,6 +139,17 @@ export default function LedLogo({ className }: { className?: string }) {
       const t = (now - start) / 1000;
 
       if (phase === "text") {
+        // Удержание белого, пока курсор на логотипе (hover-состояние).
+        if (hovering.current) {
+          for (let i = 0; i < N; i++) {
+            const d = DOTS[i];
+            if (d.lit) set(i, 1, WHITE);
+            else set(i, BASE, d.green ? GREEN : WHITE);
+          }
+          textDirty = true; // чтобы при уходе перерисовать в норму
+          raf = requestAnimationFrame(frame);
+          return;
+        }
         if (shineWanted.current) {
           shineWanted.current = false;
           if (now - shineStart > SHINE_DUR * 1000) shineStart = now;
@@ -252,7 +264,11 @@ export default function LedLogo({ className }: { className?: string }) {
       role="img"
       aria-label="Егор Шугаев"
       onPointerEnter={() => {
+        hovering.current = true;
         shineWanted.current = true;
+      }}
+      onPointerLeave={() => {
+        hovering.current = false;
       }}
     >
       {DOTS.map((d, i) => (
