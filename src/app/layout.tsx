@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Onest } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import Header from "@/components/Header";
 
@@ -7,6 +8,14 @@ const bodyFont = Onest({
   subsets: ["latin", "cyrillic"],
   display: "swap",
   variable: "--font-body",
+});
+
+// Служебный слой — Cozette (битмап-шрифт с кириллицей, терминальный характер
+// под LED). Файл скачан в public/fonts. Длинная проза остаётся на Onest.
+const cozette = localFont({
+  src: "../../public/fonts/CozetteVector.ttf",
+  display: "swap",
+  variable: "--font-cozette",
 });
 import Footer from "@/components/Footer";
 import YandexMetrika from "@/components/YandexMetrika";
@@ -173,7 +182,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`antialiased ${bodyFont.variable}`}>
+      <body className={`antialiased ${bodyFont.variable} ${cozette.variable}`}>
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[300] focus:bg-[#A6FF00] focus:text-black focus:px-4 focus:py-2 focus:rounded focus:text-sm focus:font-semibold"

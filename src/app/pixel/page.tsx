@@ -8,12 +8,22 @@ import { useState } from "react";
 import LedText from "@/components/LedText";
 import ParticlePortrait from "@/components/ParticlePortrait";
 
+const PORTRAITS = [
+  { label: "Рим-свет", src: "/images/hero-portrait.png", depth: "/images/hero-depth.png" },
+  { label: "Награда", src: "/images/face-c-portrait.png", depth: "/images/face-c-depth.png" },
+  { label: "Бас", src: "/images/face-e-portrait.png", depth: "/images/face-e-depth.png" },
+  { label: "Глитч", src: "/images/face-d-portrait.png", depth: "/images/face-d-depth.png" },
+  { label: "Фронт (новое)", src: "/images/face-a-portrait.png", depth: "/images/face-a-depth.png" },
+  { label: "Второе фото", src: "/images/face-b-portrait.png", depth: "/images/face-b-depth.png" },
+];
+
 export default function PixelLab() {
   const [count, setCount] = useState(5500);
   const [depthScale, setDepthScale] = useState(0.6);
   const [tilt, setTilt] = useState(0.45);
   const [gamma, setGamma] = useState(1.05);
   const [hover, setHover] = useState(true);
+  const [pi, setPi] = useState(0);
 
   return (
     <main className="min-h-screen bg-black text-white px-5 md:px-[8%] pt-28 md:pt-32 pb-20">
@@ -35,8 +45,8 @@ export default function PixelLab() {
             <div className="relative rounded-2xl overflow-hidden border border-[#A6FF00]/25 bg-[#08090a] aspect-[4/5]">
               <ParticlePortrait
                 key={count}
-                src="/images/hero-portrait.png"
-                depthSrc="/images/hero-depth.png"
+                shapes={PORTRAITS}
+                active={pi}
                 count={count}
                 depthScale={depthScale}
                 tilt={tilt}
@@ -49,6 +59,21 @@ export default function PixelLab() {
 
           {/* ползунки */}
           <div className="flex-1 flex flex-col gap-5">
+            <div className="flex flex-wrap gap-2">
+              {PORTRAITS.map((p, i) => (
+                <button
+                  key={p.label}
+                  onClick={() => setPi(i)}
+                  className={`text-[12px] px-3 py-1.5 rounded-full border transition-colors ${
+                    pi === i
+                      ? "border-[#A6FF00]/60 text-[#A6FF00] bg-[#A6FF00]/10"
+                      : "border-white/15 text-white/55 hover:text-white hover:border-white/30"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
             {([
               ["Точек", count, setCount, 1000, 9000, 250, ""],
               ["Глубина", depthScale, setDepthScale, 0, 1.2, 0.05, ""],

@@ -1,21 +1,25 @@
 "use client";
 
 /* ─────────────────────────────────────────────────────────────────
- * ParticlePortrait v4 — одна картинка, сборка по наведению.
- * Покой: облако точек рассыпано и тихо кружит.
- * Наводишь курсор → точки слетаются в лицо (пружины). Уводишь →
- * рассыпаются обратно. Лёгкий 3D-наклон за курсором, когда собрано.
+ * ParticlePortrait — облако частиц по карте глубины.
+ * • Несколько форм (shapes): портрет / награда / и т.п. Частицы плавно
+ *   перетекают между формами по проп `active` (пружинная физика).
+ * • Глубина из depth-карты → объём; поворот за курсором.
+ * • assembleOnHover: в покое облако рассыпано, по наведению собирается.
+ * Рендер — прямой записью в пиксельный буфер (быстро).
  * ──────────────────────────────────────────────────────────────── */
 
 import { useEffect, useRef, type RefObject } from "react";
 
+export type Shape = { src: string; depth?: string };
+
 export type ParticlePortraitProps = {
   src?: string;
-  /** алиас: если передан массив — берём первый кадр */
   frames?: string[];
-  /** карта глубины (Depth Anything): ярче = ближе. Если есть — z из неё */
   depthSrc?: string;
-  /** масштаб глубины из карты */
+  shapes?: Shape[];
+  /** индекс активной формы (морф при смене) */
+  active?: number;
   depthScale?: number;
   count?: number;
   color?: [number, number, number];
@@ -23,7 +27,8 @@ export type ParticlePortraitProps = {
   relief?: number;
   tilt?: number;
   gamma?: number;
-  /** собирать по наведению (true) или держать собранным (false) */
+  /** масштаб размера точки (меньше = мельче зерно) */
+  pointScale?: number;
   assembleOnHover?: boolean;
   trackingRef?: RefObject<HTMLElement | null>;
   className?: string;
@@ -33,20 +38,30 @@ export default function ParticlePortrait({
   src,
   frames,
   depthSrc,
-  depthScale = 0.55,
+  shapes,
+  active = 0,
+  depthScale = 0.6,
   count = 5500,
   color = [235, 238, 230],
   bulge = 0.42,
   relief = 0.06,
   tilt = 0.45,
   gamma = 1.05,
+  pointScale = 1,
   assembleOnHover = true,
   trackingRef,
   className = "",
 }: ParticlePortraitProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const url = src || (frames && frames[0]) || "/images/hero-portrait.png";
-  const colorKey = color.join(",");
+  const activeRef = useRef(active);
+  activeRef.current = active;
+
+  // нормализуем список форм
+  const shapeList: Shape[] =
+    shapes && shapes.length
+      ? shapes
+      : [{ src: src || (frames && frames[0]) || "/images/hero-portrait.png", depth: depthSrc }];
+  const listKey = shapeList.map((s) => s.src + "|" + (s.depth || "")).join(";");
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -59,31 +74,30 @@ export default function ParticlePortrait({
       window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     const [CR, CG, CB] = color;
     const N = count;
+    const list: Shape[] = listKey.split(";").map((s) => {
+      const [sc, dp] = s.split("|");
+      return { src: sc, depth: dp || undefined };
+    });
 
-    // ── цели лица + дом-россыпь ───────────────────────────────────
-    const fX = new Float32Array(N), fY = new Float32Array(N), fZ = new Float32Array(N), fb = new Float32Array(N);
-    const hX = new Float32Array(N), hY = new Float32Array(N), hZ = new Float32Array(N);
-    let aspect = 1.25;
-    let built = false;
+    type ShapeData = { X: Float32Array; Y: Float32Array; Z: Float32Array; b: Float32Array; aspect: number };
+    const data: (ShapeData | null)[] = list.map(() => null);
 
     const sampler = document.createElement("canvas");
     const sctx = sampler.getContext("2d", { willReadFrequently: true })!;
 
-    function build(img: HTMLImageElement, depthImg: HTMLImageElement | null) {
+    function buildShape(img: HTMLImageElement, depthImg: HTMLImageElement | null): ShapeData {
       const gw = 150;
       const gh = Math.max(1, Math.round(gw * (img.height / img.width)));
       sampler.width = gw; sampler.height = gh;
       sctx.clearRect(0, 0, gw, gh);
       sctx.drawImage(img, 0, 0, gw, gh);
       const d = sctx.getImageData(0, 0, gw, gh).data;
-      // карта глубины — в ту же сетку
       let depth: Uint8ClampedArray | null = null;
       let dmin = 1, dmax = 0;
       if (depthImg) {
         sctx.clearRect(0, 0, gw, gh);
         sctx.drawImage(depthImg, 0, 0, gw, gh);
         depth = sctx.getImageData(0, 0, gw, gh).data;
-        // диапазон глубины по точкам лица (где есть сигнал портрета)
         for (let i = 0, p = 0; i < d.length; i += 4, p++) {
           const al = d[i + 3] / 255;
           const l = (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]) / 255 * al;
@@ -103,7 +117,8 @@ export default function ParticlePortrait({
         l = Math.pow(l, gamma) * al;
         lum[p] = l; total += l; cum[p] = total;
       }
-      aspect = gh / gw;
+      const X = new Float32Array(N), Y = new Float32Array(N), Z = new Float32Array(N), b = new Float32Array(N);
+      const aspect = gh / gw;
       const halfH = aspect / 2;
       for (let i = 0; i < N; i++) {
         const rnd = Math.random() * total;
@@ -112,72 +127,70 @@ export default function ParticlePortrait({
         const gx = lo % gw, gy = (lo / gw) | 0;
         const nx = (gx + Math.random()) / gw - 0.5;
         const ny = ((gy + Math.random()) / gh - 0.5) * aspect;
-        fX[i] = nx; fY[i] = ny;
+        X[i] = nx; Y[i] = ny;
         if (depth) {
-          const dz = (depth[lo * 4] / 255 - dmin) / (dmax - dmin); // 0..1 по лицу
-          fZ[i] = (dz - 0.5) * depthScale;
+          const dz = (depth[lo * 4] / 255 - dmin) / (dmax - dmin);
+          Z[i] = (dz - 0.5) * depthScale;
         } else {
           const ex = nx / 0.5, ey = ny / (halfH || 1);
-          const inside = Math.max(0, 1 - ex * ex - ey * ey);
-          fZ[i] = Math.sqrt(inside) * bulge + (lum[lo] - 0.5) * relief;
+          Z[i] = Math.sqrt(Math.max(0, 1 - ex * ex - ey * ey)) * bulge + (lum[lo] - 0.5) * relief;
         }
-        fb[i] = lum[lo];
-        // дом — россыпь в объёме
-        const a = Math.random() * Math.PI * 2;
-        const rr = 0.5 + Math.random() * 0.45;
-        hX[i] = Math.cos(a) * rr;
-        hY[i] = (Math.random() - 0.5) * (aspect + 0.5);
-        hZ[i] = Math.sin(a) * rr;
+        b[i] = lum[lo];
       }
-      built = true;
+      return { X, Y, Z, b, aspect };
     }
 
-    const img = new Image();
-    let depthImg: HTMLImageElement | null = null;
-    let need = depthSrc ? 2 : 1;
-    let got = 0;
-    const onReady = () => { if (++got >= need) { build(img, depthImg); start(); } };
-    img.onload = onReady;
-    img.onerror = onReady;
-    img.src = url;
-    if (depthSrc) {
-      depthImg = new Image();
-      depthImg.onload = onReady;
-      depthImg.onerror = () => { depthImg = null; need = Math.max(1, need - 1); onReady(); };
-      depthImg.src = depthSrc;
-    }
+    // загрузка всех форм
+    let firstReady = false;
+    list.forEach((sh, idx) => {
+      const img = new Image();
+      let depthImg: HTMLImageElement | null = null;
+      let need = sh.depth ? 2 : 1, got = 0;
+      const ready = () => {
+        if (++got < need) return;
+        data[idx] = buildShape(img, depthImg);
+        if (!firstReady) { firstReady = true; start(); }
+      };
+      img.onload = ready; img.onerror = ready; img.src = sh.src;
+      if (sh.depth) {
+        depthImg = new Image();
+        depthImg.onload = ready;
+        depthImg.onerror = () => { depthImg = null; need = 1; ready(); };
+        depthImg.src = sh.depth;
+      }
+    });
 
     // ── размер ────────────────────────────────────────────────────
-    let dpr = 1, cssW = 1, cssH = 1, scale = 1, cx = 0, cy = 0;
+    let dpr = 1, cssW = 1, cssH = 1, scale = 1, cx = 0, cy = 0, curAspect = 1.25;
     let W2 = 1, H2 = 1;
-    let imgData: ImageData | null = null;
-    let buf32: Uint32Array | null = null;
+    let imgData: ImageData | null = null, buf32: Uint32Array | null = null;
+    function computeScale() {
+      scale = Math.min(cssW, cssH / curAspect) * 0.95 * dpr;
+      cx = W2 / 2; cy = H2 / 2;
+    }
     function resize() {
       const rect = canvas!.getBoundingClientRect();
       dpr = Math.min(window.devicePixelRatio || 1, 2);
-      cssW = Math.max(1, rect.width);
-      cssH = Math.max(1, rect.height);
-      W2 = Math.round(cssW * dpr);
-      H2 = Math.round(cssH * dpr);
-      canvas!.width = W2;
-      canvas!.height = H2;
+      cssW = Math.max(1, rect.width); cssH = Math.max(1, rect.height);
+      W2 = Math.round(cssW * dpr); H2 = Math.round(cssH * dpr);
+      canvas!.width = W2; canvas!.height = H2;
       imgData = ctx!.createImageData(W2, H2);
       buf32 = new Uint32Array(imgData.data.buffer);
-      scale = Math.min(cssW, cssH / aspect) * 0.95 * dpr; // в device-пикселях
-      cx = W2 / 2;
-      cy = H2 / 2;
+      computeScale();
     }
 
     // ── частицы ───────────────────────────────────────────────────
     const px = new Float32Array(N), py = new Float32Array(N), pz = new Float32Array(N);
     const vx = new Float32Array(N), vy = new Float32Array(N), vz = new Float32Array(N);
-    const order = new Int32Array(N);
     const sX = new Float32Array(N), sY = new Float32Array(N), sZ = new Float32Array(N), sPe = new Float32Array(N);
+    const hX = new Float32Array(N), hY = new Float32Array(N), hZ = new Float32Array(N);
     let inited = false;
     function initP() {
       for (let i = 0; i < N; i++) {
+        const a = Math.random() * Math.PI * 2, rr = 0.5 + Math.random() * 0.45;
+        hX[i] = Math.cos(a) * rr; hY[i] = (Math.random() - 0.5) * 1.6; hZ[i] = Math.sin(a) * rr;
         px[i] = hX[i]; py[i] = hY[i]; pz[i] = hZ[i];
-        vx[i] = vy[i] = vz[i] = 0; order[i] = i;
+        vx[i] = vy[i] = vz[i] = 0;
       }
       inited = true;
     }
@@ -213,68 +226,69 @@ export default function ParticlePortrait({
       raf = requestAnimationFrame(loop);
       let dt = (now - lt) / 1000; lt = now;
       if (dt > 0.05) dt = 0.05;
-      if (!inited || !built) return;
+      if (!inited) return;
       if (needResize) { resize(); needResize = false; }
 
+      // активная форма (с фолбэком на ближайшую готовую)
+      let ai = activeRef.current | 0;
+      if (ai < 0) ai = 0; if (ai >= data.length) ai = data.length - 1;
+      let s = data[ai];
+      if (!s) { for (let k = 0; k < data.length; k++) if (data[k]) { s = data[k]; break; } }
+      if (!s || !buf32 || !imgData) return;
+      if (s.aspect !== curAspect) { curAspect = s.aspect; computeScale(); }
+
       const target = assembleOnHover ? hoverT : 1;
-      // плавная сборка/распад
       assemble += (target - assemble) * Math.min(1, dt * 3.2);
       if (reduce) assemble = target;
-      const asmE = assemble * assemble * (3 - 2 * assemble); // ease
+      const asmE = assemble * assemble * (3 - 2 * assemble);
 
-      nrx += (tnx - nrx) * 0.06;
-      nry += (tny - nry) * 0.06;
+      nrx += (tnx - nrx) * 0.06; nry += (tny - nry) * 0.06;
       spin += dt * 0.2;
-      // в покое — медленный круговой дрейф облака; собрано — наклон за курсором
       const yaw = (1 - asmE) * spin + asmE * (nrx * tilt) + Math.sin(spin) * 0.06 * (1 - asmE);
       const pitch = asmE * (-nry * tilt);
-      const sY2 = Math.sin(yaw), cY2 = Math.cos(yaw), sP = Math.sin(pitch), cP = Math.cos(pitch);
+      const sYa = Math.sin(yaw), cYa = Math.cos(yaw), sPi = Math.sin(pitch), cPi = Math.cos(pitch);
 
+      const sX0 = s.X, sY0 = s.Y, sZ0 = s.Z;
       for (let i = 0; i < N; i++) {
-        const tx = hX[i] + (fX[i] - hX[i]) * asmE;
-        const ty = hY[i] + (fY[i] - hY[i]) * asmE;
-        const tz = hZ[i] + (fZ[i] - hZ[i]) * asmE;
-        const ax = (tx - px[i]) * K - vx[i] * DAMP;
-        const ay = (ty - py[i]) * K - vy[i] * DAMP;
-        const az = (tz - pz[i]) * K - vz[i] * DAMP;
-        vx[i] += ax * dt; vy[i] += ay * dt; vz[i] += az * dt;
+        const tx = hX[i] + (sX0[i] - hX[i]) * asmE;
+        const ty = hY[i] + (sY0[i] - hY[i]) * asmE;
+        const tz = hZ[i] + (sZ0[i] - hZ[i]) * asmE;
+        vx[i] += ((tx - px[i]) * K - vx[i] * DAMP) * dt;
+        vy[i] += ((ty - py[i]) * K - vy[i] * DAMP) * dt;
+        vz[i] += ((tz - pz[i]) * K - vz[i] * DAMP) * dt;
         px[i] += vx[i] * dt; py[i] += vy[i] * dt; pz[i] += vz[i] * dt;
       }
 
       for (let i = 0; i < N; i++) {
-        const x1 = cY2 * px[i] + sY2 * pz[i];
-        const z1 = -sY2 * px[i] + cY2 * pz[i];
-        const y1 = cP * py[i] - sP * z1;
-        const z2 = sP * py[i] + cP * z1;
+        const x1 = cYa * px[i] + sYa * pz[i];
+        const z1 = -sYa * px[i] + cYa * pz[i];
+        const y1 = cPi * py[i] - sPi * z1;
+        const z2 = sPi * py[i] + cPi * z1;
         const per = fLen / (fLen - z2);
         sX[i] = cx + x1 * scale * per;
         sY[i] = cy + y1 * scale * per;
         sZ[i] = z2; sPe[i] = per;
       }
 
-      // Рендер прямой записью в пиксельный буфер: один putImageData/кадр,
-      // без тысяч вызовов canvas. Глубина — через яркость (без сортировки).
-      if (!buf32 || !imgData) return;
       buf32.fill(0);
       const dInv = 1 / (bulge * 2);
       const rgb = CR | (CG << 8) | (CB << 16);
+      const fbA = s.b;
       for (let i = 0; i < N; i++) {
         const per = sPe[i];
-        let dN = (sZ[i] + bulge) * dInv;
-        if (dN < 0) dN = 0; else if (dN > 1) dN = 1;
-        const bright = 0.35 + 0.65 * fb[i];
+        let dN = (sZ[i] + bulge) * dInv; if (dN < 0) dN = 0; else if (dN > 1) dN = 1;
+        const bright = 0.35 + 0.65 * fbA[i];
         const a = (0.18 + 0.82 * (asmE * bright + (1 - asmE) * 0.4)) * (0.5 + 0.5 * dN);
         if (a < 0.02) continue;
-        let s = ((0.7 + (asmE * fb[i] + (1 - asmE) * 0.3) * 1.7) * per * (0.7 + 0.3 * dN) * dpr) | 0;
-        if (s < 1) s = 1; else if (s > 6) s = 6;
+        let sz = ((0.7 + (asmE * fbA[i] + (1 - asmE) * 0.3) * 1.7) * per * (0.7 + 0.3 * dN) * dpr * pointScale) | 0;
+        if (sz < 1) sz = 1; else if (sz > 6) sz = 6;
         const col = rgb | (((a * 255) | 0) << 24);
-        const dx = sX[i] | 0, dy = sY[i] | 0;
-        const half = s >> 1;
+        const dx = sX[i] | 0, dy = sY[i] | 0, half = sz >> 1;
         const y0 = dy - half, x0 = dx - half;
-        for (let yy = y0; yy < y0 + s; yy++) {
+        for (let yy = y0; yy < y0 + sz; yy++) {
           if (yy < 0 || yy >= H2) continue;
           const row = yy * W2;
-          for (let xx = x0; xx < x0 + s; xx++) {
+          for (let xx = x0; xx < x0 + sz; xx++) {
             if (xx < 0 || xx >= W2) continue;
             buf32[row + xx] = col;
           }
@@ -295,14 +309,14 @@ export default function ParticlePortrait({
       eventTarget.removeEventListener("pointerleave", onLeave);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [url, depthSrc, depthScale, count, colorKey, bulge, relief, tilt, gamma, assembleOnHover, trackingRef]);
+  }, [listKey, depthScale, count, color.join(","), bulge, relief, tilt, gamma, pointScale, assembleOnHover, trackingRef]);
 
   return (
     <canvas
       ref={canvasRef}
       className={className}
       style={{ width: "100%", height: "100%", display: "block" }}
-      aria-label="Портрет из частиц, собирается по наведению"
+      aria-label="Портрет из частиц"
       role="img"
     />
   );

@@ -2,6 +2,7 @@
 
 import ProjectCard from "@/components/ProjectCard";
 import ParticleSphere from "@/components/ParticleSphere";
+import ParticlePortrait from "@/components/ParticlePortrait";
 import PulseAnimation, { type PulseVariant } from "@/components/PulseAnimation";
 import LedText from "@/components/LedText";
 import { LedBoard, LedCounter, LedLines, type LedLine } from "@/components/LedBoard";
@@ -867,8 +868,48 @@ function Toolbox() {
 // ═══════════════════════════════════════════════════════════════════
 // PAGE
 // ═══════════════════════════════════════════════════════════════════
+const HERO_SHAPES = [
+  { src: "/images/hero-portrait.png", depth: "/images/hero-depth.png" }, // 0 рим-свет (я)
+  { src: "/images/face-c-portrait.png", depth: "/images/face-c-depth.png" }, // 1 награда
+  { src: "/images/face-e-portrait.png", depth: "/images/face-e-depth.png" }, // 2 бас
+  { src: "/images/face-d-portrait.png", depth: "/images/face-d-depth.png" }, // 3 глитч
+];
+const HERO_BUBBLES = [
+  "Воу. Интерактив.",
+  "По сайту спрятаны пасхалки и мини-задания.",
+  "Жми на цифры и логотипы — портрет оживает.",
+  "Долистай до конца — там кнопка с сюрпризом.",
+];
+
 export default function PreviewHome() {
   const heroSphereRef = useRef<HTMLDivElement>(null);
+  // Пасхалки портрета: форма + наборы кликнутых чисел/логотипов
+  const [heroShape, setHeroShape] = useState(0);
+  const [clickedNums, setClickedNums] = useState<Set<number>>(new Set());
+  const [clickedLogos, setClickedLogos] = useState<Set<string>>(new Set());
+  const [bubbleStage, setBubbleStage] = useState(0);
+  const [bubbleOn, setBubbleOn] = useState(false);
+  const bubbleTimer = useRef<number | null>(null);
+
+  const onPortraitTap = () => {
+    setBubbleStage((s) => Math.min(s + 1, HERO_BUBBLES.length));
+    setBubbleOn(true);
+    if (bubbleTimer.current) window.clearTimeout(bubbleTimer.current);
+    bubbleTimer.current = window.setTimeout(() => setBubbleOn(false), 4500);
+  };
+  const tapNum = (i: number) =>
+    setClickedNums((prev) => {
+      const n = new Set(prev); n.add(i);
+      if (n.size >= 3) setHeroShape(2); // все 3 числа → бас
+      return n;
+    });
+  const tapLogo = (k: string) =>
+    setClickedLogos((prev) => {
+      const n = new Set(prev); n.add(k);
+      if (n.size >= 3) setHeroShape(3); // все 3 логотипа (без первого) → глитч
+      return n;
+    });
+
   const heroLines: LedLine[] = [
     { text: "7 ЛЕТ", color: "#F2F4EF" },
     { text: "РАЗВИВАЮ", color: "#F2F4EF" },
