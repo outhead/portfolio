@@ -88,6 +88,7 @@ export default function PairPage() {
   const [copied, setCopied] = useState(false);
   const [token, setToken] = useState(""); // код пары — переиспользуем как комнату для пинг-понга
   const [incoming, setIncoming] = useState<{ type: ReactionType; k: number } | null>(null); // прилетевшая реакция
+  const [sent, setSent] = useState<{ type: ReactionType; k: number } | null>(null); // своя — «отправлено»
   const lastReactTs = useRef(0);
   const reactInit = useRef(false);
 
@@ -190,12 +191,18 @@ export default function PairPage() {
     return () => clearInterval(iv);
   }, [id, solved]);
 
-  // прилетевшая реакция живёт ~1.6с
+  // прилетевшая реакция живёт ~1.7с
   useEffect(() => {
     if (!incoming) return;
-    const t = setTimeout(() => setIncoming(null), 1600);
+    const t = setTimeout(() => setIncoming(null), 1700);
     return () => clearTimeout(t);
   }, [incoming]);
+  // «отправлено» — короткий фидбэк отправителю
+  useEffect(() => {
+    if (!sent) return;
+    const t = setTimeout(() => setSent(null), 1000);
+    return () => clearTimeout(t);
+  }, [sent]);
 
   async function flip(i: number) {
     if (solved) return;
@@ -240,7 +247,8 @@ export default function PairPage() {
   // реакции напарнику: смотрящий — сторона "a", контроллер — "b"
   function react(type: ReactionType) {
     if (!id) return;
-    try { navigator.vibrate?.(8); } catch { /* */ }
+    try { navigator.vibrate?.(12); } catch { /* */ }
+    setSent({ type, k: Date.now() }); // фидбэк: отправитель видит, что улетело
     sendReaction(id, phase === "viewer" ? "a" : "b", type);
   }
   const REACTIONS: { type: ReactionType; label: string }[] = [
@@ -250,7 +258,7 @@ export default function PairPage() {
     { type: "poop", label: "Какашка" },
   ];
   const reactionBar = (
-    <div className="mt-8 flex flex-col items-center gap-2.5">
+    <div className="mt-8 flex flex-col items-center gap-2.5 relative">
       <span className="text-[11px] uppercase tracking-[0.12em] text-white/35">кинь реакцию напарнику</span>
       <div className="flex items-center justify-center gap-2.5">
         {REACTIONS.map((r) => (
@@ -265,6 +273,15 @@ export default function PairPage() {
           </button>
         ))}
       </div>
+      {/* фидбэк отправителю: иконка улетает вверх + «отправлено» */}
+      {sent ? (
+        <div key={sent.k} className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-7">
+          <PixelArt art={REACTION_ART[sent.type]} className="h-10 w-auto sent-fly" />
+        </div>
+      ) : null}
+      <span className="h-4 text-[11px] text-[#A6FF00] transition-opacity" style={{ opacity: sent ? 1 : 0 }}>
+        отправлено
+      </span>
     </div>
   );
 
@@ -275,22 +292,37 @@ export default function PairPage() {
         background: "radial-gradient(ellipse 55% 45% at 50% 35%, rgba(166,255,0,0.06), transparent 60%)",
       }} />
 
-      {/* прилетевшая реакция от напарника */}
+      {/* прилетевшая реакция от напарника — крупно по центру, на любом экране */}
       {incoming ? (
         <div key={incoming.k} className="fixed inset-0 z-30 pointer-events-none flex items-center justify-center">
-          <PixelArt art={REACTION_ART[incoming.type]} className="h-44 w-auto react-pop" />
+          <div className="react-pop" style={{ height: "min(52vw, 52vh)" }}>
+            <PixelArt art={REACTION_ART[incoming.type]} className="h-full w-auto react-wiggle" />
+          </div>
         </div>
       ) : null}
 
       <style jsx>{`
         @keyframes reactPop {
-          0% { transform: translateY(24px) scale(0.4); opacity: 0; }
-          16% { transform: translateY(0) scale(1.14); opacity: 1; }
-          30% { transform: translateY(0) scale(1); opacity: 1; }
-          72% { opacity: 1; }
-          100% { transform: translateY(-72px) scale(1); opacity: 0; }
+          0%   { transform: translateY(40px) scale(0.25); opacity: 0; }
+          14%  { transform: translateY(0) scale(1.28); opacity: 1; }
+          26%  { transform: scale(0.92); }
+          38%  { transform: scale(1.08); }
+          48%  { transform: scale(1); }
+          80%  { opacity: 1; }
+          100% { transform: translateY(-48px) scale(0.96); opacity: 0; }
         }
-        :global(.react-pop) { animation: reactPop 1.6s ease-out forwards; }
+        @keyframes reactWiggle {
+          0%, 100% { transform: rotate(-6deg); }
+          50% { transform: rotate(6deg); }
+        }
+        @keyframes sentFly {
+          0%   { transform: translateY(0) scale(1); opacity: 0; }
+          18%  { opacity: 1; }
+          100% { transform: translateY(-52px) scale(0.6); opacity: 0; }
+        }
+        :global(.react-pop) { animation: reactPop 1.7s ease-out forwards; }
+        :global(.react-wiggle) { animation: reactWiggle 0.5s ease-in-out infinite; }
+        :global(.sent-fly) { animation: sentFly 0.9s ease-out forwards; }
       `}</style>
 
       <div className="relative z-[1] w-full max-w-[480px] mx-auto flex flex-col items-center text-center">
