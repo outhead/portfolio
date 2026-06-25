@@ -170,7 +170,7 @@ export default function DealPage() {
                 : `Оба решили забрать всё. По нулям. Оба крысы.`}
             </p>
             {result.mine > 0 && roleRef.current === "host" ? (
-              <p className="text-[13px] text-white/40 mb-6">+$${result.mine} срезали тебе время в квест-рейтинге.</p>
+              <p className="text-[13px] text-white/40 mb-6">Выигрыш срезал тебе время в квест-рейтинге.</p>
             ) : <div className="mb-6" />}
 
             {board.length > 0 ? (
