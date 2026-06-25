@@ -7,17 +7,24 @@ import { layoutLedText } from "@/components/ledFont";
 import { loadSnakeBoard, saveSnakeScore, type SnakeEntry } from "@/components/snakeBoard";
 
 const NAME_KEY = "nf_snake_name";
-
+const BEST_KEY = "nf_snake_best";
 const ACCENT = "#A6FF00";
 const GOLD = "#C9A66B";
-const STEP = 20; // шаг клетки/диода, px
-const TICK0 = 0.14; // стартовый интервал хода, сек
-const TICK_MIN = 0.07; // потолок скорости
-const BEST_KEY = "nf_snake_best";
+const STEP = 18; // шаг диода, px
+const TICK0 = 0.14;
+const TICK_MIN = 0.075;
+
+// Прямоугольные цифры одной линией (треки). «0» — кольцо без перечёркивания.
+const D4: [number, number][] = [
+  [0, 0], [0, 1], [0, 2], [0, 3], [1, 3], [2, 3], [3, 3], [3, 2], [3, 1], [3, 0], [3, 4], [3, 5], [3, 6],
+];
+const D0_LOOP: [number, number][] = [
+  [0, 6], [0, 5], [0, 4], [0, 3], [0, 2], [0, 1], [0, 0], [1, 0], [2, 0], [3, 0],
+  [3, 1], [3, 2], [3, 3], [3, 4], [3, 5], [3, 6], [2, 6], [1, 6],
+];
 
 type Pt = { x: number; y: number };
-type FX = { x: number; y: number; vx: number; vy: number; life: number; max: number; size: number; color: string };
-type Ring = { x: number; y: number; r: number; maxR: number; life: number; color: string };
+type FX = { x: number; y: number; vx: number; vy: number; life: number; max: number; col: [number, number, number] };
 
 export default function NotFoundGame() {
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -32,6 +39,7 @@ export default function NotFoundGame() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const restartRef = useRef<() => void>(() => {});
+  const introRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     try {
@@ -41,11 +49,8 @@ export default function NotFoundGame() {
   }, []);
 
   useEffect(() => {
-    if (over) {
-      loadSnakeBoard().then(setBoard);
-    } else {
-      setSubmitted(false);
-    }
+    if (over) loadSnakeBoard().then(setBoard);
+    else setSubmitted(false);
   }, [over]);
 
   const submitScore = async () => {
@@ -67,7 +72,6 @@ export default function NotFoundGame() {
     cv.height = S;
     const c = cv.getContext("2d");
     if (!c) return cv;
-
     c.fillStyle = "#050505";
     c.fillRect(0, 0, S, S);
     c.fillStyle = "rgba(255,255,255,0.045)";
@@ -77,7 +81,6 @@ export default function NotFoundGame() {
         c.arc(x, y, 1.5, 0, Math.PI * 2);
         c.fill();
       }
-
     const led = (text: string, cy: number, pitch: number, color: string) => {
       const { dots, cols, rows } = layoutLedText(text, 1);
       const w = cols * pitch;
@@ -91,11 +94,9 @@ export default function NotFoundGame() {
         c.fill();
       }
     };
-
-    led("404", 320, 30, GOLD);
+    led("404", 320, 30, ACCENT);
     led(`СЧЁТ ${score}`, 600, 17, ACCENT);
     if (best > 0) led(`РЕКОРД ${best}`, 712, 11, "rgba(201,166,107,0.85)");
-
     c.fillStyle = ACCENT;
     for (let i = 0; i < 11; i++) {
       c.globalAlpha = 0.25 + i * 0.07;
@@ -104,7 +105,6 @@ export default function NotFoundGame() {
       c.fill();
     }
     c.globalAlpha = 1;
-
     const host = (typeof location !== "undefined" ? location.host : "").toUpperCase() || "EGORADI";
     led(host, 968, 9, "rgba(255,255,255,0.5)");
     return cv;
@@ -118,7 +118,6 @@ export default function NotFoundGame() {
     const blob: Blob | null = await new Promise((res) => cv.toBlob((b) => res(b), "image/png"));
     if (!blob) return;
     const file = new File([blob], "404-snake.png", { type: "image/png" });
-
     const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
     try {
       if (nav.canShare && nav.canShare({ files: [file] })) {
@@ -126,10 +125,8 @@ export default function NotFoundGame() {
         return;
       }
     } catch {
-      return; // пользователь отменил шеринг
+      return;
     }
-
-    // фолбэк: скачать PNG + скопировать текст
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -153,19 +150,22 @@ export default function NotFoundGame() {
     const DPR = Math.min(2, window.devicePixelRatio || 1);
 
     let cols = 0, rows = 0, offX = 0, offY = 0, Wc = 0, Hc = 0;
-    let digit = new Set<number>();
+    let four: Pt[] = [];
+    let zeroLoop: Pt[] = [];
 
+    let mode: "intro" | "play" | "dead" = "intro";
+    let ih = 0; // фаза света по «0» в интро
     let snake: Pt[] = [];
     let dir: Pt = { x: 1, y: 0 };
     let nextDir: Pt = { x: 1, y: 0 };
     let food: Pt = { x: 0, y: 0 };
-    let trail: { x: number; y: number }[] = []; // шлейф головы (px)
-    let acc = 0, tick = TICK0, running = false, dead = false, sc = 0;
+    let grow = 0;
+    let acc = 0;
+    let tick = TICK0;
+    let sc = 0;
     let bestSc = 0;
+    let ghost: Float32Array = new Float32Array(0); // остывающие «угли» за хвостом
     const fx: FX[] = [];
-    const rings: Ring[] = [];
-    const shake = { t: 0, mag: 0 };
-    let flash = 0; // красная вспышка смерти
     let dieTimer: ReturnType<typeof setTimeout> | null = null;
 
     try {
@@ -173,53 +173,49 @@ export default function NotFoundGame() {
       setBest(bestSc);
     } catch {}
 
+    const cl = (v: number) => Math.max(0, Math.min(1, v));
+    const lerp = (a: number, b: number, f: number) => a + (b - a) * f;
+    const cxy = (x: number, y: number) => ({ x: offX + x * STEP, y: offY + y * STEP });
     const key = (p: Pt) => p.y * cols + p.x;
 
-    const placeFood = () => {
-      const occ = new Set(snake.map(key));
-      let p: Pt, g = 0;
-      do {
-        p = { x: (Math.random() * cols) | 0, y: (Math.random() * rows) | 0 };
-      } while (occ.has(key(p)) && g++ < 500);
-      food = p;
+    const sdot = (x: number, y: number, r: number, c: [number, number, number], a: number) => {
+      ctx.globalAlpha = cl(a);
+      ctx.fillStyle = `rgb(${c[0]},${c[1]},${c[2]})`;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
     };
-
-    const reset = () => {
-      const cx = (cols / 2) | 0, cy = (rows / 2) | 0;
-      snake = [{ x: cx, y: cy }, { x: cx - 1, y: cy }, { x: cx - 2, y: cy }];
-      dir = { x: 1, y: 0 };
-      nextDir = { x: 1, y: 0 };
-      tick = TICK0;
-      acc = 0;
-      sc = 0;
-      dead = false;
-      running = false;
-      trail = [];
-      fx.length = 0;
-      rings.length = 0;
-      flash = 0;
-      if (dieTimer) { clearTimeout(dieTimer); dieTimer = null; }
-      placeFood();
-      setScore(0);
-      setOver(false);
-      setStarted(false);
+    // зелёный накал; синий приглушён → центр не белеет
+    const therm = (tt: number): [number, number, number] => {
+      tt = cl(tt);
+      return [lerp(70, 150, tt), lerp(140, 255, tt), lerp(4, 16, tt)];
     };
-    restartRef.current = reset;
+    const cell = (x: number, y: number, tt: number) => {
+      if (tt <= 0.01) return;
+      ctx.globalCompositeOperation = "lighter";
+      const c = therm(tt);
+      for (let k = 2; k >= 1; k--) sdot(x, y, 1.8 * k * (0.5 + 0.5 * tt), c, tt * 0.15 * k);
+      sdot(x, y, 1.5, c, tt);
+      if (tt > 0.75) sdot(x, y, 0.9, [166, 255, 20], (tt - 0.75) / 0.25);
+      ctx.globalCompositeOperation = "source-over";
+    };
+    const foodDot = (x: number, y: number, pu: number) => {
+      const g: [number, number, number] = [201, 166, 107];
+      ctx.globalCompositeOperation = "lighter";
+      for (let k = 2; k >= 1; k--) sdot(x, y, 2.0 * k * (0.7 + 0.3 * pu), g, 0.22 * k * (0.6 + 0.4 * pu));
+      sdot(x, y, 1.7, [224, 196, 140], 0.95);
+      ctx.globalCompositeOperation = "source-over";
+    };
 
     const buildDigits = () => {
-      const bmp = layoutLedText("404", 1);
-      const bs = Math.max(1, Math.floor(Math.min((cols * 0.6) / bmp.cols, (rows * 0.62) / bmp.rows)));
-      const dw = bmp.cols * bs, dh = bmp.rows * bs;
-      const ox = Math.floor((cols - dw) / 2), oy = Math.floor((rows - dh) / 2);
-      digit = new Set();
-      for (const d of bmp.dots) {
-        if (!d.lit) continue;
-        for (let yy = 0; yy < bs; yy++)
-          for (let xx = 0; xx < bs; xx++) {
-            const gx = ox + d.col * bs + xx, gy = oy + d.row * bs + yy;
-            if (gx >= 0 && gx < cols && gy >= 0 && gy < rows) digit.add(gy * cols + gx);
-          }
-      }
+      const bw = 14, bh = 7;
+      const ox = Math.floor((cols - bw) / 2);
+      const oy = Math.floor((rows - bh) / 2);
+      four = [];
+      zeroLoop = [];
+      for (const bx of [0, 10]) for (const p of D4) four.push({ x: ox + bx + p[0], y: oy + p[1] });
+      for (const p of D0_LOOP) zeroLoop.push({ x: ox + 5 + p[0], y: oy + p[1] });
     };
 
     const build = () => {
@@ -229,59 +225,100 @@ export default function NotFoundGame() {
       canvas.width = Math.round(Wc * DPR);
       canvas.height = Math.round(Hc * DPR);
       ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-      cols = Math.max(8, Math.floor(Wc / STEP));
+      cols = Math.max(10, Math.floor(Wc / STEP));
       rows = Math.max(8, Math.floor(Hc / STEP));
       offX = (Wc - (cols - 1) * STEP) / 2;
       offY = (Hc - (rows - 1) * STEP) / 2;
+      ghost = new Float32Array(cols * rows);
       buildDigits();
-      reset();
     };
 
-    const cellXY = (p: Pt) => ({ x: offX + p.x * STEP, y: offY + p.y * STEP });
+    const placeFood = () => {
+      const occ = new Set(snake.map(key));
+      let p: Pt, g = 0;
+      do {
+        p = { x: (Math.random() * cols) | 0, y: (Math.random() * rows) | 0 };
+      } while (occ.has(key(p)) && g++ < 400);
+      food = p;
+    };
 
-    const spawnEat = (p: Pt) => {
-      const { x, y } = cellXY(p);
-      rings.push({ x, y, r: 4, maxR: STEP * 2.4, life: 1, color: ACCENT });
-      for (let i = 0; i < 14; i++) {
-        const a = Math.random() * Math.PI * 2;
-        const sp = 40 + Math.random() * 110;
-        fx.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, max: 0.5 + Math.random() * 0.3, size: 1.4 + Math.random() * 1.8, color: Math.random() < 0.4 ? GOLD : ACCENT });
+    const toIntro = () => {
+      mode = "intro";
+      snake = [];
+      ghost.fill(0);
+      fx.length = 0;
+      setOver(false);
+      setStarted(false);
+      setScore(0);
+    };
+
+    const startFromRing = (px: number, py: number) => {
+      const P = zeroLoop.length, La = 6, hi = Math.floor(ih);
+      snake = [];
+      for (let i = 0; i < La; i++) {
+        const idx = ((hi - i) % P + P) % P;
+        snake.push({ x: zeroLoop[idx].x, y: zeroLoop[idx].y });
       }
+      const hd = { x: Math.sign(snake[0].x - snake[1].x), y: Math.sign(snake[0].y - snake[1].y) };
+      dir = { x: hd.x || 1, y: hd.y };
+      nextDir = px === -dir.x && py === -dir.y ? { ...dir } : { x: px, y: py };
+      begin();
     };
 
-    const spawnDeath = () => {
-      for (const s of snake) {
-        const { x, y } = cellXY(s);
-        for (let i = 0; i < 4; i++) {
-          const a = Math.random() * Math.PI * 2;
-          const sp = 50 + Math.random() * 160;
-          fx.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, max: 0.6 + Math.random() * 0.5, size: 1.6 + Math.random() * 2.2, color: Math.random() < 0.5 ? "#ff5a4d" : ACCENT });
-        }
-      }
-      const h = cellXY(snake[0]);
-      rings.push({ x: h.x, y: h.y, r: 6, maxR: STEP * 5, life: 1, color: "#ff5a4d" });
-      shake.t = 0.5;
-      shake.mag = 9;
-      flash = 1;
+    const startCenter = () => {
+      const cyc = (rows / 2) | 0, cxc = (cols / 2) | 0;
+      snake = [{ x: cxc, y: cyc }, { x: cxc - 1, y: cyc }, { x: cxc - 2, y: cyc }, { x: cxc - 3, y: cyc }];
+      dir = { x: 1, y: 0 };
+      nextDir = { x: 1, y: 0 };
+      begin();
     };
+
+    const begin = () => {
+      mode = "play";
+      grow = 0;
+      acc = 0;
+      tick = TICK0;
+      sc = 0;
+      ghost.fill(0);
+      fx.length = 0;
+      if (dieTimer) { clearTimeout(dieTimer); dieTimer = null; }
+      setScore(0);
+      setOver(false);
+      setStarted(true);
+      placeFood();
+    };
+    restartRef.current = () => startCenter();
 
     const die = () => {
-      if (dead) return;
-      dead = true;
-      running = false;
-      spawnDeath();
+      if (mode === "dead") return;
+      mode = "dead";
+      for (const s of snake) {
+        const c = cxy(s.x, s.y);
+        for (let i = 0; i < 3; i++) {
+          const a = Math.random() * Math.PI * 2, sp = 30 + Math.random() * 110;
+          fx.push({ x: c.x, y: c.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, max: 0.6 + Math.random() * 0.4, col: Math.random() < 0.5 ? [255, 90, 70] : [166, 255, 0] });
+        }
+      }
       if (sc > bestSc) {
         bestSc = sc;
         setBest(bestSc);
         try { localStorage.setItem(BEST_KEY, String(bestSc)); } catch {}
       }
-      dieTimer = setTimeout(() => { if (!stopped) setOver(true); }, 620);
+      dieTimer = setTimeout(() => { if (!stopped) setOver(true); }, 600);
     };
 
-    const step = () => {
+    const burst = (gx: number, gy: number) => {
+      const c = cxy(gx, gy);
+      for (let i = 0; i < 9; i++) {
+        const a = Math.random() * Math.PI * 2, sp = 30 + Math.random() * 80;
+        fx.push({ x: c.x, y: c.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, max: 0.4 + Math.random() * 0.3, col: Math.random() < 0.5 ? [201, 166, 107] : [166, 255, 0] });
+      }
+    };
+
+    const stepGame = () => {
       dir = nextDir;
-      const head = snake[0];
-      const nx = head.x + dir.x, ny = head.y + dir.y;
+      const h = snake[0];
+      const nx = h.x + dir.x, ny = h.y + dir.y;
       if (nx < 0 || ny < 0 || nx >= cols || ny >= rows) return die();
       if (snake.some((s, i) => i < snake.length - 1 && s.x === nx && s.y === ny)) return die();
       snake.unshift({ x: nx, y: ny });
@@ -289,11 +326,22 @@ export default function NotFoundGame() {
         sc++;
         setScore(sc);
         tick = Math.max(TICK_MIN, TICK0 - sc * 0.006);
-        spawnEat(food);
+        burst(food.x, food.y);
         placeFood();
-      } else {
-        snake.pop();
+        grow += 1;
       }
+      if (grow > 0) grow--;
+      else {
+        const tail = snake.pop();
+        if (tail) ghost[tail.y * cols + tail.x] = 0.5; // уголёк за хвостом
+      }
+    };
+
+    const setDir = (x: number, y: number) => {
+      if (mode === "intro") { startFromRing(x, y); return; }
+      if (mode === "dead") return;
+      if (x === -dir.x && y === -dir.y) return;
+      nextDir = { x, y };
     };
 
     let raf = 0, stopped = false, last: number | null = null;
@@ -303,180 +351,80 @@ export default function NotFoundGame() {
       if (last == null) last = now;
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
-      const t = now / 1000;
+      const ts = now / 1000;
+      ctx.clearRect(0, 0, Wc, Hc);
 
-      if (running && !dead) {
-        acc += dt;
-        while (acc >= tick) {
-          acc -= tick;
-          step();
+      // тусклая сетка точек (везде)
+      for (let gy = 0; gy < rows; gy++)
+        for (let gx = 0; gx < cols; gx++) {
+          const c = cxy(gx, gy);
+          sdot(c.x, c.y, 1.3, [255, 255, 255], 0.045);
         }
-        // шлейф головы
-        const h = cellXY(snake[0]);
-        trail.unshift({ x: h.x, y: h.y });
-        if (trail.length > 10) trail.pop();
+
+      if (mode === "intro") {
+        const breathe = 0.42 + 0.1 * Math.sin(ts * 2);
+        for (const d of four) {
+          const c = cxy(d.x, d.y);
+          cell(c.x, c.y, breathe);
+        }
+        for (const d of zeroLoop) {
+          const c = cxy(d.x, d.y);
+          cell(c.x, c.y, 0.16);
+        }
+        ih += dt * 8;
+        const P = zeroLoop.length, La = 6;
+        for (let i = 0; i < La; i++) {
+          const idx = ((Math.floor(ih) - i) % P + P) % P;
+          const c = cxy(zeroLoop[idx].x, zeroLoop[idx].y);
+          cell(c.x, c.y, 0.4 + (1 - i / La) * 0.85);
+        }
+        raf = requestAnimationFrame(frame);
+        return;
       }
 
-      // апдейт частиц/колец/тряски
+      if (mode === "play") {
+        acc += dt;
+        while (acc >= tick) { acc -= tick; stepGame(); }
+      }
+
+      // остывающие угли
+      for (let i = 0; i < ghost.length; i++) {
+        if (ghost[i] > 0) {
+          ghost[i] = Math.max(0, ghost[i] - dt * 1.6);
+          if (ghost[i] > 0.01) {
+            const gx = i % cols, gy = (i / cols) | 0;
+            const c = cxy(gx, gy);
+            cell(c.x, c.y, ghost[i] * 0.7);
+          }
+        }
+      }
+
+      // еда
+      const fp = cxy(food.x, food.y);
+      foodDot(fp.x, fp.y, 0.6 + 0.4 * Math.sin(ts * 5));
+
+      // змейка: накал-градиент по телу (голова раскалена → хвост остывает)
+      const L = snake.length;
+      for (let i = L - 1; i >= 0; i--) {
+        const tt = mode === "dead" ? 0 : lerp(0.3, 1.25, L > 1 ? 1 - i / (L - 1) : 1);
+        if (tt > 0.01) {
+          const c = cxy(snake[i].x, snake[i].y);
+          cell(c.x, c.y, tt);
+        }
+      }
+
+      // искры
       for (const p of fx) {
         p.life -= dt / p.max;
         p.x += p.vx * dt;
         p.y += p.vy * dt;
         p.vx *= 0.92;
         p.vy *= 0.92;
+        sdot(p.x, p.y, 1.6, p.col, Math.max(0, p.life));
       }
       for (let i = fx.length - 1; i >= 0; i--) if (fx[i].life <= 0) fx.splice(i, 1);
-      for (const r of rings) {
-        r.life -= dt / 0.5;
-        r.r += (r.maxR - r.r) * Math.min(1, dt * 6);
-      }
-      for (let i = rings.length - 1; i >= 0; i--) if (rings[i].life <= 0) rings.splice(i, 1);
-      if (shake.t > 0) shake.t -= dt;
-      if (flash > 0) flash = Math.max(0, flash - dt / 0.5);
-
-      ctx.clearRect(0, 0, Wc, Hc);
-      ctx.save();
-      if (shake.t > 0) {
-        const m = shake.mag * (shake.t / 0.5);
-        ctx.translate((Math.random() - 0.5) * m, (Math.random() - 0.5) * m);
-      }
-
-      // фон: сетка + дышащее «404»
-      const breathe = 0.13 + 0.06 * Math.sin(t * 1.4);
-      for (let gy = 0; gy < rows; gy++)
-        for (let gx = 0; gx < cols; gx++) {
-          const isD = digit.has(gy * cols + gx);
-          dot({ x: gx, y: gy }, isD ? GOLD : "#ffffff", 1.4, isD ? breathe : 0.045);
-        }
-
-      // неоновая рамка поля
-      const bx = offX - STEP / 2, by = offY - STEP / 2;
-      const bw = cols * STEP, bh = rows * STEP;
-      ctx.save();
-      ctx.shadowColor = "rgba(166,255,0,0.5)";
-      ctx.shadowBlur = 14;
-      ctx.strokeStyle = "rgba(166,255,0,0.32)";
-      ctx.lineWidth = 1.5;
-      roundRect(bx, by, bw, bh, 10);
-      ctx.stroke();
-      ctx.restore();
-
-      // кольца
-      for (const r of rings) {
-        ctx.globalAlpha = Math.max(0, r.life) * 0.6;
-        ctx.strokeStyle = r.color;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(r.x, r.y, r.r, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-      ctx.globalAlpha = 1;
-
-      // еда — glow + искра
-      const fxy = cellXY(food);
-      const pulse = 0.6 + 0.4 * Math.sin(t * 5);
-      const grd = ctx.createRadialGradient(fxy.x, fxy.y, 1, fxy.x, fxy.y, 16 + pulse * 6);
-      grd.addColorStop(0, "rgba(201,166,107,0.9)");
-      grd.addColorStop(1, "rgba(201,166,107,0)");
-      ctx.fillStyle = grd;
-      ctx.fillRect(fxy.x - 24, fxy.y - 24, 48, 48);
-      ctx.fillStyle = "#F4E3C0";
-      ctx.beginPath();
-      ctx.arc(fxy.x, fxy.y, 3 + pulse * 1.2, 0, Math.PI * 2);
-      ctx.fill();
-
-      // шлейф головы
-      if (!dead) {
-        for (let i = trail.length - 1; i >= 0; i--) {
-          const k = 1 - i / trail.length;
-          ctx.globalAlpha = k * 0.18;
-          ctx.fillStyle = ACCENT;
-          ctx.beginPath();
-          ctx.arc(trail[i].x, trail[i].y, 5 * k, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        ctx.globalAlpha = 1;
-      }
-
-      // змейка — неон, голова ярче
-      if (!dead) {
-        ctx.save();
-        ctx.shadowColor = "rgba(166,255,0,0.65)";
-        for (let i = snake.length - 1; i >= 0; i--) {
-          const hn = 1 - i / Math.max(1, snake.length);
-          const { x, y } = cellXY(snake[i]);
-          ctx.shadowBlur = 6 + hn * 12;
-          ctx.globalAlpha = 0.5 + hn * 0.5;
-          ctx.fillStyle = i === 0 ? "#D8FF8F" : ACCENT;
-          ctx.beginPath();
-          ctx.arc(x, y, 4.2 + hn * 2.4, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        ctx.restore();
-        ctx.globalAlpha = 1;
-      }
-
-      // частицы
-      for (const p of fx) {
-        ctx.globalAlpha = Math.max(0, p.life);
-        ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-
-      ctx.restore();
-
-      // оверлеи: сканлайны, виньетка, вспышка
-      ctx.globalAlpha = 0.05;
-      ctx.fillStyle = "#000";
-      for (let y = 0; y < Hc; y += 3) ctx.fillRect(0, y, Wc, 1);
-      ctx.globalAlpha = 1;
-
-      const vg = ctx.createRadialGradient(Wc / 2, Hc / 2, Hc * 0.25, Wc / 2, Hc / 2, Hc * 0.8);
-      vg.addColorStop(0, "rgba(0,0,0,0)");
-      vg.addColorStop(1, "rgba(0,0,0,0.5)");
-      ctx.fillStyle = vg;
-      ctx.fillRect(0, 0, Wc, Hc);
-
-      if (flash > 0) {
-        ctx.globalAlpha = flash * 0.4;
-        ctx.fillStyle = "#ff3b30";
-        ctx.fillRect(0, 0, Wc, Hc);
-        ctx.globalAlpha = 1;
-      }
 
       raf = requestAnimationFrame(frame);
-    };
-
-    function dot(p: Pt, color: string, r: number, a: number) {
-      const x = offX + p.x * STEP, y = offY + p.y * STEP;
-      ctx!.globalAlpha = a;
-      ctx!.fillStyle = color;
-      ctx!.beginPath();
-      ctx!.arc(x, y, r, 0, Math.PI * 2);
-      ctx!.fill();
-      ctx!.globalAlpha = 1;
-    }
-
-    function roundRect(x: number, y: number, w: number, h: number, rad: number) {
-      ctx!.beginPath();
-      ctx!.moveTo(x + rad, y);
-      ctx!.arcTo(x + w, y, x + w, y + h, rad);
-      ctx!.arcTo(x + w, y + h, x, y + h, rad);
-      ctx!.arcTo(x, y + h, x, y, rad);
-      ctx!.arcTo(x, y, x + w, y, rad);
-      ctx!.closePath();
-    }
-
-    const setDir = (x: number, y: number) => {
-      if (x === -dir.x && y === -dir.y) return;
-      nextDir = { x, y };
-      if (!running && !dead) {
-        running = true;
-        setStarted(true);
-      }
     };
 
     const onKey = (e: KeyboardEvent) => {
@@ -495,7 +443,7 @@ export default function NotFoundGame() {
     const onPDown = (e: PointerEvent) => { tsx = e.clientX; tsy = e.clientY; };
     const onPUp = (e: PointerEvent) => {
       const dx = e.clientX - tsx, dy = e.clientY - tsy;
-      if (Math.abs(dx) < 18 && Math.abs(dy) < 18) return;
+      if (Math.abs(dx) < 16 && Math.abs(dy) < 16) return;
       if (Math.abs(dx) > Math.abs(dy)) setDir(dx > 0 ? 1 : -1, 0);
       else setDir(0, dy > 0 ? 1 : -1);
     };
@@ -510,6 +458,8 @@ export default function NotFoundGame() {
       ro = new ResizeObserver(() => build());
       ro.observe(wrap);
     }
+    // экспорт «в интро» для кнопок
+    introRef.current = toIntro;
 
     return () => {
       stopped = true;
@@ -523,132 +473,85 @@ export default function NotFoundGame() {
   }, []);
 
   return (
-    <section className="relative z-[1] min-h-[88vh] bg-black overflow-hidden select-none">
-      <div ref={wrapRef} className="absolute inset-0">
-        <canvas ref={canvasRef} className="absolute inset-0 w-full h-full touch-none" aria-hidden />
-      </div>
+    <section className="relative z-[1] min-h-[100svh] bg-black flex flex-col items-center justify-center px-5 py-10 select-none overflow-hidden">
+      <div className="w-full max-w-[760px] flex flex-col items-center">
+        <div ref={wrapRef} className="relative w-full h-[clamp(300px,58vh,460px)]">
+          <canvas ref={canvasRef} className="absolute inset-0 w-full h-full touch-none" aria-hidden />
 
-      <div className="absolute top-6 left-1/2 -translate-x-1/2 pointer-events-none text-center">
-        <p className="text-white/45">
-          <span className="sr-only">Счёт: {score}</span>
-          <LedText
-            text={`СЧЁТ ${score}${best > 0 ? `   РЕКОРД ${best}` : ""}`}
-            className="h-[9px] md:h-[11px] w-auto mx-auto"
-          />
-        </p>
-      </div>
-
-      {!started && !over && (
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-[64px] pointer-events-none text-center">
-          <p className="text-white/35">
-            <LedText text="СТРЕЛКИ ИЛИ СВАЙП — ВПЕРЁД" className="h-[9px] w-auto mx-auto" />
-          </p>
-        </div>
-      )}
-
-      {over && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 text-center px-5 py-10 overflow-y-auto">
-          <p className="text-white/70">
-            <span className="sr-only">Игра окончена. Счёт {score}.</span>
-            <LedText text="ТУПИК" className="h-[16px] md:h-[22px] w-auto mx-auto" />
-          </p>
-          <p className="text-white/40">
-            <LedText text={`СЧЁТ ${score}${best > 0 ? `   РЕКОРД ${best}` : ""}`} className="h-[10px] w-auto mx-auto" />
-          </p>
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => restartRef.current()}
-              className="inline-flex items-center gap-2 rounded-lg px-6 py-3 bg-[#A6FF00] text-black hover:bg-[#B8FF33] transition-colors"
-            >
-              <span className="sr-only">Ещё раз</span>
-              <LedText text="ЕЩЁ РАЗ" className="h-[11px] w-auto" />
-            </button>
-            <button
-              type="button"
-              onClick={handleShare}
-              className="inline-flex items-center gap-2 rounded-lg px-6 py-3 bg-white/[0.06] text-white/75 hover:bg-white/[0.12] transition-colors"
-            >
-              <span className="sr-only">Поделиться</span>
-              <LedText text="ПОДЕЛИТЬСЯ" className="h-[11px] w-auto" />
-            </button>
-          </div>
-          {shareMsg && (
-            <p className="text-white/40 -mt-1">
-              <LedText text={shareMsg} className="h-[8px] w-auto mx-auto" />
-            </p>
+          {/* HUD счёта во время игры */}
+          {started && !over && (
+            <div className="absolute top-3 left-4 pointer-events-none">
+              <span className="sr-only">Счёт: {score}</span>
+              <LedText text={`СЧЁТ ${score}${best > 0 ? `   РЕКОРД ${best}` : ""}`} className="h-[8px] md:h-[10px] w-auto" />
+            </div>
           )}
 
-          {/* Лидерборд змейки */}
-          <div className="mt-2 w-full max-w-[340px] rounded-2xl border border-white/[0.08] bg-[#0c0c0b]/80 backdrop-blur-sm p-5">
-            <p className="text-[#A6FF00]/70 mb-4 flex justify-center">
-              <LedText text="РЕЙТИНГ ЗМЕЙКИ" className="h-[9px] w-auto" />
-            </p>
-
-            {score > 0 && !submitted && (
-              <div className="flex items-center gap-2 mb-4">
-                <input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && submitScore()}
-                  maxLength={20}
-                  placeholder="Имя"
-                  className="flex-1 min-w-0 bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 text-[14px] text-white/85 placeholder:text-white/30 outline-none focus:border-[#A6FF00]/40"
-                />
-                <button
-                  type="button"
-                  onClick={submitScore}
-                  disabled={submitting}
-                  className="shrink-0 rounded-lg px-4 py-2.5 bg-[#A6FF00] text-black hover:bg-[#B8FF33] disabled:opacity-50 transition-colors"
-                >
-                  <LedText text={submitting ? "..." : "В РЕЙТИНГ"} className="h-[9px] w-auto" />
+          {/* Экран проигрыша */}
+          {over && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-center px-5 py-6 overflow-y-auto bg-black/55">
+              <p className="text-white/75">
+                <span className="sr-only">Игра окончена. Счёт {score}.</span>
+                <LedText text="ТУПИК" className="h-[15px] md:h-[20px] w-auto mx-auto" />
+              </p>
+              <p className="text-white/40">
+                <LedText text={`СЧЁТ ${score}${best > 0 ? `   РЕКОРД ${best}` : ""}`} className="h-[9px] w-auto mx-auto" />
+              </p>
+              <div className="flex items-center gap-3">
+                <button type="button" onClick={() => restartRef.current()} className="inline-flex items-center rounded-lg px-5 py-2.5 bg-[#A6FF00] text-black hover:bg-[#B8FF33] transition-colors">
+                  <LedText text="ЕЩЁ РАЗ" className="h-[10px] w-auto" />
+                </button>
+                <button type="button" onClick={handleShare} className="inline-flex items-center rounded-lg px-5 py-2.5 bg-white/[0.06] text-white/75 hover:bg-white/[0.12] transition-colors">
+                  <LedText text="ПОДЕЛИТЬСЯ" className="h-[10px] w-auto" />
                 </button>
               </div>
-            )}
-            {submitted && (
-              <p className="text-white/45 mb-4 flex justify-center">
-                <LedText text="ТВОЙ СЧЁТ В РЕЙТИНГЕ" className="h-[8px] w-auto" />
-              </p>
-            )}
+              {shareMsg && <p className="text-white/40 -mt-1"><LedText text={shareMsg} className="h-[7px] w-auto mx-auto" /></p>}
 
-            <ol className="space-y-1.5 text-left">
-              {board.length === 0 && (
-                <li className="text-white/30 text-[13px] text-center py-2">Пока пусто — будь первым</li>
-              )}
-              {board.slice(0, 7).map((e, i) => (
-                <li
-                  key={`${e.name}-${e.at}-${i}`}
-                  className="flex items-center gap-3 text-[13.5px] tabular-nums"
-                >
-                  <span className="w-5 text-right text-white/35">{i + 1}</span>
-                  <span className="flex-1 min-w-0 truncate text-white/75">{e.name}</span>
-                  <span className="text-[#A6FF00]/85 font-medium">{e.score}</span>
-                </li>
-              ))}
-            </ol>
+              <div className="mt-1 w-full max-w-[330px] rounded-2xl border border-white/[0.08] bg-[#0c0c0b]/80 p-4">
+                <p className="text-[#A6FF00]/70 mb-3 flex justify-center"><LedText text="РЕЙТИНГ ЗМЕЙКИ" className="h-[8px] w-auto" /></p>
+                {score > 0 && !submitted && (
+                  <div className="flex items-center gap-2 mb-3">
+                    <input value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submitScore()} maxLength={20} placeholder="Имя"
+                      className="flex-1 min-w-0 bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 text-[14px] text-white/85 placeholder:text-white/30 outline-none focus:border-[#A6FF00]/40" />
+                    <button type="button" onClick={submitScore} disabled={submitting}
+                      className="shrink-0 rounded-lg px-3.5 py-2.5 bg-[#A6FF00] text-black hover:bg-[#B8FF33] disabled:opacity-50 transition-colors">
+                      <LedText text={submitting ? "..." : "В РЕЙТИНГ"} className="h-[8px] w-auto" />
+                    </button>
+                  </div>
+                )}
+                <ol className="space-y-1.5 text-left">
+                  {board.length === 0 && <li className="text-white/30 text-[13px] text-center py-1">Пока пусто — будь первым</li>}
+                  {board.slice(0, 7).map((e, i) => (
+                    <li key={`${e.name}-${e.at}-${i}`} className="flex items-center gap-3 text-[13px] tabular-nums">
+                      <span className="w-5 text-right text-white/35">{i + 1}</span>
+                      <span className="flex-1 min-w-0 truncate text-white/75">{e.name}</span>
+                      <span className="text-[#A6FF00]/85 font-medium">{e.score}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Подпись под полем */}
+        {!started && !over && (
+          <div className="mt-6 text-center">
+            <p className="text-white/40 leading-relaxed">
+              <span className="sr-only">Такой страницы нет</span>
+              <LedText text="ТАКОЙ СТРАНИЦЫ НЕТ" className="h-[8px] md:h-[9px] w-auto mx-auto" />
+            </p>
+            <p className="mt-3 text-[#A6FF00]/70">
+              <LedText text="ЖМИ ← → И ПОЕХАЛИ" className="h-[9px] md:h-[11px] w-auto mx-auto" />
+            </p>
           </div>
+        )}
 
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 rounded-lg px-6 py-2.5 bg-white/[0.06] text-white/70 hover:bg-white/[0.1] transition-colors no-underline"
-          >
-            <span className="sr-only">На главную</span>
-            <LedText text="На главную" className="h-[10px] w-auto" />
-          </Link>
-        </div>
-      )}
-
-      {!over && (
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 rounded-lg px-5 py-2.5 bg-white/[0.05] text-white/55 hover:bg-white/[0.1] hover:text-white/80 transition-colors no-underline"
-          >
-            <span className="sr-only">На главную</span>
-            <LedText text="На главную" className="h-[10px] w-auto" />
-          </Link>
-        </div>
-      )}
+        {/* Выход */}
+        <Link href="/" onClick={() => introRef.current()} className="mt-6 inline-flex items-center rounded-lg px-5 py-2.5 bg-white/[0.05] text-white/55 hover:bg-white/[0.1] hover:text-white/80 transition-colors no-underline">
+          <span className="sr-only">На главную</span>
+          <LedText text="На главную" className="h-[10px] w-auto" />
+        </Link>
+      </div>
     </section>
   );
 }
