@@ -14,9 +14,51 @@ import {
 const inputCls =
   "w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-[15px] text-white/90 placeholder:text-white/30 outline-none focus:border-[#A6FF00]/50 transition-colors";
 
+const WEEK = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
+const MONTHS_RU = [
+  "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+  "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь",
+];
+const pad = (n: number) => String(n).padStart(2, "0");
+const keyOf = (y: number, m: number, d: number) => `${y}-${pad(m + 1)}-${pad(d)}`;
+
+function parseKey(k: string) {
+  const [y, m, d] = k.split("-").map(Number);
+  return { y, m: m - 1, d };
+}
+
+/** Список месяцев от первого до последнего доступного дня включительно. */
+function monthsBetween(firstKey: string, lastKey: string): Array<{ y: number; m: number }> {
+  const a = parseKey(firstKey);
+  const b = parseKey(lastKey);
+  const out: Array<{ y: number; m: number }> = [];
+  let y = a.y;
+  let m = a.m;
+  while (y < b.y || (y === b.y && m <= b.m)) {
+    out.push({ y, m });
+    m++;
+    if (m > 11) {
+      m = 0;
+      y++;
+    }
+  }
+  return out;
+}
+
+/** Ячейки месяца, неделя с понедельника (null = пустая ячейка-отступ). */
+function monthCells(y: number, m: number): Array<number | null> {
+  const firstW = (new Date(Date.UTC(y, m, 1)).getUTCDay() + 6) % 7;
+  const days = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+  const cells: Array<number | null> = [];
+  for (let i = 0; i < firstW; i++) cells.push(null);
+  for (let d = 1; d <= days; d++) cells.push(d);
+  return cells;
+}
+
 export default function MentoringBooking() {
   const [groups, setGroups] = useState<DayGroup[] | null>(null);
   const [dayKey, setDayKey] = useState<string | null>(null);
+  const [monthIdx, setMonthIdx] = useState(0);
   const [slot, setSlot] = useState<string | null>(null);
   const [step, setStep] = useState<"time" | "form" | "done">("time");
   const [name, setName] = useState("");
@@ -36,6 +78,17 @@ export default function MentoringBooking() {
     () => groups?.find((g) => g.key === dayKey) ?? null,
     [groups, dayKey],
   );
+  const availByKey = useMemo(
+    () => new Map((groups ?? []).map((g) => [g.key, g])),
+    [groups],
+  );
+  const months = useMemo(
+    () =>
+      groups && groups.length
+        ? monthsBetween(groups[0].key, groups[groups.length - 1].key)
+        : [],
+    [groups],
+  );
 
   const pickTime = (iso: string) => {
     setSlot(iso);
@@ -50,6 +103,7 @@ export default function MentoringBooking() {
     loadFreeSlots().then((g) => {
       setGroups(g);
       setDayKey(g.length ? g[0].key : null);
+      setMonthIdx(0);
     });
   };
 
@@ -93,6 +147,9 @@ export default function MentoringBooking() {
     );
   }
 
+  const cur = months[monthIdx];
+  const cells = cur ? monthCells(cur.y, cur.m) : [];
+
   return (
     <div className="rounded-2xl border border-white/[0.06] bg-[#0f0f0e] p-5 md:p-6">
       {/* Шаги */}
@@ -117,47 +174,88 @@ export default function MentoringBooking() {
           </a>
         </div>
       ) : step === "time" ? (
-        // ── Шаг 1: день → время ───────────────────────────
-        <div>
-          <p className="text-[13px] text-white/45 mb-3">Будни пн–чт, 18:00–21:00 МСК · ~60 минут</p>
+        // ── Шаг 1: календарь + колонка времени ─────────────
+        <div className="grid md:grid-cols-[minmax(0,300px)_1fr] gap-6 md:gap-8">
+          {/* Календарь */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <button
+                type="button"
+                onClick={() => setMonthIdx((i) => Math.max(0, i - 1))}
+                disabled={monthIdx === 0}
+                aria-label="Предыдущий месяц"
+                className="w-7 h-7 rounded-lg border border-white/10 text-white/70 hover:border-white/30 disabled:opacity-25 disabled:hover:border-white/10 transition-colors"
+              >
+                ‹
+              </button>
+              <div className="text-[14px] text-white/85">
+                {cur ? `${MONTHS_RU[cur.m]} ${cur.y}` : ""}
+              </div>
+              <button
+                type="button"
+                onClick={() => setMonthIdx((i) => Math.min(months.length - 1, i + 1))}
+                disabled={monthIdx >= months.length - 1}
+                aria-label="Следующий месяц"
+                className="w-7 h-7 rounded-lg border border-white/10 text-white/70 hover:border-white/30 disabled:opacity-25 disabled:hover:border-white/10 transition-colors"
+              >
+                ›
+              </button>
+            </div>
 
-          {/* Дни — сетка с переносом, все видны сразу */}
-          <div className="flex flex-wrap gap-2 mb-5">
-            {groups.map((g) => {
-              const active = g.key === dayKey;
-              return (
-                <button
-                  key={g.key}
-                  type="button"
-                  onClick={() => setDayKey(g.key)}
-                  className={
-                    "px-3 py-2 rounded-xl border text-center leading-tight transition-colors " +
-                    (active
-                      ? "bg-white/[0.08] border-[#A6FF00]/50"
-                      : "bg-black/30 border-white/10 hover:border-white/30")
-                  }
-                >
-                  <div className={"text-[12px] " + (active ? "text-[#A6FF00]" : "text-white/50")}>
-                    {g.wd}
-                  </div>
-                  <div className="text-[13px] text-white/85 tabular-nums">{g.dShort}</div>
-                </button>
-              );
-            })}
+            <div className="grid grid-cols-7 gap-1 mb-1">
+              {WEEK.map((w) => (
+                <div key={w} className="text-[11px] text-white/30 text-center py-1">
+                  {w}
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-7 gap-1">
+              {cells.map((d, i) => {
+                if (d === null) return <div key={`e${i}`} />;
+                const key = keyOf(cur.y, cur.m, d);
+                const avail = availByKey.has(key);
+                const active = key === dayKey;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    disabled={!avail}
+                    onClick={() => setDayKey(key)}
+                    className={
+                      "h-9 rounded-lg text-[13px] tabular-nums transition-colors " +
+                      (active
+                        ? "bg-[#A6FF00] text-black font-medium"
+                        : avail
+                          ? "text-white/85 border border-white/12 hover:border-[#A6FF00]/60"
+                          : "text-white/20 cursor-default")
+                    }
+                  >
+                    {d}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Время выбранного дня */}
-          <div className="flex flex-wrap gap-2">
-            {day?.slots.map((s) => (
-              <button
-                key={s.iso}
-                type="button"
-                onClick={() => pickTime(s.iso)}
-                className="px-4 py-2.5 rounded-xl text-[15px] tabular-nums bg-black/30 text-white/85 border border-white/12 hover:border-[#A6FF00]/60 hover:text-white transition-colors"
-              >
-                {slotTime(s.iso)}
-              </button>
-            ))}
+          <div className="md:border-l md:border-white/[0.06] md:pl-8">
+            <div className="text-[13px] text-white/45 mb-3">
+              {day ? day.label : "Выбери дату слева"}
+              <span className="text-white/30"> · 18:00–21:00 МСК · ~60 мин</span>
+            </div>
+            <div className="flex flex-wrap md:flex-col gap-2 md:max-w-[200px]">
+              {day?.slots.map((s) => (
+                <button
+                  key={s.iso}
+                  type="button"
+                  onClick={() => pickTime(s.iso)}
+                  className="px-4 py-2.5 rounded-xl text-[15px] tabular-nums bg-black/30 text-white/85 border border-white/12 hover:border-[#A6FF00]/60 hover:text-white transition-colors md:text-center"
+                >
+                  {slotTime(s.iso)}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       ) : (

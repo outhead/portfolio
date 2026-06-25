@@ -23,7 +23,7 @@ const TABLE = "mentoring_bookings";
 const MSK_OFFSET = 3 * 3600 * 1000; // Москва = UTC+3, фиксировано
 const HOURS = [18, 19, 20]; // часы старта по МСК
 const WEEKDAYS = [1, 2, 3, 4]; // пн–чт (0=вс)
-const DAYS_AHEAD = 14; // горизонт записи
+const DAYS_AHEAD = 28; // горизонт записи
 const LEAD_MS = 2 * 3600 * 1000; // минимальный запас до встречи
 const SLOT_MINUTES = 60;
 
