@@ -1,5 +1,7 @@
 import LedText from "@/components/LedText";
 import { LedLines } from "@/components/LedBoard";
+import LedGrowth from "@/components/LedGrowth";
+import MentoringBooking from "@/components/MentoringBooking";
 import Link from "next/link";
 import ScrollReveal from "@/components/ScrollReveal";
 import type { Metadata } from "next";
@@ -120,6 +122,10 @@ export default function MentoringPage() {
             За плечами 7 лет управления в крупных компаниях, делюсь конкретными
             инструментами, а не общими советами.
           </p>
+
+          <div className="mt-10 md:mt-14 rounded-2xl border border-white/[0.06] bg-[#0c0c0b] p-4 md:p-6 overflow-hidden">
+            <LedGrowth className="block w-full h-[64px] md:h-[96px]" />
+          </div>
         </div>
       </section>
 
@@ -188,62 +194,45 @@ export default function MentoringPage() {
         </ScrollReveal>
 
         <ScrollReveal delay={150}>
-          <div className="grid md:grid-cols-2 gap-4 md:gap-5 items-stretch">
-            {/* Напишите мне */}
-            <div className="rounded-2xl border border-white/[0.06] bg-[#0f0f0e] p-6 md:p-8 flex flex-col">
-              <h3 className="text-white mb-4">
-                <LedLines text="Напишите мне" maxChars={20} lineClass="h-[13px] md:h-[15px]" />
-              </h3>
-              <p className="text-[14px] md:text-[16px] text-white/60 leading-relaxed mb-7 max-w-md">
-                Расскажите коротко о себе, что хотите обсудить и какой формат
-                интересен. Я отвечу в течение дня.
-              </p>
-              <div className="mt-auto flex flex-wrap items-center gap-3">
-                <Link
-                  href="https://t.me/egoradi"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  data-ym-goal="cta_telegram"
-                  data-ym-goal-params='{"placement":"mentoring_booking"}'
-                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-[#A6FF00] text-black hover:bg-white transition-colors no-underline"
-                >
-                  <span className="sr-only">Написать в Telegram</span>
-                  <LedText text="Написать в Telegram" className="h-[10px] w-auto" />
-                  <LedText text="→" className="h-[12px] w-auto" />
-                </Link>
-                <Link
-                  href="mailto:egor.outhead@gmail.com?subject=Менторинг"
-                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 hover:border-[#A6FF00]/60 hover:text-[#A6FF00] transition-colors no-underline"
-                >
-                  <span className="sr-only">Написать на Email</span>
-                  <LedText text="Email" className="h-[10px] w-auto" />
-                </Link>
-              </div>
-            </div>
+          <div className="space-y-4 md:space-y-5">
+            {/* Слот-пикер + форма заявки */}
+            <MentoringBooking />
 
-            {/* Календарь + стоимость */}
-            <div className="flex flex-col gap-4 md:gap-5">
-              <div className="rounded-2xl border border-white/[0.06] bg-[#0f0f0e] p-6 md:p-8">
+            <div className="grid md:grid-cols-2 gap-4 md:gap-5 items-stretch">
+              {/* Или просто напишите */}
+              <div className="rounded-2xl border border-white/[0.06] bg-[#0f0f0e] p-6 md:p-8 flex flex-col">
                 <h3 className="text-white mb-4">
-                  <LedLines text="Или время в календаре" maxChars={22} lineClass="h-[13px] md:h-[15px]" />
+                  <LedLines text="Или просто напишите" maxChars={20} lineClass="h-[13px] md:h-[15px]" />
                 </h3>
-                <p className="text-[14px] md:text-[16px] text-white/60 leading-relaxed mb-6 max-w-md">
-                  Ссылка откроется в Cal.com — выберите удобный слот для встречи.
+                <p className="text-[14px] md:text-[16px] text-white/60 leading-relaxed mb-7 max-w-md">
+                  Не нашлось удобного слота или хочешь обсудить формат заранее —
+                  напиши напрямую. Отвечу в течение дня.
                 </p>
-                <Link
-                  href="https://cal.com/egor-shugaev"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  data-ym-goal="mentoring_calcom"
-                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 hover:border-[#A6FF00]/60 hover:text-[#A6FF00] transition-colors no-underline"
-                >
-                  <span className="sr-only">Записаться через Cal.com</span>
-                  <LedText text="Записаться · Cal.com" className="h-[10px] w-auto" />
-                  <LedText text="→" className="h-[12px] w-auto" />
-                </Link>
+                <div className="mt-auto flex flex-wrap items-center gap-3">
+                  <Link
+                    href="https://t.me/egoradi"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-ym-goal="cta_telegram"
+                    data-ym-goal-params='{"placement":"mentoring_booking"}'
+                    className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-[#A6FF00] text-black hover:bg-white transition-colors no-underline"
+                  >
+                    <span className="sr-only">Написать в Telegram</span>
+                    <LedText text="Написать в Telegram" className="h-[10px] w-auto" />
+                    <LedText text="→" className="h-[12px] w-auto" />
+                  </Link>
+                  <Link
+                    href="mailto:egor.outhead@gmail.com?subject=Менторинг"
+                    className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 hover:border-[#A6FF00]/60 hover:text-[#A6FF00] transition-colors no-underline"
+                  >
+                    <span className="sr-only">Написать на Email</span>
+                    <LedText text="Email" className="h-[10px] w-auto" />
+                  </Link>
+                </div>
               </div>
 
-              <div className="rounded-2xl border border-white/[0.06] bg-[#0f0f0e] p-6 md:p-8 flex-1">
+              {/* Стоимость */}
+              <div className="rounded-2xl border border-white/[0.06] bg-[#0f0f0e] p-6 md:p-8">
                 <h3 className="text-white mb-5">
                   <span className="sr-only">Стоимость</span>
                   <LedText text="Стоимость" className="h-[11px] md:h-[12px] w-auto" />
