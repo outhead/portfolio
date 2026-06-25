@@ -1,107 +1,74 @@
 /**
- * Пиксель-арт иконки реакций кооп-загадки (24×24, многоцветные):
- * палец вверх (с ноготком, манжетой и блёсткой), какашка с лицом и паром,
- * рука влево/вправо. Символ → цвет в палитре, рендер сеткой квадратов через SVG.
+ * LED-реакции кооп-загадки: одноцветные силуэты (16×16) на зелёной точечной сетке —
+ * в стиле LED-табло сайта. Незажжённые ячейки — тусклые точки, зажжённые — яркие
+ * лаймовые диоды со свечением. С animate точки загораются волной (по диагонали).
  */
-export type Pixmap = { rows: string[]; palette: Record<string, string> };
-
-const HAND: Record<string, string> = { X: "#F6C445", o: "#C69220", n: "#FFFFFF", b: "#3A6EA5" };
-const POO: Record<string, string> = {
-  X: "#A56C3A", m: "#784C26", d: "#4A2E14", l: "#C49460", w: "#FFFFFF", k: "#14100C", s: "#96C8FF",
-};
+export type Pixmap = { rows: string[] };
 
 export const THUMB_UP: Pixmap = {
-  palette: HAND,
   rows: [
-    "........................",
-    "........................",
-    "....................n...",
-    ".........Xo.........n...",
-    "........XXXo......nnnnn.",
-    ".......oXnnXo.......n...",
-    ".......oXXXXo.......n...",
-    ".......oXXXXo...........",
-    ".......oXXXXo...........",
-    ".......oXXXXo...........",
-    ".......oXXXooXXo........",
-    ".......ooXooXXXXXo......",
-    "......oXXooXXXXXXXo.....",
-    "......oXoooooooooXo.....",
-    ".....oXXXXXXXXXXXXXo....",
-    ".....oXXXXXXXXXXXXXo....",
-    ".....oXXoooooooooXXo....",
-    ".....ooXXXXXXXXXXXoo....",
-    "......oXXXXXXXXXXXo.....",
-    "......ooooooooooooo.....",
-    ".......bbbbbbbbbbb......",
-    ".........bbbbbbb........",
-    "........................",
-    "........................",
+    "................",
+    "................",
+    ".......X........",
+    "......XXX.......",
+    ".....XXXXX......",
+    ".....XXXXX......",
+    ".....XXXXX......",
+    ".....XXXXX......",
+    "......XXXX......",
+    "....XXXXXXXX....",
+    "....XXXXXXXX....",
+    "...X........X...",
+    "...XXXXXXXXXX...",
+    "................",
+    "....XXXXXXXX....",
+    "...XXXXXXXXXX...",
   ],
 };
 
 export const POOP: Pixmap = {
-  palette: POO,
   rows: [
-    "........................",
-    ".......s.......s........",
-    ".........s.......s......",
-    ".......s...ddd.s........",
-    ".........sdXXXd..s......",
-    "..........dXXXd.........",
-    ".........ddlXXdd........",
-    "........dlllllXXd.......",
-    "........XlllllXXX.......",
-    "........XXXlXXXXX.......",
-    "........dwXXXXXwd.......",
-    ".......dwwwllXwwwd......",
-    "......dlwkwlllwkwXd.....",
-    ".....dXXwkwllXwkwXXd....",
-    ".....dXXXwXXXXXwXXXd....",
-    "......dXkXXXXXXXkXd.....",
-    ".....ddXkkXXXXXXkXdd....",
-    "...ddXXllkkkkkkkXXXXdd..",
-    "..ddXXXlllllXXXXXXXXXdd.",
-    "..dXXXXXXXXXXXXXXXXXXXd.",
-    "..ddmmmmmmmmmmmmmmmmmdd.",
-    "...ddmmmmmmmmmmmmmmmdd..",
-    ".....ddmmmmmmmmmmmdd....",
-    ".......ddddddddddd......",
+    "................",
+    "................",
+    "................",
+    ".......XXX......",
+    ".......XXX......",
+    "......XXXXX.....",
+    ".....XXXXXXX....",
+    "......XXXXX.....",
+    "....XX.XXX.XX...",
+    "....XX.XXX.XX...",
+    "....XXXXXXXXX...",
+    "...XXXXXXXXXXX..",
+    "..XXX...X...XXX.",
+    ".XXXXXX...XXXXXX",
+    "..XXXXXXXXXXXXX.",
+    "...XXXXXXXXXXX..",
   ],
 };
 
 export const POINT_RIGHT: Pixmap = {
-  palette: HAND,
   rows: [
-    "........................",
-    "........................",
-    "........................",
-    "........................",
-    "........Xo..............",
-    ".......XXXo.............",
-    ".......XXXXo............",
-    ".......XXXoo............",
-    "......oXXooXo...........",
-    ".....oXXXoXXXo..........",
-    ".....oXXXXXXXooooooo....",
-    "....oXXXXXXXXXXXXXXXX...",
-    "....oXoooooooXXXXXXXoo..",
-    "....oXXXXXXXXoXXXXXoo...",
-    "....oXXXXXXXXXoooooo....",
-    "....ooooooooXoo.........",
-    ".....oXXXXXXXo..........",
-    ".....ooXXXXXoo..........",
-    "......ooooooo...........",
-    "........ooo.............",
-    "........................",
-    "........................",
-    "........................",
-    "........................",
+    "................",
+    "................",
+    "................",
+    ".....XX.........",
+    "....XXXX........",
+    "....XXXX........",
+    "...XXXXXX.......",
+    "...XXXXXXXXXXX..",
+    "..X......XXXXXX.",
+    "..XXXXXXXXXXXXX.",
+    "..XXXXXXXXXXXX..",
+    "................",
+    "...XXXXXX.......",
+    ".....XX.........",
+    "................",
+    "................",
   ],
 };
 
 export const POINT_LEFT: Pixmap = {
-  palette: HAND,
   rows: POINT_RIGHT.rows.map((r) => [...r].reverse().join("")),
 };
 
@@ -112,18 +79,41 @@ export const REACTION_ART: Record<string, Pixmap> = {
   right: POINT_RIGHT,
 };
 
-export default function PixelArt({ art, className }: { art: Pixmap; className?: string }) {
+export default function PixelArt({
+  art,
+  className,
+  color = "#A6FF00",
+  animate = false,
+  grid = true,
+}: {
+  art: Pixmap;
+  className?: string;
+  color?: string;
+  animate?: boolean;
+  grid?: boolean;
+}) {
   const h = art.rows.length;
   const w = art.rows[0]?.length ?? 0;
   const cells: React.ReactNode[] = [];
   art.rows.forEach((row, y) => {
     for (let x = 0; x < row.length; x++) {
-      const c = art.palette[row[x]];
-      if (c) cells.push(<rect key={`${x}-${y}`} x={x} y={y} width={1} height={1} fill={c} />);
+      const cx = x + 0.5;
+      const cy = y + 0.5;
+      const lit = row[x] === "X";
+      if (lit) {
+        const delay = animate ? `${(x + y) * 0.028}s` : undefined;
+        const cls = animate ? "led-dot" : undefined;
+        cells.push(
+          <circle key={`g${x}-${y}`} cx={cx} cy={cy} r={0.62} fill={color} opacity={0.2} className={cls} style={delay ? { animationDelay: delay } : undefined} />,
+          <circle key={`d${x}-${y}`} cx={cx} cy={cy} r={0.4} fill={color} className={cls} style={delay ? { animationDelay: delay } : undefined} />
+        );
+      } else if (grid) {
+        cells.push(<circle key={`u${x}-${y}`} cx={cx} cy={cy} r={0.12} fill={color} opacity={0.12} />);
+      }
     }
   });
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} className={className} shapeRendering="crispEdges" aria-hidden focusable="false">
+    <svg viewBox={`0 0 ${w} ${h}`} className={className} aria-hidden focusable="false">
       {cells}
     </svg>
   );

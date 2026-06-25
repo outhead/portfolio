@@ -194,7 +194,7 @@ export default function PairPage() {
   // прилетевшая реакция живёт ~1.7с
   useEffect(() => {
     if (!incoming) return;
-    const t = setTimeout(() => setIncoming(null), 1700);
+    const t = setTimeout(() => setIncoming(null), 1900);
     return () => clearTimeout(t);
   }, [incoming]);
   // «отправлено» — короткий фидбэк отправителю
@@ -269,14 +269,14 @@ export default function PairPage() {
             aria-label={r.label}
             className="w-14 h-14 inline-flex items-center justify-center rounded-2xl border border-white/20 bg-white/[0.06] hover:bg-white/[0.12] hover:border-[#A6FF00]/50 active:scale-90 transition-all"
           >
-            <PixelArt art={REACTION_ART[r.type]} className="h-8 w-auto block" />
+            <PixelArt art={REACTION_ART[r.type]} grid={false} className="h-9 w-auto block" />
           </button>
         ))}
       </div>
       {/* фидбэк отправителю: иконка улетает вверх + «отправлено» */}
       {sent ? (
         <div key={sent.k} className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-7">
-          <PixelArt art={REACTION_ART[sent.type]} className="h-10 w-auto sent-fly" />
+          <PixelArt art={REACTION_ART[sent.type]} grid={false} className="h-11 w-auto sent-fly" />
         </div>
       ) : null}
       <span className="h-4 text-[11px] text-[#A6FF00] transition-opacity" style={{ opacity: sent ? 1 : 0 }}>
@@ -292,36 +292,30 @@ export default function PairPage() {
         background: "radial-gradient(ellipse 55% 45% at 50% 35%, rgba(166,255,0,0.06), transparent 60%)",
       }} />
 
-      {/* прилетевшая реакция от напарника — крупно по центру, на любом экране */}
+      {/* прилетевшая реакция от напарника — крупное LED-табло, точки загораются волной */}
       {incoming ? (
         <div key={incoming.k} className="fixed inset-0 z-30 pointer-events-none flex items-center justify-center">
-          <div className="react-pop" style={{ height: "min(52vw, 52vh)" }}>
-            <PixelArt art={REACTION_ART[incoming.type]} className="h-full w-auto react-wiggle" />
+          <div className="led-show" style={{ height: "min(56vw, 56vh)" }}>
+            <PixelArt art={REACTION_ART[incoming.type]} animate className="h-full w-auto" />
           </div>
         </div>
       ) : null}
 
       <style jsx>{`
-        @keyframes reactPop {
-          0%   { transform: translateY(40px) scale(0.25); opacity: 0; }
-          14%  { transform: translateY(0) scale(1.28); opacity: 1; }
-          26%  { transform: scale(0.92); }
-          38%  { transform: scale(1.08); }
-          48%  { transform: scale(1); }
-          80%  { opacity: 1; }
-          100% { transform: translateY(-48px) scale(0.96); opacity: 0; }
-        }
-        @keyframes reactWiggle {
-          0%, 100% { transform: rotate(-6deg); }
-          50% { transform: rotate(6deg); }
+        @keyframes ledOn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes ledShow {
+          0%   { opacity: 0; transform: scale(0.9); }
+          10%  { opacity: 1; transform: scale(1); }
+          84%  { opacity: 1; transform: scale(1); }
+          100% { opacity: 0; transform: scale(1.03); }
         }
         @keyframes sentFly {
           0%   { transform: translateY(0) scale(1); opacity: 0; }
           18%  { opacity: 1; }
           100% { transform: translateY(-52px) scale(0.6); opacity: 0; }
         }
-        :global(.react-pop) { animation: reactPop 1.7s ease-out forwards; }
-        :global(.react-wiggle) { animation: reactWiggle 0.5s ease-in-out infinite; }
+        :global(.led-dot) { animation: ledOn 0.26s ease-out backwards; }
+        :global(.led-show) { animation: ledShow 1.9s ease-out forwards; }
         :global(.sent-fly) { animation: sentFly 0.9s ease-out forwards; }
       `}</style>
 
