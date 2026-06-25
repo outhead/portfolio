@@ -1,32 +1,36 @@
 /**
  * LED-реакции кооп-загадки: одноцветные силуэты (16×16) на зелёной точечной сетке —
  * в стиле LED-табло сайта. Незажжённые ячейки — тусклые точки, зажжённые — яркие
- * лаймовые диоды со свечением. С animate точки загораются волной (по диагонали).
+ * лаймовые диоды со свечением. С animate точки загораются по направлению (sweep):
+ * стрелки — в свою сторону, палец — снизу вверх, какашка — по диагонали.
  */
-export type Pixmap = { rows: string[] };
+type Sweep = "diag" | "ltr" | "rtl" | "btt";
+export type Pixmap = { rows: string[]; sweep?: Sweep };
 
 export const THUMB_UP: Pixmap = {
+  sweep: "btt",
   rows: [
     "................",
     "................",
-    ".......X........",
-    "......XXX.......",
-    ".....XXXXX......",
-    ".....XXXXX......",
-    ".....XXXXX......",
-    ".....XXXXX......",
-    "......XXXX......",
-    "....XXXXXXXX....",
-    "....XXXXXXXX....",
-    "...X........X...",
+    "....XX..........",
+    "...XXXX.........",
+    "...XXXX.........",
+    "...XXXX.........",
+    "...XXXX.........",
+    "...XXXXXXXX.....",
+    "...XXXXXXXXX....",
     "...XXXXXXXXXX...",
-    "................",
-    "....XXXXXXXX....",
     "...XXXXXXXXXX...",
+    "...XX.......X...",
+    "...XXXXXXXXXX...",
+    "...XX.......X...",
+    "....XXXXXXXX....",
+    ".....XXXXXX.....",
   ],
 };
 
 export const POOP: Pixmap = {
+  sweep: "diag",
   rows: [
     "................",
     "................",
@@ -48,27 +52,29 @@ export const POOP: Pixmap = {
 };
 
 export const POINT_RIGHT: Pixmap = {
+  sweep: "ltr",
   rows: [
     "................",
-    "................",
-    "................",
-    ".....XX.........",
-    "....XXXX........",
-    "....XXXX........",
-    "...XXXXXX.......",
-    "...XXXXXXXXXXX..",
-    "..X......XXXXXX.",
+    "........X.......",
+    "........XX......",
+    "........XXX.....",
+    "........XXXX....",
+    "........XXXXX...",
+    "..XXXXXXXXXXXX..",
+    "..XXXXXXXXXXXXX.",
     "..XXXXXXXXXXXXX.",
     "..XXXXXXXXXXXX..",
-    "................",
-    "...XXXXXX.......",
-    ".....XX.........",
-    "................",
+    "........XXXXX...",
+    "........XXXX....",
+    "........XXX.....",
+    "........XX......",
+    "........X.......",
     "................",
   ],
 };
 
 export const POINT_LEFT: Pixmap = {
+  sweep: "rtl",
   rows: POINT_RIGHT.rows.map((r) => [...r].reverse().join("")),
 };
 
@@ -94,18 +100,25 @@ export default function PixelArt({
 }) {
   const h = art.rows.length;
   const w = art.rows[0]?.length ?? 0;
+  const sweep: Sweep = art.sweep ?? "diag";
+  const order = (x: number, y: number) =>
+    sweep === "ltr" ? x : sweep === "rtl" ? w - 1 - x : sweep === "btt" ? h - 1 - y : x + y;
+  const maxOrder = sweep === "diag" ? w - 1 + h - 1 : sweep === "btt" ? h - 1 : w - 1;
+  const SPAN = 0.75; // за сколько секунд прокатывается волна загорания
+
   const cells: React.ReactNode[] = [];
   art.rows.forEach((row, y) => {
     for (let x = 0; x < row.length; x++) {
       const cx = x + 0.5;
       const cy = y + 0.5;
-      const lit = row[x] === "X";
-      if (lit) {
-        const delay = animate ? `${(x + y) * 0.028}s` : undefined;
+      if (row[x] === "X") {
+        const style = animate
+          ? { animationDelay: `${(order(x, y) / maxOrder) * SPAN}s` }
+          : undefined;
         const cls = animate ? "led-dot" : undefined;
         cells.push(
-          <circle key={`g${x}-${y}`} cx={cx} cy={cy} r={0.62} fill={color} opacity={0.2} className={cls} style={delay ? { animationDelay: delay } : undefined} />,
-          <circle key={`d${x}-${y}`} cx={cx} cy={cy} r={0.4} fill={color} className={cls} style={delay ? { animationDelay: delay } : undefined} />
+          <circle key={`g${x}-${y}`} cx={cx} cy={cy} r={0.62} fill={color} opacity={0.2} className={cls} style={style} />,
+          <circle key={`d${x}-${y}`} cx={cx} cy={cy} r={0.4} fill={color} className={cls} style={style} />
         );
       } else if (grid) {
         cells.push(<circle key={`u${x}-${y}`} cx={cx} cy={cy} r={0.12} fill={color} opacity={0.12} />);
