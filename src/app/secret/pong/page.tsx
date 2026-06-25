@@ -121,10 +121,13 @@ export default function PongPage() {
   const lastStateAt = useRef(0);
   const hostSeenAt = useRef(0);
   const peerGuestId = useRef<string | null>(null);
-  // P2P бывает односторонним (open у одного, у другого нет) — тогда каждый шлёт
-  // в свой транспорт и оба молчат. Лечим: пакеты дублируются в релей (реже),
-  // а relay-приём включается, как только P2P молчит дольше 700мс.
-  const lastP2pAt = useRef(0);
+  // ─── авто-выбор транспорта по реальной задержке ───
+  // Меряем пинг отдельно по P2P и по серверу-релею; основным становится тот, что
+  // реально быстрее (p2p через далёкий TURN бывает медленнее релея). Пакеты шлём по
+  // основному, дублируем в запасной пореже; принимаем с обоих (запасной — если основной молчит).
+  const pingP2P = useRef<number | null>(null);
+  const pingRelay = useRef<number | null>(null);
+  const primaryRef = useRef<"relay" | "p2p">("relay");
 
   const setPhaseBoth = (p: Phase) => { phaseRef.current = p; setPhase(p); };
   const setCountBoth = (c: number) => { countRef.current = c; setCount(c); };
@@ -233,23 +236,45 @@ export default function PongPage() {
           (phaseRef.current === "waiting" || phaseRef.current === "connecting")) resumeOrStart();
     };
 
-    const p2pFresh = () => useP2P.current && performance.now() - lastP2pAt.current < 700;
-    ch.on("state", (payload) => { if (p2pFresh()) return; applyState(payload); });
-    ch.on("paddle", (payload) => { if (p2pFresh()) return; applyPaddle(payload); });
+    // основной транспорт пересчитывается по пингам; приём — с обоих, запасной только если основной молчит >700мс
+    const lastRecv: Record<"p2p" | "relay", number> = { p2p: 0, relay: 0 };
+    const recompute = () => {
+      const p = useP2P.current ? pingP2P.current : null;
+      const rl = relayPeers.current ? pingRelay.current : null;
+      let next = primaryRef.current;
+      if (!useP2P.current) next = "relay";
+      else if (p == null && rl == null) next = "p2p";
+      else if (p == null) next = "relay";
+      else if (rl == null) next = "p2p";
+      else if (primaryRef.current === "p2p" && rl < p - 30) next = "relay";
+      else if (primaryRef.current === "relay" && p < rl - 30) next = "p2p";
+      primaryRef.current = next;
+      setTransport(next);
+      setPing(next === "p2p" ? pingP2P.current : pingRelay.current);
+    };
+    const accept = (via: "p2p" | "relay") => {
+      const now = performance.now();
+      lastRecv[via] = now;
+      const prim = primaryRef.current;
+      return via === prim || now - lastRecv[prim] > 700;
+    };
+    ch.on("state", (payload) => { if (accept("relay")) applyState(payload); });
+    ch.on("paddle", (payload) => { if (accept("relay")) applyPaddle(payload); });
     ch.on("rematch", () => { if (roleRef.current === "host") startMatch(); });
     ch.on("hit", (payload) => { applyHitRef.current(payload as Record<string, unknown>); });
     ch.on("release", () => { onReleaseRef.current(1); });
-    // ─── измерение пинга: эхо ping→pong по текущему транспорту ───
-    const sendVia = (event: string, payload: Record<string, unknown>) => {
-      if (useP2P.current) p2pRef.current?.sendCtl({ event, payload });
-      else chRef.current?.send(event, payload);
-    };
-    const onPing = (p: unknown) => sendVia("pong", { t: (p as { t?: number })?.t ?? 0 });
+    // ─── пинг: эхо по тому же транспорту, тег via сохраняем, чтобы знать, какой путь меряем ───
+    const replyPong = (via: "p2p" | "relay", t: number) =>
+      via === "p2p" ? p2pRef.current?.sendCtl({ event: "pong", payload: { t, via } })
+                    : chRef.current?.send("pong", { t, via });
     const onPong = (p: unknown) => {
-      const t = (p as { t?: number })?.t;
-      if (typeof t === "number" && t > 0) setPing(Math.round(performance.now() - t));
+      const d = (p ?? {}) as { t?: number; via?: "p2p" | "relay" };
+      if (typeof d.t !== "number" || d.t <= 0) return;
+      const rtt = Math.round(performance.now() - d.t);
+      if (d.via === "p2p") pingP2P.current = rtt; else pingRelay.current = rtt;
+      recompute();
     };
-    ch.on("ping", onPing);
+    ch.on("ping", (p) => replyPong("relay", (p as { t?: number })?.t ?? 0));
     ch.on("pong", onPong);
     const handleHello = (payload: unknown) => {
       const p = (payload ?? {}) as { id?: string; h?: number; name?: string };

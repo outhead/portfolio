@@ -122,7 +122,10 @@ export default function Header() {
         <Link
           href="/"
           aria-label="Главная"
-          onMouseEnter={() => { if (typeof window !== "undefined") window.dispatchEvent(new Event("hero:home")); }}
+          onMouseEnter={() => {
+            if (typeof window !== "undefined" && window.matchMedia("(hover: hover) and (pointer: fine)").matches)
+              window.dispatchEvent(new Event("hero:home"));
+          }}
           className="inline-flex items-center gap-3 md:gap-3.5 no-underline"
         >
           <LedLogo className="h-[12px] md:h-[11px] 2xl:h-[12px] w-auto" />

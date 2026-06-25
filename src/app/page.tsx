@@ -891,7 +891,7 @@ export default function PreviewHome() {
     phraseIdx.current = i + 1;
     setBubbleStage(i + 1); // для скринридера
     setHeroShape(TEXT_START + i);
-    scheduleRevert(4500);
+    scheduleRevert(8500);
   };
   // Бас — 3 числа в любом порядке, ЗАЛИПАЕТ (без авто-возврата)
   const tapNum = (i: number) =>
@@ -900,8 +900,13 @@ export default function PreviewHome() {
       if (n.size >= 3) { cancelRevert(); setHeroShape(2); }
       return n;
     });
+  // Ховер-пасхалки — только для мыши (на тач-устройствах их триггерит скролл)
+  const canHover = () =>
+    typeof window !== "undefined" &&
+    window.matchMedia("(hover: hover) and (pointer: fine)").matches;
   // Награда — наведение, ЗАЛИПАЕТ
-  const showAward = () => { cancelRevert(); setHeroShape(1); };
+  const showAward = () => { if (!canHover()) return; cancelRevert(); setHeroShape(1); };
+  const goHomeHover = () => { if (canHover()) window.dispatchEvent(new Event("hero:home")); };
   // Глитч — точная последовательность логотипов, САМ пропадает
   const LOGO_CODE = ["mts", "ozon", "gpn", "mts"];
   const logoSeq = useRef<string[]>([]);
@@ -1029,7 +1034,7 @@ export default function PreviewHome() {
               <Oled className="h-full p-5 md:p-7 flex flex-col gap-4">
                 <div className="flex items-center justify-between text-white/35">
                   <span
-                    onMouseEnter={() => { if (typeof window !== "undefined") window.dispatchEvent(new Event("hero:home")); }}
+                    onMouseEnter={goHomeHover}
                     className="inline-flex items-center gap-2 cursor-pointer"
                   >
                     <span className="sr-only">Дизайн-директор</span>
