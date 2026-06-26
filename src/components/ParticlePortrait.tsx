@@ -30,6 +30,8 @@ export type ParticlePortraitProps = {
   /** масштаб размера точки (меньше = мельче зерно) */
   pointScale?: number;
   assembleOnHover?: boolean;
+  /** инверсия: в покое собрано, по наведению РАЗЛЕТАЕТСЯ (для карточек) */
+  scatterOnHover?: boolean;
   /** после первого наведения остаётся собранным (не разлетается) */
   latchAssemble?: boolean;
   /** постоянное медленное вращение даже в собранном состоянии */
@@ -53,6 +55,7 @@ export default function ParticlePortrait({
   gamma = 1.05,
   pointScale = 1,
   assembleOnHover = true,
+  scatterOnHover = false,
   latchAssemble = false,
   autoSpin = false,
   trackingRef,
@@ -242,7 +245,11 @@ export default function ParticlePortrait({
       computeScale();
 
       if (hoverT > 0) everHovered = true;
-      const target = assembleOnHover ? (latchAssemble && everHovered ? 1 : hoverT) : 1;
+      const target = scatterOnHover
+        ? 1 - hoverT
+        : assembleOnHover
+          ? (latchAssemble && everHovered ? 1 : hoverT)
+          : 1;
       assemble += (target - assemble) * Math.min(1, dt * 1.8);
       if (reduce) assemble = target;
       const asmE = assemble * assemble * (3 - 2 * assemble);
@@ -324,7 +331,7 @@ export default function ParticlePortrait({
       eventTarget.removeEventListener("pointerleave", onLeave);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [listKey, depthScale, count, color.join(","), bulge, relief, tilt, gamma, pointScale, assembleOnHover, latchAssemble, autoSpin, trackingRef]);
+  }, [listKey, depthScale, count, color.join(","), bulge, relief, tilt, gamma, pointScale, assembleOnHover, scatterOnHover, latchAssemble, autoSpin, trackingRef]);
 
   return (
     <canvas

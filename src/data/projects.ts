@@ -40,6 +40,9 @@ export interface Project {
   /** Живое LED-табло на карточке вместо куба/видео: слова перебираются
    *  через LedFlipWord (кейс led-font-engine — шрифт показывает себя сам). */
   coverLed?: string[];
+  /** Живое облако частиц на карточке: в покое собрано в портрет, по
+   *  наведению РАЗЛЕТАЕТСЯ (кейс particle-portrait — движок показывает себя). */
+  coverParticles?: { src: string; depth?: string; count?: number; depthScale?: number; pointScale?: number };
   coverImage?: string;
   /**
    * Optional cover video (mp4/webm). Если задан — карточка показывает автоплей-видео
@@ -907,7 +910,7 @@ export const projects: Project[] = [
     type: "experiment",
     coverColor: "#08090a",
     coverImage: "/images/covers/particles-cover.png",
-    coverVideo: "/videos/particles-cover.mp4",
+    coverParticles: { src: "/images/hero-portrait.png", depth: "/images/hero-depth.png", count: 4200, depthScale: 0.6, pointScale: 0.7 },
     metric: "LIVE",
     metricLabel: "конструктор",
     results: [
