@@ -815,7 +815,7 @@ export const projects: Project[] = [
   },
   {
     slug: "led-font-engine",
-    title: "89 глифов за час",
+    title: "Диодный шрифт",
     company: "Pet Project",
     role: "Design Engineer",
     period: "2026",
@@ -827,7 +827,7 @@ export const projects: Project[] = [
     tags: ["Type Design", "Creative Coding", "SVG", "AI Agents"],
     type: "experiment",
     coverColor: "#0a0a0a",
-    coverLed: ["89 глифов", "за час", "0 шрифтов", "5×7"],
+    coverLed: ["диодный шрифт", "89 глифов", "5×7 точек", "весь сайт"],
     metric: "89",
     metricLabel: "глифов · свой движок",
     tryUrl: "/led",
@@ -894,7 +894,7 @@ export const projects: Project[] = [
   },
   {
     slug: "particle-portrait",
-    title: "Портрет из частиц",
+    title: "Объём из плоскости",
     company: "Pet Project",
     role: "Creative Developer",
     period: "2026 — настоящее время",
@@ -907,6 +907,7 @@ export const projects: Project[] = [
     type: "experiment",
     coverColor: "#08090a",
     coverImage: "/images/covers/particles-cover.png",
+    coverVideo: "/videos/particles-cover.mp4",
     metric: "LIVE",
     metricLabel: "конструктор",
     results: [
@@ -958,7 +959,7 @@ export const projects: Project[] = [
   },
   {
     slug: "webgl-experiments",
-    title: "Граница дизайна и кода",
+    title: "Стекло без меша",
     company: "Pet Project",
     role: "Creative Developer",
     period: "2025 — настоящее время",
