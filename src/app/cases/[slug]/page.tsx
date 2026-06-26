@@ -14,6 +14,7 @@ import DecryptApproach from "@/components/DecryptApproach";
 import LedText from "@/components/LedText";
 import { LedLines } from "@/components/LedBoard";
 import FontSpecimen from "@/components/FontSpecimen";
+import ParticleStudio from "@/components/ParticleStudio";
 
 /* Пиксельный лейбл секций кейса — единый язык с табло главной */
 function CaseLabel({
@@ -310,6 +311,8 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
 
                 {/* Интерактивный спесимен LED-шрифта (только led-font-engine) */}
                 {section.specimen && <FontSpecimen />}
+                {/* Встроенный конструктор частиц (particle-portrait) */}
+                {section.studio && <div className="mt-8 md:mt-10"><ParticleStudio /></div>}
 
                 {/* Timeline — горизонтальная шкала событий.
                     Если ≤4 точек — равномерный grid на десктопе.

@@ -103,6 +103,8 @@ export interface Project {
     videoBlock?: { src: string; poster?: string; alt?: string; cta?: boolean; narrow?: boolean };
     /** Если true — под текстом секции рендерится интерактивный спесимен LED-шрифта (FontSpecimen). */
     specimen?: boolean;
+    /** Если true — под текстом секции рендерится конструктор частиц (ParticleStudio). */
+    studio?: boolean;
     screenshots?: Screenshot[];
     /** Override `screenshotsMode` проекта для этой секции. */
     screenshotsMode?: "web" | "phone";
@@ -940,6 +942,7 @@ export const projects: Project[] = [
       },
       {
         title: "Конструктор",
+        studio: true,
         context:
           "Мало показать готовый портрет — интереснее дать любому закинуть своё фото и увидеть себя в 3D-точках.",
         approach:
