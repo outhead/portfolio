@@ -894,7 +894,6 @@ export const projects: Project[] = [
   },
   {
     slug: "particle-portrait",
-    hidden: true, // пока скрыт из списка экспериментов
     title: "Портрет из частиц",
     company: "Pet Project",
     role: "Creative Developer",
@@ -1043,6 +1042,7 @@ export const projects: Project[] = [
   {
     slug: "telegram-dashboard",
     wip: true,
+    hidden: true, // скрыт из списка экспериментов
     title: "AI-пайплайн для авторского канала",
     company: "Pet Project",
     role: "Developer",
