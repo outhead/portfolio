@@ -160,11 +160,16 @@ export default function ParticleStudio() {
       </div>
 
       <div className="flex-1 flex flex-col gap-5">
-        <div className="flex flex-wrap gap-2">
-          <label className={`text-[13px] px-4 py-2 rounded-full border transition-colors cursor-pointer ${busy ? "opacity-50 pointer-events-none" : "border-[#A6FF00]/50 text-[#A6FF00] bg-[#A6FF00]/10 hover:bg-[#A6FF00]/20"}`}>
-            {busy ? "Обработка…" : "Загрузить фото"}
-            <input type="file" accept="image/*" onChange={onFile} disabled={busy} className="hidden" />
-          </label>
+        <div className="flex flex-col gap-1.5">
+          <div className="flex flex-wrap gap-2">
+            <label className={`text-[13px] px-4 py-2 rounded-full border transition-colors cursor-pointer ${busy ? "opacity-50 pointer-events-none" : "border-[#A6FF00]/50 text-[#A6FF00] bg-[#A6FF00]/10 hover:bg-[#A6FF00]/20"}`}>
+              {busy ? "Обработка…" : "Загрузить фото"}
+              <input type="file" accept="image/jpeg,image/png,image/webp" onChange={onFile} disabled={busy} className="hidden" />
+            </label>
+          </div>
+          <p className="text-[12px] text-white/35">
+            JPEG, PNG или WebP. HEIC с айфона может не открыться — экспортни в JPEG.
+          </p>
         </div>
 
         {([

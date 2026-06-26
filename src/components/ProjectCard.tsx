@@ -7,91 +7,167 @@ import { LedLines } from "@/components/LedBoard";
 import { Project } from "@/data/projects";
 import { CardCoverVideo } from "@/components/CoverVideo";
 import PixelCubePile from "@/components/PixelCubePile";
-import LedFlipWord from "@/components/LedFlipWord";
 import ParticlePortrait from "@/components/ParticlePortrait";
+import { layoutLedText, LED_ROWS } from "@/components/ledFont";
 
-/** Матрица-дождь по дот-сетке: оживает только при наведении (active).
- *  Зелёные «капли» падают по колонкам 8px-сетки — графика на диодах. */
-function LedMatrix({ active }: { active: boolean }) {
+/**
+ * LedCover — единый LED-экран карточки на ОДНОЙ решётке диодов.
+ * Фоновые (тусклые) диоды, слово и матрица-дождь зажигаются на одних и тех
+ * же ячейках — поэтому всё идеально совпадает (раньше было три разные сетки).
+ * Слово перебирается с рассыпанием; по наведению (active) идёт дождь.
+ */
+function LedCover({ words, active }: { words: string[]; active: boolean }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const activeRef = useRef(active);
   activeRef.current = active;
+  const wordsKey = words.join("|");
+
   useEffect(() => {
     const canvas = ref.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const CELL = 8;
-    let W = 1, H = 1, cols = 1, rows = 1;
-    let drops: number[] = [];
-    let speeds: number[] = [];
+
+    // ── битмапы слов на сетке шрифта (7 строк), отцентрованы по самому
+    //    широкому слову, чтобы свапались на месте ──────────────────────
+    const WR = LED_ROWS; // 7
+    const layouts = words.map((w) => layoutLedText(w, 1));
+    const maxCols = Math.max(1, ...layouts.map((l) => l.cols));
+    const grids = layouts.map((l) => {
+      const g = new Uint8Array(maxCols * WR);
+      const off = Math.floor((maxCols - l.cols) / 2);
+      for (const d of l.dots) if (d.lit) g[(off + d.col) * WR + d.row] = 1;
+      return g;
+    });
+    const NW = maxCols * WR;
+    const delays = new Float32Array(NW);
+    for (let i = 0; i < NW; i++) delays[i] = Math.random();
+    const aBuf = new Float32Array(NW); // текущая прозрачность ячеек слова
+    grids[0].forEach((v, i) => (aBuf[i] = v));
+
+    // ── решётка экрана: CELL подбираем так, чтобы слово влезло по ширине ─
+    let W = 1, H = 1, CELL = 8, cols = 1, rows = 1, dimPath: Path2D | null = null;
+    let wordStartCol = 0, wordTopRow = 0, dimR = 1, litR = 1, glowR = 2;
+    let drops: Float32Array, speeds: Float32Array;
     const resize = () => {
       const r = canvas.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       W = Math.max(1, r.width); H = Math.max(1, r.height);
       canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      cols = Math.ceil(W / CELL); rows = Math.ceil(H / CELL);
-      drops = Array.from({ length: cols }, () => -Math.floor(Math.random() * rows));
-      speeds = Array.from({ length: cols }, () => 0.25 + Math.random() * 0.5);
+      // слово занимает ~84% ширины → отсюда шаг решётки
+      CELL = Math.max(4.5, Math.min(9, (W * 0.84) / maxCols));
+      cols = Math.ceil(W / CELL) + 1;
+      rows = Math.ceil(H / CELL) + 1;
+      dimR = Math.max(0.9, CELL * 0.16);
+      litR = Math.max(1.3, CELL * 0.3);
+      glowR = CELL * 0.5;
+      wordStartCol = Math.round((cols - maxCols) / 2);
+      wordTopRow = Math.round((H * 0.3) / CELL - WR / 2);
+      // статичная решётка тусклых диодов — один Path2D, заливаем раз/кадр
+      dimPath = new Path2D();
+      for (let c = 0; c < cols; c++) {
+        for (let rr = 0; rr < rows; rr++) {
+          const cxp = c * CELL + CELL / 2, cyp = rr * CELL + CELL / 2;
+          dimPath.moveTo(cxp + dimR, cyp);
+          dimPath.arc(cxp, cyp, dimR, 0, 6.283);
+        }
+      }
+      drops = new Float32Array(cols);
+      speeds = new Float32Array(cols);
+      for (let c = 0; c < cols; c++) {
+        drops[c] = -Math.floor(Math.random() * rows);
+        speeds[c] = 0.25 + Math.random() * 0.5;
+      }
     };
     resize();
     const ro = new ResizeObserver(resize); ro.observe(canvas);
+
+    // ── анимация слова: hold → out (рассыпать) → in (собрать) ──────────
+    const HOLD = 2.4, OUT = 0.4, IN = 0.5;
+    let word = 0, phase: "hold" | "out" | "in" = "hold", pStart = performance.now();
     let raf = 0, vis = 0, stopped = false;
-    const loop = () => {
+
+    const loop = (now: number) => {
       if (stopped) return;
       raf = requestAnimationFrame(loop);
+      if (!dimPath) return;
+
+      // слово
+      if (!reduce && words.length > 1) {
+        const t = (now - pStart) / 1000;
+        if (phase === "hold") {
+          if (t > HOLD) { phase = "out"; pStart = now; for (let i = 0; i < NW; i++) delays[i] = Math.random(); }
+        } else if (phase === "out") {
+          const g = grids[word];
+          for (let i = 0; i < NW; i++) if (g[i]) {
+            const k = Math.min(Math.max((t - delays[i] * (OUT - 0.18)) / 0.18, 0), 1);
+            aBuf[i] = 1 - k;
+          }
+          if (t > OUT) { word = (word + 1) % words.length; phase = "in"; pStart = now; for (let i = 0; i < NW; i++) delays[i] = Math.random(); }
+        } else {
+          const g = grids[word];
+          for (let i = 0; i < NW; i++) {
+            const k = Math.min(Math.max((t - delays[i] * (IN - 0.18)) / 0.18, 0), 1);
+            aBuf[i] = g[i] ? k : 0;
+          }
+          if (t > IN) { phase = "hold"; pStart = now; }
+        }
+      }
+
       const tgt = activeRef.current && !reduce ? 1 : 0;
       vis += (tgt - vis) * 0.08;
+
       ctx.clearRect(0, 0, W, H);
-      if (vis < 0.01) return;
-      for (let c = 0; c < cols; c++) {
-        drops[c] += speeds[c];
-        if (drops[c] * CELL > H + rows * CELL) drops[c] = -Math.floor(Math.random() * rows);
-        const head = Math.floor(drops[c]);
+
+      // 1) тусклая решётка экрана
+      ctx.fillStyle = "rgba(150,190,110,0.10)";
+      ctx.fill(dimPath);
+
+      // 2) матрица-дождь (на той же решётке), позади слова
+      if (vis > 0.01) {
+        for (let c = 0; c < cols; c++) {
+          drops[c] += speeds[c];
+          if (drops[c] * CELL > H + rows * CELL) drops[c] = -Math.floor(Math.random() * rows);
+          const head = Math.floor(drops[c]);
+          const x = c * CELL + CELL / 2;
+          for (let k = 0; k < 8; k++) {
+            const rr = head - k;
+            if (rr < 0 || rr > rows) continue;
+            const a = (k === 0 ? 0.9 : Math.max(0, 0.6 - k * 0.09)) * vis;
+            if (a < 0.02) continue;
+            ctx.fillStyle = `rgba(166,255,0,${a.toFixed(3)})`;
+            ctx.beginPath(); ctx.arc(x, rr * CELL + CELL / 2, litR * 0.85, 0, 6.283); ctx.fill();
+          }
+        }
+      }
+
+      // 3) слово — яркие диоды с лёгким свечением
+      for (let mc = 0; mc < maxCols; mc++) {
+        const c = wordStartCol + mc;
+        if (c < 0 || c >= cols) continue;
         const x = c * CELL + CELL / 2;
-        for (let k = 0; k < 9; k++) {
-          const row = head - k;
-          if (row < 0 || row > rows) continue;
-          const y = row * CELL + CELL / 2;
-          const a = (k === 0 ? 1 : Math.max(0, 0.7 - k * 0.09)) * vis;
-          ctx.fillStyle = `rgba(166,255,0,${a.toFixed(3)})`;
-          ctx.beginPath(); ctx.arc(x, y, 1.4, 0, 6.283); ctx.fill();
+        for (let r = 0; r < WR; r++) {
+          const a = aBuf[mc * WR + r];
+          if (a < 0.03) continue;
+          const y = (wordTopRow + r) * CELL + CELL / 2;
+          ctx.fillStyle = `rgba(166,255,0,${(a * 0.22).toFixed(3)})`;
+          ctx.beginPath(); ctx.arc(x, y, glowR, 0, 6.283); ctx.fill();
+          ctx.fillStyle = `rgba(190,255,70,${a.toFixed(3)})`;
+          ctx.beginPath(); ctx.arc(x, y, litR, 0, 6.283); ctx.fill();
         }
       }
     };
     raf = requestAnimationFrame(loop);
     return () => { stopped = true; cancelAnimationFrame(raf); ro.disconnect(); };
-  }, []);
-  return <canvas ref={ref} aria-hidden className="absolute inset-0 w-full h-full" style={{ display: "block" }} />;
-}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wordsKey]);
 
-/** Живое LED-табло на карточке: дот-сетка фоном + перебор слов в зоне
- *  над тайтлом (кейс led-font-engine — шрифт демонстрирует себя сам).
- *  По наведению (active) поверх сетки идёт матрица-дождь. */
-function LedCover({ words, active }: { words: string[]; active: boolean }) {
   return (
     <div className="absolute inset-0">
-      <div
-        aria-hidden
-        className="absolute inset-0"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle, rgba(166,255,0,0.07) 1.1px, transparent 1.3px)",
-          backgroundSize: "8px 8px",
-        }}
-      />
-      <LedMatrix active={active} />
-      <div className="absolute inset-x-0 top-0 bottom-[35%] flex items-center justify-center px-6 md:px-8">
-        {/* width:100% — слово вписано по ширине зоны, высота по аспекту.
-            Сетка общая (по самому широкому слову), потому масштаб стабилен. */}
-        <LedFlipWord
-          words={words}
-          className="block w-full max-w-[200px] md:max-w-[260px] text-[#A6FF00]"
-          style={{ width: "100%", height: "auto" }}
-        />
-      </div>
+      <span className="sr-only">{words.join(", ")}</span>
+      <canvas ref={ref} aria-hidden className="absolute inset-0 w-full h-full" style={{ display: "block" }} />
     </div>
   );
 }
