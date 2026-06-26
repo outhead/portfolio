@@ -13,11 +13,21 @@ import { useEffect, useRef, type RefObject } from "react";
 
 export type Shape = { src: string; depth?: string; depthScale?: number };
 
+/** Готовое облако точек (например, сэмпл с поверхности 3D-модели).
+ *  positions/colors — плоские массивы xyz/rgb, координаты в ~[-0.5,0.5]. */
+export type PointCloud = { positions: Float32Array; colors?: Float32Array | null };
+
 export type ParticlePortraitProps = {
   src?: string;
   frames?: string[];
   depthSrc?: string;
   shapes?: Shape[];
+  /** готовое облако точек (3D-модель) — перебивает src/shapes */
+  cloud?: PointCloud | null;
+  /** ключ-детектор смены облака (для пересборки) */
+  cloudKey?: string;
+  /** непрерывное вращение вокруг оси Y (турнтейбл для 3D) */
+  spin360?: boolean;
   /** индекс активной формы (морф при смене) */
   active?: number;
   depthScale?: number;
@@ -45,6 +55,9 @@ export default function ParticlePortrait({
   frames,
   depthSrc,
   shapes,
+  cloud,
+  cloudKey,
+  spin360 = false,
   active = 0,
   depthScale = 0.6,
   count = 5500,
@@ -153,6 +166,30 @@ export default function ParticlePortrait({
       return { X, Y, Z, b, aspect };
     }
 
+    // Облако точек из 3D-модели: сэмплим N точек из готового набора.
+    function buildCloud(c: PointCloud, dScale?: number): ShapeData {
+      const zMul = (dScale ?? depthScale) / 0.6;
+      const M = (c.positions.length / 3) | 0;
+      const X = new Float32Array(N), Y = new Float32Array(N), Z = new Float32Array(N), b = new Float32Array(N);
+      for (let i = 0; i < N; i++) {
+        const j = (Math.random() * M) | 0;
+        X[i] = c.positions[j * 3];
+        Y[i] = -c.positions[j * 3 + 1]; // 3D Y-up → экранный Y вниз
+        Z[i] = c.positions[j * 3 + 2] * zMul;
+        let lum = 0.82;
+        if (c.colors) {
+          const r = c.colors[j * 3], g = c.colors[j * 3 + 1], bl = c.colors[j * 3 + 2];
+          lum = 0.299 * r + 0.587 * g + 0.114 * bl;
+        }
+        b[i] = Math.max(0.18, Math.min(1, lum));
+      }
+      return { X, Y, Z, b, aspect: 1 };
+    }
+
+    // Режим 3D-облака: строим единственную форму сразу, картинки не грузим.
+    if (cloud && cloud.positions && cloud.positions.length >= 3) {
+      data[0] = buildCloud(cloud);
+    } else
     // загрузка всех форм — просто заполняем data[idx]; цикл уже крутится
     list.forEach((sh, idx) => {
       const img = new Image();
@@ -259,7 +296,9 @@ export default function ParticlePortrait({
       // autoSpin — покачивание влево-вправо (а не оборот вокруг), чтобы лицо
       // всегда смотрело на зрителя и отыгрывало объём.
       const auto = autoSpin ? Math.sin(spin * 0.6) * 0.55 : 0;
-      const yaw = (1 - asmE) * spin + asmE * (nrx * tilt + auto) + Math.sin(spin) * 0.06 * (1 - asmE);
+      // spin360 — непрерывный оборот вокруг оси (турнтейбл для 3D-модели)
+      const turn = spin360 ? spin * 0.5 : 0;
+      const yaw = (1 - asmE) * spin + asmE * (nrx * tilt + auto + turn) + Math.sin(spin) * 0.06 * (1 - asmE);
       const pitch = asmE * (-nry * tilt);
       const sYa = Math.sin(yaw), cYa = Math.cos(yaw), sPi = Math.sin(pitch), cPi = Math.cos(pitch);
 
@@ -331,7 +370,7 @@ export default function ParticlePortrait({
       eventTarget.removeEventListener("pointerleave", onLeave);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [listKey, depthScale, count, color.join(","), bulge, relief, tilt, gamma, pointScale, assembleOnHover, scatterOnHover, latchAssemble, autoSpin, trackingRef]);
+  }, [listKey, cloudKey, spin360, depthScale, count, color.join(","), bulge, relief, tilt, gamma, pointScale, assembleOnHover, scatterOnHover, latchAssemble, autoSpin, trackingRef]);
 
   return (
     <canvas

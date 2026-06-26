@@ -7,11 +7,16 @@
  * ──────────────────────────────────────────────────────────────── */
 
 import { useEffect, useRef, useState } from "react";
-import ParticlePortrait from "@/components/ParticlePortrait";
+import ParticlePortrait, { type PointCloud } from "@/components/ParticlePortrait";
 
 const DEFAULT_IMG = "/images/hero-portrait.png";
 const DEFAULT_DEPTH = "/images/hero-depth.png";
 const TJS_URL = "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.2.4";
+const THREE_URL = "https://esm.sh/three@0.161.0";
+const GLTF_URL = "https://esm.sh/three@0.161.0/examples/jsm/loaders/GLTFLoader.js";
+const OBJ_URL = "https://esm.sh/three@0.161.0/examples/jsm/loaders/OBJLoader.js";
+const SAMPLER_URL = "https://esm.sh/three@0.161.0/examples/jsm/math/MeshSurfaceSampler.js";
+const SAMPLE_COUNT = 45000;
 
 // прячем импорт от бандлера (грузим с CDN в рантайме)
 // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func, @typescript-eslint/no-explicit-any
@@ -26,7 +31,10 @@ export default function ParticleStudio() {
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
   const [recording, setRecording] = useState(false);
+  const [cloud, setCloud] = useState<PointCloud | null>(null);
+  const [cloudKey, setCloudKey] = useState("");
   const wrapRef = useRef<HTMLDivElement>(null);
+  const is3D = !!cloud;
 
   const urls = useRef<string[]>([]);
   useEffect(() => () => urls.current.forEach((u) => URL.revokeObjectURL(u)), []);
@@ -102,10 +110,97 @@ export default function ParticleStudio() {
   function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;
+    setCloud(null); // выходим из 3D-режима
     const url = keepUrl(URL.createObjectURL(f));
     setPortrait(url);
     setDepth(undefined); // плоский предпросмотр, пока считается глубина
     process(url); // сразу обсчёт глубины
+  }
+
+  // 3D-модель → облако точек: сэмплим точки прямо с поверхности меша
+  // (настоящий объём, крутится на 360°, без угадывания глубины).
+  async function load3D(file: File) {
+    setBusy(true);
+    setStatus("Гружу 3D-движок…");
+    try {
+      const THREE = await cdnImport(THREE_URL);
+      const { MeshSurfaceSampler } = await cdnImport(SAMPLER_URL);
+      const ext = file.name.toLowerCase().split(".").pop();
+      const url = keepUrl(URL.createObjectURL(file));
+      let root: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+      if (ext === "obj") {
+        const { OBJLoader } = await cdnImport(OBJ_URL);
+        root = await new OBJLoader().loadAsync(url);
+      } else {
+        const { GLTFLoader } = await cdnImport(GLTF_URL);
+        const g = await new GLTFLoader().loadAsync(url);
+        root = g.scene;
+      }
+      root.updateMatrixWorld(true);
+
+      setStatus("Сэмплю точки с поверхности…");
+      const meshes: any[] = []; // eslint-disable-line @typescript-eslint/no-explicit-any
+      root.traverse((o: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+        if (o.isMesh && o.geometry?.attributes?.position) meshes.push(o);
+      });
+      if (!meshes.length) throw new Error("в модели нет полигонов");
+
+      const weights = meshes.map((m) => m.geometry.attributes.position.count);
+      const wsum = weights.reduce((a: number, b: number) => a + b, 0) || 1;
+      const pos = new Float32Array(SAMPLE_COUNT * 3);
+      const col = new Float32Array(SAMPLE_COUNT * 3);
+      const P = new THREE.Vector3();
+      const C = new THREE.Color();
+      let w = 0;
+      for (let mi = 0; mi < meshes.length && w < SAMPLE_COUNT; mi++) {
+        const mesh = meshes[mi];
+        const cnt = mi === meshes.length - 1
+          ? SAMPLE_COUNT - w
+          : Math.round(SAMPLE_COUNT * weights[mi] / wsum);
+        const sampler = new MeshSurfaceSampler(mesh).build();
+        const hasVC = !!mesh.geometry.attributes.color;
+        const matCol = mesh.material?.color ?? new THREE.Color(0.82, 0.86, 0.8);
+        for (let k = 0; k < cnt && w < SAMPLE_COUNT; k++, w++) {
+          if (hasVC) sampler.sample(P, null, C);
+          else { sampler.sample(P); C.copy(matCol); }
+          P.applyMatrix4(mesh.matrixWorld);
+          pos[w * 3] = P.x; pos[w * 3 + 1] = P.y; pos[w * 3 + 2] = P.z;
+          col[w * 3] = C.r; col[w * 3 + 1] = C.g; col[w * 3 + 2] = C.b;
+        }
+      }
+
+      // нормализация в ~[-0.5,0.5] по самой длинной стороне
+      let mnX = Infinity, mnY = Infinity, mnZ = Infinity, mxX = -Infinity, mxY = -Infinity, mxZ = -Infinity;
+      for (let i = 0; i < w; i++) {
+        const x = pos[i * 3], y = pos[i * 3 + 1], z = pos[i * 3 + 2];
+        if (x < mnX) mnX = x; if (y < mnY) mnY = y; if (z < mnZ) mnZ = z;
+        if (x > mxX) mxX = x; if (y > mxY) mxY = y; if (z > mxZ) mxZ = z;
+      }
+      const cx = (mnX + mxX) / 2, cy = (mnY + mxY) / 2, cz = (mnZ + mxZ) / 2;
+      const s = 1 / (Math.max(mxX - mnX, mxY - mnY, mxZ - mnZ) || 1);
+      const positions = new Float32Array(w * 3), colors = new Float32Array(w * 3);
+      for (let i = 0; i < w; i++) {
+        positions[i * 3] = (pos[i * 3] - cx) * s;
+        positions[i * 3 + 1] = (pos[i * 3 + 1] - cy) * s;
+        positions[i * 3 + 2] = (pos[i * 3 + 2] - cz) * s;
+        colors[i * 3] = col[i * 3]; colors[i * 3 + 1] = col[i * 3 + 1]; colors[i * 3 + 2] = col[i * 3 + 2];
+      }
+
+      setCloud({ positions, colors });
+      setCloudKey(file.name + ":" + file.size + ":" + Date.now());
+      setStatus("Готово: " + w.toLocaleString("ru") + " точек с модели. Крутится сама, мышь — наклон.");
+    } catch (err) {
+      console.error(err);
+      setStatus("Не вышло загрузить 3D: " + (err instanceof Error ? err.message : String(err)));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function on3D(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (f) load3D(f);
+    e.target.value = "";
   }
 
   function download(url: string, name: string) {
@@ -143,9 +238,12 @@ export default function ParticleStudio() {
           className="relative rounded-2xl overflow-hidden border border-[#A6FF00]/20 bg-[#08090a] aspect-[3/4]"
         >
           <ParticlePortrait
-            key={`${portrait}-${depth}-${count}`}
+            key={`${is3D ? cloudKey : `${portrait}-${depth}`}-${count}`}
             src={portrait}
             depthSrc={depth}
+            cloud={cloud}
+            cloudKey={cloudKey}
+            spin360={is3D}
             count={count}
             depthScale={depthScale}
             pointScale={pointScale}
@@ -155,7 +253,7 @@ export default function ParticleStudio() {
           />
         </div>
         <p className="text-[12px] text-white/45 min-h-[16px]">
-          {status || "Закинь своё фото — глубина посчитается прямо в браузере."}
+          {status || "Закинь фото (посчитаем глубину) или 3D-модель (.glb/.obj)."}
         </p>
       </div>
 
@@ -166,9 +264,14 @@ export default function ParticleStudio() {
               {busy ? "Обработка…" : "Загрузить фото"}
               <input type="file" accept="image/jpeg,image/png,image/webp" onChange={onFile} disabled={busy} className="hidden" />
             </label>
+            <label className={`text-[13px] px-4 py-2 rounded-full border transition-colors cursor-pointer ${busy ? "opacity-50 pointer-events-none" : "border-white/15 text-white/70 hover:text-white hover:border-white/30"}`}>
+              Загрузить 3D
+              <input type="file" accept=".glb,.gltf,.obj" onChange={on3D} disabled={busy} className="hidden" />
+            </label>
           </div>
           <p className="text-[12px] text-white/35">
-            JPEG, PNG или WebP. HEIC с айфона может не открыться — экспортни в JPEG.
+            Фото: JPEG/PNG/WebP (HEIC с айфона может не открыться). 3D: .glb, .gltf
+            или .obj — точки берутся прямо с поверхности модели, объём настоящий.
           </p>
         </div>
 
