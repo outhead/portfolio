@@ -42,6 +42,26 @@ const ICE: RTCIceServer[] = [
   },
 ];
 
+// Временные TURN-креды (Cloudflare) тянем один раз за сессию и добавляем В НАЧАЛО списка
+// ICE. Нет кред (env не задан / ошибка) — остаёмся на STUN+openrelay (как было).
+let icePromise: Promise<RTCIceServer[]> | null = null;
+function getIce(): Promise<RTCIceServer[]> {
+  if (!icePromise) {
+    icePromise = (async () => {
+      try {
+        const res = await fetch("/api/turn", { cache: "no-store" });
+        const d = (await res.json()) as { iceServers?: RTCIceServer | RTCIceServer[] | null };
+        if (d?.iceServers) {
+          const extra = Array.isArray(d.iceServers) ? d.iceServers : [d.iceServers];
+          return [...extra, ...ICE];
+        }
+      } catch { /* фолбэк ниже */ }
+      return ICE;
+    })();
+  }
+  return icePromise;
+}
+
 export type NetMsg = { event: string; payload: Record<string, unknown> };
 
 export type P2PHandle = {
@@ -122,12 +142,14 @@ export function connectP2P(opts: {
   let ctl: RTCDataChannel | null = null;
   let reconnects = 0;
 
-  const runAttempt = (n: number) => {
+  const runAttempt = async (n: number) => {
     if (cancelled || n > 3) return;
     console.log(`[pong p2p] попытка ${n}${reconnects ? ` (реконнект ${reconnects})` : ""}`);
     const aid = Math.random().toString(36).slice(2, 8);
     const st = { settled: false, failed: false, fastOpen: false, ctlOpen: false };
-    const pcA = new RTCPeerConnection({ iceServers: ICE });
+    const ice = await getIce();
+    if (cancelled) return;
+    const pcA = new RTCPeerConnection({ iceServers: ice });
     pc = pcA;
 
     const fail = (why: string) => {
