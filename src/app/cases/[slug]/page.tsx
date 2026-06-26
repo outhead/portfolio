@@ -15,6 +15,7 @@ import LedText from "@/components/LedText";
 import { LedLines } from "@/components/LedBoard";
 import FontSpecimen from "@/components/FontSpecimen";
 import ParticleStudio from "@/components/ParticleStudio";
+import ParticlePortrait from "@/components/ParticlePortrait";
 
 /* Пиксельный лейбл секций кейса — единый язык с табло главной */
 function CaseLabel({
@@ -91,7 +92,22 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
         className="relative min-h-[60vh] flex items-end overflow-hidden"
         style={{ background: project.coverColor }}
       >
-        {(project.heroImage || project.coverImage || project.coverVideo) && (
+        {project.coverParticles && (
+          <div className="absolute inset-0 z-0">
+            <ParticlePortrait
+              src={project.coverParticles.src}
+              depthSrc={project.coverParticles.depth}
+              count={7000}
+              depthScale={project.coverParticles.depthScale ?? 0.6}
+              pointScale={project.coverParticles.pointScale ?? 0.9}
+              tilt={0.5}
+              assembleOnHover={false}
+              scatterOnHover
+              className="absolute inset-0"
+            />
+          </div>
+        )}
+        {!project.coverParticles && (project.heroImage || project.coverImage || project.coverVideo) && (
           <div className="absolute inset-0 z-0">
             {project.heroImage ? (
               <Image
