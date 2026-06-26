@@ -54,51 +54,83 @@ export default function ParticleLab() {
     });
   }
 
-  // Depth Anything в браузере + вырезка фона по карте глубины
+  const toUrl = (c: HTMLCanvasElement) =>
+    new Promise<string>((r) => c.toBlob((b) => r(URL.createObjectURL(b!)), "image/png")!);
+
+  // RMBG-вырезка + Depth Anything + сглаживание/перцентильная нормализация
   async function process() {
     setBusy(true);
     try {
-      setStatus("Гружу модель глубины (первый раз — дольше)…");
+      setStatus("Гружу модели (первый раз — дольше)…");
       const TJS = await cdnImport(TJS_URL);
       TJS.env.allowLocalModels = false;
-      const pipe = await TJS.pipeline("depth-estimation", "onnx-community/depth-anything-v2-small");
-      setStatus("Считаю глубину…");
-      const out = await pipe(portrait);
-      const dCanvas: HTMLCanvasElement = out.depth.toCanvas();
 
       const img = await loadImage(portrait);
       const W = img.naturalWidth, H = img.naturalHeight;
-      // глубина → размер фото
+
+      // 1) Вырезка фона (RMBG). Если не выйдет — фолбэк на порог глубины.
+      let maskAlpha: Uint8ClampedArray | null = null;
+      try {
+        setStatus("Вырезаю фон (RMBG)…");
+        const seg = await TJS.pipeline("background-removal", "briaai/RMBG-1.4");
+        const res = await seg(portrait);
+        const ri = Array.isArray(res) ? res[0] : res;
+        const cut: HTMLCanvasElement = ri.toCanvas();
+        const mc = document.createElement("canvas"); mc.width = W; mc.height = H;
+        const mctx = mc.getContext("2d")!;
+        mctx.drawImage(cut, 0, 0, W, H);
+        maskAlpha = mctx.getImageData(0, 0, W, H).data;
+      } catch (e) {
+        console.warn("RMBG недоступен, вырезка по порогу глубины", e);
+      }
+
+      // 2) Глубина + сглаживание (blur)
+      setStatus("Считаю глубину…");
+      const dpipe = await TJS.pipeline("depth-estimation", "onnx-community/depth-anything-v2-small");
+      const dout = await dpipe(portrait);
+      const dRaw: HTMLCanvasElement = dout.depth.toCanvas();
       const dc = document.createElement("canvas"); dc.width = W; dc.height = H;
       const dctx = dc.getContext("2d")!;
-      dctx.drawImage(dCanvas, 0, 0, W, H);
+      dctx.filter = "blur(2px)";
+      dctx.drawImage(dRaw, 0, 0, W, H);
+      dctx.filter = "none";
       const dData = dctx.getImageData(0, 0, W, H).data;
 
-      // диапазон глубины
-      let dmin = 255, dmax = 0;
+      // перцентильная нормализация по точкам субъекта
+      const vals: number[] = [];
       for (let i = 0; i < dData.length; i += 4) {
-        const v = dData[i]; if (v < dmin) dmin = v; if (v > dmax) dmax = v;
+        if (!maskAlpha || maskAlpha[i + 3] > 40) vals.push(dData[i]);
       }
-      const thr = dmin + (dmax - dmin) * 0.28; // дальше порога = фон
+      vals.sort((a, b) => a - b);
+      const p2 = vals.length ? vals[Math.floor(vals.length * 0.02)] : 0;
+      const p98 = vals.length ? vals[Math.floor(vals.length * 0.98)] : 255;
+      const range = Math.max(1, p98 - p2);
+      const thr = p2 + range * 0.28; // порог фона, если нет маски
 
-      // силуэт: оригинал с альфой по порогу глубины
+      // итог: нормализованная глубина + портрет-силуэт
+      const depthOut = dctx.createImageData(W, H);
       const pc = document.createElement("canvas"); pc.width = W; pc.height = H;
       const pctx = pc.getContext("2d")!;
       pctx.drawImage(img, 0, 0, W, H);
-      const pData = pctx.getImageData(0, 0, W, H);
+      const pImg = pctx.getImageData(0, 0, W, H);
       for (let i = 0; i < dData.length; i += 4) {
-        if (dData[i] < thr) pData.data[i + 3] = 0; // выкинуть фон
+        let nv = Math.round(((dData[i] - p2) / range) * 255);
+        if (nv < 0) nv = 0; else if (nv > 255) nv = 255;
+        depthOut.data[i] = nv; depthOut.data[i + 1] = nv; depthOut.data[i + 2] = nv; depthOut.data[i + 3] = 255;
+        const keep = maskAlpha ? maskAlpha[i + 3] > 40 : dData[i] >= thr;
+        if (!keep) pImg.data[i + 3] = 0;
       }
-      pctx.putImageData(pData, 0, 0);
+      dctx.putImageData(depthOut, 0, 0);
+      pctx.putImageData(pImg, 0, 0);
 
-      const portraitUrl = keepUrl(await new Promise<string>((r) => pc.toBlob((b) => r(URL.createObjectURL(b!)), "image/png")!));
-      const depthUrl = keepUrl(await new Promise<string>((r) => dc.toBlob((b) => r(URL.createObjectURL(b!)), "image/png")!));
+      const portraitUrl = keepUrl(await toUrl(pc));
+      const depthUrl = keepUrl(await toUrl(dc));
       setPortrait(portraitUrl);
       setDepth(depthUrl);
-      setStatus("Готово: глубина и вырезка применены.");
+      setStatus(maskAlpha ? "Готово: фон вырезан (RMBG), глубина сглажена." : "Готово: глубина посчитана (фон по порогу — RMBG недоступен).");
     } catch (err) {
       console.error(err);
-      setStatus("Не вышло посчитать глубину (нужен современный браузер). Предпросмотр работает.");
+      setStatus("Не вышло обработать (нужен современный браузер/доступ к CDN). Предпросмотр работает.");
     } finally {
       setBusy(false);
     }
