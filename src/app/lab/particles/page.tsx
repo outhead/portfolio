@@ -57,38 +57,30 @@ export default function ParticleLab() {
   const toUrl = (c: HTMLCanvasElement) =>
     new Promise<string>((r) => c.toBlob((b) => r(URL.createObjectURL(b!)), "image/png")!);
 
-  // RMBG-вырезка + Depth Anything + сглаживание/перцентильная нормализация
+  // Depth Anything в браузере + сглаживание/перцентильная нормализация.
+  // Фон режем по самой карте глубины (дальние точки = фон).
   async function process() {
     setBusy(true);
     try {
-      setStatus("Гружу модели (первый раз — дольше)…");
+      setStatus("Гружу модель глубины…");
       const TJS = await cdnImport(TJS_URL);
       TJS.env.allowLocalModels = false;
+      const dpipe = await TJS.pipeline("depth-estimation", "onnx-community/depth-anything-v2-small", {
+        progress_callback: (p: { status?: string; progress?: number }) => {
+          if (!p || !p.status) return;
+          if (p.status === "progress" && typeof p.progress === "number")
+            setStatus("Загрузка модели · " + Math.round(p.progress) + "%");
+          else if (p.status === "ready") setStatus("Считаю глубину…");
+        },
+      });
 
       const img = await loadImage(portrait);
       const W = img.naturalWidth, H = img.naturalHeight;
-
-      // 1) Вырезка фона (RMBG). Если не выйдет — фолбэк на порог глубины.
-      let maskAlpha: Uint8ClampedArray | null = null;
-      try {
-        setStatus("Вырезаю фон (RMBG)…");
-        const seg = await TJS.pipeline("background-removal", "briaai/RMBG-1.4");
-        const res = await seg(portrait);
-        const ri = Array.isArray(res) ? res[0] : res;
-        const cut: HTMLCanvasElement = ri.toCanvas();
-        const mc = document.createElement("canvas"); mc.width = W; mc.height = H;
-        const mctx = mc.getContext("2d")!;
-        mctx.drawImage(cut, 0, 0, W, H);
-        maskAlpha = mctx.getImageData(0, 0, W, H).data;
-      } catch (e) {
-        console.warn("RMBG недоступен, вырезка по порогу глубины", e);
-      }
-
-      // 2) Глубина + сглаживание (blur)
       setStatus("Считаю глубину…");
-      const dpipe = await TJS.pipeline("depth-estimation", "onnx-community/depth-anything-v2-small");
       const dout = await dpipe(portrait);
       const dRaw: HTMLCanvasElement = dout.depth.toCanvas();
+
+      // глубина → размер фото + лёгкое сглаживание
       const dc = document.createElement("canvas"); dc.width = W; dc.height = H;
       const dctx = dc.getContext("2d")!;
       dctx.filter = "blur(2px)";
@@ -96,18 +88,15 @@ export default function ParticleLab() {
       dctx.filter = "none";
       const dData = dctx.getImageData(0, 0, W, H).data;
 
-      // перцентильная нормализация по точкам субъекта
+      // перцентильная нормализация (2–98) по всему кадру
       const vals: number[] = [];
-      for (let i = 0; i < dData.length; i += 4) {
-        if (!maskAlpha || maskAlpha[i + 3] > 40) vals.push(dData[i]);
-      }
+      for (let i = 0; i < dData.length; i += 4) vals.push(dData[i]);
       vals.sort((a, b) => a - b);
-      const p2 = vals.length ? vals[Math.floor(vals.length * 0.02)] : 0;
-      const p98 = vals.length ? vals[Math.floor(vals.length * 0.98)] : 255;
+      const p2 = vals[Math.floor(vals.length * 0.02)];
+      const p98 = vals[Math.floor(vals.length * 0.98)];
       const range = Math.max(1, p98 - p2);
-      const thr = p2 + range * 0.28; // порог фона, если нет маски
+      const thr = p2 + range * 0.30; // дальше порога = фон → выкидываем
 
-      // итог: нормализованная глубина + портрет-силуэт
       const depthOut = dctx.createImageData(W, H);
       const pc = document.createElement("canvas"); pc.width = W; pc.height = H;
       const pctx = pc.getContext("2d")!;
@@ -117,20 +106,17 @@ export default function ParticleLab() {
         let nv = Math.round(((dData[i] - p2) / range) * 255);
         if (nv < 0) nv = 0; else if (nv > 255) nv = 255;
         depthOut.data[i] = nv; depthOut.data[i + 1] = nv; depthOut.data[i + 2] = nv; depthOut.data[i + 3] = 255;
-        const keep = maskAlpha ? maskAlpha[i + 3] > 40 : dData[i] >= thr;
-        if (!keep) pImg.data[i + 3] = 0;
+        if (dData[i] < thr) pImg.data[i + 3] = 0; // выкинуть фон
       }
       dctx.putImageData(depthOut, 0, 0);
       pctx.putImageData(pImg, 0, 0);
 
-      const portraitUrl = keepUrl(await toUrl(pc));
-      const depthUrl = keepUrl(await toUrl(dc));
-      setPortrait(portraitUrl);
-      setDepth(depthUrl);
-      setStatus(maskAlpha ? "Готово: фон вырезан (RMBG), глубина сглажена." : "Готово: глубина посчитана (фон по порогу — RMBG недоступен).");
+      setPortrait(keepUrl(await toUrl(pc)));
+      setDepth(keepUrl(await toUrl(dc)));
+      setStatus("Готово: глубина и вырезка применены.");
     } catch (err) {
       console.error(err);
-      setStatus("Не вышло обработать (нужен современный браузер/доступ к CDN). Предпросмотр работает.");
+      setStatus("Не вышло посчитать глубину: " + (err instanceof Error ? err.message : String(err)));
     } finally {
       setBusy(false);
     }
