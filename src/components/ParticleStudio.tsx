@@ -151,7 +151,6 @@ export default function ParticleStudio() {
             pointScale={pointScale}
             tilt={0.55}
             assembleOnHover={false}
-            autoSpin
             className="absolute inset-0"
           />
         </div>
