@@ -141,8 +141,9 @@ export default function ParticlePortrait({
           const dz = (depth[lo * 4] / 255 - dmin) / (dmax - dmin);
           Z[i] = (dz - 0.5) * dsEff;
         } else {
-          const ex = nx / 0.5, ey = ny / (halfH || 1);
-          Z[i] = Math.sqrt(Math.max(0, 1 - ex * ex - ey * ey)) * bulge + (lum[lo] - 0.5) * relief;
+          // Без карты глубины — ПЛОСКИЙ предпросмотр с лёгким рельефом по
+          // яркости (никакой полусферы-«шара»). Объём даёт «Обработать».
+          Z[i] = (lum[lo] - 0.5) * 0.3;
         }
         b[i] = lum[lo];
       }
