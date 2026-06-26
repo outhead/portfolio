@@ -1082,7 +1082,7 @@ export default function PreviewHome() {
             {/* ── В цифрах: LED-счётчики + тихий граф из точек ── */}
             <motion.div variants={fadeUp} className="col-span-12 lg:col-span-5">
               <Oled className="h-full p-5 md:p-7 flex items-center">
-                <div className="relative w-full flex justify-center gap-10 md:gap-14">
+                <div className="relative w-full flex justify-center gap-8 md:gap-14 lg:gap-6 xl:gap-12">
                   {[
                     { v: "30", l: "запусков" },
                     { v: "7", l: "лет опыта" },
@@ -1138,7 +1138,7 @@ export default function PreviewHome() {
                     src="/images/gpn/prize.png"
                     alt=""
                     aria-hidden
-                    className="absolute right-5 md:right-9 top-1/2 -translate-y-1/2 h-[82%] w-auto pointer-events-none select-none"
+                    className="absolute right-5 md:right-9 top-1/2 -translate-y-1/2 h-[82%] lg:h-[64%] xl:h-[80%] w-auto pointer-events-none select-none"
                   />
                   <span className="sr-only">CX Awards 2024</span>
                   <LedText
