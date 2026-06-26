@@ -862,7 +862,7 @@ const HERO_SHAPES = [
   { src: "/images/hero-portrait.png", depth: "/images/hero-depth.png" }, // 0 рим-свет (я)
   { src: "/images/face-c-portrait.png", depth: "/images/face-c-depth.png" }, // 1 награда
   { src: "/images/face-e-portrait.png", depth: "/images/face-e-depth.png" }, // 2 бас
-  { src: "/images/face-d-portrait.png", depth: "/images/face-d-depth.png" }, // 3 глитч
+  { src: "/images/fig-a-portrait.png", depth: "/images/fig-a-depth.png", depthScale: 0.35 }, // 3 глитч (фигура из точек)
   ...HERO_BUBBLES.map((_, i) => ({
     src: `/images/txt-${i}-portrait.png`,
     depth: `/images/txt-${i}-depth.png`,
@@ -1055,6 +1055,7 @@ export default function PreviewHome() {
                     shapes={HERO_SHAPES}
                     active={heroShape}
                     count={6000}
+                    depthScale={0.6}
                     pointScale={0.6}
                     tilt={0.5}
                     assembleOnHover

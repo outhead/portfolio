@@ -11,7 +11,7 @@
 
 import { useEffect, useRef, type RefObject } from "react";
 
-export type Shape = { src: string; depth?: string };
+export type Shape = { src: string; depth?: string; depthScale?: number };
 
 export type ParticlePortraitProps = {
   src?: string;
@@ -64,7 +64,9 @@ export default function ParticlePortrait({
     shapes && shapes.length
       ? shapes
       : [{ src: src || (frames && frames[0]) || "/images/hero-portrait.png", depth: depthSrc }];
-  const listKey = shapeList.map((s) => s.src + "|" + (s.depth || "")).join(";");
+  const listKey = shapeList
+    .map((s) => s.src + "|" + (s.depth || "") + "|" + (s.depthScale ?? ""))
+    .join(";");
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -78,8 +80,8 @@ export default function ParticlePortrait({
     const [CR, CG, CB] = color;
     const N = count;
     const list: Shape[] = listKey.split(";").map((s) => {
-      const [sc, dp] = s.split("|");
-      return { src: sc, depth: dp || undefined };
+      const [sc, dp, ds] = s.split("|");
+      return { src: sc, depth: dp || undefined, depthScale: ds ? Number(ds) : undefined };
     });
 
     type ShapeData = { X: Float32Array; Y: Float32Array; Z: Float32Array; b: Float32Array; aspect: number };
@@ -88,7 +90,8 @@ export default function ParticlePortrait({
     const sampler = document.createElement("canvas");
     const sctx = sampler.getContext("2d", { willReadFrequently: true })!;
 
-    function buildShape(img: HTMLImageElement, depthImg: HTMLImageElement | null): ShapeData {
+    function buildShape(img: HTMLImageElement, depthImg: HTMLImageElement | null, dScale?: number): ShapeData {
+      const dsEff = dScale ?? depthScale;
       const gw = 150;
       const gh = Math.max(1, Math.round(gw * (img.height / img.width)));
       sampler.width = gw; sampler.height = gh;
@@ -133,7 +136,7 @@ export default function ParticlePortrait({
         X[i] = nx; Y[i] = ny;
         if (depth) {
           const dz = (depth[lo * 4] / 255 - dmin) / (dmax - dmin);
-          Z[i] = (dz - 0.5) * depthScale;
+          Z[i] = (dz - 0.5) * dsEff;
         } else {
           const ex = nx / 0.5, ey = ny / (halfH || 1);
           Z[i] = Math.sqrt(Math.max(0, 1 - ex * ex - ey * ey)) * bulge + (lum[lo] - 0.5) * relief;
@@ -151,7 +154,7 @@ export default function ParticlePortrait({
       let need = sh.depth ? 2 : 1, got = 0;
       const ready = () => {
         if (++got < need) return;
-        data[idx] = buildShape(img, depthImg);
+        data[idx] = buildShape(img, depthImg, sh.depthScale);
         if (!firstReady) { firstReady = true; start(); }
       };
       img.onload = ready; img.onerror = ready; img.src = sh.src;
@@ -238,7 +241,10 @@ export default function ParticlePortrait({
       let s = data[ai];
       if (!s) { for (let k = 0; k < data.length; k++) if (data[k]) { s = data[k]; break; } }
       if (!s || !buf32 || !imgData) return;
-      if (s.aspect !== curAspect) { curAspect = s.aspect; computeScale(); }
+      // Плавный переход аспекта/масштаба — иначе при смене формы точки
+      // скачком меняют размер до начала пружинного морфа.
+      curAspect += (s.aspect - curAspect) * Math.min(1, dt * 4);
+      computeScale();
 
       if (hoverT > 0) everHovered = true;
       const target = assembleOnHover ? (latchAssemble && everHovered ? 1 : hoverT) : 1;
