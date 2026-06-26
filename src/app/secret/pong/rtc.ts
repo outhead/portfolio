@@ -42,14 +42,19 @@ const ICE: RTCIceServer[] = [
   },
 ];
 
-// Временные TURN-креды (Cloudflare) тянем один раз за сессию и добавляем В НАЧАЛО списка
-// ICE. Нет кред (env не задан / ошибка) — остаёмся на STUN+openrelay (как было).
+// Временные TURN-креды тянем один раз за сессию и добавляем В НАЧАЛО списка ICE.
+// Сайт — статический экспорт (без серверного рантайма на Vercel), поэтому креды
+// выдаёт ВНЕШНИЙ эндпоинт (Cloudflare Worker / Supabase fn), его URL — в build-time env
+// NEXT_PUBLIC_TURN_URL. Эндпоинт должен вернуть { iceServers }. Нет URL / ошибка —
+// остаёмся на STUN+openrelay (как было), p2p всё равно пытается собраться.
+const TURN_URL = process.env.NEXT_PUBLIC_TURN_URL || "";
 let icePromise: Promise<RTCIceServer[]> | null = null;
 function getIce(): Promise<RTCIceServer[]> {
   if (!icePromise) {
     icePromise = (async () => {
+      if (!TURN_URL) return ICE;
       try {
-        const res = await fetch("/api/turn", { cache: "no-store" });
+        const res = await fetch(TURN_URL, { cache: "no-store" });
         const d = (await res.json()) as { iceServers?: RTCIceServer | RTCIceServer[] | null };
         if (d?.iceServers) {
           const extra = Array.isArray(d.iceServers) ? d.iceServers : [d.iceServers];
