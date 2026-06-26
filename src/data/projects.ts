@@ -130,6 +130,8 @@ export interface Project {
    * поверх содержимого, а сам контент блюрится. Используется для незакрытых черновиков.
    */
   wip?: boolean;
+  /** Полностью скрыть из списков (например, ещё не готовый эксперимент). */
+  hidden?: boolean;
 }
 
 export const projects: Project[] = [
@@ -890,6 +892,7 @@ export const projects: Project[] = [
   },
   {
     slug: "particle-portrait",
+    hidden: true, // пока скрыт из списка экспериментов
     title: "Портрет из частиц",
     company: "Pet Project",
     role: "Creative Developer",
@@ -1106,7 +1109,7 @@ export const workProjects = projects.filter(
   (p) => p.type === "work" && !HIDDEN_FROM_HOME.has(p.slug),
 );
 export const experimentProjects = projects.filter(
-  (p) => p.type === "experiment"
+  (p) => p.type === "experiment" && !p.hidden
 );
 
 export function getProjectBySlug(slug: string): Project | undefined {

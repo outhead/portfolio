@@ -257,7 +257,9 @@ export default function ParticlePortrait({
 
       nrx += (tnx - nrx) * 0.06; nry += (tny - nry) * 0.06;
       spin += dt * 0.2;
-      const auto = autoSpin ? spin * 0.5 : 0;
+      // autoSpin — покачивание влево-вправо (а не оборот вокруг), чтобы лицо
+      // всегда смотрело на зрителя и отыгрывало объём.
+      const auto = autoSpin ? Math.sin(spin * 0.6) * 0.55 : 0;
       const yaw = (1 - asmE) * spin + asmE * (nrx * tilt + auto) + Math.sin(spin) * 0.06 * (1 - asmE);
       const pitch = asmE * (-nry * tilt);
       const sYa = Math.sin(yaw), cYa = Math.cos(yaw), sPi = Math.sin(pitch), cPi = Math.cos(pitch);
