@@ -76,6 +76,8 @@ export default function ParticlePortrait({
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+    (window as unknown as { __ppEffect?: number }).__ppEffect =
+      ((window as unknown as { __ppEffect?: number }).__ppEffect || 0) + 1;
 
     const reduce =
       typeof window !== "undefined" &&
@@ -228,6 +230,8 @@ export default function ParticlePortrait({
       resize();
       if (!inited) initP();
       lt = performance.now();
+      (window as unknown as { __ppStarted?: number }).__ppStarted =
+        ((window as unknown as { __ppStarted?: number }).__ppStarted || 0) + 1;
       raf = requestAnimationFrame(loop);
     }
 
@@ -244,6 +248,10 @@ export default function ParticlePortrait({
       if (ai < 0) ai = 0; if (ai >= data.length) ai = data.length - 1;
       let s = data[ai];
       if (!s) { for (let k = 0; k < data.length; k++) if (data[k]) { s = data[k]; break; } }
+      (window as unknown as { __pp?: Record<string, unknown> }).__pp = {
+        reason: !s ? "noS" : !buf32 ? "noBuf" : !imgData ? "noImg" : "ok",
+        dataLen: data.length, built: data.filter(Boolean).length,
+      };
       if (!s || !buf32 || !imgData) return;
       // Плавный переход аспекта/масштаба — иначе при смене формы точки
       // скачком меняют размер до начала пружинного морфа.
