@@ -32,6 +32,8 @@ export type ParticlePortraitProps = {
   assembleOnHover?: boolean;
   /** после первого наведения остаётся собранным (не разлетается) */
   latchAssemble?: boolean;
+  /** постоянное медленное вращение даже в собранном состоянии */
+  autoSpin?: boolean;
   trackingRef?: RefObject<HTMLElement | null>;
   className?: string;
 };
@@ -52,6 +54,7 @@ export default function ParticlePortrait({
   pointScale = 1,
   assembleOnHover = true,
   latchAssemble = false,
+  autoSpin = false,
   trackingRef,
   className = "",
 }: ParticlePortraitProps) {
@@ -254,7 +257,8 @@ export default function ParticlePortrait({
 
       nrx += (tnx - nrx) * 0.06; nry += (tny - nry) * 0.06;
       spin += dt * 0.2;
-      const yaw = (1 - asmE) * spin + asmE * (nrx * tilt) + Math.sin(spin) * 0.06 * (1 - asmE);
+      const auto = autoSpin ? spin * 0.5 : 0;
+      const yaw = (1 - asmE) * spin + asmE * (nrx * tilt + auto) + Math.sin(spin) * 0.06 * (1 - asmE);
       const pitch = asmE * (-nry * tilt);
       const sYa = Math.sin(yaw), cYa = Math.cos(yaw), sPi = Math.sin(pitch), cPi = Math.cos(pitch);
 
@@ -319,7 +323,7 @@ export default function ParticlePortrait({
       eventTarget.removeEventListener("pointerleave", onLeave);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [listKey, depthScale, count, color.join(","), bulge, relief, tilt, gamma, pointScale, assembleOnHover, latchAssemble, trackingRef]);
+  }, [listKey, depthScale, count, color.join(","), bulge, relief, tilt, gamma, pointScale, assembleOnHover, latchAssemble, autoSpin, trackingRef]);
 
   return (
     <canvas
