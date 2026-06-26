@@ -150,8 +150,7 @@ export default function ParticlePortrait({
       return { X, Y, Z, b, aspect };
     }
 
-    // загрузка всех форм
-    let firstReady = false;
+    // загрузка всех форм — просто заполняем data[idx]; цикл уже крутится
     list.forEach((sh, idx) => {
       const img = new Image();
       let depthImg: HTMLImageElement | null = null;
@@ -159,7 +158,6 @@ export default function ParticlePortrait({
       const ready = () => {
         if (++got < need) return;
         data[idx] = buildShape(img, depthImg, sh.depthScale);
-        if (!firstReady) { firstReady = true; start(); }
       };
       img.onload = ready; img.onerror = ready; img.src = sh.src;
       if (sh.depth) {
@@ -223,15 +221,6 @@ export default function ParticlePortrait({
     // ── цикл ──────────────────────────────────────────────────────
     let raf = 0, stopped = false, lt = 0, spin = 0, needResize = false, everHovered = false;
     const K = 3.6, DAMP = 3.4, fLen = 2.4;
-
-    function start() {
-      stopped = false; // онлоад картинок может прийти после cleanup — оживляем цикл
-      resize();
-      if (!inited) initP();
-      lt = performance.now();
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(loop);
-    }
 
     function loop(now: number) {
       if (stopped) return;
@@ -318,6 +307,13 @@ export default function ParticlePortrait({
 
     const ro = new ResizeObserver(() => { needResize = true; });
     ro.observe(canvas);
+
+    // Старт цикла сразу при монтировании — он сам дождётся готовности форм
+    // (никакой зависимости от onload-картинок, чтобы не было гонки с cleanup).
+    resize();
+    initP();
+    lt = performance.now();
+    raf = requestAnimationFrame(loop);
 
     return () => {
       stopped = true;
