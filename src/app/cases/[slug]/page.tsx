@@ -122,7 +122,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
               mode="spin"
               idleGlow={0.82}
               panel
-              cubeAlign="right"
+              cubeAlign="center"
               className="absolute inset-0 w-full h-full opacity-95 pointer-events-auto"
             />
           </div>

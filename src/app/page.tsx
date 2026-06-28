@@ -805,7 +805,7 @@ function Toolbox() {
   // Подзаголовок «без ритуалов и ярлыков» — лёгкая ирония к шаблонным «my stack» секциям.
   return (
     <section className="relative z-[1] bg-black border-t border-white/[0.06]">
-      <div className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20">
+      <div className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-10 md:py-14">
         <motion.div
           initial="hidden"
           whileInView="show"
@@ -814,7 +814,7 @@ function Toolbox() {
         >
           <motion.div
             variants={fadeUp}
-            className="mb-8 md:mb-10 flex items-baseline gap-3"
+            className="mb-6 md:mb-8 flex items-baseline gap-3"
           >
             <SectionLabel>ИНСТРУМЕНТЫ</SectionLabel>
             <span className="text-[14px] md:text-[16px] text-white/40 tracking-[0.06em]">
@@ -824,21 +824,21 @@ function Toolbox() {
 
           <motion.div
             variants={stagger}
-            className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4"
+            className="grid grid-cols-4 md:grid-cols-8 gap-2.5 md:gap-3"
           >
             {tools.map((t) => (
               <motion.div
                 key={t.name}
                 variants={fadeUp}
                 title={t.name}
-                className="group relative rounded-2xl border border-white/[0.06] bg-[#0f0f0e] hover:border-[#A6FF00]/30 transition-colors p-5 md:p-6 flex flex-col items-start justify-between min-h-[130px] md:min-h-[150px] overflow-hidden"
+                className="group relative rounded-xl border border-white/[0.06] bg-[#0f0f0e] hover:border-[#A6FF00]/30 transition-colors px-3 py-4 md:py-5 flex flex-col items-center justify-center gap-3 min-h-[86px] md:min-h-[96px] overflow-hidden"
               >
-                <div className="w-7 h-7 md:w-8 md:h-8 text-white/72 group-hover:text-white transition-colors">
+                <div className="w-6 h-6 md:w-7 md:h-7 text-white/72 group-hover:text-white transition-colors">
                   {t.icon}
                 </div>
                 <span className="text-white/70 group-hover:text-white transition-colors">
                   <span className="sr-only">{t.name}</span>
-                  <LedText text={t.name} className="h-[9px] md:h-[10px] w-auto" />
+                  <LedText text={t.name} className="h-[8px] md:h-[9px] w-auto" />
                 </span>
               </motion.div>
             ))}
@@ -1574,102 +1574,159 @@ export default function PreviewHome() {
         </motion.div>
       </section>
 
-      {/* ═══════ MENTORING + SPEAKING — 2-up offer-карты ═══════ */}
+      {/* ═══════ MENTORING + SPEAKING — два крупных блока друг под другом ═══════ */}
       <section className="relative z-[1] bg-black border-t border-white/[0.06]">
         <motion.div
           initial="hidden"
           whileInView="show"
           viewport={viewport}
           variants={stagger}
-          className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20"
+          className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20 flex flex-col gap-5 md:gap-6"
         >
-          <div className="grid md:grid-cols-2 gap-4 md:gap-5">
-            {[
-              {
-                href: "/mentoring",
-                label: "МЕНТОРИНГ",
-                title: "Веду дизайнеров на переходе в сеньор-лиды",
-                body:
-                  "Провёл уже больше 40 менторинг-сессий. Помогаю пройти развилки: как вырасти до лида, как собрать команду, как защитить проект перед топ-менеджментом. Не на каждую развилку у меня есть готовый ответ, но обычно есть похожий опыт.",
-                cta: "Записаться на сессию",
-                accent: "#A6FF00",
-                booking: true,
-              },
-              {
-                href: "/speaking",
-                label: "ВЫСТУПЛЕНИЯ",
-                title: "Выступаю и модерирую секции про AI и дизайн",
-                body:
-                  "Внутренние конференции МТС и Ozon, Дизайн-Просмотр, ВШЭ (читал курс по прикладному ИИ). Темы: AI в продукте, масштабирование дизайна, дизайн-системы.",
-                cta: "Смотреть выступления",
-                accent: "#C9A66B",
-              },
-            ].map((t) => {
-              const isBooking = "booking" in t && t.booking;
-              const inner = (
-                  <div className="relative h-full rounded-2xl overflow-hidden border border-white/[0.06] group-hover:border-white/20 bg-[#0f0f0e] transition-colors duration-300 p-7 md:p-9 flex flex-col justify-between min-h-[260px]">
+          {/* ── МЕНТОРИНГ: текст слева + яйцо из облака точек справа ── */}
+          <motion.div variants={fadeUp}>
+            <button
+              type="button"
+              data-open-booking
+              data-ym-goal="nav_mentoring"
+              data-ym-goal-params='{"placement":"offer_blocks"}'
+              className="no-underline group block w-full text-left"
+            >
+              <div className="relative rounded-2xl overflow-hidden border border-[#A6FF00]/15 group-hover:border-[#A6FF00]/35 transition-colors duration-300 bg-[#0c0e09]">
+                <div
+                  aria-hidden
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background:
+                      "radial-gradient(ellipse 65% 90% at 10% 0%, rgba(166,255,0,0.07), transparent 60%)",
+                  }}
+                />
+                <div className="relative grid md:grid-cols-[1fr_minmax(0,340px)] items-stretch">
+                  <div className="p-8 md:p-12 flex flex-col justify-between min-h-[300px] md:min-h-[360px]">
+                    <div>
+                      <div className="inline-flex items-center gap-2 text-white/75 mb-5">
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#A6FF00]" />
+                        <span className="sr-only">МЕНТОРИНГ</span>
+                        <LedText text="МЕНТОРИНГ" className="h-[11px] w-auto" />
+                      </div>
+                      <h3 className="text-white mb-5 max-w-lg">
+                        <LedLines
+                          text="Веду дизайнеров на переходе в сеньор-лиды"
+                          maxChars={26}
+                          lineClass="h-[16px] md:h-[22px]"
+                        />
+                      </h3>
+                      <p className="text-[16px] text-white/72 leading-relaxed max-w-lg">
+                        Провёл уже больше 40 менторинг-сессий. Помогаю пройти развилки:
+                        как вырасти до лида, как собрать команду, как защитить проект
+                        перед топ-менеджментом. Не на каждую развилку у меня есть готовый
+                        ответ, но обычно есть похожий опыт.
+                      </p>
+                    </div>
+                    <span className="inline-flex items-center gap-2 text-[#A6FF00] mt-8 pt-6 border-t border-white/[0.08]">
+                      <span className="sr-only">Записаться на сессию</span>
+                      <LedText text="Записаться на сессию" className="h-[10px] w-auto" />
+                      <LedText
+                        text="→"
+                        className="h-[12px] w-auto group-hover:translate-x-1 transition-transform"
+                      />
+                    </span>
+                  </div>
+                  {/* Картинка-плейсхолдер: яйцо из облака точек (заменим позже) */}
+                  <div className="relative hidden md:block border-l border-white/[0.06] bg-black/20">
+                    <PixelPhoto
+                      src="/images/egg-portrait.png"
+                      cols={52}
+                      aspect={0.92}
+                      idle={0.72}
+                      loColor={[34, 64, 0]}
+                      hiColor={[166, 255, 0]}
+                      className="absolute inset-0"
+                    />
+                  </div>
+                </div>
+              </div>
+            </button>
+          </motion.div>
+
+          {/* ── ВЫСТУПЛЕНИЯ: чипы конференций слева + текст справа ── */}
+          <motion.div variants={fadeUp}>
+            <Link
+              href="/speaking"
+              data-ym-goal="nav_speaking"
+              data-ym-goal-params='{"placement":"offer_blocks"}'
+              className="no-underline group block w-full"
+            >
+              <div className="relative rounded-2xl overflow-hidden border border-white/[0.06] group-hover:border-[#C9A66B]/35 transition-colors duration-300 bg-[#0e0d0a]">
+                <div
+                  aria-hidden
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background:
+                      "radial-gradient(ellipse 65% 90% at 90% 0%, rgba(201,166,107,0.07), transparent 60%)",
+                  }}
+                />
+                <div className="relative grid md:grid-cols-[minmax(0,340px)_1fr] items-stretch">
+                  {/* Визуал — лента площадок */}
+                  <div className="relative hidden md:flex border-r border-white/[0.06] bg-black/20 p-10 flex-col justify-center gap-3">
                     <div
                       aria-hidden
                       className="absolute inset-0 pointer-events-none"
                       style={{
                         backgroundImage:
-                          "radial-gradient(rgba(255,255,255,0.07) 1.1px, transparent 1.2px)",
-                        backgroundSize: "13px 13px",
+                          "radial-gradient(rgba(201,166,107,0.10) 1.1px, transparent 1.2px)",
+                        backgroundSize: "14px 14px",
                         maskImage:
-                          "radial-gradient(ellipse 80% 90% at 85% 10%, black, transparent 70%)",
+                          "radial-gradient(ellipse 90% 80% at 50% 50%, black, transparent 75%)",
                         WebkitMaskImage:
-                          "radial-gradient(ellipse 80% 90% at 85% 10%, black, transparent 70%)",
+                          "radial-gradient(ellipse 90% 80% at 50% 50%, black, transparent 75%)",
                       }}
                     />
-                    <div
-                      className="absolute top-7 right-7 md:top-9 md:right-9 h-2 w-2 rounded-full"
-                      style={{ backgroundColor: t.accent }}
-                    />
+                    {["МТС", "Ozon", "ВШЭ", "Дизайн-Просмотр"].map((v) => (
+                      <span
+                        key={v}
+                        className="relative inline-flex items-center gap-2 self-start rounded-full border border-white/10 bg-black/40 px-4 py-2 text-white/70 group-hover:border-[#C9A66B]/30 transition-colors"
+                      >
+                        <span className="h-1 w-1 rounded-full bg-[#C9A66B]/80" />
+                        <span className="sr-only">{v}</span>
+                        <LedText text={v} className="h-[9px] w-auto" />
+                      </span>
+                    ))}
+                  </div>
+                  {/* Текст */}
+                  <div className="p-8 md:p-12 flex flex-col justify-between min-h-[280px]">
                     <div>
-                      <div className="inline-flex items-center text-white/75 mb-4">
-                        <span className="sr-only">{t.label}</span>
-                        <LedText text={t.label} className="h-[10px] w-auto" />
+                      <div className="inline-flex items-center gap-2 text-white/75 mb-5">
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#C9A66B]" />
+                        <span className="sr-only">ВЫСТУПЛЕНИЯ</span>
+                        <LedText text="ВЫСТУПЛЕНИЯ" className="h-[11px] w-auto" />
                       </div>
-                      <h3 className="text-white mb-5 max-w-sm">
-                        <LedLines text={t.title} maxChars={24} lineClass="h-[14px] md:h-[17px]" />
+                      <h3 className="text-white mb-5 max-w-lg">
+                        <LedLines
+                          text="Выступаю и модерирую секции про AI и дизайн"
+                          maxChars={26}
+                          lineClass="h-[16px] md:h-[22px]"
+                        />
                       </h3>
-                      <p className="text-[16px] md:text-[16px] text-white/72 leading-relaxed max-w-md">
-                        {t.body}
+                      <p className="text-[16px] text-white/72 leading-relaxed max-w-lg">
+                        Внутренние конференции МТС и Ozon, Дизайн-Просмотр, ВШЭ (читал
+                        курс по прикладному ИИ). Темы: AI в продукте, масштабирование
+                        дизайна, дизайн-системы.
                       </p>
                     </div>
-                    <span className="inline-flex items-center gap-2 text-white/72 group-hover:text-white transition-colors mt-6 pt-5 border-t border-white/[0.06]">
-                      <span className="sr-only">{t.cta}</span>
-                      <LedText text={t.cta} className="h-[10px] w-auto" />
-                      <LedText text="→" className="h-[12px] w-auto group-hover:translate-x-1 transition-transform" />
+                    <span className="inline-flex items-center gap-2 text-white/72 group-hover:text-white transition-colors mt-8 pt-6 border-t border-white/[0.08]">
+                      <span className="sr-only">Смотреть выступления</span>
+                      <LedText text="Смотреть выступления" className="h-[10px] w-auto" />
+                      <LedText
+                        text="→"
+                        className="h-[12px] w-auto group-hover:translate-x-1 transition-transform"
+                      />
                     </span>
                   </div>
-              );
-              return (
-                <motion.div key={t.href} variants={fadeUp}>
-                  {isBooking ? (
-                    <button
-                      type="button"
-                      data-open-booking
-                      data-ym-goal="nav_mentoring"
-                      data-ym-goal-params='{"placement":"offer_cards"}'
-                      className="no-underline group block h-full w-full text-left"
-                    >
-                      {inner}
-                    </button>
-                  ) : (
-                    <Link
-                      href={t.href}
-                      data-ym-goal="nav_speaking"
-                      data-ym-goal-params='{"placement":"offer_cards"}'
-                      className="no-underline group block h-full"
-                    >
-                      {inner}
-                    </Link>
-                  )}
-                </motion.div>
-              );
-            })}
-          </div>
+                </div>
+              </div>
+            </Link>
+          </motion.div>
         </motion.div>
       </section>
 
