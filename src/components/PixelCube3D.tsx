@@ -85,13 +85,13 @@ export default function PixelCube3D({
     const [br, bg, bb] = hexToRgb(color);
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    const S = 200;
+    const S = 340; // выше разрешение оффскрин-буфера → плавнее градиент материала
     const buf = document.createElement("canvas");
     buf.width = S; buf.height = S;
     const bctx = buf.getContext("2d", { willReadFrequently: true })!;
 
     // белая версия знака
-    const LS = 128;
+    const LS = 196;
     const logoTex = document.createElement("canvas");
     logoTex.width = LS; logoTex.height = LS;
     let logoReady = false;
@@ -116,11 +116,17 @@ export default function PixelCube3D({
       img.src = logoSrc;
     }
 
-    const light: V3 = (() => {
-      const v: V3 = [-0.35, -0.55, 0.9];
-      const m = Math.hypot(v[0], v[1], v[2]);
+    const norm = (v: V3): V3 => {
+      const m = Math.hypot(v[0], v[1], v[2]) || 1;
       return [v[0] / m, v[1] / m, v[2] / m];
-    })();
+    };
+    // Двухточечный свет: тёплый key сверху-слева-спереди + холодный rim
+    // сзади-справа. Даёт объём бренд-цвету и читается как «материал».
+    const keyL = norm([-0.4, -0.6, 0.85]);
+    const rimL = norm([0.7, 0.35, -0.5]);
+    // half-vector для блика (камера смотрит вдоль +z)
+    const view: V3 = [0, 0, 1];
+    const half = norm([keyL[0] + view[0], keyL[1] + view[1], keyL[2] + view[2]]);
 
     let dpr = Math.min(window.devicePixelRatio || 1, 2);
     let outPx = 0;
@@ -173,11 +179,12 @@ export default function PixelCube3D({
       bctx.restore();
     };
 
+    let bobY = 0; // мягкое плавание по вертикали
     const project = (v: V3): [number, number] => {
       const d = 4.4;
       const f = d / (d - v[2]);
       const sc = S * 0.29;
-      return [S / 2 + v[0] * sc * f, S / 2 - v[1] * sc * f];
+      return [S / 2 + v[0] * sc * f, S / 2 - v[1] * sc * f + bobY];
     };
 
     const frame = (now: number) => {
@@ -208,6 +215,7 @@ export default function PixelCube3D({
           break;
       }
 
+      bobY = Math.sin(ph * 0.85) * S * 0.013; // лёгкое «дыхание» по вертикали
       const rv = VERTS.map((v) => rotate(v, ax, ay));
       const pv = rv.map(project);
 
@@ -220,8 +228,14 @@ export default function PixelCube3D({
       for (const { i } of order) {
         const face = FACES[i];
         const rn = rotate(face.n, ax, ay);
-        const lam = Math.max(0, rn[0] * light[0] + rn[1] * light[1] + rn[2] * light[2]);
-        const shade = 0.2 + 0.8 * lam;
+        // диффуз от двух источников + амбиент
+        const dKey = Math.max(0, rn[0] * keyL[0] + rn[1] * keyL[1] + rn[2] * keyL[2]);
+        const dRim = Math.max(0, rn[0] * rimL[0] + rn[1] * rimL[1] + rn[2] * rimL[2]);
+        const ambient = 0.16;
+        const shade = ambient + 0.82 * dKey + 0.18 * dRim;
+        // глянцевый блик (Blinn-Phong, плоская грань → ровный блик материала)
+        const ndh = Math.max(0, rn[0] * half[0] + rn[1] * half[1] + rn[2] * half[2]);
+        const spec = Math.pow(ndh, 9) * 1.6; // широкий мягкий глянец, читается при turntable
         const facing = rn[2];
 
         const p = face.idx.map((k) => pv[k]);
@@ -229,8 +243,42 @@ export default function PixelCube3D({
         bctx.moveTo(p[0][0], p[0][1]);
         for (let k = 1; k < 4; k++) bctx.lineTo(p[k][0], p[k][1]);
         bctx.closePath();
-        bctx.fillStyle = `rgb(${Math.round(br * shade)},${Math.round(bg * shade)},${Math.round(bb * shade)})`;
+        // тон грани: бренд-цвет, чуть уводим тени в холод, света в тепло
+        const rr0 = Math.min(255, br * shade + 10 * dRim);
+        const gg0 = Math.min(255, bg * shade + 6 * dKey);
+        const bb0 = Math.min(255, bb * shade + 14 * dRim);
+        bctx.fillStyle = `rgb(${Math.round(rr0)},${Math.round(gg0)},${Math.round(bb0)})`;
         bctx.fill();
+
+        // мягкий глянцевый отблеск пятном — оживляет материал по мере вращения
+        if (facing > 0 && spec > 0.01) {
+          const cx = (p[0][0] + p[1][0] + p[2][0] + p[3][0]) / 4;
+          const cy = (p[0][1] + p[1][1] + p[2][1] + p[3][1]) / 4;
+          const rad = Math.hypot(p[0][0] - p[2][0], p[0][1] - p[2][1]) * 0.5;
+          const g = bctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(4, rad));
+          const a = Math.min(0.9, spec);
+          g.addColorStop(0, `rgba(255,255,255,${a})`);
+          g.addColorStop(0.5, `rgba(255,255,255,${a * 0.28})`);
+          g.addColorStop(1, "rgba(255,255,255,0)");
+          bctx.save();
+          bctx.beginPath();
+          bctx.moveTo(p[0][0], p[0][1]);
+          for (let k = 1; k < 4; k++) bctx.lineTo(p[k][0], p[k][1]);
+          bctx.closePath();
+          bctx.clip();
+          bctx.fillStyle = g;
+          bctx.fillRect(cx - rad, cy - rad, rad * 2, rad * 2);
+          bctx.restore();
+        }
+
+        // фаска: тонкое светлое ребро по контуру грани — «полированный» край
+        bctx.beginPath();
+        bctx.moveTo(p[0][0], p[0][1]);
+        for (let k = 1; k < 4; k++) bctx.lineTo(p[k][0], p[k][1]);
+        bctx.closePath();
+        bctx.lineWidth = S * 0.006;
+        bctx.strokeStyle = `rgba(255,255,255,${0.1 + 0.32 * dKey})`;
+        bctx.stroke();
 
         // знак на каждой грани, пока она к зрителю — два текстурных треугольника
         if (logoReady && facing > 0.04) {
@@ -251,12 +299,18 @@ export default function PixelCube3D({
       const cell = outPx / grid;
       const rDot = cell * 0.34; // единый размер всех точек
       const bright = 0.42 + 0.58 * lit;
+      // 2×2 суперсэмпл на ячейку → мягче градиент материала на сетке
+      const SS = [0.25, 0.75];
       for (let gy = 0; gy < grid; gy++) {
         for (let gx = 0; gx < grid; gx++) {
-          const sx = Math.floor(((gx + 0.5) / grid) * S);
-          const sy = Math.floor(((gy + 0.5) / grid) * S);
-          const o = (sy * S + sx) * 4;
-          const rr = data[o], gg = data[o + 1], bbb = data[o + 2], aa = data[o + 3];
+          let rr = 0, gg = 0, bbb = 0, aa = 0;
+          for (const fy of SS) for (const fx of SS) {
+            const sx = Math.min(S - 1, Math.floor(((gx + fx) / grid) * S));
+            const sy = Math.min(S - 1, Math.floor(((gy + fy) / grid) * S));
+            const o = (sy * S + sx) * 4;
+            rr += data[o]; gg += data[o + 1]; bbb += data[o + 2]; aa += data[o + 3];
+          }
+          rr /= 4; gg /= 4; bbb /= 4; aa /= 4;
           const cx = (gx + 0.5) * cell;
           const cy = (gy + 0.5) * cell;
           ctx.beginPath();
@@ -265,7 +319,7 @@ export default function PixelCube3D({
             ctx.fillStyle = `rgba(${br},${bg},${bb},0.06)`; // погашенный диод
           } else {
             const lum = (0.299 * rr + 0.587 * gg + 0.114 * bbb) / 255;
-            ctx.fillStyle = `rgba(${rr},${gg},${bbb},${(0.3 + 0.7 * lum) * bright})`;
+            ctx.fillStyle = `rgba(${Math.round(rr)},${Math.round(gg)},${Math.round(bbb)},${(0.3 + 0.7 * lum) * bright})`;
           }
           ctx.fill();
         }

@@ -16,6 +16,7 @@ import { LedLines } from "@/components/LedBoard";
 import FontSpecimen from "@/components/FontSpecimen";
 import ParticleStudio from "@/components/ParticleStudio";
 import ParticlePortrait from "@/components/ParticlePortrait";
+import PixelCube3D from "@/components/PixelCube3D";
 
 /* Пиксельный лейбл секций кейса — единый язык с табло главной */
 function CaseLabel({
@@ -79,6 +80,9 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
 
   const { prev, next } = getAdjacentProjects(slug);
 
+  // Брендовый кейс → в hero вращается LED-куб со знаком вместо статичной обложки.
+  const heroCube = !!(project.cubeColor && project.cubeLogo && !project.coverParticles);
+
   return (
     <>
       {/* WIP-оверлей: блюрит контент кейса и показывает плашку «дорабатывается» */}
@@ -100,6 +104,8 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
               count={7000}
               depthScale={project.coverParticles.depthScale ?? 0.6}
               pointScale={project.coverParticles.pointScale ?? 0.9}
+              color={[255, 196, 84]}
+              brightness={1.7}
               tilt={0.5}
               assembleOnHover={false}
               scatterOnHover
@@ -107,7 +113,18 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
             />
           </div>
         )}
-        {!project.coverParticles && (project.heroImage || project.coverImage || project.coverVideo) && (
+        {heroCube && (
+          <div className="absolute inset-0 z-0 flex items-center justify-center md:justify-end md:pr-[8%] pointer-events-none">
+            <PixelCube3D
+              color={project.cubeColor!}
+              logoSrc={project.cubeLogo!}
+              grid={56}
+              mode="spin"
+              className="h-[80%] max-h-[540px] opacity-95 pointer-events-auto"
+            />
+          </div>
+        )}
+        {!heroCube && !project.coverParticles && (project.heroImage || project.coverImage || project.coverVideo) && (
           <div className="absolute inset-0 z-0">
             {project.heroImage ? (
               <Image
@@ -169,20 +186,22 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
         <section className="relative z-[1] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] bg-black border-t border-white/[0.06]">
           {(() => {
             const len = project.results.length;
-            // 3 → 1 row of 3, 4 → 1 row of 4, 6 → 2 rows of 3, иначе → 4 в ряд
+            // 2 → 2 в ряд, 3 → 3, 4 → 4, 6 → 2 ряда по 3, иначе → 4 в ряд
             const colsClass =
-              len === 3
-                ? "md:grid-cols-3"
+              len === 2
+                ? "grid-cols-2"
+                : len === 3
+                ? "grid-cols-1 md:grid-cols-3"
                 : len === 6
-                ? "md:grid-cols-3"
-                : "md:grid-cols-4";
+                ? "grid-cols-2 md:grid-cols-3"
+                : "grid-cols-2 md:grid-cols-4";
             return (
-              <div className={`grid grid-cols-2 ${colsClass} gap-px bg-white/[0.04] rounded-lg overflow-hidden my-0`}>
+              <div className={`grid ${colsClass} gap-px bg-white/[0.04] rounded-lg overflow-hidden my-0`}>
                 {project.results!.map((r) => (
-                  <div key={r.label} className="bg-black p-5 md:p-6 flex flex-col items-center gap-2.5">
+                  <div key={r.label} className="bg-black p-5 md:p-6 flex flex-col items-center gap-2.5 min-w-0 w-full">
                     <span className="sr-only">{`${r.value} ${r.label}`}</span>
-                    <LedText text={r.value} scale={2} dot={1.45} className="h-[28px] md:h-[40px] w-auto text-white" />
-                    <LedText text={r.label} className="h-[9px] md:h-[10px] w-auto text-white/45" />
+                    <LedText text={r.value} scale={2} dot={1.45} className="h-[28px] md:h-[40px] w-auto max-w-full text-white" />
+                    <LedText text={r.label} className="h-[9px] md:h-[10px] w-auto max-w-full text-white/45" />
                   </div>
                 ))}
               </div>
