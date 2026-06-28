@@ -9,6 +9,7 @@ import { Oled, PixelGlyph, GLYPH_ORG, GLYPH_GRID, GLYPH_CODE } from "@/component
 import FinalCTA from "@/components/FinalCTA";
 import PixelCubePile from "@/components/PixelCubePile";
 import PixelPhoto from "@/components/PixelPhoto";
+import ConstellationFigures from "@/components/ConstellationFigures";
 import { TypographyFix } from "@/components/TypographyFix";
 import { workProjects } from "@/data/projects";
 import { Plus } from "lucide-react";
@@ -960,32 +961,56 @@ export default function PreviewHome() {
     return () => window.removeEventListener("hero:home", home);
   }, []);
 
-  // Скролл-подсказка: после активации портрета, в начале скролл-жеста он
-  // собирается в текст-фразу (как по клику) — чтобы было видно, что табло
-  // интерактивно. Срабатывает один раз за жест и только когда портрет покоится.
+  // Скролл-подсказка (работает без активации, в т.ч. на телефоне):
+  // • первым кадром виден портрет (лицо);
+  // • скролл ВНИЗ → портрет мгновенно собирается в текст-фразу (forceAssemble
+  //   через onPortraitTap гарантирует видимость даже без ховера на тач);
+  // • скролл ВВЕРХ → возврат в портрет.
+  // Не перебивает залипшие пасхалки (бас/награда/яйцо) — только покой (shape 0)
+  // и только свою скролл-фразу при возврате (диапазон текст-форм 4..7).
   useEffect(() => {
-    let scrolling = false;
-    let stopT: number | null = null;
+    let lastY = window.scrollY;
+    let armed = true; // готов выдать морф на следующий скролл вниз
     const inView = () => {
       const el = heroSphereRef.current;
       if (!el) return false;
       const r = el.getBoundingClientRect();
       return r.bottom > 0 && r.top < window.innerHeight;
     };
+    const TEXT_END = TEXT_START + HERO_BUBBLES.length; // 8 (4..7 — скролл-фразы)
     const onScroll = () => {
-      if (!portraitActivated.current) return;
-      if (!scrolling) {
-        scrolling = true;
-        if (heroShapeRef.current === 0 && inView()) onPortraitTapRef.current();
+      const y = window.scrollY;
+      const down = y > lastY;
+      lastY = y;
+      if (!inView()) { armed = true; return; }
+      if (down) {
+        if (armed && heroShapeRef.current === 0) {
+          armed = false;
+          onPortraitTapRef.current();
+        }
+      } else {
+        // вверх → вернуть портрет, если показываем именно скролл-фразу
+        const s = heroShapeRef.current;
+        if (s >= TEXT_START && s < TEXT_END) {
+          if (revertTimer.current) window.clearTimeout(revertTimer.current);
+          setHeroShape(0);
+        }
+        armed = true;
       }
-      if (stopT) window.clearTimeout(stopT);
-      stopT = window.setTimeout(() => { scrolling = false; }, 700);
     };
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      if (stopT) window.clearTimeout(stopT);
-    };
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // На тач-устройствах нет ховера — собираем лицо сразу, чтобы первым кадром
+  // был портрет, а не рассыпанное облако (на десктопе остаётся сборка по ховеру).
+  useEffect(() => {
+    if (
+      typeof window !== "undefined" &&
+      !window.matchMedia("(hover: hover) and (pointer: fine)").matches
+    ) {
+      setHeroEngaged(true);
+    }
   }, []);
 
   const heroLines: LedLine[] = [
@@ -1459,6 +1484,7 @@ export default function PreviewHome() {
                   "Автоматизирую рутину, собираю AI-инструменты и агенты под конкретные задачи. Понимаю, что реально сделать руками и сколько это стоит в человеко-часах. Знаю, когда применять AI, а когда нанимать эксперта.",
                 items: [
                   "AI-инструменты · агенты",
+                  "Эмоциональный дизайн · детали",
                   "Prompt engineering",
                   "Figma · Design Systems",
                   "React · TypeScript",
@@ -1632,17 +1658,9 @@ export default function PreviewHome() {
                       />
                     </span>
                   </div>
-                  {/* Картинка-плейсхолдер: яйцо из облака точек (заменим позже) */}
+                  {/* Созвездие фигур из облака точек — ментор как яркий хаб */}
                   <div className="relative hidden md:block border-l border-white/[0.06] bg-black/20">
-                    <PixelPhoto
-                      src="/images/egg-portrait.png"
-                      cols={52}
-                      aspect={0.92}
-                      idle={0.72}
-                      loColor={[34, 64, 0]}
-                      hiColor={[166, 255, 0]}
-                      className="absolute inset-0"
-                    />
+                    <ConstellationFigures className="absolute inset-0" />
                   </div>
                 </div>
               </div>
@@ -1757,7 +1775,7 @@ export default function PreviewHome() {
               <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border border-white/[0.06] bg-black">
                 <span className="sr-only">Егор Шугаев — дизайн-директор, ментор и независимый консультант</span>
                 <PixelPhoto
-                  src="/images/photos/photo-3.jpg"
+                  src="/images/photos/me-pixel.png"
                   cols={72}
                   aspect={0.8}
                   className="absolute inset-0"
