@@ -998,19 +998,29 @@ export default function PreviewHome() {
   // Стабильная ссылка на tap для слушателя скролла (он вешается один раз).
   const onPortraitTapRef = useRef(onPortraitTap);
   onPortraitTapRef.current = onPortraitTap;
+  // Автоскролл к портрету: когда пасхалка срабатывает из блока ниже/выше
+  // (цифры, лого, награда), подматываем табло в кадр, чтобы было видно морф
+  // и изменение счётчика. НЕ зовём для кнопки «не нажимать» (она внизу).
+  const scrollToHero = () => {
+    if (typeof window === "undefined") return;
+    heroSphereRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
   // Бас — 3 числа в любом порядке, ЗАЛИПАЕТ (без авто-возврата)
   const tapNum = (i: number) =>
     setClickedNums((prev) => {
       const n = new Set(prev); n.add(i);
-      if (n.size >= 3) { cancelRevert(); setHeroEngaged(true); setHeroShape(2); foundEgg("bass"); }
+      if (n.size >= 3) { cancelRevert(); setHeroEngaged(true); setHeroShape(2); foundEgg("bass"); scrollToHero(); }
       return n;
     });
   // Ховер-пасхалки — только для мыши (на тач-устройствах их триггерит скролл)
   const canHover = () =>
     typeof window !== "undefined" &&
     window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-  // Награда — наведение, ЗАЛИПАЕТ
+  // Награда — наведение (десктоп), ЗАЛИПАЕТ
   const showAward = () => { if (!canHover()) return; cancelRevert(); setHeroEngaged(true); setHeroShape(1); foundEgg("award"); };
+  // Награда — тап по статуэтке (работает и на тач): морф + засчёт + автоскролл.
+  // Не уводит в кейс (клик по статуэтке гасит переход), остальная карточка — ссылка.
+  const tapAward = () => { cancelRevert(); setHeroEngaged(true); setHeroShape(1); foundEgg("award"); scrollToHero(); };
   const goHomeHover = () => { if (canHover()) window.dispatchEvent(new Event("hero:home")); };
   // Глитч — точная последовательность логотипов, САМ пропадает
   const LOGO_CODE = ["mts", "ozon", "gpn", "mts"];
@@ -1025,6 +1035,7 @@ export default function PreviewHome() {
       scheduleRevert(5000);
       logoSeq.current = [];
       foundEgg("glitch");
+      scrollToHero();
       return;
     }
     // Одиночный клик по МТС → яйцо (всегда, даже без предварительного ховера).
@@ -1033,6 +1044,7 @@ export default function PreviewHome() {
       setHeroShape(SHAPE_EGG);
       scheduleRevert(5000);
       foundEgg("egg");
+      scrollToHero();
     }
   };
   // Возврат к портрету — наведение на лого «ЕГОР ШУГАЕВ» в шапке (window-event)
@@ -1218,10 +1230,19 @@ export default function PreviewHome() {
                   >
                     <span className="sr-only">{`Найдено пасхалок: ${eggCount} из ${eggTotal}`}</span>
                     <LedText text="Найдено" className="h-[8px] w-auto opacity-60" />
-                    <LedText
-                      text={`${eggCount} из ${eggTotal}`}
-                      className={`h-[10px] w-auto ${eggDone ? "text-[#A6FF00]" : "text-white/75"}`}
-                    />
+                    {/* Пружинный «поп» при изменении значения (key=eggCount) */}
+                    <motion.span
+                      key={eggCount}
+                      initial={{ scale: 1.5 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 420, damping: 14 }}
+                      className="inline-flex"
+                    >
+                      <LedText
+                        text={`${eggCount} из ${eggTotal}`}
+                        className={`h-[10px] w-auto ${eggDone ? "text-[#A6FF00]" : "text-white/75"}`}
+                      />
+                    </motion.span>
                   </span>
                 </div>
                 <div
@@ -1319,6 +1340,18 @@ export default function PreviewHome() {
                     alt=""
                     aria-hidden
                     className="absolute right-5 md:right-9 top-1/2 -translate-y-1/2 h-[82%] lg:h-[64%] xl:h-[80%] w-auto pointer-events-none select-none"
+                  />
+                  {/* Тап по статуэтке = пасхалка «награда» (морф+автоскролл),
+                      а не переход в кейс. Остальная карточка остаётся ссылкой. */}
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    aria-label="Награда — засчитать пасхалку"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); tapAward(); }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); tapAward(); }
+                    }}
+                    className="absolute right-0 top-0 z-[3] h-full w-[44%] cursor-pointer"
                   />
                   <span className="sr-only">CX Awards 2024</span>
                   <LedText
