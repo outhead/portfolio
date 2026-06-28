@@ -1258,29 +1258,6 @@ export default function PreviewHome() {
                     <LedText text="Дизайн-директор" className="h-[10px] w-auto" />
                     <LedText text="]" className="h-[10px] w-auto text-[#C9A66B]/70" />
                   </span>
-                  {/* Счётчик пасхалок — справа, симметрично лейблу. Клик → доска */}
-                  <button
-                    type="button"
-                    onClick={() => setBoardOpen(true)}
-                    className="inline-flex items-center gap-1.5 select-none cursor-pointer hover:text-white/60 transition-colors"
-                    title="Открыть доску искателей"
-                    aria-label={`Найдено пасхалок: ${eggCount} из ${eggTotal}. Открыть доску`}
-                  >
-                    <LedText text="Найдено" className="h-[8px] w-auto opacity-60" />
-                    {/* Пружинный «поп» при изменении значения (key=eggCount) */}
-                    <motion.span
-                      key={eggCount}
-                      initial={{ scale: 1.5 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: "spring", stiffness: 420, damping: 14 }}
-                      className="inline-flex"
-                    >
-                      <LedText
-                        text={`${eggCount} из ${eggTotal}`}
-                        className={`h-[10px] w-auto ${eggDone ? "text-[#A6FF00]" : "text-white/75"}`}
-                      />
-                    </motion.span>
-                  </button>
                 </div>
                 <div
                   ref={heroSphereRef}
@@ -1309,11 +1286,29 @@ export default function PreviewHome() {
                     {bubbleStage > 0 ? HERO_BUBBLES[(bubbleStage - 1) % HERO_BUBBLES.length] : ""}
                   </span>
                 </div>
-                <div className="flex items-center text-white/35">
-                  <span aria-label="Москва">
-                    <LedText text="Москва" className="h-[10px] w-auto" />
-                  </span>
-                </div>
+                {/* Счётчик пасхалок в нижней строке: лейбл слева (где была
+                    «Москва»), значение — в правом нижнем углу. Клик → доска. */}
+                <button
+                  type="button"
+                  onClick={() => setBoardOpen(true)}
+                  className="w-full flex items-center justify-between text-white/35 select-none cursor-pointer hover:text-white/60 transition-colors"
+                  title="Открыть доску искателей"
+                  aria-label={`Найдено пасхалок: ${eggCount} из ${eggTotal}. Открыть доску`}
+                >
+                  <LedText text="Найдено" className="h-[10px] w-auto opacity-70" />
+                  <motion.span
+                    key={eggCount}
+                    initial={{ scale: 1.5 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 420, damping: 14 }}
+                    className="inline-flex"
+                  >
+                    <LedText
+                      text={`${eggCount} из ${eggTotal}`}
+                      className={`h-[12px] w-auto ${eggDone ? "text-[#A6FF00]" : "text-white/75"}`}
+                    />
+                  </motion.span>
+                </button>
               </Oled>
             </motion.div>
 
