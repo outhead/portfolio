@@ -9,6 +9,7 @@ import { Oled, PixelGlyph, GLYPH_ORG, GLYPH_GRID, GLYPH_CODE } from "@/component
 import FinalCTA from "@/components/FinalCTA";
 import PixelCubePile from "@/components/PixelCubePile";
 import PixelPhoto from "@/components/PixelPhoto";
+import BioRotator from "@/components/BioRotator";
 import ConstellationFigures from "@/components/ConstellationFigures";
 import { TypographyFix } from "@/components/TypographyFix";
 import { workProjects } from "@/data/projects";
@@ -17,6 +18,7 @@ import { ymGoal } from "@/lib/yandex-metrika";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
+import confetti from "canvas-confetti";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Code2,
@@ -707,11 +709,11 @@ const tools: Array<{ name: string; icon: React.ReactNode }> = [
     icon: (
       // Серый по умолчанию (currentColor), на ховер группы — фирменные 5 цветов
       <svg viewBox="0 0 38 57" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-        <path d="M19 28.5a9.5 9.5 0 1 1 19 0 9.5 9.5 0 0 1-19 0z"          className="fill-current group-hover:fill-[#1ABCFE] transition-colors" />
-        <path d="M0 47.5A9.5 9.5 0 0 1 9.5 38H19v9.5a9.5 9.5 0 1 1-19 0z"  className="fill-current group-hover:fill-[#0ACF83] transition-colors" />
-        <path d="M19 0v19h9.5a9.5 9.5 0 1 0 0-19H19z"                     className="fill-current group-hover:fill-[#FF7262] transition-colors" />
-        <path d="M0 9.5A9.5 9.5 0 0 0 9.5 19H19V0H9.5A9.5 9.5 0 0 0 0 9.5z" className="fill-current group-hover:fill-[#F24E1E] transition-colors" />
-        <path d="M0 28.5A9.5 9.5 0 0 0 9.5 38H19V19H9.5A9.5 9.5 0 0 0 0 28.5z" className="fill-current group-hover:fill-[#A259FF] transition-colors" />
+        <path d="M19 28.5a9.5 9.5 0 1 1 19 0 9.5 9.5 0 0 1-19 0z"          className="fill-current group-hover:fill-[#1ABCFE] [@media(hover:none)]:fill-[#1ABCFE] transition-colors" />
+        <path d="M0 47.5A9.5 9.5 0 0 1 9.5 38H19v9.5a9.5 9.5 0 1 1-19 0z"  className="fill-current group-hover:fill-[#0ACF83] [@media(hover:none)]:fill-[#0ACF83] transition-colors" />
+        <path d="M19 0v19h9.5a9.5 9.5 0 1 0 0-19H19z"                     className="fill-current group-hover:fill-[#FF7262] [@media(hover:none)]:fill-[#FF7262] transition-colors" />
+        <path d="M0 9.5A9.5 9.5 0 0 0 9.5 19H19V0H9.5A9.5 9.5 0 0 0 0 9.5z" className="fill-current group-hover:fill-[#F24E1E] [@media(hover:none)]:fill-[#F24E1E] transition-colors" />
+        <path d="M0 28.5A9.5 9.5 0 0 0 9.5 38H19V19H9.5A9.5 9.5 0 0 0 0 28.5z" className="fill-current group-hover:fill-[#A259FF] [@media(hover:none)]:fill-[#A259FF] transition-colors" />
       </svg>
     ),
   },
@@ -720,14 +722,14 @@ const tools: Array<{ name: string; icon: React.ReactNode }> = [
     icon: (
       <svg viewBox="0 0 24 24" className="w-full h-full">
         <rect x="2" y="2" width="20" height="20" rx="3" strokeWidth="1.5" fill="none"
-          className="stroke-current group-hover:stroke-[#31A8FF] transition-colors" />
+          className="stroke-current group-hover:stroke-[#31A8FF] [@media(hover:none)]:stroke-[#31A8FF] transition-colors" />
         <text
           x="12"
           y="16.5"
           textAnchor="middle"
           fontWeight="700"
           fontSize="11"
-          className="fill-current group-hover:fill-[#31A8FF] transition-colors"
+          className="fill-current group-hover:fill-[#31A8FF] [@media(hover:none)]:fill-[#31A8FF] transition-colors"
         >
           Ps
         </text>
@@ -739,14 +741,14 @@ const tools: Array<{ name: string; icon: React.ReactNode }> = [
     icon: (
       <svg viewBox="0 0 24 24" className="w-full h-full">
         <rect x="2" y="2" width="20" height="20" rx="3" strokeWidth="1.5" fill="none"
-          className="stroke-current group-hover:stroke-[#FF9A00] transition-colors" />
+          className="stroke-current group-hover:stroke-[#FF9A00] [@media(hover:none)]:stroke-[#FF9A00] transition-colors" />
         <text
           x="12"
           y="16.5"
           textAnchor="middle"
           fontWeight="700"
           fontSize="11"
-          className="fill-current group-hover:fill-[#FF9A00] transition-colors"
+          className="fill-current group-hover:fill-[#FF9A00] [@media(hover:none)]:fill-[#FF9A00] transition-colors"
         >
           Ai
         </text>
@@ -757,7 +759,7 @@ const tools: Array<{ name: string; icon: React.ReactNode }> = [
     name: "Claude",
     icon: (
       <svg viewBox="0 0 24 24" className="w-full h-full">
-        <path className="fill-current group-hover:fill-[#D97757] transition-colors" d="M4.709 15.955l4.72-2.647.079-.23-.079-.128H9.2l-.79-.048-2.698-.073-2.339-.097-2.266-.122-.571-.121L0 11.784l.055-.352.48-.321.686.061 1.52.103 2.278.158 1.652.097 2.449.255h.389l.055-.157-.134-.098-.103-.097-2.358-1.596-2.552-1.688-1.336-.972-.724-.491-.364-.462-.158-1.008.656-.722.881.06.225.061.893.686 1.908 1.476 2.491 1.833.365.304.145-.103.019-.073-.164-.274-1.355-2.446-1.446-2.49-.644-1.032-.17-.619a2.97 2.97 0 01-.104-.729L6.283.134 6.696 0l.996.134.42.364.62 1.414 1.002 2.229 1.555 3.03.456.898.243.832.091.255h.158V9.01l.128-1.706.237-2.095.23-2.695.08-.76.376-.91.747-.492.584.28.48.685-.067.444-.286 1.851-.559 2.903-.364 1.942h.212l.243-.242.985-1.306 1.652-2.064.729-.82.85-.904.547-.431h1.033l.76 1.129-.34 1.166-1.064 1.347-.881 1.142-1.264 1.7-.79 1.36.073.11.188-.02 2.856-.606 1.543-.28 1.841-.315.833.388.091.395-.328.807-1.969.486-2.309.462-3.439.813-.042.03.049.061 1.549.146.662.036h1.622l3.02.225.79.522.474.638-.079.485-1.215.62-1.64-.389-3.829-.91-1.312-.329h-.182v.11l1.093 1.068 2.006 1.81 2.509 2.33.127.578-.322.455-.34-.049-2.205-1.657-.851-.747-1.926-1.62h-.128v.17l.444.649 2.345 3.521.122 1.08-.17.353-.608.213-.668-.122-1.374-1.925-1.415-2.167-1.143-1.943-.14.08-.674 7.254-.316.37-.729.28-.607-.461-.322-.747.322-1.476.389-1.924.315-1.53.286-1.9.17-.632-.012-.042-.14.018-1.434 1.967-2.18 2.945-1.726 1.845-.414.164-.717-.37.067-.662.401-.589 2.388-3.036 1.44-1.882.929-1.086-.006-.158h-.055L4.132 18.56l-1.13.146-.487-.456.061-.746.231-.243 1.908-1.312z" />
+        <path className="fill-current group-hover:fill-[#D97757] [@media(hover:none)]:fill-[#D97757] transition-colors" d="M4.709 15.955l4.72-2.647.079-.23-.079-.128H9.2l-.79-.048-2.698-.073-2.339-.097-2.266-.122-.571-.121L0 11.784l.055-.352.48-.321.686.061 1.52.103 2.278.158 1.652.097 2.449.255h.389l.055-.157-.134-.098-.103-.097-2.358-1.596-2.552-1.688-1.336-.972-.724-.491-.364-.462-.158-1.008.656-.722.881.06.225.061.893.686 1.908 1.476 2.491 1.833.365.304.145-.103.019-.073-.164-.274-1.355-2.446-1.446-2.49-.644-1.032-.17-.619a2.97 2.97 0 01-.104-.729L6.283.134 6.696 0l.996.134.42.364.62 1.414 1.002 2.229 1.555 3.03.456.898.243.832.091.255h.158V9.01l.128-1.706.237-2.095.23-2.695.08-.76.376-.91.747-.492.584.28.48.685-.067.444-.286 1.851-.559 2.903-.364 1.942h.212l.243-.242.985-1.306 1.652-2.064.729-.82.85-.904.547-.431h1.033l.76 1.129-.34 1.166-1.064 1.347-.881 1.142-1.264 1.7-.79 1.36.073.11.188-.02 2.856-.606 1.543-.28 1.841-.315.833.388.091.395-.328.807-1.969.486-2.309.462-3.439.813-.042.03.049.061 1.549.146.662.036h1.622l3.02.225.79.522.474.638-.079.485-1.215.62-1.64-.389-3.829-.91-1.312-.329h-.182v.11l1.093 1.068 2.006 1.81 2.509 2.33.127.578-.322.455-.34-.049-2.205-1.657-.851-.747-1.926-1.62h-.128v.17l.444.649 2.345 3.521.122 1.08-.17.353-.608.213-.668-.122-1.374-1.925-1.415-2.167-1.143-1.943-.14.08-.674 7.254-.316.37-.729.28-.607-.461-.322-.747.322-1.476.389-1.924.315-1.53.286-1.9.17-.632-.012-.042-.14.018-1.434 1.967-2.18 2.945-1.726 1.845-.414.164-.717-.37.067-.662.401-.589 2.388-3.036 1.44-1.882.929-1.086-.006-.158h-.055L4.132 18.56l-1.13.146-.487-.456.061-.746.231-.243 1.908-1.312z" />
       </svg>
     ),
   },
@@ -767,7 +769,7 @@ const tools: Array<{ name: string; icon: React.ReactNode }> = [
       // Сплошной банан-силуэт: серый по умолчанию, жёлтый на ховер
       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
         <path
-          className="fill-current group-hover:fill-[#FFD60A] transition-colors"
+          className="fill-current group-hover:fill-[#FFD60A] [@media(hover:none)]:fill-[#FFD60A] transition-colors"
           d="M5.15 17.89c5.52-1.52 8.65-6.89 7-12C11.55 4 11.5 2 13 2c3.22 0 5 5.5 5 8 0 6.5-4.2 12-10.49 12C5.11 22 2 22 2 20c0-1.5 1.14-1.55 3.15-2.11Z"
         />
       </svg>
@@ -834,10 +836,10 @@ function Toolbox() {
                 title={t.name}
                 className="group relative rounded-xl border border-white/[0.06] bg-[#0f0f0e] hover:border-[#A6FF00]/30 transition-colors px-3 py-4 md:py-5 flex flex-col items-center justify-center gap-3 min-h-[86px] md:min-h-[96px] overflow-hidden"
               >
-                <div className="w-6 h-6 md:w-7 md:h-7 text-white/72 group-hover:text-white transition-colors">
+                <div className="w-6 h-6 md:w-7 md:h-7 text-white/72 group-hover:text-white [@media(hover:none)]:text-white transition-colors">
                   {t.icon}
                 </div>
-                <span className="text-white/70 group-hover:text-white transition-colors">
+                <span className="text-white/70 group-hover:text-white [@media(hover:none)]:text-white transition-colors">
                   <span className="sr-only">{t.name}</span>
                   <LedText text={t.name} className="h-[8px] md:h-[9px] w-auto" />
                 </span>
@@ -873,6 +875,55 @@ const HERO_SHAPES = [
 ];
 const SHAPE_EGG = TEXT_START + HERO_BUBBLES.length; // 8
 
+// ── Счётчик пасхалок (egg hunt) ────────────────────────────────────
+// Реестр пасхалок главной. total = длина списка (растёт, когда добавляем
+// новые: лого-центр, инструменты и т.д.). Прогресс — localStorage, событие
+// `egg:found` с detail=id. Любая пасхалка зовёт foundEgg(id).
+const EGGS: { id: string; label: string }[] = [
+  { id: "award", label: "Награда" },
+  { id: "bass", label: "Цифры" },
+  { id: "glitch", label: "Глитч-код" },
+  { id: "egg", label: "Яйцо" },
+  { id: "cta", label: "Кнопка «не нажимать»" },
+];
+const EGG_IDS = new Set(EGGS.map((e) => e.id));
+const EGG_TOTAL = EGGS.length;
+const EGG_STORE_KEY = "egg-hunt-found-v1";
+function foundEgg(id: string) {
+  if (typeof window !== "undefined")
+    window.dispatchEvent(new CustomEvent("egg:found", { detail: id }));
+}
+function useEggHunt() {
+  const [found, setFound] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(EGG_STORE_KEY);
+      if (raw) setFound(new Set((JSON.parse(raw) as string[]).filter((i) => EGG_IDS.has(i))));
+    } catch {}
+    const onFound = (e: Event) => {
+      const id = (e as CustomEvent).detail as string;
+      if (!id || !EGG_IDS.has(id)) return;
+      setFound((prev) => {
+        if (prev.has(id)) return prev;
+        const n = new Set(prev);
+        n.add(id);
+        try { localStorage.setItem(EGG_STORE_KEY, JSON.stringify([...n])); } catch {}
+        return n;
+      });
+    };
+    window.addEventListener("egg:found", onFound);
+    return () => window.removeEventListener("egg:found", onFound);
+  }, []);
+  return { found, count: found.size, total: EGG_TOTAL };
+}
+// Финальный залп при сборе всех пасхалок — лаймовый, из двух нижних углов.
+function fireEggHuntFinale() {
+  const lime = ["#A6FF00", "#B8FF33", "#F2F4EF"];
+  confetti({ particleCount: 90, spread: 70, startVelocity: 55, origin: { x: 0, y: 1 }, angle: 60, colors: lime });
+  confetti({ particleCount: 90, spread: 70, startVelocity: 55, origin: { x: 1, y: 1 }, angle: 120, colors: lime });
+  setTimeout(() => confetti({ particleCount: 120, spread: 100, startVelocity: 45, origin: { x: 0.5, y: 0.7 }, colors: lime }), 250);
+}
+
 export default function PreviewHome() {
   const heroSphereRef = useRef<HTMLDivElement>(null);
   // Пасхалки портрета: форма + наборы кликнутых чисел/логотипов
@@ -883,6 +934,21 @@ export default function PreviewHome() {
   // морф был виден, даже если до этого по портрету не наводили. Сбрасывается
   // по hero:home. Чинит баг: клик по МТС/цифрам без ховера ничего не показывал.
   const [heroEngaged, setHeroEngaged] = useState(false);
+  // Счётчик пасхалок
+  const { count: eggCount, total: eggTotal } = useEggHunt();
+  const eggDone = eggTotal > 0 && eggCount >= eggTotal;
+  const eggCelebrated = useRef(false);
+  useEffect(() => {
+    if (!eggDone || eggCelebrated.current) return;
+    eggCelebrated.current = true;
+    let already = false;
+    try { already = localStorage.getItem("egg-hunt-celebrated") === "1"; } catch {}
+    const reduce =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (!already && !reduce) fireEggHuntFinale();
+    try { localStorage.setItem("egg-hunt-celebrated", "1"); } catch {}
+  }, [eggDone]);
   // Текущая форма в ref — чтобы скролл-подсказка не морфила поверх
   // залипших пасхалок (бас/награда) и срабатывала только в покое.
   const heroShapeRef = useRef(0);
@@ -917,7 +983,7 @@ export default function PreviewHome() {
   const tapNum = (i: number) =>
     setClickedNums((prev) => {
       const n = new Set(prev); n.add(i);
-      if (n.size >= 3) { cancelRevert(); setHeroEngaged(true); setHeroShape(2); }
+      if (n.size >= 3) { cancelRevert(); setHeroEngaged(true); setHeroShape(2); foundEgg("bass"); }
       return n;
     });
   // Ховер-пасхалки — только для мыши (на тач-устройствах их триггерит скролл)
@@ -925,7 +991,7 @@ export default function PreviewHome() {
     typeof window !== "undefined" &&
     window.matchMedia("(hover: hover) and (pointer: fine)").matches;
   // Награда — наведение, ЗАЛИПАЕТ
-  const showAward = () => { if (!canHover()) return; cancelRevert(); setHeroEngaged(true); setHeroShape(1); };
+  const showAward = () => { if (!canHover()) return; cancelRevert(); setHeroEngaged(true); setHeroShape(1); foundEgg("award"); };
   const goHomeHover = () => { if (canHover()) window.dispatchEvent(new Event("hero:home")); };
   // Глитч — точная последовательность логотипов, САМ пропадает
   const LOGO_CODE = ["mts", "ozon", "gpn", "mts"];
@@ -939,6 +1005,7 @@ export default function PreviewHome() {
       setHeroShape(3);
       scheduleRevert(5000);
       logoSeq.current = [];
+      foundEgg("glitch");
       return;
     }
     // Одиночный клик по МТС → яйцо (всегда, даже без предварительного ховера).
@@ -946,6 +1013,7 @@ export default function PreviewHome() {
       setHeroEngaged(true);
       setHeroShape(SHAPE_EGG);
       scheduleRevert(5000);
+      foundEgg("egg");
     }
   };
   // Возврат к портрету — наведение на лого «ЕГОР ШУГАЕВ» в шапке (window-event)
@@ -1137,7 +1205,8 @@ export default function PreviewHome() {
                     trackingRef={heroSphereRef}
                     shapes={HERO_SHAPES}
                     active={heroShape}
-                    count={6000}
+                    count={4500}
+                    color={[255, 255, 255]}
                     depthScale={0.6}
                     pointScale={0.6}
                     tilt={0.5}
@@ -1757,9 +1826,23 @@ export default function PreviewHome() {
       {/* ═══════ ABOUT — о себе, последняя секция перед глобальным футером ═══════ */}
       <section
         id="about"
-        className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20"
+        className="relative z-[1] overflow-hidden bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20"
       >
+        {/* лёгкий ambient-свет, плавно проявляется при скролле в вид */}
         <motion.div
+          aria-hidden
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, margin: "-15% 0px -15% 0px" }}
+          transition={{ duration: 1.3, ease: "easeOut" }}
+          className="pointer-events-none absolute inset-0 z-0"
+          style={{
+            background:
+              "radial-gradient(ellipse 45% 55% at 22% 42%, rgba(166,255,0,0.06), transparent 65%)",
+          }}
+        />
+        <motion.div
+          className="relative z-[1]"
           initial="hidden"
           whileInView="show"
           viewport={viewport}
@@ -1793,17 +1876,14 @@ export default function PreviewHome() {
             </motion.div>
 
             <motion.div variants={fadeUp} className="flex flex-col">
-              <div className="space-y-4 md:space-y-5 max-w-2xl">
-                <p className="text-[16px] md:text-[16px] text-white/70 leading-relaxed">
-                  Пришёл в дизайн из&nbsp;полиграфии и&nbsp;остался в&nbsp;нём по простой причине: мне нравится узнавать первопричины потребностей пользователей и&nbsp;решений бизнеса, искать провалы, растить людей и&nbsp;цифры. В&nbsp;какой-то момент это оказалось не побочным интересом, а&nbsp;рабочей профессией.
-                </p>
-                <p className="text-[16px] md:text-[16px] text-white/70 leading-relaxed">
-                  Сейчас мне интересна связка «дизайн и&nbsp;AI». Менторю дизайнеров и&nbsp;лидов, экспериментирую сам, пишу код. Иногда поделки получаются криво, но это часть процесса.
-                </p>
-                <p className="text-[16px] md:text-[16px] text-white/70 leading-relaxed">
-                  Работаю от&nbsp;задачи: строю и&nbsp;автоматизирую процессы, влезаю глубоко — от&nbsp;стратегии до&nbsp;ревью макетов. Задача руководителя, как я&nbsp;её вижу, — дать команде ясность: кто чем занят и&nbsp;зачем. Тогда люди действуют увереннее, а&nbsp;не на&nbsp;ощупь.
-                </p>
-              </div>
+              <BioRotator
+                className="max-w-2xl"
+                items={[
+                  <>Пришёл в дизайн из&nbsp;полиграфии и&nbsp;остался в&nbsp;нём по простой причине: мне нравится узнавать первопричины потребностей пользователей и&nbsp;решений бизнеса, искать провалы, <span className="text-[#C9A66B]">растить людей и&nbsp;цифры</span>. В&nbsp;какой-то момент это оказалось не побочным интересом, а&nbsp;рабочей профессией.</>,
+                  <>Сейчас мне интересна связка <span className="text-[#A6FF00]">«дизайн и&nbsp;AI»</span>. Менторю дизайнеров и&nbsp;лидов, экспериментирую сам, пишу код. Иногда поделки получаются криво, но это часть процесса.</>,
+                  <>Работаю от&nbsp;задачи: строю и&nbsp;автоматизирую процессы, влезаю глубоко — от&nbsp;стратегии до&nbsp;ревью макетов. Задача руководителя, как я&nbsp;её вижу, — <span className="text-[#C9A66B]">дать команде ясность</span>: кто чем занят и&nbsp;зачем. Тогда люди действуют увереннее, а&nbsp;не на&nbsp;ощупь.</>,
+                ]}
+              />
             </motion.div>
           </div>
         </motion.div>
