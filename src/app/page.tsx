@@ -7,6 +7,7 @@ import LedText from "@/components/LedText";
 import { LedBoard, LedCounter, LedLines, type LedLine } from "@/components/LedBoard";
 import { Oled, PixelGlyph, GLYPH_ORG, GLYPH_GRID, GLYPH_CODE } from "@/components/OledKit";
 import FinalCTA from "@/components/FinalCTA";
+import EggLeaderboard from "@/components/EggLeaderboard";
 import PixelCubePile from "@/components/PixelCubePile";
 import PixelPhoto from "@/components/PixelPhoto";
 import BioRotator from "@/components/BioRotator";
@@ -908,6 +909,16 @@ const EGG_IDS = new Set(EGGS.map((e) => e.id));
 // когда сам решаешь раскрыть новые. Сейчас 6.
 const EGG_TOTAL = 6;
 const EGG_STORE_KEY = "egg-hunt-found-v1";
+const EGG_FIRST_KEY = "egg-hunt-first-at"; // момент первой найденной пасхалки (для времени в доске)
+const EGG_SUBMITTED_KEY = "egg-hunt-submitted"; // ник уже отправлен в лидерборд
+function eggFirstAt(): number | null {
+  try {
+    const v = Number(localStorage.getItem(EGG_FIRST_KEY));
+    return Number.isFinite(v) && v > 0 ? v : null;
+  } catch {
+    return null;
+  }
+}
 function foundEgg(id: string) {
   if (typeof window !== "undefined")
     window.dispatchEvent(new CustomEvent("egg:found", { detail: id }));
@@ -926,7 +937,13 @@ function useEggHunt() {
         if (prev.has(id)) return prev;
         const n = new Set(prev);
         n.add(id);
-        try { localStorage.setItem(EGG_STORE_KEY, JSON.stringify([...n])); } catch {}
+        try {
+          localStorage.setItem(EGG_STORE_KEY, JSON.stringify([...n]));
+          // Засекаем время на первой найденной пасхалке.
+          if (prev.size === 0 && !localStorage.getItem(EGG_FIRST_KEY)) {
+            localStorage.setItem(EGG_FIRST_KEY, String(Date.now()));
+          }
+        } catch {}
         return n;
       });
     };
@@ -953,10 +970,17 @@ export default function PreviewHome() {
   // морф был виден, даже если до этого по портрету не наводили. Сбрасывается
   // по hero:home. Чинит баг: клик по МТС/цифрам без ховера ничего не показывал.
   const [heroEngaged, setHeroEngaged] = useState(false);
-  // Счётчик пасхалок
+  // Счётчик пасхалок + лидерборд
   const { count: eggCount, total: eggTotal } = useEggHunt();
   const eggDone = eggTotal > 0 && eggCount >= eggTotal;
   const eggCelebrated = useRef(false);
+  const [boardOpen, setBoardOpen] = useState(false);
+  const [eggDuration, setEggDuration] = useState<number | null>(null);
+  const [eggSubmitted, setEggSubmitted] = useState(false);
+  // Подтянуть «уже отправлял ник» с прошлых сессий.
+  useEffect(() => {
+    try { if (localStorage.getItem(EGG_SUBMITTED_KEY) === "1") setEggSubmitted(true); } catch {}
+  }, []);
   useEffect(() => {
     if (!eggDone || eggCelebrated.current) return;
     eggCelebrated.current = true;
@@ -965,9 +989,20 @@ export default function PreviewHome() {
     const reduce =
       typeof window !== "undefined" &&
       window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    if (!already && !reduce) fireEggHuntFinale();
+    // Время прохождения: от первой пасхалки до всех найденных.
+    const first = eggFirstAt();
+    setEggDuration(first ? Math.max(0, Date.now() - first) : null);
+    if (!already) {
+      if (!reduce) fireEggHuntFinale();
+      // Свежее завершение — открываем доску (с формой ввода, если ещё не слал).
+      setBoardOpen(true);
+    }
     try { localStorage.setItem("egg-hunt-celebrated", "1"); } catch {}
   }, [eggDone]);
+  const onEggSubmitted = () => {
+    setEggSubmitted(true);
+    try { localStorage.setItem(EGG_SUBMITTED_KEY, "1"); } catch {}
+  };
   // Текущая форма в ref — чтобы скролл-подсказка не морфила поверх
   // залипших пасхалок (бас/награда) и срабатывала только в покое.
   const heroShapeRef = useRef(0);
@@ -1223,12 +1258,14 @@ export default function PreviewHome() {
                     <LedText text="Дизайн-директор" className="h-[10px] w-auto" />
                     <LedText text="]" className="h-[10px] w-auto text-[#C9A66B]/70" />
                   </span>
-                  {/* Счётчик пасхалок — справа, симметрично лейблу */}
-                  <span
-                    className="inline-flex items-center gap-1.5 select-none"
-                    title="Тут спрятаны мини-игры — найди все"
+                  {/* Счётчик пасхалок — справа, симметрично лейблу. Клик → доска */}
+                  <button
+                    type="button"
+                    onClick={() => setBoardOpen(true)}
+                    className="inline-flex items-center gap-1.5 select-none cursor-pointer hover:text-white/60 transition-colors"
+                    title="Открыть доску искателей"
+                    aria-label={`Найдено пасхалок: ${eggCount} из ${eggTotal}. Открыть доску`}
                   >
-                    <span className="sr-only">{`Найдено пасхалок: ${eggCount} из ${eggTotal}`}</span>
                     <LedText text="Найдено" className="h-[8px] w-auto opacity-60" />
                     {/* Пружинный «поп» при изменении значения (key=eggCount) */}
                     <motion.span
@@ -1243,7 +1280,7 @@ export default function PreviewHome() {
                         className={`h-[10px] w-auto ${eggDone ? "text-[#A6FF00]" : "text-white/75"}`}
                       />
                     </motion.span>
-                  </span>
+                  </button>
                 </div>
                 <div
                   ref={heroSphereRef}
@@ -2091,6 +2128,17 @@ export default function PreviewHome() {
           </div>
         </motion.div>
       </section>
+
+      {/* Лидерборд охоты за пасхалками — клик по счётчику / авто на 6/6 */}
+      <EggLeaderboard
+        open={boardOpen}
+        onClose={() => setBoardOpen(false)}
+        canSubmit={eggDone && !eggSubmitted}
+        durationMs={eggDuration}
+        found={eggCount}
+        total={eggTotal}
+        onSubmitted={onEggSubmitted}
+      />
     </>
   );
 }
