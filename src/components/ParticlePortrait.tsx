@@ -33,6 +33,8 @@ export type ParticlePortraitProps = {
   depthScale?: number;
   count?: number;
   color?: [number, number, number];
+  /** множитель яркости точек (1 — без изменений, >1 — ярче) */
+  brightness?: number;
   bulge?: number;
   relief?: number;
   tilt?: number;
@@ -62,6 +64,7 @@ export default function ParticlePortrait({
   depthScale = 0.6,
   count = 5500,
   color = [235, 238, 230],
+  brightness = 1,
   bulge = 0.42,
   relief = 0.06,
   tilt = 0.45,
@@ -332,7 +335,9 @@ export default function ParticlePortrait({
         const per = sPe[i];
         let dN = (sZ[i] + bulge) * dInv; if (dN < 0) dN = 0; else if (dN > 1) dN = 1;
         const bright = 0.45 + 0.55 * fbA[i];
-        const a = (0.3 + 0.7 * (asmE * bright + (1 - asmE) * 0.45)) * (0.55 + 0.45 * dN);
+        let a = (0.3 + 0.7 * (asmE * bright + (1 - asmE) * 0.45)) * (0.55 + 0.45 * dN);
+        a *= brightness;
+        if (a > 1) a = 1;
         if (a < 0.02) continue;
         let sz = ((0.7 + (asmE * fbA[i] + (1 - asmE) * 0.3) * 1.7) * per * (0.7 + 0.3 * dN) * dpr * pointScale) | 0;
         if (sz < 1) sz = 1; else if (sz > 6) sz = 6;
@@ -370,7 +375,7 @@ export default function ParticlePortrait({
       eventTarget.removeEventListener("pointerleave", onLeave);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [listKey, cloudKey, spin360, depthScale, count, color.join(","), bulge, relief, tilt, gamma, pointScale, assembleOnHover, scatterOnHover, latchAssemble, autoSpin, trackingRef]);
+  }, [listKey, cloudKey, spin360, depthScale, count, color.join(","), brightness, bulge, relief, tilt, gamma, pointScale, assembleOnHover, scatterOnHover, latchAssemble, autoSpin, trackingRef]);
 
   return (
     <canvas
