@@ -46,6 +46,9 @@ export type ParticlePortraitProps = {
   scatterOnHover?: boolean;
   /** после первого наведения остаётся собранным (не разлетается) */
   latchAssemble?: boolean;
+  /** принудительно собрать облако независимо от ховера (для пасхалок:
+   *  клик по триггеру должен показать морф, даже если ещё не наводили) */
+  forceAssemble?: boolean;
   /** постоянное медленное вращение даже в собранном состоянии */
   autoSpin?: boolean;
   trackingRef?: RefObject<HTMLElement | null>;
@@ -73,6 +76,7 @@ export default function ParticlePortrait({
   assembleOnHover = true,
   scatterOnHover = false,
   latchAssemble = false,
+  forceAssemble = false,
   autoSpin = false,
   trackingRef,
   className = "",
@@ -80,6 +84,9 @@ export default function ParticlePortrait({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const activeRef = useRef(active);
   activeRef.current = active;
+  // forceAssemble читаем через ref — слушатели/цикл вешаются один раз.
+  const forceAssembleRef = useRef(forceAssemble);
+  forceAssembleRef.current = forceAssemble;
 
   // нормализуем список форм
   const shapeList: Shape[] =
@@ -285,7 +292,9 @@ export default function ParticlePortrait({
       computeScale();
 
       if (hoverT > 0) everHovered = true;
-      const target = scatterOnHover
+      const target = forceAssembleRef.current
+        ? 1
+        : scatterOnHover
         ? 1 - hoverT
         : assembleOnHover
           ? (latchAssemble && everHovered ? 1 : hoverT)

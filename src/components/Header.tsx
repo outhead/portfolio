@@ -44,7 +44,6 @@ const navLinks: Array<{ href: string; label: string; goal: string }> = [
   { href: "/#portfolio", label: "Работы", goal: "nav_portfolio" },
   { href: "/experiments", label: "Эксперименты", goal: "nav_experiments" },
   { href: "/speaking", label: "Выступления", goal: "nav_speaking" },
-  { href: "/mentoring", label: "Менторинг", goal: "nav_mentoring" },
 ];
 
 const sectionIds = ["portfolio", "about", "contacts"];

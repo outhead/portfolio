@@ -381,7 +381,6 @@ export const projects: Project[] = [
       { value: "CX 2024", label: "награда за ЕСО" },
       { value: "180+", label: "продуктов на Consta" },
       { value: "57", label: "проектов в год" },
-      { value: "27+", label: "внешних выступлений" },
     ],
     type: "work",
     // Чистый тёмный фон под видео-обложку (раньше была бронза #C9A66B — давала бежевую подсветку)
@@ -589,7 +588,6 @@ export const projects: Project[] = [
       { value: "+40%", label: "найм дизайнеров" },
       { value: "−60%", label: "текучка" },
       { value: "0 → 17K", label: "подписчиков канала за год" },
-      { value: "18.1K", label: "канал живёт после меня" },
     ],
     type: "work",
     coverColor: "#0E0E0E",
@@ -727,7 +725,6 @@ export const projects: Project[] = [
     results: [
       { value: "30+", label: "менти за карьеру" },
       { value: "2 агента", label: "сессия + self-review" },
-      { value: "open-source", label: "шаблон на GitHub" },
     ],
     type: "work",
     coverColor: "#0a0a0a",
@@ -916,7 +913,6 @@ export const projects: Project[] = [
     results: [
       { value: "1 фото", label: "→ объёмное облако точек" },
       { value: "60fps", label: "тысячи частиц, прямой буфер" },
-      { value: "в браузере", label: "глубина считается локально" },
     ],
     sections: [
       {
@@ -985,7 +981,6 @@ export const projects: Project[] = [
     results: [
       { value: "6", label: "SDF-фигур без единого меша" },
       { value: "1 файл", label: "index.html, без сборки" },
-      { value: "MIT", label: "open-source, форкай" },
     ],
     sections: [
       {

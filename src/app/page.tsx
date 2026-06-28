@@ -8,6 +8,7 @@ import { LedBoard, LedCounter, LedLines, type LedLine } from "@/components/LedBo
 import { Oled, PixelGlyph, GLYPH_ORG, GLYPH_GRID, GLYPH_CODE } from "@/components/OledKit";
 import FinalCTA from "@/components/FinalCTA";
 import PixelCubePile from "@/components/PixelCubePile";
+import PixelPhoto from "@/components/PixelPhoto";
 import { TypographyFix } from "@/components/TypographyFix";
 import { workProjects } from "@/data/projects";
 import { Plus } from "lucide-react";
@@ -867,7 +868,9 @@ const HERO_SHAPES = [
     src: `/images/txt-${i}-portrait.png`,
     depth: `/images/txt-${i}-depth.png`,
   })), // 4..7 фразы из частиц
+  { src: "/images/egg-portrait.png", depth: "/images/egg-depth.png", depthScale: 0.5 }, // 8 яйцо (одиночный клик по МТС)
 ];
+const SHAPE_EGG = TEXT_START + HERO_BUBBLES.length; // 8
 
 export default function PreviewHome() {
   const heroSphereRef = useRef<HTMLDivElement>(null);
@@ -875,6 +878,17 @@ export default function PreviewHome() {
   const [heroShape, setHeroShape] = useState(0);
   const [clickedNums, setClickedNums] = useState<Set<number>>(new Set());
   const [bubbleStage, setBubbleStage] = useState(0);
+  // «Портрет вовлечён» — любой триггер пасхалки форсит сборку облака, чтобы
+  // морф был виден, даже если до этого по портрету не наводили. Сбрасывается
+  // по hero:home. Чинит баг: клик по МТС/цифрам без ховера ничего не показывал.
+  const [heroEngaged, setHeroEngaged] = useState(false);
+  // Текущая форма в ref — чтобы скролл-подсказка не морфила поверх
+  // залипших пасхалок (бас/награда) и срабатывала только в покое.
+  const heroShapeRef = useRef(0);
+  heroShapeRef.current = heroShape;
+  // Портрет «активирован» — был первый контакт (ховер/клик). До этого
+  // скролл его не трогает.
+  const portraitActivated = useRef(false);
 
   const revertTimer = useRef<number | null>(null);
   const scheduleRevert = (ms = 4500) => {
@@ -887,17 +901,22 @@ export default function PreviewHome() {
   // Клик по портрету → следующая фраза, собранная ИЗ ЧАСТИЦ. Авто-возврат.
   const phraseIdx = useRef(0);
   const onPortraitTap = () => {
+    portraitActivated.current = true;
+    setHeroEngaged(true);
     const i = phraseIdx.current % HERO_BUBBLES.length;
     phraseIdx.current = i + 1;
     setBubbleStage(i + 1); // для скринридера
     setHeroShape(TEXT_START + i);
     scheduleRevert(8500);
   };
+  // Стабильная ссылка на tap для слушателя скролла (он вешается один раз).
+  const onPortraitTapRef = useRef(onPortraitTap);
+  onPortraitTapRef.current = onPortraitTap;
   // Бас — 3 числа в любом порядке, ЗАЛИПАЕТ (без авто-возврата)
   const tapNum = (i: number) =>
     setClickedNums((prev) => {
       const n = new Set(prev); n.add(i);
-      if (n.size >= 3) { cancelRevert(); setHeroShape(2); }
+      if (n.size >= 3) { cancelRevert(); setHeroEngaged(true); setHeroShape(2); }
       return n;
     });
   // Ховер-пасхалки — только для мыши (на тач-устройствах их триггерит скролл)
@@ -905,7 +924,7 @@ export default function PreviewHome() {
     typeof window !== "undefined" &&
     window.matchMedia("(hover: hover) and (pointer: fine)").matches;
   // Награда — наведение, ЗАЛИПАЕТ
-  const showAward = () => { if (!canHover()) return; cancelRevert(); setHeroShape(1); };
+  const showAward = () => { if (!canHover()) return; cancelRevert(); setHeroEngaged(true); setHeroShape(1); };
   const goHomeHover = () => { if (canHover()) window.dispatchEvent(new Event("hero:home")); };
   // Глитч — точная последовательность логотипов, САМ пропадает
   const LOGO_CODE = ["mts", "ozon", "gpn", "mts"];
@@ -913,22 +932,60 @@ export default function PreviewHome() {
   const tapLogo = (k: string) => {
     const seq = [...logoSeq.current, k].slice(-LOGO_CODE.length);
     logoSeq.current = seq;
+    // Полная комбинация МТС→Ozon→ГПН→МТС → глитч-фигура.
     if (seq.length === LOGO_CODE.length && seq.every((v, i) => v === LOGO_CODE[i])) {
+      setHeroEngaged(true);
       setHeroShape(3);
       scheduleRevert(5000);
       logoSeq.current = [];
+      return;
+    }
+    // Одиночный клик по МТС → яйцо (всегда, даже без предварительного ховера).
+    if (k === "mts") {
+      setHeroEngaged(true);
+      setHeroShape(SHAPE_EGG);
+      scheduleRevert(5000);
     }
   };
   // Возврат к портрету — наведение на лого «ЕГОР ШУГАЕВ» в шапке (window-event)
   useEffect(() => {
     const home = () => {
       cancelRevert();
+      setHeroEngaged(false);
       setHeroShape(0);
       setClickedNums(new Set());
       logoSeq.current = [];
     };
     window.addEventListener("hero:home", home);
     return () => window.removeEventListener("hero:home", home);
+  }, []);
+
+  // Скролл-подсказка: после активации портрета, в начале скролл-жеста он
+  // собирается в текст-фразу (как по клику) — чтобы было видно, что табло
+  // интерактивно. Срабатывает один раз за жест и только когда портрет покоится.
+  useEffect(() => {
+    let scrolling = false;
+    let stopT: number | null = null;
+    const inView = () => {
+      const el = heroSphereRef.current;
+      if (!el) return false;
+      const r = el.getBoundingClientRect();
+      return r.bottom > 0 && r.top < window.innerHeight;
+    };
+    const onScroll = () => {
+      if (!portraitActivated.current) return;
+      if (!scrolling) {
+        scrolling = true;
+        if (heroShapeRef.current === 0 && inView()) onPortraitTapRef.current();
+      }
+      if (stopT) window.clearTimeout(stopT);
+      stopT = window.setTimeout(() => { scrolling = false; }, 700);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (stopT) window.clearTimeout(stopT);
+    };
   }, []);
 
   const heroLines: LedLine[] = [
@@ -1046,6 +1103,7 @@ export default function PreviewHome() {
                 <div
                   ref={heroSphereRef}
                   onClick={onPortraitTap}
+                  onPointerEnter={() => { portraitActivated.current = true; }}
                   className="relative flex-1 min-h-[280px] md:min-h-[320px] cursor-pointer"
                 >
                   {/* Портрет из частиц по карте глубины. Форма морфит по пасхалкам. */}
@@ -1060,6 +1118,7 @@ export default function PreviewHome() {
                     tilt={0.5}
                     assembleOnHover
                     latchAssemble
+                    forceAssemble={heroEngaged}
                   />
                   {/* Фразы собираются из самих частиц (форма-текст), не оверлеем.
                       Озвучка для скринридера: */}
@@ -1534,6 +1593,7 @@ export default function PreviewHome() {
                   "Провёл уже больше 40 менторинг-сессий. Помогаю пройти развилки: как вырасти до лида, как собрать команду, как защитить проект перед топ-менеджментом. Не на каждую развилку у меня есть готовый ответ, но обычно есть похожий опыт.",
                 cta: "Записаться на сессию",
                 accent: "#A6FF00",
+                booking: true,
               },
               {
                 href: "/speaking",
@@ -1544,14 +1604,9 @@ export default function PreviewHome() {
                 cta: "Смотреть выступления",
                 accent: "#C9A66B",
               },
-            ].map((t) => (
-              <motion.div key={t.href} variants={fadeUp}>
-                <Link
-                  href={t.href}
-                  data-ym-goal={t.href === "/mentoring" ? "nav_mentoring" : "nav_speaking"}
-                  data-ym-goal-params='{"placement":"offer_cards"}'
-                  className="no-underline group block h-full"
-                >
+            ].map((t) => {
+              const isBooking = "booking" in t && t.booking;
+              const inner = (
                   <div className="relative h-full rounded-2xl overflow-hidden border border-white/[0.06] group-hover:border-white/20 bg-[#0f0f0e] transition-colors duration-300 p-7 md:p-9 flex flex-col justify-between min-h-[260px]">
                     <div
                       aria-hidden
@@ -1588,9 +1643,32 @@ export default function PreviewHome() {
                       <LedText text="→" className="h-[12px] w-auto group-hover:translate-x-1 transition-transform" />
                     </span>
                   </div>
-                </Link>
-              </motion.div>
-            ))}
+              );
+              return (
+                <motion.div key={t.href} variants={fadeUp}>
+                  {isBooking ? (
+                    <button
+                      type="button"
+                      data-open-booking
+                      data-ym-goal="nav_mentoring"
+                      data-ym-goal-params='{"placement":"offer_cards"}'
+                      className="no-underline group block h-full w-full text-left"
+                    >
+                      {inner}
+                    </button>
+                  ) : (
+                    <Link
+                      href={t.href}
+                      data-ym-goal="nav_speaking"
+                      data-ym-goal-params='{"placement":"offer_cards"}'
+                      className="no-underline group block h-full"
+                    >
+                      {inner}
+                    </Link>
+                  )}
+                </motion.div>
+              );
+            })}
           </div>
         </motion.div>
       </section>
@@ -1619,14 +1697,15 @@ export default function PreviewHome() {
           {/* Фото (узкая колонка) + bio (широкая) */}
           <div className="grid lg:grid-cols-[minmax(260px,320px)_1fr] gap-6 md:gap-10">
             <motion.div variants={fadeUp}>
-              <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border border-white/[0.06]">
-                <Image
+              <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border border-white/[0.06] bg-black">
+                <span className="sr-only">Егор Шугаев — дизайн-директор, ментор и независимый консультант</span>
+                <PixelPhoto
                   src="/images/photos/photo-3.jpg"
-                  alt="Егор Шугаев — дизайн-директор, ментор и независимый консультант"
-                  fill
-                  className="object-cover grayscale contrast-[1.05]"
+                  cols={72}
+                  aspect={0.8}
+                  className="absolute inset-0"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
                 <div className="absolute bottom-4 left-4 right-4 flex items-center gap-1.5 text-[12px] tracking-[0.2em] uppercase text-white/74">
                   <span className="relative flex h-1.5 w-1.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
