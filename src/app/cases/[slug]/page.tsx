@@ -114,14 +114,16 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
           </div>
         )}
         {heroCube && (
-          <div className="absolute inset-0 z-0 flex items-center justify-center md:justify-end md:pr-[8%] pointer-events-none">
+          <div className="absolute inset-0 z-0 pointer-events-none">
             <PixelCube3D
               color={project.cubeColor!}
               logoSrc={project.cubeLogo!}
-              grid={56}
+              grid={34}
               mode="spin"
               idleGlow={0.82}
-              className="h-[80%] max-h-[540px] opacity-95 pointer-events-auto"
+              panel
+              cubeAlign="right"
+              className="absolute inset-0 w-full h-full opacity-95 pointer-events-auto"
             />
           </div>
         )}

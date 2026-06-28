@@ -60,12 +60,14 @@ export default function PixelCube3D({
   grid = 44,
   mode = "spin",
   idleGlow = 0.42,
+  panel = false,
+  cubeAlign = "center",
   className = "",
 }: {
   color: string;
   /** URL знака (SVG/PNG). Будет перекрашен в белый и наложен на каждую грань. */
   logoSrc?: string;
-  /** Точек на сторону дот-сетки. */
+  /** Точек на сторону дот-сетки (в panel-режиме — высота куба в точках). */
   grid?: number;
   /** Режим вращения: spin (турнтейбл Y), tumble (кувырок 2 оси),
    *  pendulum (качание), lissajous (плавный дрейф). */
@@ -73,6 +75,11 @@ export default function PixelCube3D({
   /** Яркость диодов в покое (0..1). Hover всегда добивает до 1.
    *  Для hero ставим выше — куб должен читаться без наведения. */
   idleGlow?: number;
+  /** Полноэкранная LED-панель: диоды заполняют весь контейнер (любой
+   *  аспект), куб вращается внутри центрированного квадрата. */
+  panel?: boolean;
+  /** Положение куба в panel-режиме по горизонтали. */
+  cubeAlign?: "center" | "right";
   className?: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -133,15 +140,22 @@ export default function PixelCube3D({
     const half = norm([keyL[0] + view[0], keyL[1] + view[1], keyL[2] + view[2]]);
 
     let dpr = Math.min(window.devicePixelRatio || 1, 2);
-    let outPx = 0;
+    let outW = 0, outH = 0;
     const resize = () => {
       const r = wrap.getBoundingClientRect();
-      const size = Math.max(40, Math.min(r.width, r.height));
       dpr = Math.min(window.devicePixelRatio || 1, 2);
-      outPx = Math.round(size * dpr);
-      canvas.width = outPx; canvas.height = outPx;
-      canvas.style.width = `${size}px`;
-      canvas.style.height = `${size}px`;
+      if (panel) {
+        const W = Math.max(40, r.width), H = Math.max(40, r.height);
+        outW = Math.round(W * dpr); outH = Math.round(H * dpr);
+        canvas.style.width = `${W}px`;
+        canvas.style.height = `${H}px`;
+      } else {
+        const size = Math.max(40, Math.min(r.width, r.height));
+        outW = outH = Math.round(size * dpr);
+        canvas.style.width = `${size}px`;
+        canvas.style.height = `${size}px`;
+      }
+      canvas.width = outW; canvas.height = outH;
     };
     resize();
     const ro = new ResizeObserver(resize);
@@ -299,26 +313,43 @@ export default function PixelCube3D({
 
       const data = bctx.getImageData(0, 0, S, S).data;
 
-      ctx.clearRect(0, 0, outPx, outPx);
-      const cell = outPx / grid;
-      const rDot = cell * 0.34; // единый размер всех точек
+      ctx.clearRect(0, 0, outW, outH);
       const bright = idleGlow + (1 - idleGlow) * lit;
-      // 2×2 суперсэмпл на ячейку → мягче градиент материала на сетке
-      const SS = [0.25, 0.75];
-      for (let gy = 0; gy < grid; gy++) {
-        for (let gx = 0; gx < grid; gx++) {
+      // Квадрат, в который проецируется куб. В panel-режиме он меньше панели,
+      // вокруг — погашенные диоды, заполняющие весь контейнер.
+      const cubeSide = panel ? outH * 0.92 : Math.min(outW, outH);
+      const cell = cubeSide / grid;
+      const rDot = cell * 0.34; // единый размер всех точек
+      const cubeY0 = (outH - cubeSide) / 2;
+      const cubeX0 = !panel
+        ? (outW - cubeSide) / 2
+        : cubeAlign === "right"
+        ? outW - cubeSide - cubeSide * 0.04
+        : (outW - cubeSide) / 2;
+      const cols = Math.ceil(outW / cell);
+      const rows = Math.ceil(outH / cell);
+      const du = (0.25 * cell) / cubeSide; // суперсэмпл-смещение в uv
+      for (let gy = 0; gy < rows; gy++) {
+        for (let gx = 0; gx < cols; gx++) {
+          const cx = (gx + 0.5) * cell;
+          const cy = (gy + 0.5) * cell;
+          const ux = (cx - cubeX0) / cubeSide;
+          const uy = (cy - cubeY0) / cubeSide;
+          ctx.beginPath();
+          ctx.arc(cx, cy, rDot, 0, Math.PI * 2);
+          if (ux < 0 || ux >= 1 || uy < 0 || uy >= 1) {
+            ctx.fillStyle = `rgba(${br},${bg},${bb},0.06)`; // фон-диод вне куба
+            ctx.fill();
+            continue;
+          }
           let rr = 0, gg = 0, bbb = 0, aa = 0;
-          for (const fy of SS) for (const fx of SS) {
-            const sx = Math.min(S - 1, Math.floor(((gx + fx) / grid) * S));
-            const sy = Math.min(S - 1, Math.floor(((gy + fy) / grid) * S));
+          for (const fy of [-du, du]) for (const fx of [-du, du]) {
+            const sx = Math.min(S - 1, Math.max(0, Math.floor((ux + fx) * S)));
+            const sy = Math.min(S - 1, Math.max(0, Math.floor((uy + fy) * S)));
             const o = (sy * S + sx) * 4;
             rr += data[o]; gg += data[o + 1]; bbb += data[o + 2]; aa += data[o + 3];
           }
           rr /= 4; gg /= 4; bbb /= 4; aa /= 4;
-          const cx = (gx + 0.5) * cell;
-          const cy = (gy + 0.5) * cell;
-          ctx.beginPath();
-          ctx.arc(cx, cy, rDot, 0, Math.PI * 2);
           if (aa < 24) {
             ctx.fillStyle = `rgba(${br},${bg},${bb},0.06)`; // погашенный диод
           } else {
@@ -343,10 +374,10 @@ export default function PixelCube3D({
       wrap.removeEventListener("mouseenter", onEnter);
       wrap.removeEventListener("mouseleave", onLeave);
     };
-  }, [color, logoSrc, grid, mode, idleGlow]);
+  }, [color, logoSrc, grid, mode, idleGlow, panel, cubeAlign]);
 
   return (
-    <div ref={wrapRef} className={`relative ${className}`} style={{ aspectRatio: "1 / 1" }}>
+    <div ref={wrapRef} className={`relative ${className}`} style={panel ? undefined : { aspectRatio: "1 / 1" }}>
       <canvas ref={canvasRef} className="block w-full h-full" />
     </div>
   );
