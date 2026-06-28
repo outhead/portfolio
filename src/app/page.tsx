@@ -884,6 +884,7 @@ const EGGS: { id: string; label: string }[] = [
   { id: "bass", label: "Цифры" },
   { id: "glitch", label: "Глитч-код" },
   { id: "egg", label: "Яйцо" },
+  { id: "constellation", label: "Созвездие" },
   { id: "cta", label: "Кнопка «не нажимать»" },
 ];
 const EGG_IDS = new Set(EGGS.map((e) => e.id));
@@ -1192,7 +1193,25 @@ export default function PreviewHome() {
                     <LedText text="Дизайн-директор" className="h-[10px] w-auto" />
                     <LedText text="]" className="h-[10px] w-auto text-[#C9A66B]/70" />
                   </span>
+                  {/* Счётчик пасхалок — справа, симметрично лейблу */}
+                  <span
+                    className="inline-flex items-center gap-1.5 select-none"
+                    title="Тут спрятаны мини-игры — найди все"
+                  >
+                    <span className="sr-only">{`Найдено пасхалок: ${eggCount} из ${eggTotal}`}</span>
+                    <LedText text="Найдено" className="h-[8px] w-auto opacity-60" />
+                    <LedText
+                      text={`${eggCount}/${eggTotal}`}
+                      className={`h-[10px] w-auto ${eggDone ? "text-[#A6FF00]" : "text-white/75"}`}
+                    />
+                  </span>
                 </div>
+                {/* Подсказка-страховка: видна, пока ничего не нашли */}
+                {eggCount === 0 && (
+                  <div className="-mt-2 text-white/25" aria-hidden>
+                    <LedText text="тут спрятаны игры" className="h-[7px] w-auto" />
+                  </div>
+                )}
                 <div
                   ref={heroSphereRef}
                   onClick={onPortraitTap}
@@ -1678,62 +1697,61 @@ export default function PreviewHome() {
           variants={stagger}
           className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20 flex flex-col gap-5 md:gap-6"
         >
-          {/* ── МЕНТОРИНГ: текст слева + яйцо из облака точек справа ── */}
+          {/* ── МЕНТОРИНГ: слева кнопка записи, справа созвездие-пасхалка ── */}
           <motion.div variants={fadeUp}>
-            <button
-              type="button"
-              data-open-booking
-              data-ym-goal="nav_mentoring"
-              data-ym-goal-params='{"placement":"offer_blocks"}'
-              className="no-underline group block w-full text-left"
-            >
-              <div className="relative rounded-2xl overflow-hidden border border-[#A6FF00]/15 group-hover:border-[#A6FF00]/35 transition-colors duration-300 bg-[#0c0e09]">
-                <div
-                  aria-hidden
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    background:
-                      "radial-gradient(ellipse 65% 90% at 10% 0%, rgba(166,255,0,0.07), transparent 60%)",
-                  }}
-                />
-                <div className="relative grid md:grid-cols-[1fr_minmax(0,340px)] items-stretch">
-                  <div className="p-8 md:p-12 flex flex-col justify-between min-h-[300px] md:min-h-[360px]">
-                    <div>
-                      <div className="inline-flex items-center gap-2 text-white/75 mb-5">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#A6FF00]" />
-                        <span className="sr-only">МЕНТОРИНГ</span>
-                        <LedText text="МЕНТОРИНГ" className="h-[11px] w-auto" />
-                      </div>
-                      <h3 className="text-white mb-5 max-w-lg">
-                        <LedLines
-                          text="Веду дизайнеров на переходе в сеньор-лиды"
-                          maxChars={26}
-                          lineClass="h-[16px] md:h-[22px]"
-                        />
-                      </h3>
-                      <p className="text-[16px] text-white/72 leading-relaxed max-w-lg">
-                        Провёл уже больше 40 менторинг-сессий. Помогаю пройти развилки:
-                        как вырасти до лида, как собрать команду, как защитить проект
-                        перед топ-менеджментом. Не на каждую развилку у меня есть готовый
-                        ответ, но обычно есть похожий опыт.
-                      </p>
+            <div className="relative rounded-2xl overflow-hidden border border-[#A6FF00]/15 hover:border-[#A6FF00]/35 transition-colors duration-300 bg-[#0c0e09]">
+              <div
+                aria-hidden
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background:
+                    "radial-gradient(ellipse 65% 90% at 10% 0%, rgba(166,255,0,0.07), transparent 60%)",
+                }}
+              />
+              <div className="relative grid md:grid-cols-[1fr_minmax(0,340px)] items-stretch">
+                {/* Левая часть — клик открывает запись на сессию */}
+                <button
+                  type="button"
+                  data-open-booking
+                  data-ym-goal="nav_mentoring"
+                  data-ym-goal-params='{"placement":"offer_blocks"}'
+                  className="group text-left no-underline p-8 md:p-12 flex flex-col justify-between min-h-[300px] md:min-h-[360px]"
+                >
+                  <div>
+                    <div className="inline-flex items-center gap-2 text-white/75 mb-5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#A6FF00]" />
+                      <span className="sr-only">МЕНТОРИНГ</span>
+                      <LedText text="МЕНТОРИНГ" className="h-[11px] w-auto" />
                     </div>
-                    <span className="inline-flex items-center gap-2 text-[#A6FF00] mt-8 pt-6 border-t border-white/[0.08]">
-                      <span className="sr-only">Записаться на сессию</span>
-                      <LedText text="Записаться на сессию" className="h-[10px] w-auto" />
-                      <LedText
-                        text="→"
-                        className="h-[12px] w-auto group-hover:translate-x-1 transition-transform"
+                    <h3 className="text-white mb-5 max-w-lg">
+                      <LedLines
+                        text="Веду дизайнеров на переходе в сеньор-лиды"
+                        maxChars={26}
+                        lineClass="h-[16px] md:h-[22px]"
                       />
-                    </span>
+                    </h3>
+                    <p className="text-[16px] text-white/72 leading-relaxed max-w-lg">
+                      Провёл уже больше 40 менторинг-сессий. Помогаю пройти развилки:
+                      как вырасти до лида, как собрать команду, как защитить проект
+                      перед топ-менеджментом. Не на каждую развилку у меня есть готовый
+                      ответ, но обычно есть похожий опыт.
+                    </p>
                   </div>
-                  {/* Созвездие фигур из облака точек — ментор как яркий хаб */}
-                  <div className="relative hidden md:block border-l border-white/[0.06] bg-black/20">
-                    <ConstellationFigures className="absolute inset-0" />
-                  </div>
+                  <span className="inline-flex items-center gap-2 text-[#A6FF00] mt-8 pt-6 border-t border-white/[0.08]">
+                    <span className="sr-only">Записаться на сессию</span>
+                    <LedText text="Записаться на сессию" className="h-[10px] w-auto" />
+                    <LedText
+                      text="→"
+                      className="h-[12px] w-auto group-hover:translate-x-1 transition-transform"
+                    />
+                  </span>
+                </button>
+                {/* Правая часть — созвездие из облака точек, клик = пасхалка */}
+                <div className="relative hidden md:block border-l border-white/[0.06] bg-black/20">
+                  <ConstellationFigures className="absolute inset-0" />
                 </div>
               </div>
-            </button>
+            </div>
           </motion.div>
 
           {/* ── ВЫСТУПЛЕНИЯ: чипы конференций слева + текст справа ── */}
@@ -1861,6 +1879,9 @@ export default function PreviewHome() {
                   src="/images/photos/me-pixel.png"
                   cols={72}
                   aspect={0.8}
+                  gamma={1.5}
+                  threshold={0.1}
+                  idle={0.72}
                   className="absolute inset-0"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />

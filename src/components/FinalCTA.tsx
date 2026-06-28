@@ -378,6 +378,11 @@ export default function FinalCTA() {
         if (stage.id !== "0") {
           ymGoal(`smile_stage_${stage.id}`, { count: sessionCount });
         }
+        // Пасхалка для счётчика: засчитывается, когда появилась кнопка
+        // «Открыть» (финальный stage с bonus).
+        if (stage.bonus && typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("egg:found", { detail: "cta" }));
+        }
       }
       lastStageRef.current = stage.id;
     }

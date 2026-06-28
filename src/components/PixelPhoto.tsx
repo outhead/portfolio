@@ -21,6 +21,8 @@ export type PixelPhotoProps = {
   gamma?: number;
   /** доля зазора между ячейками (0..0.5) */
   gap?: number;
+  /** порог отсечки фона: ячейки темнее — уходят в тусклую сетку (0..1) */
+  threshold?: number;
   /** радиус скругления ячейки в долях стороны (0 — квадрат) */
   radius?: number;
   /** яркость в покое 0..1 (ховер добивает до 1) */
@@ -44,6 +46,7 @@ export default function PixelPhoto({
   aspect = 0.8,
   gamma = 1.0,
   gap = 0.1,
+  threshold = 0.05,
   radius = 0.14,
   idle = 0.85,
   loColor = DEF_LO,
@@ -142,8 +145,10 @@ export default function PixelPhoto({
           const bx = ox + x * cell + inset;
           const by = oy + y * cell + inset;
           let cr: number, cg: number, cb: number, alpha: number;
-          if (l >= 0.05) {
-            const t = Math.min(1, l) * bright;
+          if (l >= threshold) {
+            // растягиваем диапазон выше порога на 0..1 — больше тональной игры
+            const tt = Math.min(1, (l - threshold) / (1 - threshold));
+            const t = tt * bright;
             cr = Math.round(loColor[0] + (hiColor[0] - loColor[0]) * t);
             cg = Math.round(loColor[1] + (hiColor[1] - loColor[1]) * t);
             cb = Math.round(loColor[2] + (hiColor[2] - loColor[2]) * t);
@@ -182,7 +187,7 @@ export default function PixelPhoto({
       canvas!.removeEventListener("pointerleave", onLeave);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [src, cols, aspect, gamma, gap, radius, idle, loColor.join(","), hiColor.join(",")]);
+  }, [src, cols, aspect, gamma, gap, threshold, radius, idle, loColor.join(","), hiColor.join(",")]);
 
   return (
     <canvas
