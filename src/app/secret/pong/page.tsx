@@ -1244,7 +1244,7 @@ export default function PongPage() {
   }, [phase, winner]);
 
   return (
-    <main className="pong-page relative bg-black text-white overflow-hidden flex flex-col items-center px-4 pt-[60px] sm:pt-[68px] pb-4" style={{ minHeight: "100dvh" }}>
+    <main className="pong-page relative bg-black text-white overflow-hidden flex flex-col items-center px-4 pt-[52px] sm:pt-[60px] pb-4" style={{ minHeight: "100dvh" }}>
       {/* режим «магнитное поле»: живой фон-течение (сквозь полупрозрачный канвас) */}
       {mode === "field" ? (
         <MagneticWaves anchor={canvasRef} mirror={role === "guest"} opacity={0.5} />
@@ -1254,7 +1254,7 @@ export default function PongPage() {
         background: "radial-gradient(ellipse 55% 45% at 50% 38%, rgba(166,255,0,0.05), transparent 62%)",
       }} />
       <div className="relative z-[1] w-full max-w-[440px] mx-auto flex flex-col items-center text-center">
-        <p className="text-white/40 mb-1.5">
+        <p className="text-white/40 mb-1.5 whitespace-nowrap">
           <span className="sr-only">Пинг-понг · вдвоём</span>
           <LedText text="Пинг-понг · вдвоём" className="h-[8px] w-auto" />
           <span className="ml-2 normal-case tracking-normal" style={{ color: transport === "p2p" ? "rgba(166,255,0,0.65)" : "rgba(255,255,255,0.25)" }}>
@@ -1288,17 +1288,20 @@ export default function PongPage() {
           </span>
         </div>
 
-        {ping != null && ping > 200 ? (
-          <p className="text-[12px] text-[#FF6B6B] mb-2 max-w-xs leading-snug">
-            Высокий пинг ({ping} мс). С таким соединением нормально сыграть не выйдет — мяч будет дёргаться.
-          </p>
-        ) : null}
-
         {/* высотная посадка — канвас всегда влезает по вертикали и центрирован */}
         <div className="relative mx-auto" style={{ height: "min(62dvh, 600px)", aspectRatio: `${FW}/${FH}` }}>
           <canvas ref={canvasRef} width={FW} height={FH}
             className="block w-full h-full rounded-lg border border-white/10 touch-none select-none"
             style={{ background: mode === "field" ? "transparent" : "#000" }} />
+
+          {/* предупреждение о пинге — оверлеем над полем, не двигает раскладку */}
+          {ping != null && ping > 200 ? (
+            <div className="absolute top-2 left-1/2 -translate-x-1/2 z-[2] pointer-events-none px-3 py-1.5 rounded-md bg-black/70 backdrop-blur-sm border border-[#FF6B6B]/30">
+              <p className="text-[12px] text-[#FF6B6B] leading-snug text-center max-w-[240px]">
+                Высокий пинг ({ping} мс) — мяч будет дёргаться.
+              </p>
+            </div>
+          ) : null}
 
           {count > 0 && phase === "count" ? (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">

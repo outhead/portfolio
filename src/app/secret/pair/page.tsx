@@ -11,11 +11,10 @@ import QuestButton from "@/components/QuestButton";
 import PixelArt, { REACTION_ART } from "@/components/PixelArt";
 
 /**
- * Кооп-загадка. Двое, разные IP.
+ * Кооп-загадка. Двое (можно и с одного устройства/сети — без проверки IP).
  * Смотрящий (создатель) видит нужный порядок тумблеров, но двигать не может.
- * Контроллер (зашёл по ссылке с другого IP) двигает тумблеры, но цели не видит.
+ * Контроллер (зашёл по ссылке) двигает тумблеры, но цели не видит.
  * Совпало → у обоих сразу открывается финал, без кодов.
- * Тот же IP, что у создателя → блок с намёком про «вторую руку».
  */
 const LEN = 6;
 
@@ -26,7 +25,7 @@ function celebrate() {
   setTimeout(() => confetti({ particleCount: 80, spread: 120, origin: { x: 0.75, y: 0.5 }, colors, disableForReducedMotion: true }), 360);
 }
 
-type Phase = "loading" | "viewer" | "controller" | "same_ip" | "full" | "error" | "done";
+type Phase = "loading" | "viewer" | "controller" | "full" | "error" | "done";
 
 // bits — что показываем (цель или текущее). Если передан compare — подсвечиваем
 // зелёным совпадающие позиции (для ряда «сейчас» сравниваем с целью).
@@ -106,11 +105,11 @@ export default function PairPage() {
   const ctlKey = useRef("");      // ключ контроллера — авторизация flip (IP может меняться под VPN)
   const tokenRef = useRef("");
 
-  // join: ключ из sessionStorage переживает смену IP; force обходит same_ip
-  async function joinPair(s: string, force = false) {
+  // join: ключ из sessionStorage переживает смену IP. force:1 всегда — проверки
+  // «разные IP» больше нет, можно играть и с одного устройства/сети.
+  async function joinPair(s: string) {
     const stored = (() => { try { return sessionStorage.getItem(`pair_key_${s}`) || ""; } catch { return ""; } })();
-    const r = await pairCall("join", { token: s, key: stored, force: force ? 1 : 0 });
-    if (r.error === "same_ip") return setPhase("same_ip");
+    const r = await pairCall("join", { token: s, key: stored, force: 1 });
     if (r.error === "full") return setPhase("full");
     if (r.error || !r.id) return setPhase("error");
     if (typeof r.key === "string" && r.key) {
@@ -361,22 +360,6 @@ export default function PairPage() {
             <h1 className="mb-4 flex justify-center"><span className="sr-only">Сбой связи</span><LedText text="Сбой связи" scale={2} dot={1.45} className="h-[20px] md:h-[26px] w-auto" /></h1>
             <p className="text-white/55 text-sm mb-8 max-w-xs">Не удалось открыть сессию. Попробуй обновить страницу.</p>
             <Link href="/secret/lab/kod" className="text-[14px] text-white/40 hover:text-white/70 no-underline">← К терминалу</Link>
-          </>
-        ) : null}
-
-        {phase === "same_ip" ? (
-          <>
-            <h1 className="mb-5 flex justify-center"><span className="sr-only">Хм.</span><LedText text="Хм." scale={2} dot={1.45} className="h-[20px] md:h-[28px] w-auto" /></h1>
-            <p className="text-[16px] text-white/70 max-w-xs leading-relaxed mb-3">
-              Я вижу, как ты пытаешься меня обмануть. Тебе нужен кто-то — дальше, чем твоя вторая рука.
-            </p>
-            <p className="text-[14px] text-white/35 max-w-xs mb-7">Придётся постараться по-настоящему.</p>
-            <p className="text-[12px] text-white/30 max-w-xs mb-4">
-              Вы с напарником за одним VPN или одной сетью? Тогда я обознался.
-            </p>
-            <QuestButton onClick={() => { setPhase("loading"); joinPair(tokenRef.current || new URLSearchParams(window.location.search).get("s") || "", true); }}>
-              Мы правда вдвоём
-            </QuestButton>
           </>
         ) : null}
 

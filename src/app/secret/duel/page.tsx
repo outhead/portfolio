@@ -19,10 +19,8 @@ const TG_CHANNEL = "https://t.me/aiegorka";
  * каждый ходит только в своей половине и отбивает мячи, прилетающие в его зону.
  * Промахнулся у себя — очко сопернику.
  *
- * Мультибол (бонус x2 удваивает шарики). Бонусы лежат на поле ПАЧКОЙ (несколько
- * одновременно), среди них часто — «заряд». Поймал заряд → можешь выстрелить:
- * золотая медленная пуля летит горизонтально в зону соперника, попадание глушит
- * его ракетку на ~1.2с (замирает), чтобы мяч мог проскочить.
+ * Мультибол (бонус x2 удваивает шарики) и бонус size (шире ракетка). Бонусы лежат
+ * на поле ПАЧКОЙ (несколько одновременно).
  *
  * Сеть как в понге: хост авторитетно считает физику и шлёт состояние, гость —
  * dead reckoning + коррекция. Транспорт: P2P (rtc) с фолбэком на relay.
@@ -39,17 +37,12 @@ const BASE = 3.4;                  // стартовая скорость мяч
 const MAXV = 8;                    // потолок скорости
 const ACC = 1.035;                // ускорение на отскоке от ракетки
 const MAX_BALLS = 6;
-const BULLET_SPD = BASE;           // пуля медленная — как стартовый шарик
-const BULLET_W = 16, BULLET_H = 5; // золотой узкий прямоугольник
-const STUN_MS = 1200;              // глушение ракетки при попадании
-const AMMO_CAP = 3;
 const MAX_BOOSTS = 3;
 
 type Phase = "connecting" | "waiting" | "count" | "playing" | "over";
-type BoostType = "ammo" | "x2" | "size";
+type BoostType = "x2" | "size";
 type Ball = { x: number; y: number; vx: number; vy: number; last: 0 | 1; touched: boolean };
 type Boost = { id: number; x: number; y: number; type: BoostType };
-type Bullet = { x: number; owner: 0 | 1 };
 
 const rndCode = () =>
   Array.from({ length: 5 }, () => "abcdefghijkmnpqrstuvwxyz23456789"[Math.floor(Math.random() * 32)]).join("");
@@ -70,8 +63,6 @@ export default function DuelPage() {
   const [ping, setPing] = useState<number | null>(null); // RTT до соперника, мс
   const [oppName, setOppName] = useState("");
   const [myName, setMyName] = useState("");
-  const [ammoUI, setAmmoUI] = useState(0);   // мои заряды (для кнопки/индикатора)
-  const [stunnedUI, setStunnedUI] = useState(false); // меня заглушило
 
   const roleRef = useRef<"host" | "guest">("host");
   const chRef = useRef<Relay | null>(null);
@@ -98,11 +89,7 @@ export default function DuelPage() {
   const balls = useRef<Ball[]>([{ x: FW / 2, y: FH / 2, vx: 0, vy: 0, last: 0, touched: false }]);
   const boosts = useRef<Boost[]>([]);
   const boostId = useRef(1);
-  const bullets = useRef<Bullet[]>([]);
-  const ammo = useRef<[number, number]>([0, 0]);        // заряды [host, guest]
   const sizeUntil = useRef<[number, number]>([0, 0]);
-  const stunUntil = useRef<[number, number]>([0, 0]);   // хост: абсолютный срок глушения
-  const stunRem = useRef<[number, number]>([0, 0]);     // остаток мс (для UI/гейта/гостя)
   const nextBoostAt = useRef(0);
   const soloRef = useRef(false);
 
@@ -132,9 +119,6 @@ export default function DuelPage() {
 
   const hadMatch = useRef(false);
   const countTimer = useRef<ReturnType<typeof setInterval> | null>(null);
-  // зеркала UI-значений, чтобы не дёргать setState без изменений
-  const ammoUIRef = useRef(0);
-  const stunUIRef = useRef(false);
 
   // выбор хоста при «двух гостях»
   const myId = useRef(Math.random().toString(36).slice(2));
@@ -149,10 +133,6 @@ export default function DuelPage() {
   const rOppX = useRef<number | null>(null);
   const rBalls = useRef<{ x: number; y: number }[]>([]);
 
-  // действия стрельбы (привязка обновляется из игрового эффекта)
-  const fireRef = useRef<() => void>(() => {});
-  const guestFireRef = useRef<() => void>(() => {});
-
   const setPhaseBoth = (p: Phase) => { phaseRef.current = p; setPhase(p); };
   const setCountBoth = (c: number) => { countRef.current = c; setCount(c); };
 
@@ -160,8 +140,6 @@ export default function DuelPage() {
     // подача из центра ВВЕРХ к стенке (даёт время среагировать), снос в случайную половину
     balls.current = [{ x: FW / 2, y: FH / 2, vx: (Math.random() * 2 - 1) * 2.4, vy: -BASE * dir, last: 0, touched: false }];
     boosts.current = [];
-    bullets.current = [];
-    ammo.current = [0, 0];
     sizeUntil.current = [0, 0];
     pw1.current = PW; pw2.current = PW;
     nextBoostAt.current = performance.now() + 1800 + Math.random() * 1800;
@@ -221,9 +199,6 @@ export default function DuelPage() {
       px1.current = payload.px1;
       pw1.current = payload.pw1; pw2.current = payload.pw2;
       boosts.current = (payload.boosts || []).map((b: any) => ({ id: b.id, x: b.x, y: b.y, type: b.type }));
-      bullets.current = (payload.bullets || []).map((b: any) => ({ x: b[0], owner: b[1] as 0 | 1 }));
-      ammo.current = [payload.ammo?.[0] ?? 0, payload.ammo?.[1] ?? 0];
-      stunRem.current = [payload.stun?.[0] ?? 0, payload.stun?.[1] ?? 0];
       if (payload.s1 !== sc.current[0] || payload.s2 !== sc.current[1]) {
         sc.current = [payload.s1, payload.s2]; setScore([payload.s1, payload.s2]);
       }
@@ -269,7 +244,6 @@ export default function DuelPage() {
     ch.on("state", (payload) => { if (accept("relay")) applyState(payload); });
     ch.on("paddle", (payload) => { if (accept("relay")) applyPaddle(payload); });
     ch.on("rematch", () => { if (roleRef.current === "host") startMatch(); });
-    ch.on("fire", () => { if (roleRef.current === "host") guestFireRef.current(); });
     // ─── пинг: эхо по тому же транспорту, тег via сохраняем ───
     const replyPong = (via: "p2p" | "relay", t: number) =>
       via === "p2p" ? p2pRef.current?.sendCtl({ event: "pong", payload: { t, via } })
@@ -321,7 +295,6 @@ export default function DuelPage() {
         else if (m.event === "paddle") { if (accept("p2p")) applyPaddle(m.payload); }
         else if (m.event === "hello") handleHello(m.payload);
         else if (m.event === "rematch") { if (roleRef.current === "host") startMatch(); }
-        else if (m.event === "fire") { if (roleRef.current === "host") guestFireRef.current(); }
         else if (m.event === "ping") replyPong("p2p", (m.payload as { t?: number })?.t ?? 0);
         else if (m.event === "pong") onPong(m.payload);
       },
@@ -401,8 +374,7 @@ export default function DuelPage() {
   function startCountdown(dir: number) {
     if (countTimer.current) clearInterval(countTimer.current);
     balls.current = [{ x: FW / 2, y: FH / 2, vx: 0, vy: 0, last: 0, touched: false }];
-    boosts.current = []; bullets.current = []; ammo.current = [0, 0];
-    stunUntil.current = [0, 0]; stunRem.current = [0, 0];
+    boosts.current = [];
     setCountBoth(3);
     setPhaseBoth("count");
     countTimer.current = setInterval(() => {
@@ -438,30 +410,9 @@ export default function DuelPage() {
     let raf = 0, lastSend = 0, lastMirror = 0;
     const keys: Record<string, boolean> = {};
 
-    // стрельба: своя пуля. Хост стреляет сам; гость шлёт ctl-событие хосту.
-    const doFire = (owner: 0 | 1) => {
-      if (phaseRef.current !== "playing") return;
-      if (ammo.current[owner] <= 0) return;
-      ammo.current[owner]--;
-      const cx = owner === 0 ? px1.current + pw1.current / 2 : px2Eff.current + pw2.current / 2;
-      bullets.current.push({ x: cx, owner });
-      sparks(cx, BOTTOM_Y + PH / 2, "#FFD60A", 8, 2.4, owner === 0 ? 1 : -1, 0);
-    };
-    guestFireRef.current = () => doFire(1);
-    fireRef.current = () => {
-      if (roleRef.current === "host") doFire(0);
-      else {
-        if (ammo.current[1] <= 0) return;
-        ammo.current[1] = Math.max(0, ammo.current[1] - 1); // оптимистично — хост поправит
-        if (useP2P.current) p2pRef.current?.sendCtl({ event: "fire", payload: {} });
-        else chRef.current?.send("fire", {});
-      }
-    };
-
     const onKey = (e: KeyboardEvent, downK: boolean) => {
       const k = e.key.toLowerCase();
       if (["arrowleft", "arrowright", "a", "d"].includes(k)) { keys[k] = downK; e.preventDefault(); }
-      if ((k === " " || k === "f" || k === "ц" || k === "spacebar") && downK) { fireRef.current(); e.preventDefault(); }
     };
     const kd = (e: KeyboardEvent) => onKey(e, true);
     const ku = (e: KeyboardEvent) => onKey(e, false);
@@ -490,13 +441,14 @@ export default function DuelPage() {
       if (ctx.roundRect) ctx.roundRect(x, y, w, h, h / 2); else ctx.rect(x, y, w, h);
     };
 
-    const boostColor = (t: BoostType) => t === "ammo" ? "#FFD60A" : t === "x2" ? "#A6FF00" : "#33C7FF";
+    const boostColor = (t: BoostType) => t === "x2" ? "#A6FF00" : "#33C7FF";
     const boostIcon = (t: BoostType, x: number, y: number, c: string) => {
       ctx.fillStyle = c; ctx.strokeStyle = c; ctx.lineWidth = 2; ctx.lineCap = "round";
       if (t === "x2") {
         ctx.beginPath(); ctx.arc(x - 5, y, 3.4, 0, Math.PI * 2); ctx.fill();
         ctx.beginPath(); ctx.arc(x + 5, y, 3.4, 0, Math.PI * 2); ctx.fill();
-      } else if (t === "size") {
+      } else {
+        // size — «растяжка»
         ctx.beginPath();
         ctx.moveTo(x - 9, y); ctx.lineTo(x + 9, y);
         ctx.moveTo(x - 9, y); ctx.lineTo(x - 5, y - 4);
@@ -504,14 +456,6 @@ export default function DuelPage() {
         ctx.moveTo(x + 9, y); ctx.lineTo(x + 5, y - 4);
         ctx.moveTo(x + 9, y); ctx.lineTo(x + 5, y + 4);
         ctx.stroke();
-      } else {
-        // ammo — «патрон»: пуля-стрелка
-        ctx.beginPath();
-        ctx.moveTo(x - 7, y); ctx.lineTo(x + 4, y);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(x + 4, y - 4); ctx.lineTo(x + 9, y); ctx.lineTo(x + 4, y + 4); ctx.closePath();
-        ctx.fill();
       }
     };
 
@@ -599,19 +543,13 @@ export default function DuelPage() {
       ctx.moveTo(FW - m - tick, FH - m); ctx.lineTo(FW - m, FH - m); ctx.lineTo(FW - m, FH - m - tick);
       ctx.stroke();
 
-      // ракетки (обе внизу). Своя — лайм со свечением, чужая — белая. Глушение — красное мигание.
-      const stRem = (i: 0 | 1) => host ? Math.max(0, stunUntil.current[i] - nowMs) : stunRem.current[i];
+      // ракетки (обе внизу). Своя — лайм со свечением, чужая — белая.
       const paddle = (x: number, w: number, own: boolean, idx: 0 | 1) => {
         const hit = Math.max(0, 1 - (nowMs - paddleHitAt.current[idx]) / 130);
-        const stunned = stRem(idx) > 0;
         const sw = w * (1 + 0.12 * hit), sh = PH * (1 - 0.18 * hit);
         const px = x - (sw - w) / 2;
         const py = (FH - MARGIN - PH) + (PH - sh) / 2;
-        if (stunned) {
-          const blink = 0.5 + 0.5 * Math.sin(nowMs / 60);
-          ctx.fillStyle = `rgba(255,70,70,${(0.55 + 0.4 * blink).toFixed(2)})`;
-          ctx.shadowColor = "rgba(255,60,60,0.6)"; ctx.shadowBlur = 12;
-        } else if (own) {
+        if (own) {
           const g = ctx.createLinearGradient(px, 0, px + sw, 0);
           g.addColorStop(0, "#8FE000"); g.addColorStop(0.5, "#C6FF4D"); g.addColorStop(1, "#8FE000");
           ctx.shadowColor = "rgba(166,255,0,0.55)"; ctx.shadowBlur = 12;
@@ -657,18 +595,6 @@ export default function DuelPage() {
       }
       // подчистка born-кэша
       if (boosts.current.length === 0) boostBorn.current = {};
-
-      // пули — золотой узкий прямоугольник + лёгкий хвост
-      for (const bl of bullets.current) {
-        const dir = bl.owner === 0 ? 1 : -1;
-        const by = BOTTOM_Y + PH / 2;
-        ctx.fillStyle = "rgba(255,214,10,0.22)";
-        ctx.fillRect(bl.x - dir * BULLET_W * 1.6 - BULLET_W / 2, by - BULLET_H / 2, BULLET_W * 1.6, BULLET_H);
-        ctx.fillStyle = "#FFD60A";
-        ctx.shadowColor = "rgba(255,214,10,0.8)"; ctx.shadowBlur = 10;
-        ctx.fillRect(bl.x - BULLET_W / 2, by - BULLET_H / 2, BULLET_W, BULLET_H);
-        ctx.shadowBlur = 0;
-      }
 
       // сглаживаем рендер мячей у гостя (логику-физику не трогаем)
       if (!host) {
@@ -768,12 +694,6 @@ export default function DuelPage() {
         ctx.fillRect(0, 0, FW, FH);
         flashRef.current *= 0.88;
       } else flashRef.current = 0;
-
-      // синхронизация UI: заряды и статус глушения
-      const myAmmo = ammo.current[meIdx];
-      if (myAmmo !== ammoUIRef.current) { ammoUIRef.current = myAmmo; setAmmoUI(myAmmo); }
-      const st = stRem(meIdx) > 0;
-      if (st !== stunUIRef.current) { stunUIRef.current = st; setStunnedUI(st); }
     };
 
     const activate = (type: BoostType, owner: 0 | 1) => {
@@ -790,11 +710,10 @@ export default function DuelPage() {
             last: s.last, touched: true,
           });
         }
-      } else if (type === "size") {
+      } else {
+        // size — шире ракетка на 10с
         if (owner === 0) { pw1.current = PW * 1.5; sizeUntil.current[0] = now + 10000; }
         else { pw2.current = PW * 1.5; sizeUntil.current[1] = now + 10000; }
-      } else {
-        ammo.current[owner] = Math.min(AMMO_CAP, ammo.current[owner] + 1);
       }
     };
 
@@ -805,15 +724,11 @@ export default function DuelPage() {
       const host = roleRef.current === "host";
       const now = performance.now();
 
-      // остаток глушения (для гейта ввода)
-      if (host) stunRem.current = [Math.max(0, stunUntil.current[0] - now), Math.max(0, stunUntil.current[1] - now)];
-      else stunRem.current = [Math.max(0, stunRem.current[0] - STEP), Math.max(0, stunRem.current[1] - STEP)];
-
-      // ввод своей ракетки (если не заглушён)
+      // ввод своей ракетки
       const meIdx: 0 | 1 = host ? 0 : 1;
       const ownRef = host ? px1 : px2;
       const ownPw = host ? pw1.current : pw2.current;
-      if (stunRem.current[meIdx] <= 0) {
+      {
         const speed = 9;
         let me = ownRef.current;
         if (keys["arrowleft"] || keys["a"]) me -= speed;
@@ -823,21 +738,16 @@ export default function DuelPage() {
         ownRef.current = me; myX.current = me;
         myVel.current = myVel.current * 0.7 + (me - prevMyX.current) * 0.3;
         prevMyX.current = me;
-      } else {
-        myVel.current = 0; myX.current = ownRef.current; prevMyX.current = ownRef.current;
       }
 
-      // хост: экстраполяция ракетки гостя (заморожена, пока гость заглушён)
+      // хост: экстраполяция ракетки гостя
       if (host) {
-        if (stunUntil.current[1] > now) { px2Eff.current = clampPaddle(px2.current, 1, pw2.current); }
-        else {
-          const cap = useP2P.current ? 4 : 10;
-          const age = px2At.current ? Math.min((now - px2At.current) / 16.7, cap) : 0;
-          px2Eff.current = clampPaddle(px2.current + px2Vel.current * age, 1, pw2.current);
-        }
+        const cap = useP2P.current ? 4 : 10;
+        const age = px2At.current ? Math.min((now - px2At.current) / 16.7, cap) : 0;
+        px2Eff.current = clampPaddle(px2.current + px2Vel.current * age, 1, pw2.current);
       }
 
-      // solo: ИИ ведёт правую ракетку и иногда стреляет
+      // solo: ИИ ведёт правую ракетку
       if (soloRef.current && host && phaseRef.current === "playing") {
         let target = MID + (MID - pw2.current) / 2, best = Infinity;
         for (const b of balls.current) {
@@ -846,7 +756,6 @@ export default function DuelPage() {
         const cur = px2.current;
         px2.current = clampPaddle(cur + clamp(target - cur, -6.5, 6.5), 1, pw2.current);
         px2Eff.current = px2.current; px2At.current = now;
-        if (Math.random() < 0.004) doFire(1);
       }
 
       // гость: dead reckoning мяча (стены, верхний отбойник, обе ракетки)
@@ -868,8 +777,6 @@ export default function DuelPage() {
           }
           b.y = clamp(b.y, -30, FH + 30);
         });
-        // пули гостя — катятся локально между пакетами
-        bullets.current.forEach((bl) => { bl.x += (bl.owner === 0 ? 1 : -1) * BULLET_SPD; });
       }
 
       if (host && phaseRef.current === "playing") {
@@ -877,10 +784,9 @@ export default function DuelPage() {
         if (sizeUntil.current[0] && now > sizeUntil.current[0]) { pw1.current = PW; sizeUntil.current[0] = 0; }
         if (sizeUntil.current[1] && now > sizeUntil.current[1]) { pw2.current = PW; sizeUntil.current[1] = 0; }
 
-        // спавн бонусов пачкой: заряд — часто, x2/size — реже
+        // спавн бонусов пачкой: x2 (мультибол) чаще, size реже
         if (now > nextBoostAt.current && boosts.current.length < MAX_BOOSTS) {
-          const rr = Math.random();
-          const type: BoostType = rr < 0.58 ? "ammo" : rr < 0.82 ? "x2" : "size";
+          const type: BoostType = Math.random() < 0.6 ? "x2" : "size";
           boosts.current.push({
             id: boostId.current++,
             x: 50 + Math.random() * (FW - 100),
@@ -932,24 +838,6 @@ export default function DuelPage() {
           }
         }
 
-        // пули: летят горизонтально, попадают по ракетке соперника → глушение
-        for (let i = bullets.current.length - 1; i >= 0; i--) {
-          const bl = bullets.current[i];
-          bl.x += (bl.owner === 0 ? 1 : -1) * BULLET_SPD;
-          const opp: 0 | 1 = bl.owner === 0 ? 1 : 0;
-          const oppX = opp === 0 ? px1.current : p2x;
-          const oppW = opp === 0 ? W1 : W2;
-          const half = BULLET_W / 2;
-          if (bl.x + half >= oppX && bl.x - half <= oppX + oppW) {
-            stunUntil.current[opp] = now + STUN_MS;
-            shakeRef.current = 6;
-            sparks(bl.x, BOTTOM_Y + PH / 2, "#FF4646", 16, 3);
-            bullets.current.splice(i, 1);
-            continue;
-          }
-          if (bl.x < -14 || bl.x > FW + 14) bullets.current.splice(i, 1);
-        }
-
         // голы: мяч ушёл вниз → очко защитнику ПРОТИВОПОЛОЖНОЙ зоны
         let scored = false;
         balls.current = balls.current.filter((b) => {
@@ -965,7 +853,7 @@ export default function DuelPage() {
             const w = sc.current[0] > sc.current[1] ? 0 : 1;
             winnerRef.current = w; setWinner(w); setPhaseBoth("over");
             hadMatch.current = true;
-            balls.current = []; boosts.current = []; bullets.current = [];
+            balls.current = []; boosts.current = [];
           } else if (balls.current.length === 0) {
             startCountdown(Math.random() < 0.5 ? 1 : -1);
           }
@@ -993,10 +881,6 @@ export default function DuelPage() {
             ]),
             px1: Math.round(px1.current), pw1: pw1.current, pw2: pw2.current,
             boosts: boosts.current.map((b) => ({ id: b.id, x: Math.round(b.x), y: Math.round(b.y), type: b.type })),
-            bullets: bullets.current.map((b) => [Math.round(b.x), b.owner]),
-            ammo: [ammo.current[0], ammo.current[1]],
-            stun: [Math.round(Math.max(0, stunUntil.current[0] - performance.now())),
-                   Math.round(Math.max(0, stunUntil.current[1] - performance.now()))],
             s1: sc.current[0], s2: sc.current[1], phase: phaseRef.current, count: countRef.current,
             winner: phaseRef.current === "over" ? (sc.current[0] > sc.current[1] ? 0 : 1) : null,
           };
@@ -1072,12 +956,12 @@ export default function DuelPage() {
   }
 
   return (
-    <main className="pong-page relative bg-black text-white overflow-hidden flex flex-col items-center px-4 pt-[60px] sm:pt-[68px] pb-4" style={{ minHeight: "100dvh" }}>
+    <main className="pong-page relative bg-black text-white overflow-hidden flex flex-col items-center px-4 pt-[52px] sm:pt-[60px] pb-4" style={{ minHeight: "100dvh" }}>
       <div aria-hidden className="absolute inset-0 pointer-events-none opacity-60" style={{
         background: "radial-gradient(ellipse 55% 45% at 50% 38%, rgba(166,255,0,0.05), transparent 62%)",
       }} />
       <div className="relative z-[1] w-full max-w-[440px] mx-auto flex flex-col items-center text-center">
-        <p className="text-white/40 mb-1.5">
+        <p className="text-white/40 mb-1.5 whitespace-nowrap">
           <span className="sr-only">Дуэль · сквош</span>
           <LedText text="Дуэль · сквош" className="h-[8px] w-auto" />
           <span className="ml-2 normal-case tracking-normal" style={{ color: transport === "p2p" ? "rgba(166,255,0,0.65)" : "rgba(255,255,255,0.25)" }}>
@@ -1090,11 +974,6 @@ export default function DuelPage() {
             </span>
           ) : null}
         </p>
-        {ping != null && ping > 200 ? (
-          <p className="text-[12px] text-[#FF6B6B] mb-2 max-w-xs leading-snug">
-            Высокий пинг ({ping} мс). С таким соединением нормально сыграть не выйдет — мяч будет дёргаться.
-          </p>
-        ) : null}
         <div className="flex items-center justify-center gap-2.5 sm:gap-5 mb-2">
           <span className="text-white/40">
             <LedText text={oppName || "соперник"} className="h-[7px] sm:h-[8px] w-auto" />
@@ -1115,6 +994,15 @@ export default function DuelPage() {
           <canvas ref={canvasRef} width={FW} height={FH}
             className="block w-full h-full rounded-lg border border-white/10 touch-none select-none"
             style={{ background: "#000" }} />
+
+          {/* предупреждение о пинге — оверлеем над полем, не двигает раскладку */}
+          {ping != null && ping > 200 ? (
+            <div className="absolute top-2 left-1/2 -translate-x-1/2 z-[2] pointer-events-none px-3 py-1.5 rounded-md bg-black/70 backdrop-blur-sm border border-[#FF6B6B]/30">
+              <p className="text-[12px] text-[#FF6B6B] leading-snug text-center max-w-[240px]">
+                Высокий пинг ({ping} мс) — мяч будет дёргаться.
+              </p>
+            </div>
+          ) : null}
 
           {count > 0 && phase === "count" ? (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -1156,30 +1044,6 @@ export default function DuelPage() {
               ) : null}
             </div>
           ) : null}
-
-          {/* боевой HUD: заряды + кнопка огня */}
-          {phase === "playing" ? (
-            <div className="absolute left-0 right-0 bottom-2 flex items-center justify-between px-3 pointer-events-none">
-              <div className="flex gap-1.5">
-                {Array.from({ length: AMMO_CAP }).map((_, i) => (
-                  <span key={i} className="inline-block w-2.5 h-2.5 rounded-full"
-                    style={{ background: i < ammoUI ? "#FFD60A" : "rgba(255,255,255,0.14)", boxShadow: i < ammoUI ? "0 0 8px rgba(255,214,10,0.7)" : "none" }} />
-                ))}
-              </div>
-              <button
-                onClick={() => fireRef.current()}
-                disabled={ammoUI <= 0}
-                aria-label="Выстрелить"
-                className="pointer-events-auto rounded-full px-4 py-2 text-[13px] font-medium transition-all select-none disabled:opacity-30"
-                style={{
-                  background: ammoUI > 0 ? "#FFD60A" : "rgba(255,255,255,0.08)",
-                  color: ammoUI > 0 ? "#000" : "rgba(255,255,255,0.4)",
-                  boxShadow: ammoUI > 0 ? "0 0 22px -6px rgba(255,214,10,0.9)" : "none",
-                }}>
-                {stunnedUI ? "глушит…" : `Огонь ${ammoUI > 0 ? "⊕".repeat(Math.min(ammoUI, 1)) : ""}`}
-              </button>
-            </div>
-          ) : null}
         </div>
 
         {followOpen && phase === "over" ? (
@@ -1203,7 +1067,7 @@ export default function DuelPage() {
         ) : null}
 
         <p className="hidden sm:block mt-3 text-[12px] text-white/40 max-w-xs">
-          Твоя половина — снизу. Отбивай мячи в своей зоне (←→ или палец). Поймал заряд — жми «Огонь» (или пробел): пуля глушит ракетку соперника. До {WIN_SCORE}.
+          Твоя половина — снизу. Отбивай мячи в своей зоне (←→ или палец). Лови бонусы: мультибол и широкая ракетка. До {WIN_SCORE}.
         </p>
       </div>
     </main>
