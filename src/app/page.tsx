@@ -888,7 +888,9 @@ const EGGS: { id: string; label: string }[] = [
   { id: "cta", label: "Кнопка «не нажимать»" },
 ];
 const EGG_IDS = new Set(EGGS.map((e) => e.id));
-const EGG_TOTAL = EGGS.length;
+// Зафиксированный total счётчика. НЕ берём длину списка — растёт явным числом,
+// когда сам решаешь раскрыть новые. Сейчас 6.
+const EGG_TOTAL = 6;
 const EGG_STORE_KEY = "egg-hunt-found-v1";
 function foundEgg(id: string) {
   if (typeof window !== "undefined")
