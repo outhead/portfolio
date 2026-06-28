@@ -59,6 +59,7 @@ export default function PixelCube3D({
   logoSrc,
   grid = 44,
   mode = "spin",
+  idleGlow = 0.42,
   className = "",
 }: {
   color: string;
@@ -69,6 +70,9 @@ export default function PixelCube3D({
   /** Режим вращения: spin (турнтейбл Y), tumble (кувырок 2 оси),
    *  pendulum (качание), lissajous (плавный дрейф). */
   mode?: CubeMode;
+  /** Яркость диодов в покое (0..1). Hover всегда добивает до 1.
+   *  Для hero ставим выше — куб должен читаться без наведения. */
+  idleGlow?: number;
   className?: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -298,7 +302,7 @@ export default function PixelCube3D({
       ctx.clearRect(0, 0, outPx, outPx);
       const cell = outPx / grid;
       const rDot = cell * 0.34; // единый размер всех точек
-      const bright = 0.42 + 0.58 * lit;
+      const bright = idleGlow + (1 - idleGlow) * lit;
       // 2×2 суперсэмпл на ячейку → мягче градиент материала на сетке
       const SS = [0.25, 0.75];
       for (let gy = 0; gy < grid; gy++) {
@@ -339,7 +343,7 @@ export default function PixelCube3D({
       wrap.removeEventListener("mouseenter", onEnter);
       wrap.removeEventListener("mouseleave", onLeave);
     };
-  }, [color, logoSrc, grid, mode]);
+  }, [color, logoSrc, grid, mode, idleGlow]);
 
   return (
     <div ref={wrapRef} className={`relative ${className}`} style={{ aspectRatio: "1 / 1" }}>

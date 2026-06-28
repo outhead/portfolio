@@ -120,6 +120,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
               logoSrc={project.cubeLogo!}
               grid={56}
               mode="spin"
+              idleGlow={0.82}
               className="h-[80%] max-h-[540px] opacity-95 pointer-events-auto"
             />
           </div>
