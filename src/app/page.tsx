@@ -32,7 +32,23 @@ import {
   Globe,
   Layers,
   ArrowUpRight,
+  Play,
 } from "lucide-react";
+
+// Любимые выступления — пиксельные превью на главной (прямые ссылки на видео).
+// Полный список — на /speaking.
+const SPEAKING_PICKS: Array<{ label: string; url: string; thumb: string }> = [
+  {
+    label: "«ИИ бесполезен» — подкаст про ИИ",
+    url: "https://youtu.be/iGQzN9T4upA",
+    thumb: "/images/gpn/links/ai-fun.jpg",
+  },
+  {
+    label: "ЦЕХ News #13 — ИИ в дизайне",
+    url: "https://youtu.be/4s7j57G71fg",
+    thumb: "/images/gpn/links/ai-edited.jpg",
+  },
+];
 
 const LinkedinIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
@@ -1203,17 +1219,11 @@ export default function PreviewHome() {
                     <span className="sr-only">{`Найдено пасхалок: ${eggCount} из ${eggTotal}`}</span>
                     <LedText text="Найдено" className="h-[8px] w-auto opacity-60" />
                     <LedText
-                      text={`${eggCount}/${eggTotal}`}
+                      text={`${eggCount} из ${eggTotal}`}
                       className={`h-[10px] w-auto ${eggDone ? "text-[#A6FF00]" : "text-white/75"}`}
                     />
                   </span>
                 </div>
-                {/* Подсказка-страховка: видна, пока ничего не нашли */}
-                {eggCount === 0 && (
-                  <div className="-mt-2 text-white/25" aria-hidden>
-                    <LedText text="тут спрятаны игры" className="h-[7px] w-auto" />
-                  </div>
-                )}
                 <div
                   ref={heroSphereRef}
                   onClick={onPortraitTap}
@@ -1241,15 +1251,10 @@ export default function PreviewHome() {
                     {bubbleStage > 0 ? HERO_BUBBLES[(bubbleStage - 1) % HERO_BUBBLES.length] : ""}
                   </span>
                 </div>
-                <div className="flex items-center justify-between text-white/35">
+                <div className="flex items-center text-white/35">
                   <span aria-label="Москва">
                     <LedText text="Москва" className="h-[10px] w-auto" />
                   </span>
-                  <span
-                    aria-hidden
-                    className="w-[5px] h-[5px] rounded-full"
-                    style={{ background: "#A6FF00", boxShadow: "0 0 10px rgba(166,255,0,0.8)" }}
-                  />
                 </div>
               </Oled>
             </motion.div>
@@ -1591,8 +1596,22 @@ export default function PreviewHome() {
       </section>
 
       {/* ═══════ TESTIMONIALS — с астериксом * (stokt) ═══════ */}
-      <section className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20">
+      <section className="relative z-[1] overflow-hidden bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20">
+        {/* лёгкий ambient-свет, плавно проявляется при скролле в вид */}
         <motion.div
+          aria-hidden
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, margin: "-15% 0px -15% 0px" }}
+          transition={{ duration: 1.3, ease: "easeOut" }}
+          className="pointer-events-none absolute inset-0 z-0"
+          style={{
+            background:
+              "radial-gradient(ellipse 50% 45% at 50% 12%, rgba(166,255,0,0.05), transparent 62%)",
+          }}
+        />
+        <motion.div
+          className="relative z-[1]"
           initial="hidden"
           whileInView="show"
           viewport={viewport}
@@ -1756,83 +1775,85 @@ export default function PreviewHome() {
             </div>
           </motion.div>
 
-          {/* ── ВЫСТУПЛЕНИЯ: чипы конференций слева + текст справа ── */}
+          {/* ── ВЫСТУПЛЕНИЯ: пиксельные превью конкретных видео + текст ── */}
           <motion.div variants={fadeUp}>
-            <Link
-              href="/speaking"
-              data-ym-goal="nav_speaking"
-              data-ym-goal-params='{"placement":"offer_blocks"}'
-              className="no-underline group block w-full"
-            >
-              <div className="relative rounded-2xl overflow-hidden border border-white/[0.06] group-hover:border-[#C9A66B]/35 transition-colors duration-300 bg-[#0e0d0a]">
-                <div
-                  aria-hidden
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    background:
-                      "radial-gradient(ellipse 65% 90% at 90% 0%, rgba(201,166,107,0.07), transparent 60%)",
-                  }}
-                />
-                <div className="relative grid md:grid-cols-[minmax(0,340px)_1fr] items-stretch">
-                  {/* Визуал — лента площадок */}
-                  <div className="relative hidden md:flex border-r border-white/[0.06] bg-black/20 p-10 flex-col justify-center gap-3">
-                    <div
-                      aria-hidden
-                      className="absolute inset-0 pointer-events-none"
-                      style={{
-                        backgroundImage:
-                          "radial-gradient(rgba(201,166,107,0.10) 1.1px, transparent 1.2px)",
-                        backgroundSize: "14px 14px",
-                        maskImage:
-                          "radial-gradient(ellipse 90% 80% at 50% 50%, black, transparent 75%)",
-                        WebkitMaskImage:
-                          "radial-gradient(ellipse 90% 80% at 50% 50%, black, transparent 75%)",
-                      }}
-                    />
-                    {["МТС", "Ozon", "ВШЭ", "Дизайн-Просмотр"].map((v) => (
-                      <span
-                        key={v}
-                        className="relative inline-flex items-center gap-2 self-start rounded-full border border-white/10 bg-black/40 px-4 py-2 text-white/70 group-hover:border-[#C9A66B]/30 transition-colors"
-                      >
-                        <span className="h-1 w-1 rounded-full bg-[#C9A66B]/80" />
-                        <span className="sr-only">{v}</span>
-                        <LedText text={v} className="h-[9px] w-auto" />
-                      </span>
-                    ))}
-                  </div>
-                  {/* Текст */}
-                  <div className="p-8 md:p-12 flex flex-col justify-between min-h-[280px]">
-                    <div>
-                      <div className="inline-flex items-center gap-2 text-white/75 mb-5">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#C9A66B]" />
-                        <span className="sr-only">ВЫСТУПЛЕНИЯ</span>
-                        <LedText text="ВЫСТУПЛЕНИЯ" className="h-[11px] w-auto" />
-                      </div>
-                      <h3 className="text-white mb-5 max-w-lg">
-                        <LedLines
-                          text="Выступаю и модерирую секции про AI и дизайн"
-                          maxChars={26}
-                          lineClass="h-[16px] md:h-[22px]"
-                        />
-                      </h3>
-                      <p className="text-[16px] text-white/72 leading-relaxed max-w-lg">
-                        Внутренние конференции МТС и Ozon, Дизайн-Просмотр, ВШЭ (читал
-                        курс по прикладному ИИ). Темы: AI в продукте, масштабирование
-                        дизайна, дизайн-системы.
-                      </p>
-                    </div>
-                    <span className="inline-flex items-center gap-2 text-white/72 group-hover:text-white transition-colors mt-8 pt-6 border-t border-white/[0.08]">
-                      <span className="sr-only">Смотреть выступления</span>
-                      <LedText text="Смотреть выступления" className="h-[10px] w-auto" />
-                      <LedText
-                        text="→"
-                        className="h-[12px] w-auto group-hover:translate-x-1 transition-transform"
+            <div className="relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-[#C9A66B]/35 transition-colors duration-300 bg-[#0e0d0a]">
+              <div
+                aria-hidden
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background:
+                    "radial-gradient(ellipse 65% 90% at 90% 0%, rgba(201,166,107,0.07), transparent 60%)",
+                }}
+              />
+              <div className="relative grid md:grid-cols-[minmax(0,380px)_1fr] items-stretch">
+                {/* Превью двух любимых выступлений — прямые ссылки на видео */}
+                <div className="border-b md:border-b-0 md:border-r border-white/[0.06] bg-black/20 p-6 md:p-8 flex flex-col gap-4 justify-center">
+                  {SPEAKING_PICKS.map((v) => (
+                    <a
+                      key={v.url}
+                      href={v.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      data-ym-goal="nav_speaking"
+                      data-ym-goal-params='{"placement":"offer_preview"}'
+                      aria-label={v.label}
+                      className="group/preview relative block aspect-video rounded-lg overflow-hidden border border-white/[0.08] hover:border-[#C9A66B]/45 transition-colors no-underline"
+                    >
+                      <PixelPhoto src={v.thumb} cols={54} aspect={1.78} className="absolute inset-0" />
+                      <div
+                        aria-hidden
+                        className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent"
                       />
-                    </span>
-                  </div>
+                      <span
+                        aria-hidden
+                        className="absolute top-2.5 left-2.5 inline-flex items-center justify-center w-8 h-8 rounded-full bg-black/55 backdrop-blur-sm border border-white/15 transition-colors group-hover/preview:bg-[#C9A66B] group-hover/preview:border-[#C9A66B]"
+                      >
+                        <Play className="w-3.5 h-3.5 text-white fill-white ml-0.5 transition-colors group-hover/preview:text-black group-hover/preview:fill-black" strokeWidth={2} />
+                      </span>
+                      <span className="absolute bottom-2.5 left-3 right-3 text-[12px] leading-snug text-white/85">
+                        {v.label}
+                      </span>
+                    </a>
+                  ))}
                 </div>
+                {/* Текст */}
+                <Link
+                  href="/speaking"
+                  data-ym-goal="nav_speaking"
+                  data-ym-goal-params='{"placement":"offer_blocks"}'
+                  className="group no-underline p-8 md:p-12 flex flex-col justify-between min-h-[280px]"
+                >
+                  <div>
+                    <div className="inline-flex items-center gap-2 text-white/75 mb-5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#C9A66B]" />
+                      <span className="sr-only">ВЫСТУПЛЕНИЯ</span>
+                      <LedText text="ВЫСТУПЛЕНИЯ" className="h-[11px] w-auto" />
+                    </div>
+                    <h3 className="text-white mb-5 max-w-lg">
+                      <LedLines
+                        text="Выступаю и модерирую секции про AI и дизайн"
+                        maxChars={26}
+                        lineClass="h-[16px] md:h-[22px]"
+                      />
+                    </h3>
+                    <p className="text-[16px] text-white/72 leading-relaxed max-w-lg">
+                      Внутренние конференции МТС и Ozon, Дизайн-Просмотр, ВШЭ (читал
+                      курс по прикладному ИИ). Темы: AI в продукте, масштабирование
+                      дизайна, дизайн-системы.
+                    </p>
+                  </div>
+                  <span className="inline-flex items-center gap-2 text-white/72 group-hover:text-white transition-colors mt-8 pt-6 border-t border-white/[0.08]">
+                    <span className="sr-only">Смотреть все выступления</span>
+                    <LedText text="Смотреть все выступления" className="h-[10px] w-auto" />
+                    <LedText
+                      text="→"
+                      className="h-[12px] w-auto group-hover:translate-x-1 transition-transform"
+                    />
+                  </span>
+                </Link>
               </div>
-            </Link>
+            </div>
           </motion.div>
         </motion.div>
       </section>
@@ -1915,9 +1936,23 @@ export default function PreviewHome() {
       {/* ═══════ CONTACTS — bento-грид из action-тайлов ═══════ */}
       <section
         id="contacts"
-        className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20"
+        className="relative z-[1] overflow-hidden bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20"
       >
+        {/* лёгкий ambient-свет, плавно проявляется при скролле в вид */}
         <motion.div
+          aria-hidden
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, margin: "-15% 0px -15% 0px" }}
+          transition={{ duration: 1.3, ease: "easeOut" }}
+          className="pointer-events-none absolute inset-0 z-0"
+          style={{
+            background:
+              "radial-gradient(ellipse 45% 50% at 20% 35%, rgba(166,255,0,0.05), transparent 62%)",
+          }}
+        />
+        <motion.div
+          className="relative z-[1]"
           initial="hidden"
           whileInView="show"
           viewport={viewport}
