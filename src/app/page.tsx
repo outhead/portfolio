@@ -1867,7 +1867,8 @@ export default function PreviewHome() {
             </div>
           </motion.div>
 
-          {/* ── ВЫСТУПЛЕНИЯ: пиксельные превью конкретных видео + текст ── */}
+          {/* ── ВЫСТУПЛЕНИЯ: временно скрыто (вернуть — убрать {false && (…)}) ── */}
+          {false && (
           <motion.div variants={fadeUp}>
             <div className="relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-[#C9A66B]/35 transition-colors duration-300 bg-[#0b0b0a]">
               <div
@@ -1947,6 +1948,7 @@ export default function PreviewHome() {
               </div>
             </div>
           </motion.div>
+          )}
         </motion.div>
       </section>
 
