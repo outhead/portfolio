@@ -1981,7 +1981,7 @@ export default function PreviewHome() {
           variants={stagger}
         >
           <motion.div variants={fadeUp} className="mb-8 md:mb-12">
-            <SectionLabel>О СЕБЕ</SectionLabel>
+            <SectionLabel>ОБО МНЕ</SectionLabel>
           </motion.div>
 
           {/* Фото + bio — единая тёмная панель в языке карточек кейсов.
@@ -1992,14 +1992,13 @@ export default function PreviewHome() {
                   фото больше не растягивается во весь экран на мобиле/планшете */}
               <div className="relative aspect-[4/5] rounded-xl overflow-hidden border border-white/[0.06] bg-black">
                 <span className="sr-only">Егор Шугаев — дизайн-директор, ментор и независимый консультант</span>
-                <PixelPhoto
-                  src="/images/photos/me-pixel.png"
-                  cols={72}
-                  aspect={0.8}
-                  gamma={1.5}
-                  threshold={0.1}
-                  idle={0.72}
-                  className="absolute inset-0"
+                <Image
+                  src="/images/photos/me-pixel-color.png"
+                  alt="Пиксельный портрет Егора Шугаева"
+                  fill
+                  sizes="(max-width: 768px) 220px, 260px"
+                  className="absolute inset-0 object-cover"
+                  priority={false}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
                 <div className="absolute bottom-4 left-4 right-4 flex items-center gap-1.5 text-[12px] tracking-[0.2em] uppercase text-white/74">
