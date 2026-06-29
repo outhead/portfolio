@@ -1842,7 +1842,7 @@ export default function PreviewHome() {
 
           {/* ── ВЫСТУПЛЕНИЯ: пиксельные превью конкретных видео + текст ── */}
           <motion.div variants={fadeUp}>
-            <div className="relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-[#C9A66B]/35 transition-colors duration-300 bg-[#0e0d0a]">
+            <div className="relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-[#C9A66B]/35 transition-colors duration-300 bg-[#0b0b0a]">
               <div
                 aria-hidden
                 className="absolute inset-0 pointer-events-none"
@@ -1887,28 +1887,28 @@ export default function PreviewHome() {
                   href="/speaking"
                   data-ym-goal="nav_speaking"
                   data-ym-goal-params='{"placement":"offer_blocks"}'
-                  className="group no-underline p-8 md:p-12 flex flex-col justify-between min-h-[280px]"
+                  className="group no-underline p-6 md:p-8 flex flex-col justify-center gap-5 md:gap-6"
                 >
                   <div>
-                    <div className="inline-flex items-center gap-2 text-white/75 mb-5">
+                    <div className="inline-flex items-center gap-2 text-white/75 mb-4">
                       <span className="h-1.5 w-1.5 rounded-full bg-[#C9A66B]" />
                       <span className="sr-only">ВЫСТУПЛЕНИЯ</span>
                       <LedText text="ВЫСТУПЛЕНИЯ" className="h-[11px] w-auto" />
                     </div>
-                    <h3 className="text-white mb-5 max-w-lg">
+                    <h3 className="text-white mb-4 max-w-md">
                       <LedLines
                         text="Выступаю и модерирую секции про AI и дизайн"
                         maxChars={26}
                         lineClass="h-[16px] md:h-[22px]"
                       />
                     </h3>
-                    <p className="text-[16px] text-white/72 leading-relaxed max-w-lg">
+                    <p className="text-[15px] md:text-[16px] text-white/72 leading-relaxed max-w-md">
                       Внутренние конференции МТС и Ozon, Дизайн-Просмотр, ВШЭ (читал
                       курс по прикладному ИИ). Темы: AI в продукте, масштабирование
                       дизайна, дизайн-системы.
                     </p>
                   </div>
-                  <span className="inline-flex items-center gap-2 text-white/72 group-hover:text-white transition-colors mt-8 pt-6 border-t border-white/[0.08]">
+                  <span className="inline-flex items-center gap-2 text-white/72 group-hover:text-white transition-colors pt-5 border-t border-white/[0.08]">
                     <span className="sr-only">Смотреть все выступления</span>
                     <LedText text="Смотреть все выступления" className="h-[10px] w-auto" />
                     <LedText
@@ -1958,10 +1958,13 @@ export default function PreviewHome() {
             <SectionLabel>О СЕБЕ</SectionLabel>
           </motion.div>
 
-          {/* Фото (узкая колонка) + bio (широкая) */}
-          <div className="grid lg:grid-cols-[minmax(260px,320px)_1fr] gap-6 md:gap-10">
-            <motion.div variants={fadeUp}>
-              <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border border-white/[0.06] bg-black">
+          {/* Фото + bio — единая тёмная панель в языке карточек кейсов.
+              Панель «собирает» блок, чтобы справа не зияла чёрная пустота. */}
+          <div className="grid md:grid-cols-[minmax(200px,260px)_minmax(0,640px)] gap-6 md:gap-8 lg:gap-10 items-center rounded-2xl border border-white/[0.06] bg-[#0b0b0a] p-5 md:p-7 lg:p-9">
+            <motion.div variants={fadeUp} className="w-full max-w-[200px] sm:max-w-[220px] mx-auto md:max-w-none md:mx-0">
+              {/* aspect-[4/5] на узкой колонке + кап ширины ниже lg —
+                  фото больше не растягивается во весь экран на мобиле/планшете */}
+              <div className="relative aspect-[4/5] rounded-xl overflow-hidden border border-white/[0.06] bg-black">
                 <span className="sr-only">Егор Шугаев — дизайн-директор, ментор и независимый консультант</span>
                 <PixelPhoto
                   src="/images/photos/me-pixel.png"
@@ -1984,7 +1987,7 @@ export default function PreviewHome() {
               </div>
             </motion.div>
 
-            <motion.div variants={fadeUp} className="flex flex-col">
+            <motion.div variants={fadeUp} className="flex flex-col justify-center">
               <BioRotator
                 className="max-w-2xl"
                 items={[

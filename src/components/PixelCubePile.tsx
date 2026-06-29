@@ -147,8 +147,8 @@ export default function PixelCubePile({
     let HX = 2.3;              // полуширина — пересчитывается в measure() под аспект
     const HZ = 1.25;           // полуглубина
     const FLOOR = -0.35;       // y пола (ниже — насыпь садится ниже в кадре)
-    const G = 15.5;            // тяжелее — сильнее притяжение
-    const REST = 0.46, LIN_DAMP = 0.38, ANG_DAMP = 0.8, FLOOR_FRIC = 0.8; // пружинистее
+    const G = 30;              // тяжелее — кубы падают резко, без «парения»
+    const REST = 0.32, LIN_DAMP = 0.06, ANG_DAMP = 0.55, FLOOR_FRIC = 0.82; // почти нет воздушного демпфа — настоящее падение
     const RAD = S * 1.06;      // радиус сферы для коллизий кубов
 
     // ── Камера ──
@@ -289,9 +289,9 @@ export default function PixelCubePile({
       bodies.push({
         // спавн у верхней кромки сетки (мировая высота линии ≈ 2.2), а не из офскрина
         p: [(Math.random() * 2 - 1) * (HX - S), 2.35 + Math.random() * 0.5, (Math.random() * 2 - 1) * (HZ - S)],
-        v: [0, 0, 0],
+        v: [(Math.random() - 0.5) * 0.6, -1.6 - Math.random() * 0.8, (Math.random() - 0.5) * 0.4], // стартовый толчок вниз — нет ленивого «вползания»
         q: rndQ(),
-        w: rndW(1.8), // небольшое рандомное вращение при падении
+        w: rndW(3.4), // заметный кувырок при падении
         col: palette[(Math.random() * palette.length) | 0],
         center: false, frozen: false,
       });
@@ -311,8 +311,8 @@ export default function PixelCubePile({
         // подвешенный центральный куб: бобинг + плавное вращение «как обычно».
         // Центроид на x=0 → горизонтально по центру; высота — ровно центр кадра.
         if (b.frozen) {
-          b.p = [0, CENTER_Y + Math.sin(simT * 1.2) * 0.05, 0];
-          b.q = qIntegrate(b.q, [0.22, 0.55, 0], dt);
+          b.p = [0, CENTER_Y + Math.sin(simT * 1.6) * 0.05, 0];
+          b.q = qIntegrate(b.q, [0.42, 1.15, 0], dt);
           continue;
         }
         b.v[1] -= G * dt;
@@ -396,10 +396,10 @@ export default function PixelCubePile({
       // спавн на ховере
       if (hoverRef.current && bodies.length < maxN) {
         spawnAcc += dt;
-        if (spawnAcc > 0.06) { spawnAcc = 0; spawn(); }
+        if (spawnAcc > 0.04) { spawnAcc = 0; spawn(); }
       }
       // под-шаги физики для устойчивости (важно при высокой гравитации/плотности)
-      const sub2 = 5;
+      const sub2 = 7;
       for (let k = 0; k < sub2; k++) step(dt / sub2);
 
       // рендер сцены в буфер
@@ -437,7 +437,7 @@ export default function PixelCubePile({
       hoverRef.current = true; grounded = true;
       // отпускаем подвешенный/ищущий центральный куб — он падает вместе со всеми
       for (const b of bodies) {
-        if (b.center || b.frozen) { b.center = false; b.frozen = false; b.w = rndW(1.8); }
+        if (b.center || b.frozen) { b.center = false; b.frozen = false; b.v = [0, -1.4, 0]; b.w = rndW(3.4); }
       }
     };
     const deactivate = () => {

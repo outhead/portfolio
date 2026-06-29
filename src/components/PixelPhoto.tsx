@@ -148,10 +148,16 @@ export default function PixelPhoto({
           if (l >= threshold) {
             // растягиваем диапазон выше порога на 0..1 — больше тональной игры
             const tt = Math.min(1, (l - threshold) / (1 - threshold));
-            const t = tt * bright;
-            cr = Math.round(loColor[0] + (hiColor[0] - loColor[0]) * t);
-            cg = Math.round(loColor[1] + (hiColor[1] - loColor[1]) * t);
-            cb = Math.round(loColor[2] + (hiColor[2] - loColor[2]) * t);
+            // ОТТЕНОК: тени золотые, света → тёплый белый
+            const hr = loColor[0] + (hiColor[0] - loColor[0]) * tt;
+            const hg = loColor[1] + (hiColor[1] - loColor[1]) * tt;
+            const hb = loColor[2] + (hiColor[2] - loColor[2]) * tt;
+            // ЯРКОСТЬ ячейки гасим к нулю в тенях — тёмное остаётся чёрным,
+            // а не заливается золотом (раньше lo-цвет горел на полную в тенях)
+            const lvl = Math.pow(tt, 0.85) * bright;
+            cr = Math.round(hr * lvl);
+            cg = Math.round(hg * lvl);
+            cb = Math.round(hb * lvl);
             alpha = 1;
           } else {
             cr = GRID[0]; cg = GRID[1]; cb = GRID[2];
