@@ -87,6 +87,10 @@ export default function ParticlePortrait({
   // forceAssemble читаем через ref — слушатели/цикл вешаются один раз.
   const forceAssembleRef = useRef(forceAssemble);
   forceAssembleRef.current = forceAssemble;
+  // Будилка цикла: смена формы (морф/пасхалки) и forceAssemble должны
+  // оживить «замёрзший» в покое цикл рендера.
+  const wakeRef = useRef<(() => void) | null>(null);
+  useEffect(() => { wakeRef.current?.(); }, [active, forceAssemble]);
 
   // нормализуем список форм
   const shapeList: Shape[] =
@@ -228,7 +232,7 @@ export default function ParticlePortrait({
     }
     function resize() {
       const rect = canvas!.getBoundingClientRect();
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      dpr = Math.min(window.devicePixelRatio || 1, 1.5); // декоративный канвас — кап DPR ниже (−пиксели ∝ DPR²)
       cssW = Math.max(1, rect.width); cssH = Math.max(1, rect.height);
       W2 = Math.round(cssW * dpr); H2 = Math.round(cssH * dpr);
       canvas!.width = W2; canvas!.height = H2;
@@ -260,32 +264,43 @@ export default function ParticlePortrait({
       const rect = canvas!.getBoundingClientRect();
       tnx = Math.max(-1, Math.min(1, (e.clientX - rect.left - cssW / 2) / (cssW / 2)));
       tny = Math.max(-1, Math.min(1, (e.clientY - rect.top - cssH / 2) / (cssH / 2)));
-      hoverT = 1;
+      hoverT = 1; wake();
     }
-    function onEnter() { hoverT = 1; }
-    function onLeave() { hoverT = 0; tnx = 0; tny = 0; }
+    function onEnter() { hoverT = 1; wake(); }
+    function onLeave() { hoverT = 0; tnx = 0; tny = 0; wake(); }
     eventTarget.addEventListener("pointermove", onMove);
     eventTarget.addEventListener("pointerenter", onEnter);
     eventTarget.addEventListener("pointerleave", onLeave);
 
     // ── цикл ──────────────────────────────────────────────────────
-    let raf = 0, stopped = false, lt = 0, spin = 0, needResize = false, everHovered = false;
+    let raf = 0, stopped = false, paused = false, idle = false;
+    let lt = 0, spin = 0, needResize = false, everHovered = false;
     const K = 3.6, DAMP = 3.4, fLen = 2.4;
+    const continuous = autoSpin || spin360; // постоянное движение — не замораживаем
+    let pDirty: [number, number, number, number] | null = null; // грязный прямоуг. прошлого кадра
+
+    function tick() {
+      if (stopped || paused || raf) return;
+      lt = performance.now();
+      raf = requestAnimationFrame(loop);
+    }
+    function wake() { idle = false; tick(); }
+    wakeRef.current = wake;
 
     function loop(now: number) {
-      if (stopped) return;
-      raf = requestAnimationFrame(loop);
+      raf = 0;
+      if (stopped || paused) return;
       let dt = (now - lt) / 1000; lt = now;
       if (dt > 0.05) dt = 0.05;
-      if (!inited) return;
-      if (needResize) { resize(); needResize = false; }
+      if (!inited) { raf = requestAnimationFrame(loop); return; }
+      if (needResize) { resize(); needResize = false; pDirty = null; }
 
       // активная форма (с фолбэком на ближайшую готовую)
       let ai = activeRef.current | 0;
       if (ai < 0) ai = 0; if (ai >= data.length) ai = data.length - 1;
       let s = data[ai];
       if (!s) { for (let k = 0; k < data.length; k++) if (data[k]) { s = data[k]; break; } }
-      if (!s || !buf32 || !imgData) return;
+      if (!s || !buf32 || !imgData) { raf = requestAnimationFrame(loop); return; }
       // Плавный переход аспекта/масштаба — иначе при смене формы точки
       // скачком меняют размер до начала пружинного морфа.
       curAspect += (s.aspect - curAspect) * Math.min(1, dt * 4);
@@ -315,14 +330,22 @@ export default function ParticlePortrait({
       const sYa = Math.sin(yaw), cYa = Math.cos(yaw), sPi = Math.sin(pitch), cPi = Math.cos(pitch);
 
       const sX0 = s.X, sY0 = s.Y, sZ0 = s.Z;
+      let maxErr2 = 0, maxV2 = 0;
       for (let i = 0; i < N; i++) {
         const tx = hX[i] + (sX0[i] - hX[i]) * asmE;
         const ty = hY[i] + (sY0[i] - hY[i]) * asmE;
         const tz = hZ[i] + (sZ0[i] - hZ[i]) * asmE;
-        vx[i] += ((tx - px[i]) * K - vx[i] * DAMP) * dt;
-        vy[i] += ((ty - py[i]) * K - vy[i] * DAMP) * dt;
-        vz[i] += ((tz - pz[i]) * K - vz[i] * DAMP) * dt;
+        const ex = tx - px[i], ey = ty - py[i], ez = tz - pz[i];
+        vx[i] += (ex * K - vx[i] * DAMP) * dt;
+        vy[i] += (ey * K - vy[i] * DAMP) * dt;
+        vz[i] += (ez * K - vz[i] * DAMP) * dt;
         px[i] += vx[i] * dt; py[i] += vy[i] * dt; pz[i] += vz[i] * dt;
+        const e2 = ex * ex + ey * ey + ez * ez;
+        const v2 = vx[i] * vx[i] + vy[i] * vy[i] + vz[i] * vz[i];
+        if (e2 > maxErr2) maxErr2 = e2;
+        if (v2 > maxV2) maxV2 = v2;
+        // #4 деадзона: почти доехал и почти не движется → прибиваем к цели, гасим дрожание
+        if (e2 < 1e-6 && v2 < 1e-6) { px[i] = tx; py[i] = ty; pz[i] = tz; vx[i] = 0; vy[i] = 0; vz[i] = 0; }
       }
 
       for (let i = 0; i < N; i++) {
@@ -336,7 +359,12 @@ export default function ParticlePortrait({
         sZ[i] = z2; sPe[i] = per;
       }
 
-      buf32.fill(0);
+      // #3 чистим только прошлый грязный прямоугольник (не весь буфер)
+      if (pDirty) {
+        const [px0, py0, px1, py1] = pDirty;
+        for (let yy = py0; yy < py1; yy++) buf32.fill(0, yy * W2 + px0, yy * W2 + px1);
+      }
+      let cMinX = W2, cMinY = H2, cMaxX = 0, cMaxY = 0;
       const dInv = 1 / (bulge * 2);
       const rgb = CR | (CG << 8) | (CB << 16);
       const fbA = s.b;
@@ -352,33 +380,74 @@ export default function ParticlePortrait({
         if (sz < 1) sz = 1; else if (sz > 6) sz = 6;
         const col = rgb | (((a * 255) | 0) << 24);
         const dx = sX[i] | 0, dy = sY[i] | 0, half = sz >> 1;
-        const y0 = dy - half, x0 = dx - half;
-        for (let yy = y0; yy < y0 + sz; yy++) {
-          if (yy < 0 || yy >= H2) continue;
+        let yA = dy - half, xA = dx - half, yB = dy - half + sz, xB = dx - half + sz;
+        if (yA < 0) yA = 0; if (xA < 0) xA = 0;
+        if (yB > H2) yB = H2; if (xB > W2) xB = W2;
+        if (xA >= xB || yA >= yB) continue;
+        if (xA < cMinX) cMinX = xA; if (yA < cMinY) cMinY = yA;
+        if (xB > cMaxX) cMaxX = xB; if (yB > cMaxY) cMaxY = yB;
+        for (let yy = yA; yy < yB; yy++) {
           const row = yy * W2;
-          for (let xx = x0; xx < x0 + sz; xx++) {
-            if (xx < 0 || xx >= W2) continue;
-            buf32[row + xx] = col;
-          }
+          for (let xx = xA; xx < xB; xx++) buf32[row + xx] = col;
         }
       }
-      ctx!.putImageData(imgData, 0, 0);
+
+      // заливаем в канвас только объединение прошлого и текущего прямоугольника
+      let uMinX = cMinX, uMinY = cMinY, uMaxX = cMaxX, uMaxY = cMaxY;
+      if (pDirty) {
+        if (pDirty[0] < uMinX) uMinX = pDirty[0];
+        if (pDirty[1] < uMinY) uMinY = pDirty[1];
+        if (pDirty[2] > uMaxX) uMaxX = pDirty[2];
+        if (pDirty[3] > uMaxY) uMaxY = pDirty[3];
+      }
+      if (uMaxX > uMinX && uMaxY > uMinY) {
+        ctx!.putImageData(imgData, 0, 0, uMinX, uMinY, uMaxX - uMinX, uMaxY - uMinY);
+      }
+      pDirty = cMaxX > cMinX ? [cMinX, cMinY, cMaxX, cMaxY] : null;
+
+      // #1 фриз: облако собрано и успокоилось, нет ховера и постоянного вращения → стоп
+      const settled =
+        !continuous && hoverT === 0 && assemble > 0.999 &&
+        maxV2 < 1e-6 && maxErr2 < 1e-6 &&
+        Math.abs(nrx) < 1e-3 && Math.abs(nry) < 1e-3 &&
+        Math.abs(curAspect - s.aspect) < 1e-3;
+      if (settled) idle = true;
+      else raf = requestAnimationFrame(loop);
     }
 
-    const ro = new ResizeObserver(() => { needResize = true; });
+    const ro = new ResizeObserver(() => { needResize = true; wake(); });
     ro.observe(canvas);
 
-    // Старт цикла сразу при монтировании — он сам дождётся готовности форм
-    // (никакой зависимости от onload-картинок, чтобы не было гонки с cleanup).
+    // #1 пауза вне экрана и в фоне вкладки — невидимое не анимируем
+    let io: IntersectionObserver | null = null;
+    if (typeof IntersectionObserver !== "undefined") {
+      io = new IntersectionObserver(
+        (entries) => {
+          const vis = entries.some((e) => e.isIntersecting);
+          if (vis) { paused = false; wake(); }
+          else { paused = true; if (raf) { cancelAnimationFrame(raf); raf = 0; } }
+        },
+        { rootMargin: "100px" },
+      );
+      io.observe(canvas);
+    }
+    const onVis = () => {
+      if (document.hidden) { paused = true; if (raf) { cancelAnimationFrame(raf); raf = 0; } }
+      else { paused = false; wake(); }
+    };
+    document.addEventListener("visibilitychange", onVis);
+
+    // Старт цикла сразу при монтировании — он сам дождётся готовности форм.
     resize();
     initP();
-    lt = performance.now();
-    raf = requestAnimationFrame(loop);
+    tick();
 
     return () => {
       stopped = true;
-      cancelAnimationFrame(raf);
+      if (raf) cancelAnimationFrame(raf);
       ro.disconnect();
+      io?.disconnect();
+      document.removeEventListener("visibilitychange", onVis);
       eventTarget.removeEventListener("pointermove", onMove);
       eventTarget.removeEventListener("pointerenter", onEnter);
       eventTarget.removeEventListener("pointerleave", onLeave);
