@@ -10,6 +10,7 @@ import FinalCTA from "@/components/FinalCTA";
 import EggLeaderboard from "@/components/EggLeaderboard";
 import PixelCubePile from "@/components/PixelCubePile";
 import PixelPhoto from "@/components/PixelPhoto";
+import LedGridBurst from "@/components/LedGridBurst";
 import BioRotator from "@/components/BioRotator";
 import ConstellationFigures from "@/components/ConstellationFigures";
 import { TypographyFix } from "@/components/TypographyFix";
@@ -1992,16 +1993,18 @@ export default function PreviewHome() {
                   фото больше не растягивается во весь экран на мобиле/планшете */}
               <div className="relative aspect-[4/5] rounded-xl overflow-hidden border border-white/[0.06] bg-black">
                 <span className="sr-only">Егор Шугаев — дизайн-директор, ментор и независимый консультант</span>
+                {/* фоновая LED-сетка с радиальными взрывами — за вырезанным портретом */}
+                <LedGridBurst className="absolute inset-0 z-0" />
                 <Image
                   src="/images/photos/me-pixel-color.png"
                   alt="Пиксельный портрет Егора Шугаева"
                   fill
                   sizes="(max-width: 768px) 220px, 260px"
-                  className="absolute inset-0 object-cover"
+                  className="absolute inset-0 z-10 object-cover"
                   priority={false}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
-                <div className="absolute bottom-4 left-4 right-4 flex items-center gap-1.5 text-[12px] tracking-[0.2em] uppercase text-white/74">
+                <div className="absolute inset-0 z-20 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
+                <div className="absolute z-30 bottom-4 left-4 right-4 flex items-center gap-1.5 text-[12px] tracking-[0.2em] uppercase text-white/74">
                   <span className="relative flex h-1.5 w-1.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
                     <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#A6FF00]" />
