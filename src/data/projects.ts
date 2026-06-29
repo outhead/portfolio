@@ -168,8 +168,6 @@ export const projects: Project[] = [
     type: "work",
     coverColor: "#0E0E0E",
     coverImage: "/videos/mts-cover.png",
-    coverVideo: "/videos/mts-cover.mp4",
-    coverVideoPauseAt: 2.86,
     screenshotsMode: "phone",
     screenshots: [
       { src: "/images/mts/voice/voice-demo-1.mp4", kind: "video", label: "AI СЕКРЕТАРЬ", poster: "/images/mts/voice/voice-secretary-spam-spa.png" },
@@ -386,8 +384,6 @@ export const projects: Project[] = [
     // Чистый тёмный фон под видео-обложку (раньше была бронза #C9A66B — давала бежевую подсветку)
     coverColor: "#0E0E0E",
     coverImage: "/videos/gpn-cover.png",
-    coverVideo: "/videos/gpn-cover.mp4",
-    coverVideoPauseAt: 2.86,
     // heroImage намеренно НЕ задан: gpn-cubes.png — тёмная композиция, под opacity почти не видна.
     // Без heroImage hero рендерит coverVideo с постером (поведение как в МТС-кейсе).
     screenshots: [
@@ -592,8 +588,6 @@ export const projects: Project[] = [
     type: "work",
     coverColor: "#0E0E0E",
     coverImage: "/videos/ozon-cover.jpg",
-    coverVideo: "/videos/ozon-cover.mp4",
-    coverVideoPauseAt: 2.86,
     screenshots: [
       { src: "/images/ozon/post-prozharka.jpg", label: "Прожарка портфолио · часть 2", caption: "Дизайн-прожарка — открытый разбор портфолио зрителями с приглашёнными лидами Ozon. Один из самых популярных форматов канала." },
       { src: "/images/ozon/post-3d-character.jpg", label: "3D-персонаж в нейросетях", caption: "Гостевой пост: дизайнер «Строфи» (амбассадор Ozon Design) показывает процесс создания персонажа от эскиза до 3D-модели в нейросетях. Канал собирает такие материалы со всех команд." },
@@ -658,8 +652,6 @@ export const projects: Project[] = [
     type: "work",
     coverColor: "#0E0E0E",
     coverImage: "/videos/mts-b2c-cover.jpg",
-    coverVideo: "/videos/mts-b2c-cover.mp4",
-    coverVideoPauseAt: 2.86,
     sections: [
       {
         title: "МТС Cashback",
@@ -729,8 +721,6 @@ export const projects: Project[] = [
     type: "work",
     coverColor: "#0a0a0a",
     coverImage: "/videos/pillsdrop.png",
-    coverVideo: "/videos/pillsdrop.mp4",
-    coverVideoPauseAt: 2.86,
     // Скрины шаблона временно убраны: html-to-image капчура поехала по вёрстке
     // (формы, теги наезжают). Проще пересобрать вручную, чем чинить.
     sections: [
@@ -971,8 +961,6 @@ export const projects: Project[] = [
     type: "experiment",
     coverColor: "#0a0a0a",
     coverImage: "/videos/webgl-cover.png",
-    coverVideo: "/videos/webgl-cover.mp4",
-    coverVideoPauseAt: 4.67,
     metric: "LIVE",
     metricLabel: "демо · MIT",
     tryUrl: "https://outhead.github.io/hypercube/",

@@ -48,7 +48,7 @@ export function HeroCoverVideo({
       muted
       loop={!usePauseMode}
       playsInline
-      preload="auto"
+      preload="metadata"
       className={className}
     />
   );
@@ -236,7 +236,7 @@ export function CardCoverVideo({
       muted
       loop={useLoopAutoplay}
       playsInline
-      preload="auto"
+      preload="metadata"
       className={className}
       aria-hidden="true"
     />

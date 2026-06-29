@@ -29,6 +29,18 @@ export default function LedText({
   scale?: number;
 }) {
   const { dots, cols, rows } = layoutLedText(text, scale);
+  // Все зажжённые диоды — одним <path> (каждая точка = окружность из двух дуг),
+  // а не массивом <circle>. Визуально идентично, но 1 DOM-узел вместо сотен:
+  // на странице это срезает десятки тысяч SVG-нод (главная причина нагрузки на CPU).
+  const r = dot;
+  const d = dots
+    .filter((p) => p.lit)
+    .map((p) => {
+      const cx = p.col * PITCH + PITCH / 2;
+      const cy = p.row * PITCH + PITCH / 2;
+      return `M${cx - r} ${cy}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0Z`;
+    })
+    .join("");
   return (
     <svg
       viewBox={`0 0 ${cols * PITCH} ${rows * PITCH}`}
@@ -38,17 +50,7 @@ export default function LedText({
       aria-hidden
       focusable="false"
     >
-      {dots
-        .filter((d) => d.lit)
-        .map((d, i) => (
-          <circle
-            key={i}
-            cx={d.col * PITCH + PITCH / 2}
-            cy={d.row * PITCH + PITCH / 2}
-            r={dot}
-            fill="currentColor"
-          />
-        ))}
+      <path d={d} fill="currentColor" />
     </svg>
   );
 }
