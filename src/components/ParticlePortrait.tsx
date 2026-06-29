@@ -2,14 +2,14 @@
 
 /* ─────────────────────────────────────────────────────────────────
  * ParticlePortrait — облако частиц по карте глубины.
- * • Несколько форм (shapes): портрет / награда / и т.п. Частицы плавно
- *   перетекают между формами по проп `active` (пружинная физика).
- * • Глубина из depth-карты → объём; поворот за курсором.
- * • assembleOnHover: в покое облако рассыпано, по наведению собирается.
- * Рендер — прямой записью в пиксельный буфер (быстро).
+ * Контроллер: декодит картинки и строит формы, затем гоняет рендер либо
+ * в Web Worker на OffscreenCanvas (главный поток свободен — плавный скролл),
+ * либо, если браузер не умеет OffscreenCanvas/worker, на главном потоке
+ * тем же движком (ParticleEngine) — fallback.
  * ──────────────────────────────────────────────────────────────── */
 
 import { useEffect, useRef, type RefObject } from "react";
+import { ParticleEngine, type EngineConfig, type EngineShape } from "./particleEngine";
 
 export type Shape = { src: string; depth?: string; depthScale?: number };
 
@@ -22,38 +22,39 @@ export type ParticlePortraitProps = {
   frames?: string[];
   depthSrc?: string;
   shapes?: Shape[];
-  /** готовое облако точек (3D-модель) — перебивает src/shapes */
   cloud?: PointCloud | null;
-  /** ключ-детектор смены облака (для пересборки) */
   cloudKey?: string;
-  /** непрерывное вращение вокруг оси Y (турнтейбл для 3D) */
   spin360?: boolean;
-  /** индекс активной формы (морф при смене) */
   active?: number;
   depthScale?: number;
   count?: number;
   color?: [number, number, number];
-  /** множитель яркости точек (1 — без изменений, >1 — ярче) */
   brightness?: number;
   bulge?: number;
   relief?: number;
   tilt?: number;
   gamma?: number;
-  /** масштаб размера точки (меньше = мельче зерно) */
   pointScale?: number;
   assembleOnHover?: boolean;
-  /** инверсия: в покое собрано, по наведению РАЗЛЕТАЕТСЯ (для карточек) */
   scatterOnHover?: boolean;
-  /** после первого наведения остаётся собранным (не разлетается) */
   latchAssemble?: boolean;
-  /** принудительно собрать облако независимо от ховера (для пасхалок:
-   *  клик по триггеру должен показать морф, даже если ещё не наводили) */
   forceAssemble?: boolean;
-  /** постоянное медленное вращение даже в собранном состоянии */
   autoSpin?: boolean;
   trackingRef?: RefObject<HTMLElement | null>;
   className?: string;
 };
+
+type Api = {
+  shape: (idx: number, s: EngineShape) => void;
+  active: (i: number) => void;
+  force: (v: boolean) => void;
+  pointer: (nx: number, ny: number, hover: boolean) => void;
+  size: (w: number, h: number, dpr: number) => void;
+  paused: (v: boolean) => void;
+  dispose: () => void;
+};
+
+const clamp1 = (v: number) => (v < -1 ? -1 : v > 1 ? 1 : v);
 
 export default function ParticlePortrait({
   src,
@@ -82,15 +83,12 @@ export default function ParticlePortrait({
   className = "",
 }: ParticlePortraitProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const activeRef = useRef(active);
-  activeRef.current = active;
-  // forceAssemble читаем через ref — слушатели/цикл вешаются один раз.
-  const forceAssembleRef = useRef(forceAssemble);
-  forceAssembleRef.current = forceAssemble;
-  // Будилка цикла: смена формы (морф/пасхалки) и forceAssemble должны
-  // оживить «замёрзший» в покое цикл рендера.
-  const wakeRef = useRef<(() => void) | null>(null);
-  useEffect(() => { wakeRef.current?.(); }, [active, forceAssemble]);
+  // Текущее API доставки (worker.postMessage или engine.*) — для пуша active/force.
+  const apiRef = useRef<Api | null>(null);
+  useEffect(() => {
+    apiRef.current?.active(active);
+    apiRef.current?.force(forceAssemble);
+  }, [active, forceAssemble]);
 
   // нормализуем список форм
   const shapeList: Shape[] =
@@ -104,26 +102,29 @@ export default function ParticlePortrait({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
 
     const reduce =
       typeof window !== "undefined" &&
       window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    const [CR, CG, CB] = color;
-    const N = count;
+
     const list: Shape[] = listKey.split(";").map((s) => {
       const [sc, dp, ds] = s.split("|");
       return { src: sc, depth: dp || undefined, depthScale: ds ? Number(ds) : undefined };
     });
+    const usingCloud = !!(cloud && cloud.positions && cloud.positions.length >= 3);
+    const shapeCount = usingCloud ? 1 : list.length;
+    const N = count;
 
-    type ShapeData = { X: Float32Array; Y: Float32Array; Z: Float32Array; b: Float32Array; aspect: number };
-    const data: (ShapeData | null)[] = list.map(() => null);
+    const cfg: EngineConfig = {
+      N, color, brightness, bulge, tilt, pointScale,
+      assembleOnHover, scatterOnHover, latchAssemble, autoSpin, spin360,
+      reduce: !!reduce, shapeCount,
+    };
 
+    // ── построение форм (декод картинок) — всегда на главном потоке ──
     const sampler = document.createElement("canvas");
     const sctx = sampler.getContext("2d", { willReadFrequently: true })!;
-
-    function buildShape(img: HTMLImageElement, depthImg: HTMLImageElement | null, dScale?: number): ShapeData {
+    function buildShape(img: HTMLImageElement, depthImg: HTMLImageElement | null, dScale?: number): EngineShape {
       const dsEff = dScale ?? depthScale;
       const gw = 150;
       const gh = Math.max(1, Math.round(gw * (img.height / img.width)));
@@ -158,7 +159,6 @@ export default function ParticlePortrait({
       }
       const X = new Float32Array(N), Y = new Float32Array(N), Z = new Float32Array(N), b = new Float32Array(N);
       const aspect = gh / gw;
-      const halfH = aspect / 2;
       for (let i = 0; i < N; i++) {
         const rnd = Math.random() * total;
         let lo = 0, hi = n - 1;
@@ -171,24 +171,20 @@ export default function ParticlePortrait({
           const dz = (depth[lo * 4] / 255 - dmin) / (dmax - dmin);
           Z[i] = (dz - 0.5) * dsEff;
         } else {
-          // Без карты глубины — ПЛОСКИЙ предпросмотр с лёгким рельефом по
-          // яркости (никакой полусферы-«шара»). Объём даёт «Обработать».
           Z[i] = (lum[lo] - 0.5) * 0.3;
         }
         b[i] = lum[lo];
       }
       return { X, Y, Z, b, aspect };
     }
-
-    // Облако точек из 3D-модели: сэмплим N точек из готового набора.
-    function buildCloud(c: PointCloud, dScale?: number): ShapeData {
+    function buildCloud(c: PointCloud, dScale?: number): EngineShape {
       const zMul = (dScale ?? depthScale) / 0.6;
       const M = (c.positions.length / 3) | 0;
       const X = new Float32Array(N), Y = new Float32Array(N), Z = new Float32Array(N), b = new Float32Array(N);
       for (let i = 0; i < N; i++) {
         const j = (Math.random() * M) | 0;
         X[i] = c.positions[j * 3];
-        Y[i] = -c.positions[j * 3 + 1]; // 3D Y-up → экранный Y вниз
+        Y[i] = -c.positions[j * 3 + 1];
         Z[i] = c.positions[j * 3 + 2] * zMul;
         let lum = 0.82;
         if (c.colors) {
@@ -200,257 +196,158 @@ export default function ParticlePortrait({
       return { X, Y, Z, b, aspect: 1 };
     }
 
-    // Режим 3D-облака: строим единственную форму сразу, картинки не грузим.
-    if (cloud && cloud.positions && cloud.positions.length >= 3) {
-      data[0] = buildCloud(cloud);
-    } else
-    // загрузка всех форм — просто заполняем data[idx]; цикл уже крутится
-    list.forEach((sh, idx) => {
-      const img = new Image();
-      let depthImg: HTMLImageElement | null = null;
-      let need = sh.depth ? 2 : 1, got = 0;
-      const ready = () => {
-        if (++got < need) return;
-        data[idx] = buildShape(img, depthImg, sh.depthScale);
+    // ── путь рендера: worker (OffscreenCanvas) или главный поток (fallback) ──
+    let worker: Worker | null = null;
+    let engine: ParticleEngine | null = null;
+    let api: Api;
+    let reused = false;
+
+    const canWorker =
+      typeof Worker !== "undefined" &&
+      typeof OffscreenCanvas !== "undefined" &&
+      "transferControlToOffscreen" in HTMLCanvasElement.prototype;
+
+    // StrictMode/HMR перемонтируют эффект, а transferControlToOffscreen допускается
+    // над канвасом лишь однажды → кэшируем воркер на DOM-элементе и переиспользуем;
+    // терминируем с отложкой, которая отменяется при быстром повторном монтировании.
+    const stash = canvas as unknown as {
+      __ppWorker?: Worker;
+      __ppKill?: ReturnType<typeof setTimeout>;
+    };
+    if (stash.__ppKill) { clearTimeout(stash.__ppKill); stash.__ppKill = undefined; }
+
+    if (canWorker) {
+      try {
+        if (stash.__ppWorker) {
+          worker = stash.__ppWorker; reused = true;
+        } else {
+          const off = canvas.transferControlToOffscreen();
+          worker = new Worker(new URL("./particlePortrait.worker.ts", import.meta.url), { type: "module" });
+          worker.postMessage({ type: "init", canvas: off, cfg }, [off]);
+          stash.__ppWorker = worker;
+        }
+        api = {
+          shape: (idx, s) =>
+            worker!.postMessage(
+              { type: "shape", idx, X: s.X, Y: s.Y, Z: s.Z, b: s.b, aspect: s.aspect },
+              [s.X.buffer, s.Y.buffer, s.Z.buffer, s.b.buffer],
+            ),
+          active: (i) => worker!.postMessage({ type: "active", i }),
+          force: (v) => worker!.postMessage({ type: "force", v }),
+          pointer: (nx, ny, hover) => worker!.postMessage({ type: "pointer", nx, ny, hover }),
+          size: (w, h, dpr) => worker!.postMessage({ type: "size", cssW: w, cssH: h, dpr }),
+          paused: (v) => worker!.postMessage({ type: "paused", v }),
+          dispose: () => {},
+        };
+      } catch {
+        worker = null;
+      }
+    }
+
+    if (!worker) {
+      // fallback: рисуем на главном потоке тем же движком
+      let ctx: CanvasRenderingContext2D | null = null;
+      try { ctx = canvas.getContext("2d"); } catch { ctx = null; }
+      if (!ctx) return;
+      engine = new ParticleEngine(ctx, cfg);
+      api = {
+        shape: (idx, s) => engine!.setShape(idx, s),
+        active: (i) => engine!.setActive(i),
+        force: (v) => engine!.setForce(v),
+        pointer: (nx, ny, hover) => engine!.setPointer(nx, ny, hover),
+        size: (w, h, dpr) => engine!.setSize(w, h, dpr),
+        paused: (v) => engine!.setPaused(v),
+        dispose: () => engine!.dispose(),
       };
-      img.onload = ready; img.onerror = ready; img.src = sh.src;
-      if (sh.depth) {
-        depthImg = new Image();
-        depthImg.onload = ready;
-        depthImg.onerror = () => { depthImg = null; need = 1; ready(); };
-        depthImg.src = sh.depth;
+    }
+
+    apiRef.current = api!;
+
+    // начальные размер/состояние
+    const rect0 = canvas.getBoundingClientRect();
+    api!.size(rect0.width || 1, rect0.height || 1, Math.min(window.devicePixelRatio || 1, 1.5));
+    api!.active(active);
+    api!.force(forceAssemble);
+    api!.paused(false);
+
+    // формы строим/шлём только при первом создании (переиспользуемый воркер их уже имеет)
+    if (!reused) {
+      if (usingCloud) {
+        api!.shape(0, buildCloud(cloud!));
+      } else {
+        list.forEach((sh, idx) => {
+          const img = new Image();
+          let depthImg: HTMLImageElement | null = null;
+          let need = sh.depth ? 2 : 1, got = 0;
+          const ready = () => {
+            if (++got < need) return;
+            api!.shape(idx, buildShape(img, depthImg, sh.depthScale));
+          };
+          img.onload = ready; img.onerror = ready; img.src = sh.src;
+          if (sh.depth) {
+            depthImg = new Image();
+            depthImg.onload = ready;
+            depthImg.onerror = () => { depthImg = null; need = 1; ready(); };
+            depthImg.src = sh.depth;
+          }
+        });
       }
-    });
-
-    // ── размер ────────────────────────────────────────────────────
-    let dpr = 1, cssW = 1, cssH = 1, scale = 1, cx = 0, cy = 0, curAspect = 1.25;
-    let W2 = 1, H2 = 1;
-    let imgData: ImageData | null = null, buf32: Uint32Array | null = null;
-    function computeScale() {
-      scale = Math.min(cssW, cssH / curAspect) * 0.95 * dpr;
-      cx = W2 / 2; cy = H2 / 2;
-    }
-    function resize() {
-      const rect = canvas!.getBoundingClientRect();
-      dpr = Math.min(window.devicePixelRatio || 1, 1.5); // декоративный канвас — кап DPR ниже (−пиксели ∝ DPR²)
-      cssW = Math.max(1, rect.width); cssH = Math.max(1, rect.height);
-      W2 = Math.round(cssW * dpr); H2 = Math.round(cssH * dpr);
-      canvas!.width = W2; canvas!.height = H2;
-      imgData = ctx!.createImageData(W2, H2);
-      buf32 = new Uint32Array(imgData.data.buffer);
-      computeScale();
     }
 
-    // ── частицы ───────────────────────────────────────────────────
-    const px = new Float32Array(N), py = new Float32Array(N), pz = new Float32Array(N);
-    const vx = new Float32Array(N), vy = new Float32Array(N), vz = new Float32Array(N);
-    const sX = new Float32Array(N), sY = new Float32Array(N), sZ = new Float32Array(N), sPe = new Float32Array(N);
-    const hX = new Float32Array(N), hY = new Float32Array(N), hZ = new Float32Array(N);
-    let inited = false;
-    function initP() {
-      for (let i = 0; i < N; i++) {
-        const a = Math.random() * Math.PI * 2, rr = 0.5 + Math.random() * 0.45;
-        hX[i] = Math.cos(a) * rr; hY[i] = (Math.random() - 0.5) * 1.6; hZ[i] = Math.sin(a) * rr;
-        px[i] = hX[i]; py[i] = hY[i]; pz[i] = hZ[i];
-        vx[i] = vy[i] = vz[i] = 0;
-      }
-      inited = true;
-    }
-
-    // ── курсор / сборка ───────────────────────────────────────────
-    let nrx = 0, nry = 0, tnx = 0, tny = 0, hoverT = 0, assemble = 0;
+    // ── события (главный поток) → доставка ──
     const eventTarget: HTMLElement = (trackingRef && trackingRef.current) || canvas;
-    function onMove(e: PointerEvent) {
-      const rect = canvas!.getBoundingClientRect();
-      tnx = Math.max(-1, Math.min(1, (e.clientX - rect.left - cssW / 2) / (cssW / 2)));
-      tny = Math.max(-1, Math.min(1, (e.clientY - rect.top - cssH / 2) / (cssH / 2)));
-      hoverT = 1; wake();
-    }
-    function onEnter() { hoverT = 1; wake(); }
-    function onLeave() { hoverT = 0; tnx = 0; tny = 0; wake(); }
+    const onMove = (e: PointerEvent) => {
+      const r = canvas.getBoundingClientRect();
+      if (!r.width) return;
+      api!.pointer(
+        clamp1((e.clientX - r.left - r.width / 2) / (r.width / 2)),
+        clamp1((e.clientY - r.top - r.height / 2) / (r.height / 2)),
+        true,
+      );
+    };
+    const onEnter = () => api!.pointer(0, 0, true);
+    const onLeave = () => api!.pointer(0, 0, false);
     eventTarget.addEventListener("pointermove", onMove);
     eventTarget.addEventListener("pointerenter", onEnter);
     eventTarget.addEventListener("pointerleave", onLeave);
 
-    // ── цикл ──────────────────────────────────────────────────────
-    let raf = 0, stopped = false, paused = false, idle = false;
-    let lt = 0, spin = 0, needResize = false, everHovered = false;
-    const K = 3.6, DAMP = 3.4, fLen = 2.4;
-    const continuous = autoSpin || spin360; // постоянное движение — не замораживаем
-    let pDirty: [number, number, number, number] | null = null; // грязный прямоуг. прошлого кадра
-
-    function tick() {
-      if (stopped || paused || raf) return;
-      lt = performance.now();
-      raf = requestAnimationFrame(loop);
-    }
-    function wake() { idle = false; tick(); }
-    wakeRef.current = wake;
-
-    function loop(now: number) {
-      raf = 0;
-      if (stopped || paused) return;
-      let dt = (now - lt) / 1000; lt = now;
-      if (dt > 0.05) dt = 0.05;
-      if (!inited) { raf = requestAnimationFrame(loop); return; }
-      if (needResize) { resize(); needResize = false; pDirty = null; }
-
-      // активная форма (с фолбэком на ближайшую готовую)
-      let ai = activeRef.current | 0;
-      if (ai < 0) ai = 0; if (ai >= data.length) ai = data.length - 1;
-      let s = data[ai];
-      if (!s) { for (let k = 0; k < data.length; k++) if (data[k]) { s = data[k]; break; } }
-      if (!s || !buf32 || !imgData) { raf = requestAnimationFrame(loop); return; }
-      // Плавный переход аспекта/масштаба — иначе при смене формы точки
-      // скачком меняют размер до начала пружинного морфа.
-      curAspect += (s.aspect - curAspect) * Math.min(1, dt * 4);
-      computeScale();
-
-      if (hoverT > 0) everHovered = true;
-      const target = forceAssembleRef.current
-        ? 1
-        : scatterOnHover
-        ? 1 - hoverT
-        : assembleOnHover
-          ? (latchAssemble && everHovered ? 1 : hoverT)
-          : 1;
-      assemble += (target - assemble) * Math.min(1, dt * 1.8);
-      if (reduce) assemble = target;
-      const asmE = assemble * assemble * (3 - 2 * assemble);
-
-      nrx += (tnx - nrx) * 0.06; nry += (tny - nry) * 0.06;
-      spin += dt * 0.2;
-      // autoSpin — покачивание влево-вправо (а не оборот вокруг), чтобы лицо
-      // всегда смотрело на зрителя и отыгрывало объём.
-      const auto = autoSpin ? Math.sin(spin * 0.6) * 0.55 : 0;
-      // spin360 — непрерывный оборот вокруг оси (турнтейбл для 3D-модели)
-      const turn = spin360 ? spin * 0.5 : 0;
-      const yaw = (1 - asmE) * spin + asmE * (nrx * tilt + auto + turn) + Math.sin(spin) * 0.06 * (1 - asmE);
-      const pitch = asmE * (-nry * tilt);
-      const sYa = Math.sin(yaw), cYa = Math.cos(yaw), sPi = Math.sin(pitch), cPi = Math.cos(pitch);
-
-      const sX0 = s.X, sY0 = s.Y, sZ0 = s.Z;
-      let maxErr2 = 0, maxV2 = 0;
-      for (let i = 0; i < N; i++) {
-        const tx = hX[i] + (sX0[i] - hX[i]) * asmE;
-        const ty = hY[i] + (sY0[i] - hY[i]) * asmE;
-        const tz = hZ[i] + (sZ0[i] - hZ[i]) * asmE;
-        const ex = tx - px[i], ey = ty - py[i], ez = tz - pz[i];
-        vx[i] += (ex * K - vx[i] * DAMP) * dt;
-        vy[i] += (ey * K - vy[i] * DAMP) * dt;
-        vz[i] += (ez * K - vz[i] * DAMP) * dt;
-        px[i] += vx[i] * dt; py[i] += vy[i] * dt; pz[i] += vz[i] * dt;
-        const e2 = ex * ex + ey * ey + ez * ez;
-        const v2 = vx[i] * vx[i] + vy[i] * vy[i] + vz[i] * vz[i];
-        if (e2 > maxErr2) maxErr2 = e2;
-        if (v2 > maxV2) maxV2 = v2;
-        // #4 деадзона: почти доехал и почти не движется → прибиваем к цели, гасим дрожание
-        if (e2 < 1e-6 && v2 < 1e-6) { px[i] = tx; py[i] = ty; pz[i] = tz; vx[i] = 0; vy[i] = 0; vz[i] = 0; }
-      }
-
-      for (let i = 0; i < N; i++) {
-        const x1 = cYa * px[i] + sYa * pz[i];
-        const z1 = -sYa * px[i] + cYa * pz[i];
-        const y1 = cPi * py[i] - sPi * z1;
-        const z2 = sPi * py[i] + cPi * z1;
-        const per = fLen / (fLen - z2);
-        sX[i] = cx + x1 * scale * per;
-        sY[i] = cy + y1 * scale * per;
-        sZ[i] = z2; sPe[i] = per;
-      }
-
-      // #3 чистим только прошлый грязный прямоугольник (не весь буфер)
-      if (pDirty) {
-        const [px0, py0, px1, py1] = pDirty;
-        for (let yy = py0; yy < py1; yy++) buf32.fill(0, yy * W2 + px0, yy * W2 + px1);
-      }
-      let cMinX = W2, cMinY = H2, cMaxX = 0, cMaxY = 0;
-      const dInv = 1 / (bulge * 2);
-      const rgb = CR | (CG << 8) | (CB << 16);
-      const fbA = s.b;
-      for (let i = 0; i < N; i++) {
-        const per = sPe[i];
-        let dN = (sZ[i] + bulge) * dInv; if (dN < 0) dN = 0; else if (dN > 1) dN = 1;
-        const bright = 0.45 + 0.55 * fbA[i];
-        let a = (0.3 + 0.7 * (asmE * bright + (1 - asmE) * 0.45)) * (0.55 + 0.45 * dN);
-        a *= brightness;
-        if (a > 1) a = 1;
-        if (a < 0.02) continue;
-        let sz = ((0.7 + (asmE * fbA[i] + (1 - asmE) * 0.3) * 1.7) * per * (0.7 + 0.3 * dN) * dpr * pointScale) | 0;
-        if (sz < 1) sz = 1; else if (sz > 6) sz = 6;
-        const col = rgb | (((a * 255) | 0) << 24);
-        const dx = sX[i] | 0, dy = sY[i] | 0, half = sz >> 1;
-        let yA = dy - half, xA = dx - half, yB = dy - half + sz, xB = dx - half + sz;
-        if (yA < 0) yA = 0; if (xA < 0) xA = 0;
-        if (yB > H2) yB = H2; if (xB > W2) xB = W2;
-        if (xA >= xB || yA >= yB) continue;
-        if (xA < cMinX) cMinX = xA; if (yA < cMinY) cMinY = yA;
-        if (xB > cMaxX) cMaxX = xB; if (yB > cMaxY) cMaxY = yB;
-        for (let yy = yA; yy < yB; yy++) {
-          const row = yy * W2;
-          for (let xx = xA; xx < xB; xx++) buf32[row + xx] = col;
-        }
-      }
-
-      // заливаем в канвас только объединение прошлого и текущего прямоугольника
-      let uMinX = cMinX, uMinY = cMinY, uMaxX = cMaxX, uMaxY = cMaxY;
-      if (pDirty) {
-        if (pDirty[0] < uMinX) uMinX = pDirty[0];
-        if (pDirty[1] < uMinY) uMinY = pDirty[1];
-        if (pDirty[2] > uMaxX) uMaxX = pDirty[2];
-        if (pDirty[3] > uMaxY) uMaxY = pDirty[3];
-      }
-      if (uMaxX > uMinX && uMaxY > uMinY) {
-        ctx!.putImageData(imgData, 0, 0, uMinX, uMinY, uMaxX - uMinX, uMaxY - uMinY);
-      }
-      pDirty = cMaxX > cMinX ? [cMinX, cMinY, cMaxX, cMaxY] : null;
-
-      // #1 фриз: облако собрано и успокоилось, нет ховера и постоянного вращения → стоп
-      const settled =
-        !continuous && hoverT === 0 && assemble > 0.999 &&
-        maxV2 < 1e-6 && maxErr2 < 1e-6 &&
-        Math.abs(nrx) < 1e-3 && Math.abs(nry) < 1e-3 &&
-        Math.abs(curAspect - s.aspect) < 1e-3;
-      if (settled) idle = true;
-      else raf = requestAnimationFrame(loop);
-    }
-
-    const ro = new ResizeObserver(() => { needResize = true; wake(); });
+    const ro = new ResizeObserver(() => {
+      const r = canvas.getBoundingClientRect();
+      api!.size(r.width || 1, r.height || 1, Math.min(window.devicePixelRatio || 1, 1.5));
+    });
     ro.observe(canvas);
 
-    // #1 пауза вне экрана и в фоне вкладки — невидимое не анимируем
     let io: IntersectionObserver | null = null;
     if (typeof IntersectionObserver !== "undefined") {
       io = new IntersectionObserver(
-        (entries) => {
-          const vis = entries.some((e) => e.isIntersecting);
-          if (vis) { paused = false; wake(); }
-          else { paused = true; if (raf) { cancelAnimationFrame(raf); raf = 0; } }
-        },
+        (entries) => api!.paused(!entries.some((e) => e.isIntersecting)),
         { rootMargin: "100px" },
       );
       io.observe(canvas);
     }
-    const onVis = () => {
-      if (document.hidden) { paused = true; if (raf) { cancelAnimationFrame(raf); raf = 0; } }
-      else { paused = false; wake(); }
-    };
+    const onVis = () => api!.paused(document.hidden);
     document.addEventListener("visibilitychange", onVis);
 
-    // Старт цикла сразу при монтировании — он сам дождётся готовности форм.
-    resize();
-    initP();
-    tick();
-
     return () => {
-      stopped = true;
-      if (raf) cancelAnimationFrame(raf);
+      apiRef.current = null;
       ro.disconnect();
       io?.disconnect();
       document.removeEventListener("visibilitychange", onVis);
       eventTarget.removeEventListener("pointermove", onMove);
       eventTarget.removeEventListener("pointerenter", onEnter);
       eventTarget.removeEventListener("pointerleave", onLeave);
+      if (worker) {
+        const w = worker;
+        try { w.postMessage({ type: "paused", v: true }); } catch { /* */ }
+        // отложенная терминация — отменится, если эффект быстро перемонтируется
+        stash.__ppKill = setTimeout(() => {
+          try { w.postMessage({ type: "dispose" }); w.terminate(); } catch { /* */ }
+          stash.__ppWorker = undefined;
+          stash.__ppKill = undefined;
+        }, 150);
+      } else if (engine) {
+        engine.dispose();
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listKey, cloudKey, spin360, depthScale, count, color.join(","), brightness, bulge, relief, tilt, gamma, pointScale, assembleOnHover, scatterOnHover, latchAssemble, autoSpin, trackingRef]);
