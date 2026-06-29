@@ -44,7 +44,7 @@ export default function PillsBackdrop() {
           height: h,
           wireframes: false,
           background: "transparent",
-          pixelRatio: window.devicePixelRatio,
+          pixelRatio: Math.min(window.devicePixelRatio || 1, 2),
         },
       });
       Render.run(render);

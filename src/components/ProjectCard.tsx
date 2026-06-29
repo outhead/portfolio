@@ -52,7 +52,7 @@ function LedCover({ words, active }: { words: string[]; active: boolean }) {
     let drops: Float32Array, speeds: Float32Array;
     const resize = () => {
       const r = canvas.getBoundingClientRect();
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
       W = Math.max(1, r.width); H = Math.max(1, r.height);
       canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -87,12 +87,17 @@ function LedCover({ words, active }: { words: string[]; active: boolean }) {
     // ── анимация слова: hold → out (рассыпать) → in (собрать) ──────────
     const HOLD = 2.4, OUT = 0.4, IN = 0.5;
     let word = 0, phase: "hold" | "out" | "in" = "hold", pStart = performance.now();
-    let raf = 0, vis = 0, stopped = false;
+    let raf = 0, vis = 0, stopped = false, visible = true;
+    // Кап ~40fps: морф слова time-based, дождь декоративный — на глаз не отличить от 120fps.
+    const FRAME_MS = 1000 / 40;
+    let lastDraw = 0;
 
     const loop = (now: number) => {
-      if (stopped) return;
+      if (stopped || !visible) return;
       raf = requestAnimationFrame(loop);
       if (!dimPath) return;
+      if (now - lastDraw < FRAME_MS) return;
+      lastDraw = now;
 
       // слово
       if (!reduce && words.length > 1) {
@@ -160,7 +165,19 @@ function LedCover({ words, active }: { words: string[]; active: boolean }) {
       }
     };
     raf = requestAnimationFrame(loop);
-    return () => { stopped = true; cancelAnimationFrame(raf); ro.disconnect(); };
+
+    // Пауза рисования, когда карточка ушла за пределы вьюпорта.
+    const io = new IntersectionObserver(
+      (entries) => {
+        const vv = entries[0]?.isIntersecting ?? true;
+        if (vv && !visible) { visible = true; lastDraw = 0; raf = requestAnimationFrame(loop); }
+        else if (!vv && visible) { visible = false; cancelAnimationFrame(raf); }
+      },
+      { threshold: 0 }
+    );
+    io.observe(canvas);
+
+    return () => { stopped = true; cancelAnimationFrame(raf); ro.disconnect(); io.disconnect(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wordsKey]);
 

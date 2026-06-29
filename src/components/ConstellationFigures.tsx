@@ -72,7 +72,10 @@ export default function ConstellationFigures({ className = "" }: { className?: s
     let tone!: Uint8Array;
     let occupied!: Uint8Array;
     let centers: Array<{ cx: number; cy: number }> = [];
-    let raf = 0, stopped = false;
+    let raf = 0, stopped = false, visible = true;
+    // Кап 40fps — для пиксельного табло визуально неотличимо от 120, но вдвое-втрое меньше работы.
+    const FRAME_MS = 1000 / 40;
+    let lastDraw = 0;
     const start = performance.now();
 
     // пасхалка
@@ -235,8 +238,15 @@ export default function ConstellationFigures({ className = "" }: { className?: s
         ctx!.shadowBlur = 0;
         void sx; void sy;
       }
+    }
 
-      if (!reduce) raf = requestAnimationFrame(draw);
+    // Цикл с FPS-капом; рисует только когда блок в зоне видимости (visible управляет IO).
+    function tick(now: number) {
+      if (stopped || !visible || reduce) return;
+      raf = requestAnimationFrame(tick);
+      if (now - lastDraw < FRAME_MS) return;
+      lastDraw = now;
+      draw(now);
     }
 
     function roundRect(c: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, rr: number) {
@@ -264,7 +274,7 @@ export default function ConstellationFigures({ className = "" }: { className?: s
 
     function fit() {
       const rect = canvas!.getBoundingClientRect();
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      dpr = Math.min(window.devicePixelRatio || 1, 1.5);
       cw = Math.max(1, rect.width);
       ch = Math.max(1, rect.height);
       canvas!.width = Math.round(cw * dpr);
@@ -278,12 +288,29 @@ export default function ConstellationFigures({ className = "" }: { className?: s
     ro.observe(canvas);
     canvas.addEventListener("pointerdown", onClick);
     fit();
-    if (!reduce) raf = requestAnimationFrame(draw);
+    if (!reduce) raf = requestAnimationFrame(tick);
+
+    // Пауза рисования, когда блок ушёл за пределы вьюпорта (rAF сам паузит только на скрытой вкладке).
+    const io = new IntersectionObserver(
+      (entries) => {
+        const vis = entries[0]?.isIntersecting ?? true;
+        if (vis && !visible && !reduce) {
+          visible = true;
+          raf = requestAnimationFrame(tick);
+        } else if (!vis && visible) {
+          visible = false;
+          cancelAnimationFrame(raf);
+        }
+      },
+      { threshold: 0 }
+    );
+    io.observe(canvas);
 
     return () => {
       stopped = true;
       cancelAnimationFrame(raf);
       ro.disconnect();
+      io.disconnect();
       canvas.removeEventListener("pointerdown", onClick);
     };
   }, []);

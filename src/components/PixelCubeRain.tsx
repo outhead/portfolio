@@ -40,7 +40,7 @@ export default function PixelCubeRain({ color = "#FF2436" }: { color?: string })
       const render = Render.create({
         element: container,
         engine,
-        options: { width: w, height: h, wireframes: false, background: "transparent", pixelRatio: window.devicePixelRatio },
+        options: { width: w, height: h, wireframes: false, background: "transparent", pixelRatio: Math.min(window.devicePixelRatio || 1, 2) },
       });
       Render.run(render);
       const runner = Runner.create();

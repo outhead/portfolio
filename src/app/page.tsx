@@ -175,9 +175,13 @@ function DotGlobe() {
     let last = performance.now();
     let idleResumeAt = 0; // пауза перед возвратом к HOME (после клика/drag)
     let rafId = 0;
+    let visible = true;
+    // Кап ~40fps: вращение интегрируется по dt, на глаз неотличимо от 120fps.
+    const FRAME_MS = 1000 / 40;
+    let lastDraw = 0;
 
     const resize = () => {
-      const DPR = Math.min(window.devicePixelRatio || 1, 2);
+      const DPR = Math.min(window.devicePixelRatio || 1, 1.5);
       const rect = canvas.getBoundingClientRect();
       canvas.width = Math.round(rect.width * DPR);
       canvas.height = Math.round(rect.height * DPR);
@@ -187,6 +191,9 @@ function DotGlobe() {
     ro.observe(canvas);
 
     const render = (now: number) => {
+      if (!visible) return;
+      if (now - lastDraw < FRAME_MS) { rafId = requestAnimationFrame(render); return; }
+      lastDraw = now;
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
       if (!dragging) {
@@ -289,6 +296,24 @@ function DotGlobe() {
 
     rafId = requestAnimationFrame(render);
 
+    // Пауза рендера, когда глобус ушёл за пределы вьюпорта.
+    const io = new IntersectionObserver(
+      (entries) => {
+        const vv = entries[0]?.isIntersecting ?? true;
+        if (vv && !visible) {
+          visible = true;
+          last = performance.now();
+          lastDraw = 0;
+          rafId = requestAnimationFrame(render);
+        } else if (!vv && visible) {
+          visible = false;
+          cancelAnimationFrame(rafId);
+        }
+      },
+      { threshold: 0 }
+    );
+    io.observe(canvas);
+
     // Я.Метрика — фиксируем интеракт с глобусом ровно один раз за маунт
     // компонента. И отдельно — первый реальный drag (>3px), чтобы отличать
     // случайный клик от осознанного «покрутил».
@@ -370,6 +395,7 @@ function DotGlobe() {
     return () => {
       cancelAnimationFrame(rafId);
       ro.disconnect();
+      io.disconnect();
       canvas.removeEventListener("pointerdown", onDown);
       canvas.removeEventListener("pointermove", onMove);
       canvas.removeEventListener("pointerup", onUp);

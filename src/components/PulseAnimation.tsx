@@ -119,7 +119,7 @@ export default function PulseAnimation({ variant, reverse = false, className, ac
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const DPR = Math.min(2, typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1);
+    const DPR = Math.min(1.5, typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1);
     canvas.width = W * DPR;
     canvas.height = H * DPR;
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
@@ -247,16 +247,21 @@ export default function PulseAnimation({ variant, reverse = false, className, ac
     let lastTime: number | null = null;
     let rafId = 0;
     let stopped = false;
+    // Кап ~40fps: анимация time-based (time += dt), на глаз неотличимо от 120fps.
+    const FRAME_MS = 1000 / 40;
+    let lastDraw = 0;
 
     if (isPlaying) {
       const loop = (now: number) => {
         if (stopped) return;
+        rafId = requestAnimationFrame(loop);
         if (lastTime == null) lastTime = now;
         const dt = (now - lastTime) / 1000;
         lastTime = now;
         time += dt;
+        if (now - lastDraw < FRAME_MS) return;
+        lastDraw = now;
         drawAt(time);
-        rafId = requestAnimationFrame(loop);
       };
       rafId = requestAnimationFrame(loop);
     } else {
