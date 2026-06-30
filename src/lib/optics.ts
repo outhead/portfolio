@@ -148,9 +148,10 @@ export const FIELD_H = 380;
 export const MENTORING_LEVEL: Level = {
   emitter: { x: 0.5, y: 0.08 },
   stones: [
-    { minus: "amber", plus: "lime", x: 0.623, y: 0.552 },
-    { minus: "cyan", plus: "magenta", x: 0.399, y: 0.546 },
-    { minus: "lime", plus: "cyan", x: 0.491, y: 0.32 },
+    // стартовые позиции — в трее снизу, далеко от решения (иначе уровень начат решённым)
+    { minus: "amber", plus: "lime", x: 0.14, y: 0.9 },
+    { minus: "cyan", plus: "magenta", x: 0.86, y: 0.9 },
+    { minus: "lime", plus: "cyan", x: 0.4, y: 0.93 },
   ],
   mirror: { x: 0.397, y: 0.862, ang: -2.621 },
   targets: [
