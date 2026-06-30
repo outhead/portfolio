@@ -1471,7 +1471,7 @@ export default function PreviewHome() {
             {/* ── В цифрах: LED-счётчики + тихий граф из точек ── */}
             <motion.div variants={fadeUp} className="col-span-12 lg:col-span-5">
               <Oled className="h-full p-5 md:p-7 flex items-center">
-                <div className="relative w-full flex justify-center gap-8 md:gap-14 lg:gap-2 xl:gap-3 2xl:gap-12">
+                <div className="relative w-full flex justify-center gap-8 md:gap-14 lg:gap-4 xl:gap-4 2xl:gap-12">
                   {[
                     { v: "30", l: "запусков" },
                     { v: "11", l: "лет в дизайне" },
