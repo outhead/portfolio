@@ -16,9 +16,9 @@ import { layoutLedText, LED_ROWS } from "@/components/ledFont";
 const CFG = {
   cell: 10,        // шаг решётки огня (px)
   dot: 0.4,        // радиус точки огня на максимуме тепла (доли cell)
-  cooling: 0.83,   // охлаждение → высота языков (больше = короче, не накрывает буквы)
+  cooling: 0.75,   // охлаждение → высота языков (больше = короче)
   wind: 0.6,
-  source: 0.5,
+  source: 0.52,
   flareFreq: 0.3,
   flareAmp: 0.5,
   density: 0.24,   // порог отрисовки (больше = реже пламя)
@@ -26,6 +26,7 @@ const CFG = {
   textW: 0.66,     // целевая ширина текста (доля ширины hero)
   textH: 0.3,      // максимум высоты блока текста (доля высоты hero)
   textCenter: 0.4, // центр блока текста по высоте (доля)
+  emitDrop: 3,     // источник огня ниже букв на N пиксельных рядов (пламя встаёт снизу)
 };
 
 export default function PixelFire({ text, className = "" }: { text?: string; className?: string }) {
@@ -80,8 +81,10 @@ export default function PixelFire({ text, className = "" }: { text?: string; cla
           if (!d.lit) continue;
           const px = ox + d.col * tpx, py = yTop + d.row * tpx;
           blackDots.push(px + tpx / 2, py + tpx / 2);
+          // эмиттер огня ниже самих букв на emitDrop пиксельных рядов
+          const ey = py + C.emitDrop * tpx;
           const c0 = Math.floor(px / C.cell), c1 = Math.floor((px + tpx - 1) / C.cell);
-          const r0 = Math.floor(py / C.cell), r1 = Math.floor((py + tpx - 1) / C.cell);
+          const r0 = Math.floor(ey / C.cell), r1 = Math.floor((ey + tpx - 1) / C.cell);
           for (let cc = c0; cc <= c1; cc++)
             for (let rr = r0; rr <= r1; rr++)
               if (cc >= 0 && cc < cols && rr >= 0 && rr < rows) mask[rr * cols + cc] = 1;
