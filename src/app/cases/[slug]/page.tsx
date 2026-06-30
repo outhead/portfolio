@@ -159,6 +159,20 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
         {/* Градиент уравновешивает контраст под текст hero, но не должен забивать обложку */}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-transparent" />
 
+        {/* Слоган LED-шрифтом по центру пустой зоны hero — для кейсов без куба/обложки */}
+        {project.heroSlogan && !heroCube && !project.coverParticles && !project.heroImage && !project.coverImage && !project.coverVideo && (
+          <div className="absolute inset-x-0 top-0 bottom-[34%] z-[4] flex items-center justify-center px-6 pointer-events-none animate-fade-in-up">
+            <span className="sr-only">{project.heroSlogan}</span>
+            <LedLines
+              text={project.heroSlogan}
+              center
+              maxChars={28}
+              lineClass="h-[12px] md:h-[16px]"
+              className="text-[#A6FF00]/75 drop-shadow-[0_0_12px_rgba(166,255,0,0.45)]"
+            />
+          </div>
+        )}
+
         <div className="relative z-[5] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] pb-10 md:pb-16 w-full animate-fade-in-up">
           {/* Breadcrumb */}
           <Link

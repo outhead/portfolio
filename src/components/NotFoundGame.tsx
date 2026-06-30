@@ -13,6 +13,20 @@ const GOLD = "#C9A66B";
 const STEP = 18; // шаг диода, px
 const TICK0 = 0.14;
 const TICK_MIN = 0.075;
+const START_FOOD = 2;   // еды на старте
+const MAX_FOOD = 3;     // максимум одновременно
+const FOOD_SPAWN = 2.4; // сек между автоподсевом
+
+// Похвала: на каждую новую съеденную — следующая, по нарастающей.
+const PRAISE = [
+  "ОТЛИЧНО", "МОЛОДЕЦ", "ТАК ДЕРЖАТЬ", "КРАСИВО", "ВОТ ЭТО ДА",
+  "НЕ ОСТАНАВЛИВАЙСЯ", "ОГОНЬ", "ТЫ В УДАРЕ", "РАСТЁМ", "ПРОФИ",
+  "ВКУСНО", "ДАВАЙ ЕЩЁ", "ЛОВКО", "КЛАСС", "МАСТЕР",
+  "БОМБА", "НЕУДЕРЖИМ", "КРАСАВА", "ЛЕГЕНДА", "КОСМОС",
+  "ГЕНИАЛЬНО", "ВИРТУОЗ", "МАШИНА", "ПОЧТИ РЕКОРД",
+];
+const praiseFor = (n: number) => PRAISE[(n - 1) % PRAISE.length];
+const HINT_AT = 25; // после стольких съеденных — подсказка про пасхалку
 
 // Прямоугольные цифры одной линией (треки). «0» — кольцо без перечёркивания.
 const D4: [number, number][] = [
@@ -38,8 +52,11 @@ export default function NotFoundGame() {
   const [board, setBoard] = useState<SnakeEntry[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [praise, setPraise] = useState("");
+  const [hint, setHint] = useState(false);
   const restartRef = useRef<() => void>(() => {});
   const introRef = useRef<() => void>(() => {});
+  const dirRef = useRef<(x: number, y: number) => void>(() => {});
 
   useEffect(() => {
     try {
@@ -158,7 +175,8 @@ export default function NotFoundGame() {
     let snake: Pt[] = [];
     let dir: Pt = { x: 1, y: 0 };
     let nextDir: Pt = { x: 1, y: 0 };
-    let food: Pt = { x: 0, y: 0 };
+    let foods: Pt[] = [];
+    let foodAcc = 0; // таймер автоподсева еды
     let grow = 0;
     let acc = 0;
     let tick = TICK0;
@@ -233,23 +251,31 @@ export default function NotFoundGame() {
       buildDigits();
     };
 
-    const placeFood = () => {
+    const spawnFood = () => {
       const occ = new Set(snake.map(key));
+      for (const f of foods) occ.add(key(f));
+      if (occ.size >= cols * rows) return; // поле забито
       let p: Pt, g = 0;
       do {
         p = { x: (Math.random() * cols) | 0, y: (Math.random() * rows) | 0 };
       } while (occ.has(key(p)) && g++ < 400);
-      food = p;
+      foods.push(p);
+    };
+    const fillFood = (n: number) => {
+      while (foods.length < n) spawnFood();
     };
 
     const toIntro = () => {
       mode = "intro";
       snake = [];
+      foods = [];
       ghost.fill(0);
       fx.length = 0;
       setOver(false);
       setStarted(false);
       setScore(0);
+      setPraise("");
+      setHint(false);
     };
 
     const startFromRing = (px: number, py: number) => {
@@ -277,15 +303,19 @@ export default function NotFoundGame() {
       mode = "play";
       grow = 0;
       acc = 0;
+      foodAcc = 0;
       tick = TICK0;
       sc = 0;
       ghost.fill(0);
       fx.length = 0;
+      foods = [];
       if (dieTimer) { clearTimeout(dieTimer); dieTimer = null; }
       setScore(0);
       setOver(false);
       setStarted(true);
-      placeFood();
+      setPraise("");
+      setHint(false);
+      fillFood(START_FOOD);
     };
     restartRef.current = () => startCenter();
 
@@ -307,6 +337,13 @@ export default function NotFoundGame() {
       dieTimer = setTimeout(() => { if (!stopped) setOver(true); }, 600);
     };
 
+    let praiseTimer: ReturnType<typeof setTimeout> | null = null;
+    const showPraise = (text: string) => {
+      setPraise(text);
+      if (praiseTimer) clearTimeout(praiseTimer);
+      praiseTimer = setTimeout(() => { if (!stopped) setPraise(""); }, 1500);
+    };
+
     const burst = (gx: number, gy: number) => {
       const c = cxy(gx, gy);
       for (let i = 0; i < 9; i++) {
@@ -322,13 +359,19 @@ export default function NotFoundGame() {
       if (nx < 0 || ny < 0 || nx >= cols || ny >= rows) return die();
       if (snake.some((s, i) => i < snake.length - 1 && s.x === nx && s.y === ny)) return die();
       snake.unshift({ x: nx, y: ny });
-      if (nx === food.x && ny === food.y) {
+      const fi = foods.findIndex((f) => f.x === nx && f.y === ny);
+      if (fi >= 0) {
         sc++;
         setScore(sc);
         tick = Math.max(TICK_MIN, TICK0 - sc * 0.006);
-        burst(food.x, food.y);
-        placeFood();
+        burst(foods[fi].x, foods[fi].y);
+        foods.splice(fi, 1);
+        // пока съеденная гаснет — на её место сразу новая
+        fillFood(Math.max(START_FOOD, foods.length + 1));
         grow += 1;
+        // похвала: каждое число — своя; на HINT_AT — подсказка
+        if (sc === HINT_AT) setHint(true);
+        else showPraise(praiseFor(sc));
       }
       if (grow > 0) grow--;
       else {
@@ -343,6 +386,7 @@ export default function NotFoundGame() {
       if (x === -dir.x && y === -dir.y) return;
       nextDir = { x, y };
     };
+    dirRef.current = setDir;
 
     let raf = 0, stopped = false, last: number | null = null;
 
@@ -385,6 +429,11 @@ export default function NotFoundGame() {
       if (mode === "play") {
         acc += dt;
         while (acc >= tick) { acc -= tick; stepGame(); }
+        foodAcc += dt;
+        if (foodAcc >= FOOD_SPAWN) {
+          foodAcc = 0;
+          if (foods.length < MAX_FOOD) spawnFood();
+        }
       }
 
       // остывающие угли
@@ -399,9 +448,12 @@ export default function NotFoundGame() {
         }
       }
 
-      // еда
-      const fp = cxy(food.x, food.y);
-      foodDot(fp.x, fp.y, 0.6 + 0.4 * Math.sin(ts * 5));
+      // еда (несколько, пульсируют вразнобой)
+      for (let i = 0; i < foods.length; i++) {
+        const f = foods[i];
+        const fp = cxy(f.x, f.y);
+        foodDot(fp.x, fp.y, 0.6 + 0.4 * Math.sin(ts * 5 + i * 1.7));
+      }
 
       // змейка: накал-градиент по телу (голова раскалена → хвост остывает)
       const L = snake.length;
@@ -441,13 +493,27 @@ export default function NotFoundGame() {
       if (handled) e.preventDefault();
     };
 
-    let tsx = 0, tsy = 0;
-    const onPDown = (e: PointerEvent) => { tsx = e.clientX; tsy = e.clientY; };
-    const onPUp = (e: PointerEvent) => {
-      const dx = e.clientX - tsx, dy = e.clientY - tsy;
-      if (Math.abs(dx) < 16 && Math.abs(dy) < 16) return;
+    // Непрерывный свайп: ведёшь пальцем — змейка поворачивает на каждом
+    // пройденном пороге, якорь сбрасывается. Один палец рулит без отрыва.
+    const SWIPE = 20; // порог поворота, px
+    let pressed = false, moved = false, ax = 0, ay = 0;
+    const onPDown = (e: PointerEvent) => {
+      pressed = true; moved = false; ax = e.clientX; ay = e.clientY;
+      canvas.setPointerCapture?.(e.pointerId);
+    };
+    const onPMove = (e: PointerEvent) => {
+      if (!pressed) return;
+      const dx = e.clientX - ax, dy = e.clientY - ay;
+      if (Math.abs(dx) < SWIPE && Math.abs(dy) < SWIPE) return;
       if (Math.abs(dx) > Math.abs(dy)) setDir(dx > 0 ? 1 : -1, 0);
       else setDir(0, dy > 0 ? 1 : -1);
+      ax = e.clientX; ay = e.clientY; moved = true;
+    };
+    const onPUp = (e: PointerEvent) => {
+      pressed = false;
+      // короткий тап в интро — стартуем вправо
+      if (!moved && mode === "intro") setDir(1, 0);
+      canvas.releasePointerCapture?.(e.pointerId);
     };
 
     let ro: ResizeObserver | null = null;
@@ -455,6 +521,7 @@ export default function NotFoundGame() {
     raf = requestAnimationFrame(frame);
     window.addEventListener("keydown", onKey);
     canvas.addEventListener("pointerdown", onPDown);
+    canvas.addEventListener("pointermove", onPMove);
     canvas.addEventListener("pointerup", onPUp);
     if ("ResizeObserver" in window) {
       ro = new ResizeObserver(() => build());
@@ -467,8 +534,10 @@ export default function NotFoundGame() {
       stopped = true;
       cancelAnimationFrame(raf);
       if (dieTimer) clearTimeout(dieTimer);
+      if (praiseTimer) clearTimeout(praiseTimer);
       window.removeEventListener("keydown", onKey);
       canvas.removeEventListener("pointerdown", onPDown);
+      canvas.removeEventListener("pointermove", onPMove);
       canvas.removeEventListener("pointerup", onPUp);
       ro?.disconnect();
     };
@@ -476,6 +545,7 @@ export default function NotFoundGame() {
 
   return (
     <section className="relative z-[1] min-h-[calc(100svh-5rem)] bg-black flex flex-col items-center justify-start px-5 pt-8 md:pt-12 pb-6 select-none overflow-hidden">
+      <style>{`@keyframes nfPraise{0%{opacity:0;transform:translate(-50%,7px) scale(.9)}18%{opacity:1;transform:translate(-50%,0) scale(1)}78%{opacity:1;transform:translate(-50%,0) scale(1)}100%{opacity:0;transform:translate(-50%,-4px) scale(1)}}`}</style>
       <div className="w-full max-w-[760px] flex flex-col items-center">
         <div ref={wrapRef} className="relative w-full h-[clamp(240px,46vh,400px)] rounded-xl border border-white/20 overflow-hidden">
           <canvas ref={canvasRef} className="absolute inset-0 w-full h-full touch-none" aria-hidden />
@@ -485,6 +555,21 @@ export default function NotFoundGame() {
             <div className="absolute top-3 left-4 pointer-events-none">
               <span className="sr-only">Счёт: {score}</span>
               <LedText text={`СЧЁТ ${score}${best > 0 ? `   РЕКОРД ${best}` : ""}`} className="h-[8px] md:h-[10px] w-auto" />
+            </div>
+          )}
+
+          {/* Похвала — сверху по центру, своя на каждую съеденную */}
+          {started && !over && praise && (
+            <div key={praise + score} className="absolute top-3 left-1/2 -translate-x-1/2 pointer-events-none animate-[nfPraise_1.5s_ease-out]">
+              <LedText text={praise} className="h-[11px] md:h-[13px] w-auto" />
+            </div>
+          )}
+
+          {/* Подсказка про пасхалку — после 25 съеденных */}
+          {started && !over && hint && (
+            <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 w-[94%] max-w-[560px] rounded-lg bg-black/55 px-3 py-2 pointer-events-none flex flex-col items-center gap-1.5">
+              <LedText text="ПАСХАЛКА НА ГЛАВНОЙ" className="h-[8px] md:h-[9px] w-auto" />
+              <LedText text="ЖМИ ЛОГО В ПОРЯДКЕ РАБОТЫ ЕГОРА" className="h-[6px] md:h-[7px] w-auto" />
             </div>
           )}
 
@@ -535,6 +620,28 @@ export default function NotFoundGame() {
           )}
         </div>
 
+        {/* D-pad для телефона */}
+        {started && !over && (
+          <div className="md:hidden mt-5 grid grid-cols-3 gap-2 w-[190px] select-none touch-none">
+            {([
+              ["↑", 0, -1, "col-start-2 row-start-1"],
+              ["←", -1, 0, "col-start-1 row-start-2"],
+              ["↓", 0, 1, "col-start-2 row-start-2"],
+              ["→", 1, 0, "col-start-3 row-start-2"],
+            ] as [string, number, number, string][]).map(([g, x, y, pos]) => (
+              <button
+                key={g}
+                type="button"
+                aria-label={g}
+                onPointerDown={(e) => { e.preventDefault(); dirRef.current(x, y); }}
+                className={`${pos} h-[58px] rounded-xl bg-white/[0.07] active:bg-[#A6FF00]/25 text-[#A6FF00]/80 text-2xl leading-none flex items-center justify-center transition-colors`}
+              >
+                {g}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Подпись под полем */}
         {!started && !over && (
           <div className="mt-6 text-center">
@@ -543,7 +650,7 @@ export default function NotFoundGame() {
               <LedText text="ТАКОЙ СТРАНИЦЫ НЕТ" className="h-[8px] md:h-[9px] w-auto mx-auto" />
             </p>
             <p className="mt-3 text-[#A6FF00]/70">
-              <LedText text="ЖМИ ← → И ПОЕХАЛИ" className="h-[9px] md:h-[11px] w-auto mx-auto" />
+              <LedText text="СВАЙП ИЛИ ← → — ПОЕХАЛИ" className="h-[9px] md:h-[11px] w-auto mx-auto" />
             </p>
           </div>
         )}

@@ -64,7 +64,7 @@ function LedCover({ words, active }: { words: string[]; active: boolean }) {
       litR = Math.max(1.3, CELL * 0.3);
       glowR = CELL * 0.5;
       wordStartCol = Math.round((cols - maxCols) / 2);
-      wordTopRow = Math.round((H * 0.3) / CELL - WR / 2);
+      wordTopRow = Math.round((H * 0.5) / CELL - WR / 2);
       // статичная решётка тусклых диодов — один Path2D, заливаем раз/кадр
       dimPath = new Path2D();
       for (let c = 0; c < cols; c++) {
