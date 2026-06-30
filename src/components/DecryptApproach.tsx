@@ -23,14 +23,6 @@ const SCRAMBLE_MS = 320; // сколько символ крутится до с
 const TICK = 45; // частота кадров перебора
 const isScrambleable = (ch: string) => /[0-9A-Za-zА-Яа-яЁё]/.test(ch);
 
-function countScramble(paras: Seg[][]) {
-  let n = 0;
-  for (const segs of paras)
-    for (const seg of segs)
-      for (const ch of Array.from(seg.text)) if (isScrambleable(ch)) n++;
-  return n;
-}
-
 type Seg = { text: string; bold: boolean };
 
 function parseSegments(text: string): Seg[] {
@@ -129,67 +121,6 @@ function ScrambleParagraphs({
   );
 }
 
-/**
- * Слой-шум поверх расшифровки: рендерит структуру ТЕХНИЧЕСКОГО текста (тот
- * футпринт, что был на экране), у которого все буквы мерцают рандомом, и плавно
- * гаснет к нулю. За счёт него видимый текст «рассыпается в шум» на своём месте,
- * а пустой хвост под коротким простым текстом растворяется, а не схлопывается в
- * чёрный рывком. Решает баг: последние слова уходили в чёрный фон.
- */
-function NoiseLayer({
-  paras,
-  prose,
-  fadeMs,
-}: {
-  paras: Seg[][];
-  prose: string;
-  fadeMs: number;
-}) {
-  const [op, setOp] = useState(1);
-  const [, force] = useState(0);
-
-  useEffect(() => {
-    if (typeof window !== "undefined" &&
-        window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setOp(0);
-      return;
-    }
-    const start = performance.now();
-    const id = setInterval(() => {
-      const e = performance.now() - start;
-      force((v) => v + 1);
-      setOp(Math.max(0, 1 - e / fadeMs));
-      if (e >= fadeMs) {
-        clearInterval(id);
-        setOp(0);
-      }
-    }, TICK);
-    return () => clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  if (op <= 0) return null;
-
-  return (
-    <div className="space-y-3" aria-hidden style={{ opacity: op }}>
-      {paras.map((segs, pi) => (
-        <p key={pi} className={prose}>
-          {segs.map((seg, si) => (
-            <span
-              key={si}
-              className={seg.bold ? "text-white/90 font-semibold" : undefined}
-            >
-              {Array.from(seg.text).map((ch, k) => (
-                <span key={k}>{isScrambleable(ch) ? randPoolChar() : ch}</span>
-              ))}
-            </span>
-          ))}
-        </p>
-      ))}
-    </div>
-  );
-}
-
 export default function DecryptApproach({
   technical,
   simple,
@@ -247,20 +178,6 @@ export default function DecryptApproach({
             renderParas(simpleParas)
           )}
         </div>
-
-        {/* Шум по футпринту технического текста — рассыпает видимый текст и гаснет,
-            растворяя пустой хвост вместо рывка в чёрный. */}
-        {revealed && (
-          <div className="[grid-area:1/1] pointer-events-none">
-            <NoiseLayer
-              paras={techParas}
-              prose={prose}
-              fadeMs={Math.round(
-                (countScramble(simpleParas) * STAGGER + SCRAMBLE_MS) * 0.7
-              )}
-            />
-          </div>
-        )}
       </div>
 
       <button
