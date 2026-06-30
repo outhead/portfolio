@@ -999,6 +999,8 @@ type Testimonial = {
   avatar: string;
   linkedin?: string;
   dog?: string;
+  dogName?: string;
+  dogRole?: string;
 };
 const TESTIMONIALS: Testimonial[] = [
   {
@@ -1017,6 +1019,8 @@ const TESTIMONIALS: Testimonial[] = [
     avatar: "/images/testimonials/goncharuk.png",
     linkedin: "",
     dog: "/images/testimonials/goncharuk2.png",
+    dogName: "Микки Гончарук",
+    dogRole: "Руководитель проекта Не Твоих Собачьих Дел, Гав Гав Нефть",
   },
   {
     quote:
@@ -1087,7 +1091,7 @@ function TestimonialCard({ t }: { t: Testimonial }) {
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
             <span className="text-[16px] text-white font-medium leading-tight">
-              {t.name}
+              {showDog && t.dogName ? t.dogName : t.name}
             </span>
             {t.linkedin ? (
               <a
@@ -1103,7 +1107,9 @@ function TestimonialCard({ t }: { t: Testimonial }) {
               </a>
             ) : null}
           </div>
-          <div className="text-[12.5px] text-white/50 mt-1 leading-snug">{t.role}</div>
+          <div className="text-[12.5px] text-white/50 mt-1 leading-snug">
+            {showDog && t.dogRole ? t.dogRole : t.role}
+          </div>
         </div>
       </div>
     </motion.div>
