@@ -1995,15 +1995,10 @@ export default function PreviewHome() {
                   фото больше не растягивается во весь экран на мобиле/планшете */}
               <div className="relative aspect-[4/5] rounded-xl overflow-hidden border border-white/[0.06] bg-black">
                 <span className="sr-only">Егор Шугаев — дизайн-директор, ментор и независимый консультант</span>
-                {/* фоновая LED-сетка с радиальными взрывами — за вырезанным портретом */}
-                <LedGridBurst className="absolute inset-0 z-0" />
-                <Image
+                {/* портрет собран из тех же LED-ячеек, что и фон; диоды загораются, радиальные взрывы */}
+                <LedGridBurst
                   src="/images/photos/me-pixel-color.png"
-                  alt="Пиксельный портрет Егора Шугаева"
-                  fill
-                  sizes="(max-width: 768px) 220px, 260px"
-                  className="absolute inset-0 z-10 object-cover"
-                  priority={false}
+                  className="absolute inset-0 z-0"
                 />
                 <div className="absolute inset-0 z-20 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
                 <div className="absolute z-30 bottom-4 left-4 right-4 flex items-center gap-1.5 text-[12px] tracking-[0.2em] uppercase text-white/74">
