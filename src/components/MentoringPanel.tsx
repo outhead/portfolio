@@ -54,10 +54,10 @@ export default function MentoringPanel({ className = "" }: { className?: string 
               className="absolute inset-0 w-full h-full"
               trackingRef={ref}
               shapes={PORTRAIT}
-              count={4200}
+              count={12000}
               color={[255, 255, 255]}
-              depthScale={0.6}
-              pointScale={0.6}
+              depthScale={0.45}
+              pointScale={1.25}
               tilt={0.5}
               assembleOnHover
               latchAssemble
