@@ -545,7 +545,16 @@ export default function NotFoundGame() {
 
   return (
     <section className="relative z-[1] min-h-[calc(100svh-5rem)] bg-black flex flex-col items-center justify-start px-5 pt-8 md:pt-12 pb-6 select-none overflow-hidden">
-      <style>{`@keyframes nfPraise{0%{opacity:0;transform:translate(-50%,7px) scale(.9)}18%{opacity:1;transform:translate(-50%,0) scale(1)}78%{opacity:1;transform:translate(-50%,0) scale(1)}100%{opacity:0;transform:translate(-50%,-4px) scale(1)}}`}</style>
+      <style>{`@keyframes nfPraise{0%{opacity:0;transform:translateY(6px) scale(.92)}18%{opacity:1;transform:translateY(0) scale(1)}78%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-4px) scale(1)}}`}</style>
+
+        {/* Похвала — над полем, своя на каждую съеденную */}
+        <div className="h-7 mb-1.5 flex items-end justify-center w-full pointer-events-none">
+          {started && !over && praise && (
+            <div key={praise + score} className="animate-[nfPraise_1.5s_ease-out]">
+              <LedText text={praise} className="h-[11px] md:h-[13px] w-auto" />
+            </div>
+          )}
+        </div>
       <div className="w-full max-w-[760px] flex flex-col items-center">
         <div ref={wrapRef} className="relative w-full h-[clamp(240px,46vh,400px)] rounded-xl border border-white/20 overflow-hidden">
           <canvas ref={canvasRef} className="absolute inset-0 w-full h-full touch-none" aria-hidden />
@@ -558,20 +567,6 @@ export default function NotFoundGame() {
             </div>
           )}
 
-          {/* Похвала — сверху по центру, своя на каждую съеденную */}
-          {started && !over && praise && (
-            <div key={praise + score} className="absolute top-3 left-1/2 -translate-x-1/2 pointer-events-none animate-[nfPraise_1.5s_ease-out]">
-              <LedText text={praise} className="h-[11px] md:h-[13px] w-auto" />
-            </div>
-          )}
-
-          {/* Подсказка про пасхалку — после 25 съеденных */}
-          {started && !over && hint && (
-            <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 w-[94%] max-w-[560px] rounded-lg bg-black/55 px-3 py-2 pointer-events-none flex flex-col items-center gap-1.5">
-              <LedText text="ПАСХАЛКА НА ГЛАВНОЙ" className="h-[8px] md:h-[9px] w-auto" />
-              <LedText text="ЖМИ ЛОГО В ПОРЯДКЕ РАБОТЫ ЕГОРА" className="h-[6px] md:h-[7px] w-auto" />
-            </div>
-          )}
 
           {/* Экран проигрыша */}
           {over && (
@@ -619,6 +614,14 @@ export default function NotFoundGame() {
             </div>
           )}
         </div>
+
+        {/* Подсказка про пасхалку — под полем, после 25 съеденных */}
+        {started && !over && hint && (
+          <div className="mt-3 w-full max-w-[560px] rounded-lg bg-white/[0.04] border border-[#A6FF00]/15 px-3 py-2.5 flex flex-col items-center gap-1.5 text-center">
+            <LedText text="ПАСХАЛКА НА ГЛАВНОЙ" className="h-[8px] md:h-[9px] w-auto" />
+            <LedText text="ЖМИ ЛОГО В ПОРЯДКЕ РАБОТЫ ЕГОРА" className="h-[6px] md:h-[7px] w-auto" />
+          </div>
+        )}
 
         {/* D-pad для телефона */}
         {started && !over && (
