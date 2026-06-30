@@ -931,11 +931,12 @@ const EGGS: { id: string; label: string }[] = [
   { id: "constellation", label: "Созвездие" },
   { id: "cta", label: "Кнопка «не нажимать»" },
   { id: "logo", label: "Лого ЕШ" },
+  { id: "dog", label: "Песик" },
 ];
 const EGG_IDS = new Set(EGGS.map((e) => e.id));
 // Зафиксированный total счётчика. НЕ берём длину списка — растёт явным числом,
-// когда сам решаешь раскрыть новые. Сейчас 7.
-const EGG_TOTAL = 7;
+// когда сам решаешь раскрыть новые. Сейчас 8.
+const EGG_TOTAL = 8;
 const EGG_STORE_KEY = "egg-hunt-found-v1";
 const EGG_FIRST_KEY = "egg-hunt-first-at"; // момент первой найденной пасхалки (для времени в доске)
 const EGG_SUBMITTED_KEY = "egg-hunt-submitted"; // ник уже отправлен в лидерборд
@@ -986,6 +987,127 @@ function fireEggHuntFinale() {
   confetti({ particleCount: 90, spread: 70, startVelocity: 55, origin: { x: 0, y: 1 }, angle: 60, colors: lime });
   confetti({ particleCount: 90, spread: 70, startVelocity: 55, origin: { x: 1, y: 1 }, angle: 120, colors: lime });
   setTimeout(() => confetti({ particleCount: 120, spread: 100, startVelocity: 45, origin: { x: 0.5, y: 0.7 }, colors: lime }), 250);
+}
+
+// ── Отзывы ──────────────────────────────────────────────────────────────────
+// linkedin: вставить URL профиля (пусто = иконка не показывается).
+// dog: альт-фото — клик по аватару меняет его (пасхалка «песик», шлёт egg:found).
+type Testimonial = {
+  quote: string;
+  name: string;
+  role: string;
+  avatar: string;
+  linkedin?: string;
+  dog?: string;
+};
+const TESTIMONIALS: Testimonial[] = [
+  {
+    quote:
+      "Инноватор, шарит за ИИ. Уравновешенный — принимает только хорошо обдуманные решения. Собирает сильные команды, строит отлаженные процессы. И при этом очень приятный человек.",
+    name: "Никита Вишневский",
+    role: "Управляющий директор, Райффайзен (ранее — МТС)",
+    avatar: "/images/testimonials/vishnevsky.jpeg",
+    linkedin: "",
+  },
+  {
+    quote:
+      "Работал с Егором и в Газпром нефти и когда он был в МТС. Лучше чем Егора найти трудно. Он легенда дизайна, ИИ и менеджмента.",
+    name: "Егор Гончарук",
+    role: "Руководитель проектного офиса, Газпром Нефть",
+    avatar: "/images/testimonials/goncharuk.png",
+    linkedin: "",
+    dog: "/images/testimonials/goncharuk2.png",
+  },
+  {
+    quote:
+      "С Егором сложные задачи решаются легче, сильные hard skills сочетаются с редким умением выстраивать процессы, которые реально работают. Егор искренне болеет за результат и делает всё, чтобы его достичь.",
+    name: "Семён Речмедин",
+    role: "CPO Eva, МегаФон (ранее — CPO голосовой экосистемы)",
+    avatar: "/images/testimonials/rechmedin.jpg",
+    linkedin: "",
+  },
+];
+
+function TestimonialCard({ t }: { t: Testimonial }) {
+  const [showDog, setShowDog] = useState(false);
+  return (
+    <motion.div
+      variants={fadeUp}
+      className="shrink-0 w-[85vw] sm:w-[60vw] md:w-auto snap-start md:snap-align-none relative h-full p-6 md:p-7 rounded-2xl border border-white/[0.06] bg-[#0f0f0e] hover:border-[#A6FF00]/20 transition-colors duration-300 flex flex-col overflow-hidden"
+    >
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage:
+            "radial-gradient(rgba(255,255,255,0.07) 1.1px, transparent 1.2px)",
+          backgroundSize: "13px 13px",
+          maskImage:
+            "radial-gradient(ellipse 70% 80% at 90% 8%, black, transparent 70%)",
+          WebkitMaskImage:
+            "radial-gradient(ellipse 70% 80% at 90% 8%, black, transparent 70%)",
+        }}
+      />
+      <span className="relative mb-5 text-[#C9A66B]/70" aria-hidden>
+        <LedText text='"' scale={2} dot={1.45} className="h-[18px] w-auto" />
+      </span>
+      <p className="text-white/75 text-[16px] md:text-[16px] leading-relaxed mb-7 md:mb-8">
+        {t.quote}
+      </p>
+      <div className="mt-auto pt-5 md:pt-6 border-t border-white/[0.06] flex items-center gap-4">
+        {t.dog ? (
+          <button
+            type="button"
+            onClick={() => {
+              setShowDog((v) => !v);
+              foundEgg("dog");
+            }}
+            aria-label={showDog ? `Вернуть фото: ${t.name}` : "Показать сюрприз"}
+            className="relative shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-full overflow-hidden border border-white/[0.08] bg-white/[0.04] cursor-pointer p-0"
+          >
+            <Image
+              src={showDog ? t.dog : t.avatar}
+              alt={showDog ? "Песик" : t.name}
+              fill
+              sizes="56px"
+              className="object-cover"
+            />
+          </button>
+        ) : (
+          <div className="relative shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-full overflow-hidden border border-white/[0.08] bg-white/[0.04]">
+            <Image
+              src={t.avatar}
+              alt={t.name}
+              fill
+              sizes="56px"
+              className="object-cover"
+            />
+          </div>
+        )}
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[16px] text-white font-medium leading-tight">
+              {t.name}
+            </span>
+            {t.linkedin ? (
+              <a
+                href={t.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`LinkedIn — ${t.name}`}
+                className="text-white/35 hover:text-[#A6FF00] transition-colors"
+              >
+                <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="currentColor" aria-hidden>
+                  <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.35V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.22.79 24 1.77 24h20.45c.98 0 1.78-.78 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z" />
+                </svg>
+              </a>
+            ) : null}
+          </div>
+          <div className="text-[12.5px] text-white/50 mt-1 leading-snug">{t.role}</div>
+        </div>
+      </div>
+    </motion.div>
+  );
 }
 
 export default function PreviewHome() {
@@ -1733,70 +1855,8 @@ export default function PreviewHome() {
             variants={stagger}
             className="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 overflow-x-auto md:overflow-visible snap-x snap-mandatory -mx-5 px-5 md:mx-0 md:px-0 pb-2 md:pb-0 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
-            {[
-              {
-                quote:
-                  "Инноватор, шарит за ИИ. Уравновешенный — принимает только хорошо обдуманные решения. Собирает сильные команды, строит отлаженные процессы. И при этом очень приятный человек.",
-                name: "Никита Вишневский",
-                role: "Управляющий директор, Райффайзен (ранее — МТС)",
-                avatar: "/images/testimonials/vishnevsky.jpeg",
-              },
-              {
-                quote:
-                  "Работал с Егором и в Газпром нефти и когда он был в МТС. Лучше чем Егора найти трудно. Он легенда дизайна, ИИ и менеджмента.",
-                name: "Егор Гончарук",
-                role: "Руководитель проектного офиса, Газпром Нефть",
-                avatar: "/images/testimonials/goncharuk.png",
-              },
-              {
-                quote:
-                  "С Егором сложные задачи решаются легче, сильные hard skills сочетаются с редким умением выстраивать процессы, которые реально работают. Егор искренне болеет за результат и делает всё, чтобы его достичь.",
-                name: "Семён Речмедин",
-                role: "CPO Eva, МегаФон (ранее — CPO голосовой экосистемы)",
-                avatar: "/images/testimonials/rechmedin.jpg",
-              },
-            ].map((t) => (
-              <motion.div
-                key={t.name}
-                variants={fadeUp}
-                className="shrink-0 w-[85vw] sm:w-[60vw] md:w-auto snap-start md:snap-align-none relative h-full p-6 md:p-7 rounded-2xl border border-white/[0.06] bg-[#0f0f0e] hover:border-[#A6FF00]/20 transition-colors duration-300 flex flex-col overflow-hidden"
-              >
-                <div
-                  aria-hidden
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    backgroundImage:
-                      "radial-gradient(rgba(255,255,255,0.07) 1.1px, transparent 1.2px)",
-                    backgroundSize: "13px 13px",
-                    maskImage:
-                      "radial-gradient(ellipse 70% 80% at 90% 8%, black, transparent 70%)",
-                    WebkitMaskImage:
-                      "radial-gradient(ellipse 70% 80% at 90% 8%, black, transparent 70%)",
-                  }}
-                />
-                <span className="relative mb-5 text-[#C9A66B]/70" aria-hidden>
-                  <LedText text='"' scale={2} dot={1.45} className="h-[18px] w-auto" />
-                </span>
-                <p className="text-white/75 text-[16px] md:text-[16px] leading-relaxed mb-7 md:mb-8">
-                  {t.quote}
-                </p>
-                {/* mt-auto прижимает подпись к низу карточки — выравнивает подписи в обоих кейсах */}
-                <div className="mt-auto pt-5 md:pt-6 border-t border-white/[0.06] flex items-center gap-4">
-                  <div className="relative shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-full overflow-hidden border border-white/[0.08] bg-white/[0.04]">
-                    <Image
-                      src={t.avatar}
-                      alt={t.name}
-                      fill
-                      sizes="56px"
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-[16px] text-white font-medium leading-tight">{t.name}</div>
-                    <div className="text-[12.5px] text-white/50 mt-1 leading-snug">{t.role}</div>
-                  </div>
-                </div>
-              </motion.div>
+            {TESTIMONIALS.map((t) => (
+              <TestimonialCard key={t.name} t={t} />
             ))}
           </motion.div>
         </motion.div>
