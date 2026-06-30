@@ -16,14 +16,14 @@ import { layoutLedText, LED_ROWS } from "@/components/ledFont";
 const CFG = {
   cell: 10,        // шаг решётки огня (px)
   dot: 0.4,        // радиус точки огня на максимуме тепла (доли cell)
-  cooling: 0.72,   // охлаждение → высота языков (больше = короче)
-  wind: 0.7,
+  cooling: 0.83,   // охлаждение → высота языков (больше = короче, не накрывает буквы)
+  wind: 0.6,
   source: 0.5,
-  flareFreq: 0.4,
-  flareAmp: 0.7,
-  density: 0.22,   // порог отрисовки (больше = реже пламя)
+  flareFreq: 0.3,
+  flareAmp: 0.5,
+  density: 0.24,   // порог отрисовки (больше = реже пламя)
   bright: 1.05,
-  textW: 0.62,     // целевая ширина текста (доля ширины hero)
+  textW: 0.66,     // целевая ширина текста (доля ширины hero)
   textH: 0.3,      // максимум высоты блока текста (доля высоты hero)
   textCenter: 0.4, // центр блока текста по высоте (доля)
 };
@@ -155,7 +155,7 @@ export default function PixelFire({ text, className = "" }: { text?: string; cla
       // чёрные буквы — мелкий чёткий вырез поверх своего пламени
       if (hasText && blackDots.length) {
         const p = new Path2D();
-        const rr = tpx * 0.6;
+        const rr = tpx * 0.82;
         for (let i = 0; i < blackDots.length; i += 2) {
           p.moveTo(blackDots[i] + rr, blackDots[i + 1]);
           p.arc(blackDots[i], blackDots[i + 1], rr, 0, 6.283);
