@@ -11,6 +11,7 @@ import { useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import ConstellationFigures from "./ConstellationFigures";
 import ParticlePortrait from "./ParticlePortrait";
+import { MENTORING_LEVEL } from "@/lib/optics";
 
 const PORTRAIT = [{ src: "/images/hero-portrait.png", depth: "/images/hero-depth.png" }];
 
@@ -31,6 +32,8 @@ export default function MentoringPanel({ className = "" }: { className?: string 
           >
             <ConstellationFigures
               className="absolute inset-0"
+              level={MENTORING_LEVEL}
+              lockMirror
               onSolve={() => {
                 // дать догореть победной вспышке, затем сменить на портрет
                 window.setTimeout(() => setPhase("portrait"), 950);

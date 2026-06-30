@@ -140,6 +140,27 @@ export function targetHits(segs: Seg[], targetsPx: Target[], hitr = HITR): boole
   );
 }
 
+/** Логический размер поля — игра и редактор считают в нём (uniform-scale). */
+export const FIELD_W = 360;
+export const FIELD_H = 380;
+
+/** Боевой уровень менторинга: зеркало и цели зафиксированы, двигаются только камни. */
+export const MENTORING_LEVEL: Level = {
+  emitter: { x: 0.5, y: 0.08 },
+  stones: [
+    { minus: "amber", plus: "lime", x: 0.623, y: 0.552 },
+    { minus: "cyan", plus: "magenta", x: 0.399, y: 0.546 },
+    { minus: "lime", plus: "cyan", x: 0.491, y: 0.32 },
+  ],
+  mirror: { x: 0.397, y: 0.862, ang: -2.621 },
+  targets: [
+    { key: "amber", x: 0.928, y: 0.784 },
+    { key: "cyan", x: 0.925, y: 0.555 },
+    { key: "magenta", x: 0.089, y: 0.758 },
+    { key: "lime", x: 0.617, y: 0.776 },
+  ],
+};
+
 /** Уровень по умолчанию (доли панели). Белый узел на стволе — тоже надо зажечь. */
 export const DEFAULT_LEVEL: Level = {
   emitter: { x: 0.5, y: 0.08 },
