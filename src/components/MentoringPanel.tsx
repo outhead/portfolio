@@ -19,7 +19,7 @@ export default function MentoringPanel({ className = "" }: { className?: string 
   const ref = useRef<HTMLDivElement>(null);
 
   return (
-    <div ref={ref} className={className} style={{ position: "relative" }}>
+    <div ref={ref} className={className}>
       <AnimatePresence mode="wait">
         {phase === "play" ? (
           <motion.div
