@@ -1,17 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
  * Блок «Подход» с кнопкой «Расшифровать на человеческий».
- * По клику технический текст сменяется простой «человеческой» версией, которая
- * плавно собирается по словам: fade + лёгкий blur-in + сдвиг вверх, словами по
- * очереди (stagger). Анимация — чистый CSS @keyframes с per-word animation-delay,
- * запускается сама при появлении слов (без rAF/таймеров, не зависит от вкладки).
+ * По клику технический текст сменяется простой «человеческой» версией. Текст
+ * проявляется тем же шрифтом через быстрый перебор рандомных букв с оседанием
+ * по символам слева направо — как клик по цифрам-счётчикам на главной
+ * (см. LedCounter): каждый символ крутит случайные буквы, потом «застывает».
  * Повторный клик возвращает технический текст.
  *
  * Уважает prefers-reduced-motion: при включённом — мгновенная замена.
  */
+
+// Пул для перебора: кириллица + цифры. Из него берём случайный символ на тик.
+const SCRAMBLE_POOL = "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЭЮЯ0123456789";
+const randPoolChar = () =>
+  SCRAMBLE_POOL[Math.floor(Math.random() * SCRAMBLE_POOL.length)];
 
 type Seg = { text: string; bold: boolean };
 
@@ -34,6 +39,82 @@ function parseParagraphs(text: string): Seg[][] {
     .map(parseSegments);
 }
 
+/**
+ * Перебор букв по символам. Все скрэмблируемые символы (буквы/цифры) получают
+ * глобальный индекс; settleAt растёт слева направо (stagger). Пока t < settleAt —
+ * показываем случайный символ из пула, после — настоящий. Пробелы и пунктуация
+ * остаются на месте. Тик 45мс, как у счётчиков на главной.
+ */
+function ScrambleParagraphs({ paras }: { paras: Seg[][] }) {
+  const proseSimple = "leading-relaxed text-base md:text-xl";
+
+  // Глобальная индексация скрэмблируемых символов для stagger-оседания.
+  let gi = 0;
+  const model = paras.map((segs) =>
+    segs.map((seg) => ({
+      bold: seg.bold,
+      chars: Array.from(seg.text).map((ch) => {
+        const scramble = /[0-9A-Za-zА-Яа-яЁё]/.test(ch);
+        return { ch, scramble, idx: scramble ? gi++ : -1 };
+      }),
+    }))
+  );
+  const total = gi;
+
+  const STAGGER = 12; // мс на символ — скорость «волны» оседания
+  const SCRAMBLE_MS = 320; // сколько символ крутится до своей точки оседания
+  const TICK = 45;
+  const dur = total * STAGGER + SCRAMBLE_MS;
+
+  const [t, setT] = useState(() => {
+    if (typeof window === "undefined") return dur; // SSR — сразу финал
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? dur : 0;
+  });
+  const [tick, setTick] = useState(0); // форсит ре-рандом на каждом кадре
+  const startRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (t >= dur) return;
+    startRef.current = performance.now();
+    const id = setInterval(() => {
+      const elapsed = performance.now() - (startRef.current ?? 0);
+      setTick((v) => v + 1);
+      if (elapsed >= dur) {
+        clearInterval(id);
+        setT(dur);
+      } else {
+        setT(elapsed);
+      }
+    }, TICK);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  void tick; // зависимость для перерисовки — рандом считается при рендере
+
+  return (
+    <div className="space-y-3">
+      {model.map((segs, pi) => (
+        <p key={pi} className={proseSimple}>
+          {segs.map((seg, si) => (
+            <span
+              key={si}
+              className={seg.bold ? "text-[#A6FF00] font-semibold" : "text-white/80"}
+            >
+              {seg.chars.map((c, k) => {
+                if (!c.scramble) return <span key={k}>{c.ch}</span>;
+                const settleAt = c.idx * STAGGER + SCRAMBLE_MS;
+                const settled = t >= settleAt;
+                return <span key={k}>{settled ? c.ch : randPoolChar()}</span>;
+              })}
+            </span>
+          ))}
+        </p>
+      ))}
+    </div>
+  );
+}
+
 export default function DecryptApproach({
   technical,
   simple,
@@ -47,7 +128,6 @@ export default function DecryptApproach({
   const simpleParas = parseParagraphs(simple);
 
   const proseTech = "text-white/65 leading-relaxed text-sm md:text-base";
-  const proseSimple = "leading-relaxed text-base md:text-xl";
 
   const renderTech = () => (
     <div className="space-y-3 decrypt-fadeswap">
@@ -67,49 +147,9 @@ export default function DecryptApproach({
     </div>
   );
 
-  // Простая версия: каждое слово — inline-block с CSS-анимацией wordIn и
-  // нарастающей задержкой (stagger). Пробелы сохраняются как есть.
-  const renderSimple = () => {
-    let wi = 0;
-    const STAGGER = 16; // ms на слово
-    const MAX_DELAY = 1100; // потолок, чтобы длинный текст не тянулся вечно
-    return (
-      <div className="space-y-3">
-        {simpleParas.map((segs, pi) => (
-          <p key={pi} className={proseSimple}>
-            {segs.map((seg, si) => {
-              const parts = seg.text.split(/(\s+)/);
-              return (
-                <span
-                  key={si}
-                  className={seg.bold ? "text-[#A6FF00] font-semibold" : "text-white/80"}
-                >
-                  {parts.map((part, k) => {
-                    if (/^\s+$/.test(part) || part === "") return part;
-                    const delay = Math.min(wi * STAGGER, MAX_DELAY);
-                    wi++;
-                    return (
-                      <span
-                        key={k}
-                        className="decrypt-word"
-                        style={{ animationDelay: `${delay}ms` }}
-                      >
-                        {part}
-                      </span>
-                    );
-                  })}
-                </span>
-              );
-            })}
-          </p>
-        ))}
-      </div>
-    );
-  };
-
   return (
     <div>
-      {revealed ? renderSimple() : renderTech()}
+      {revealed ? <ScrambleParagraphs paras={simpleParas} /> : renderTech()}
 
       <button
         type="button"
