@@ -431,14 +431,14 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                     На мобилке всегда 2 колонки, на десктопе — ровно по числу callouts (max 4). */}
                 {section.callouts && section.callouts.length > 0 && (
                   <div
-                    className={`mt-7 grid grid-cols-2 gap-px bg-white/[0.04] rounded-md overflow-hidden ${
+                    className={`mt-7 grid gap-px bg-white/[0.04] rounded-md overflow-hidden ${
                       section.callouts.length === 1
-                        ? "md:grid-cols-1"
+                        ? "grid-cols-1"
                         : section.callouts.length === 2
-                        ? "md:grid-cols-2"
+                        ? "grid-cols-2"
                         : section.callouts.length === 3
-                        ? "md:grid-cols-3"
-                        : "md:grid-cols-4"
+                        ? "grid-cols-1 sm:grid-cols-3"
+                        : "grid-cols-2 md:grid-cols-4"
                     }`}
                   >
                     {section.callouts.map((c) => (
