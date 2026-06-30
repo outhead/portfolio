@@ -1007,7 +1007,7 @@ const TESTIMONIALS: Testimonial[] = [
     name: "Никита Вишневский",
     role: "Управляющий директор, Райффайзен (ранее — МТС)",
     avatar: "/images/testimonials/vishnevsky.jpeg",
-    linkedin: "",
+    linkedin: "https://www.linkedin.com/in/nikita-vishnevskiy/",
   },
   {
     quote:
@@ -1024,7 +1024,7 @@ const TESTIMONIALS: Testimonial[] = [
     name: "Семён Речмедин",
     role: "CPO Eva, МегаФон (ранее — CPO голосовой экосистемы)",
     avatar: "/images/testimonials/rechmedin.jpg",
-    linkedin: "",
+    linkedin: "https://www.linkedin.com/in/rechmedin/",
   },
 ];
 
