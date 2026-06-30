@@ -157,11 +157,26 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
             )}
           </div>
         )}
-        {/* Пиксельный огонь: пламя из букв слогана, сами буквы — чёрный вырез */}
+        {/* Пиксельный огонь (только десктоп lg+): пламя из букв слогана, буквы — чёрный вырез */}
         {project.heroFire && (
-          <div className="absolute inset-0 z-[4] pointer-events-none">
+          <div className="absolute inset-0 z-[4] pointer-events-none hidden lg:block">
             <span className="sr-only">{(project.heroSlogan ?? "").replace(/\n/g, " ")}</span>
             <PixelFire text={project.heroSlogan} className="absolute inset-0 w-full h-full" />
+          </div>
+        )}
+        {/* Мобайл/планшет (<lg): чистый зелёный слоган без огня — огонь там тесно и ломается */}
+        {project.heroFire && project.heroSlogan && (
+          <div className="absolute inset-x-0 top-0 bottom-[34%] z-[4] flex flex-col items-center justify-center gap-2 px-6 pointer-events-none animate-fade-in-up lg:hidden">
+            {project.heroSlogan.split("\n").map((line, i) => (
+              <LedLines
+                key={i}
+                text={line}
+                center
+                maxChars={40}
+                lineClass="h-[13px] md:h-[18px]"
+                className="text-[#A6FF00]/90 [filter:drop-shadow(0_2px_6px_rgba(0,0,0,0.85))_drop-shadow(0_0_16px_rgba(166,255,0,0.5))]"
+              />
+            ))}
           </div>
         )}
         {/* Градиент уравновешивает контраст под текст hero. При огне — мягче,

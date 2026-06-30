@@ -158,7 +158,7 @@ export default function PixelFire({ text, className = "" }: { text?: string; cla
       // чёрные буквы — мелкий чёткий вырез поверх своего пламени
       if (hasText && blackDots.length) {
         const p = new Path2D();
-        const rr = tpx * 0.82;
+        const rr = tpx * 0.6;
         for (let i = 0; i < blackDots.length; i += 2) {
           p.moveTo(blackDots[i] + rr, blackDots[i + 1]);
           p.arc(blackDots[i], blackDots[i + 1], rr, 0, 6.283);
