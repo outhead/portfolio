@@ -81,10 +81,10 @@ export default function PixelFire({ text, className = "" }: { text?: string; cla
           if (!d.lit) continue;
           const px = ox + d.col * tpx, py = yTop + d.row * tpx;
           blackDots.push(px + tpx / 2, py + tpx / 2);
-          // эмиттер огня ниже самих букв на emitDrop пиксельных рядов
+          // эмиттер сплошняком от буквы вниз на emitDrop рядов — без тёмного зазора под текстом
           const ey = py + C.emitDrop * tpx;
           const c0 = Math.floor(px / C.cell), c1 = Math.floor((px + tpx - 1) / C.cell);
-          const r0 = Math.floor(ey / C.cell), r1 = Math.floor((ey + tpx - 1) / C.cell);
+          const r0 = Math.floor(py / C.cell), r1 = Math.floor((ey + tpx - 1) / C.cell);
           for (let cc = c0; cc <= c1; cc++)
             for (let rr = r0; rr <= r1; rr++)
               if (cc >= 0 && cc < cols && rr >= 0 && rr < rows) mask[rr * cols + cc] = 1;
