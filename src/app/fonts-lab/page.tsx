@@ -136,7 +136,7 @@ export default function FontsLab() {
           <div className="flex justify-start gap-12 md:gap-16">
             {[
               { v: "30", l: "запусков" },
-              { v: "7", l: "лет опыта" },
+              { v: "11", l: "лет в дизайне" },
               { v: "27", l: "команд" },
             ].map((m) => (
               <div key={m.l} className="flex flex-col gap-4">

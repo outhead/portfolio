@@ -1345,7 +1345,7 @@ export default function PreviewHome() {
                 <div className="relative w-full flex justify-center gap-8 md:gap-14 lg:gap-6 xl:gap-12">
                   {[
                     { v: "30", l: "запусков" },
-                    { v: "7", l: "лет опыта" },
+                    { v: "11", l: "лет в дизайне" },
                     { v: "27", l: "команд" },
                   ].map((m, i) => (
                     <div

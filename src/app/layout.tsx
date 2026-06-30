@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://shugaev.vercel.app"),
   title: "Егор Шугаев — Дизайн-директор · Консультант · Ментор",
   description:
-    "7 лет в дизайне в бигтехе России: МТС (Art Director B2C и Design Director), Ozon (Community Lead), Газпром Нефть (Head of Design), MWS AI (AI Visioner). 11М+ пользователей, 100+ дизайнеров, CX Award 2024. Сейчас — консультирую, advisory, менторинг.",
+    "11 лет в дизайне, 7 в руководстве в бигтехе России: МТС (Art Director B2C и Design Director), Ozon (Community Lead), Газпром Нефть (Head of Design), MWS AI (AI Visioner). 11М+ пользователей, 100+ дизайнеров, CX Award 2024. Сейчас — консультирую, advisory, менторинг.",
   keywords: [
     "дизайн-директор",
     "head of design",
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Егор Шугаев — Дизайн-директор · Консультант · Ментор",
     description:
-      "7 лет в дизайне в бигтехе: МТС, Ozon, Газпром Нефть, MWS AI. 11М+ пользователей, 100+ дизайнеров, CX Award 2024.",
+      "11 лет в дизайне, 7 в руководстве в бигтехе: МТС, Ozon, Газпром Нефть, MWS AI. 11М+ пользователей, 100+ дизайнеров, CX Award 2024.",
     type: "website",
     locale: "ru_RU",
     url: "https://shugaev.vercel.app",
@@ -60,7 +60,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Егор Шугаев — Дизайн-директор · Консультант · Ментор",
-    description: "7 лет в дизайне в бигтехе. Сейчас — консультирую, advisory, менторинг.",
+    description: "11 лет в дизайне, 7 в руководстве в бигтехе. Сейчас — консультирую, advisory, менторинг.",
     images: ["/og-image.png"],
   },
 };
@@ -171,7 +171,7 @@ export default function RootLayout({
                 "CX Awards 2024 - Unified Service Portal (ESO) Design",
               ],
               description:
-                "Дизайн-директор с 11 годами опыта в крупнейших технологических компаниях России: МТС (Art Director B2C-экосистемы, Design Director), Ozon (Community Lead), Газпром Нефть (Head of Design, CX Award 2024), MWS AI (AI Visioner). Специалист в дизайн-системах, управлении дизайн-командами и AI-продуктах. Сейчас на свободном графике: менторинг, консалтинг, независимые проекты.",
+                "Дизайн-директор с 11 годами в дизайне и 7 в руководстве в крупнейших технологических компаниях России: МТС (Art Director B2C-экосистемы, Design Director), Ozon (Community Lead), Газпром Нефть (Head of Design, CX Award 2024), MWS AI (AI Visioner). Специалист в дизайн-системах, управлении дизайн-командами и AI-продуктах. Сейчас на свободном графике: менторинг, консалтинг, независимые проекты.",
             }),
           }}
         />
