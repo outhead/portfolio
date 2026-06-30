@@ -377,6 +377,10 @@ export default function LedLogo({ className }: { className?: string }) {
             playing.current = true;
             playStart.current = performance.now();
           }
+          // Пасхалка «лого-центр» — засчитываем в счётчик главной.
+          try {
+            window.dispatchEvent(new CustomEvent("egg:found", { detail: "logo" }));
+          } catch {}
         }}
       />
     </svg>

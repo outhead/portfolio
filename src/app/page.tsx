@@ -930,11 +930,12 @@ const EGGS: { id: string; label: string }[] = [
   { id: "egg", label: "Яйцо" },
   { id: "constellation", label: "Созвездие" },
   { id: "cta", label: "Кнопка «не нажимать»" },
+  { id: "logo", label: "Лого ЕШ" },
 ];
 const EGG_IDS = new Set(EGGS.map((e) => e.id));
 // Зафиксированный total счётчика. НЕ берём длину списка — растёт явным числом,
-// когда сам решаешь раскрыть новые. Сейчас 6.
-const EGG_TOTAL = 6;
+// когда сам решаешь раскрыть новые. Сейчас 7.
+const EGG_TOTAL = 7;
 const EGG_STORE_KEY = "egg-hunt-found-v1";
 const EGG_FIRST_KEY = "egg-hunt-first-at"; // момент первой найденной пасхалки (для времени в доске)
 const EGG_SUBMITTED_KEY = "egg-hunt-submitted"; // ник уже отправлен в лидерборд
