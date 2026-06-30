@@ -301,7 +301,7 @@ export function LedCounter({
       className={`appearance-none bg-transparent border-none p-0 cursor-pointer self-start ${className}`}
       style={{ color: tone }}
     >
-      <LedText text={disp} scale={2} dot={1.45} className="h-[32px] md:h-[40px] w-auto" />
+      <LedText text={disp} scale={2} dot={1.45} className="h-[32px] md:h-[40px] lg:h-[36px] xl:h-[40px] w-auto" />
     </button>
   );
 }

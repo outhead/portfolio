@@ -1342,7 +1342,7 @@ export default function PreviewHome() {
             {/* ── В цифрах: LED-счётчики + тихий граф из точек ── */}
             <motion.div variants={fadeUp} className="col-span-12 lg:col-span-5">
               <Oled className="h-full p-5 md:p-7 flex items-center">
-                <div className="relative w-full flex justify-center gap-8 md:gap-14 lg:gap-6 xl:gap-12">
+                <div className="relative w-full flex justify-center gap-8 md:gap-14 lg:gap-2 xl:gap-3 2xl:gap-12">
                   {[
                     { v: "30", l: "запусков" },
                     { v: "11", l: "лет в дизайне" },
@@ -1356,7 +1356,7 @@ export default function PreviewHome() {
                       <LedCounter value={m.v} tone="#C9A66B" />
                       <span className="text-white/40">
                         <span className="sr-only">{m.l}</span>
-                        <LedText text={m.l} className="h-[9px] w-auto" />
+                        <LedText text={m.l} className="h-[9px] lg:h-[8px] xl:h-[9px] w-auto" />
                       </span>
                     </div>
                   ))}
@@ -1365,7 +1365,7 @@ export default function PreviewHome() {
             </motion.div>
 
             {/* ── Награда: тёплая золотая LED-матрица, ссылка на кейс ── */}
-            <motion.div variants={fadeUp} className="col-span-12 md:col-span-5">
+            <motion.div variants={fadeUp} className="col-span-12 lg:col-span-5">
               <Link
                 href="/cases/gazprom-neft"
                 aria-label="Открыть кейс Газпром Нефть — CX Awards 2024"
@@ -1434,7 +1434,7 @@ export default function PreviewHome() {
             </motion.div>
 
             {/* ── Экспертиза: бары активности, ссылка на #skills ── */}
-            <motion.div variants={fadeUp} className="col-span-12 md:col-span-7">
+            <motion.div variants={fadeUp} className="col-span-12 lg:col-span-7">
               <Link
                 href="#skills"
                 aria-label="Перейти к экспертизе"
