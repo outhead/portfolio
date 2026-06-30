@@ -18,10 +18,9 @@ const SCRAMBLE_POOL = "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЭЮЯ0
 const randPoolChar = () =>
   SCRAMBLE_POOL[Math.floor(Math.random() * SCRAMBLE_POOL.length)];
 
-const STAGGER = 12; // мс на символ — скорость «волны» оседания
-const STAGGER_OUT = 7; // мс на символ — скорость «волны» рассыпания техтекста
-const SCRAMBLE_MS = 320; // сколько символ крутится до своей точки оседания
-const TICK = 45; // частота кадров перебора
+const CHAR_STEP = 5; // мс между стартами соседних символов (скорость волны)
+const CHAR_WINDOW = 240; // мс перебора одного символа от исходной до конечной буквы
+const TICK = 33; // частота кадров перебора (~30fps)
 const isScrambleable = (ch: string) => /[0-9A-Za-zА-Яа-яЁё]/.test(ch);
 
 type Seg = { text: string; bold: boolean };
@@ -45,55 +44,23 @@ function parseParagraphs(text: string): Seg[][] {
     .map(parseSegments);
 }
 
-// Модель параграфов с глобальным индексом скрэмблируемых символов (для stagger).
-function buildModel(paras: Seg[][]) {
-  let gi = 0;
-  const model = paras.map((segs) =>
-    segs.map((seg) => ({
-      bold: seg.bold,
-      chars: Array.from(seg.text).map((ch) => {
-        const scramble = isScrambleable(ch);
-        return { ch, scramble, idx: scramble ? gi++ : -1 };
-      }),
-    }))
-  );
-  return { model, count: gi };
-}
+type Cell = { fromCh: string; fromBold: boolean; toCh: string; toBold: boolean };
 
-type Model = ReturnType<typeof buildModel>["model"];
-
-function renderModel(
-  model: Model,
-  prose: string,
-  glyph: (c: { ch: string; scramble: boolean; idx: number }) => string
-) {
-  return (
-    <div className="space-y-3">
-      {model.map((segs, pi) => (
-        <p key={pi} className={prose}>
-          {segs.map((seg, si) => (
-            <span
-              key={si}
-              className={seg.bold ? "text-white/90 font-semibold" : undefined}
-            >
-              {seg.chars.map((c, k) => (
-                <span key={k}>{c.scramble ? glyph(c) : c.ch}</span>
-              ))}
-            </span>
-          ))}
-        </p>
-      ))}
-    </div>
-  );
+function flattenChars(segs: Seg[] | undefined): { ch: string; bold: boolean }[] {
+  if (!segs) return [];
+  const out: { ch: string; bold: boolean }[] = [];
+  for (const seg of segs)
+    for (const ch of Array.from(seg.text)) out.push({ ch, bold: seg.bold });
+  return out;
 }
 
 /**
- * Расшифровка в два слитных этапа, БЕЗ мгновенной подмены текста:
- *  1) буквы технического текста (то, что на экране) на своих местах уходят в
- *     перебор слева направо — «начинают расшифровываться»;
- *  2) из перебора слева направо оседает простой текст.
- * Структура (тех → простой) меняется в момент пикового шума, поэтому рывок не
- * виден. Тик 45мс, как у счётчиков на главной. prefers-reduced-motion — сразу финал.
+ * Непрерывная расшифровка БЕЗ стыка этапов: каждый символ на своём месте идёт по
+ * одному таймлайну «буква техтекста → перебор рандомных букв → буква простого».
+ * Лишние символы техтекста растворяются (→ пусто), недостающие проявляются из
+ * перебора. Старт волны — слева направо/сверху вниз по глобальному индексу.
+ * Структура не переключается посреди анимации, поэтому рывка нет.
+ * prefers-reduced-motion — сразу финал.
  */
 function DecryptReveal({
   techParas,
@@ -104,12 +71,27 @@ function DecryptReveal({
   simpleParas: Seg[][];
   prose: string;
 }) {
-  const tech = buildModel(techParas);
-  const simple = buildModel(simpleParas);
-
-  const dissolveDur = tech.count * STAGGER_OUT + 140; // тех уходит в шум
-  const settleDur = simple.count * STAGGER + SCRAMBLE_MS; // простой оседает
-  const total = dissolveDur + settleDur;
+  // Позиции по параграфам: на каждый p — max длины тех/простого; глобальный g.
+  const nParas = Math.max(techParas.length, simpleParas.length);
+  let g = 0;
+  const paras: { cells: Cell[]; g0: number }[] = [];
+  for (let p = 0; p < nParas; p++) {
+    const from = flattenChars(techParas[p]);
+    const to = flattenChars(simpleParas[p]);
+    const len = Math.max(from.length, to.length);
+    const cells: Cell[] = [];
+    for (let j = 0; j < len; j++) {
+      cells.push({
+        fromCh: from[j]?.ch ?? "",
+        fromBold: from[j]?.bold ?? false,
+        toCh: to[j]?.ch ?? "",
+        toBold: to[j]?.bold ?? false,
+      });
+    }
+    paras.push({ cells, g0: g });
+    g += len;
+  }
+  const total = (g > 0 ? g - 1 : 0) * CHAR_STEP + CHAR_WINDOW;
 
   const [t, setT] = useState(() => {
     if (typeof window === "undefined") return total;
@@ -137,17 +119,36 @@ function DecryptReveal({
 
   void tick; // форсит ре-рандом на каждом кадре
 
-  // Этап 1: технический текст рассыпается в шум слева направо.
-  if (t < dissolveDur) {
-    return renderModel(tech.model, prose, (c) =>
-      t < c.idx * STAGGER_OUT ? c.ch : randPoolChar()
-    );
-  }
+  const glyph = (cell: Cell, gi: number): { ch: string; bold: boolean } => {
+    const startT = gi * CHAR_STEP;
+    const endT = startT + CHAR_WINDOW;
+    if (t < startT) return { ch: cell.fromCh, bold: cell.fromBold };
+    if (t >= endT) return { ch: cell.toCh, bold: cell.toBold };
+    const past = t >= (startT + endT) / 2;
+    const bold = past ? cell.toBold : cell.fromBold;
+    if (isScrambleable(cell.fromCh) || isScrambleable(cell.toCh))
+      return { ch: randPoolChar(), bold };
+    return { ch: past ? cell.toCh : cell.fromCh, bold };
+  };
 
-  // Этап 2: из шума слева направо собирается простой текст.
-  const tt = t - dissolveDur;
-  return renderModel(simple.model, prose, (c) =>
-    tt >= c.idx * STAGGER + SCRAMBLE_MS ? c.ch : randPoolChar()
+  return (
+    <div className="space-y-3">
+      {paras.map((para, pi) => (
+        <p key={pi} className={prose}>
+          {para.cells.map((cell, k) => {
+            const { ch, bold } = glyph(cell, para.g0 + k);
+            return (
+              <span
+                key={k}
+                className={bold ? "text-white/90 font-semibold" : undefined}
+              >
+                {ch}
+              </span>
+            );
+          })}
+        </p>
+      ))}
+    </div>
   );
 }
 
