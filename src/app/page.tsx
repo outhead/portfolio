@@ -12,7 +12,7 @@ import PixelCubePile from "@/components/PixelCubePile";
 import PixelPhoto from "@/components/PixelPhoto";
 import LedGridBurst from "@/components/LedGridBurst";
 import BioRotator from "@/components/BioRotator";
-import ConstellationFigures from "@/components/ConstellationFigures";
+import MentoringPanel from "@/components/MentoringPanel";
 import { TypographyFix } from "@/components/TypographyFix";
 import { workProjects } from "@/data/projects";
 import { Plus } from "lucide-react";
@@ -1911,10 +1911,10 @@ export default function PreviewHome() {
                       />
                     </h3>
                     <p className="text-[16px] text-white/72 leading-relaxed max-w-lg">
-                      Больше 40 сессий за плечами. Разбираем развилки роста: как
-                      дотянуть до лида, собрать команду, защитить проект перед топами.
-                      Готового ответа на каждую у меня нет, но почти всегда есть
-                      похожий опыт, через который уже проходил.
+                      Больше 40 менти, а сессий ещё больше. Разбираем развилки роста:
+                      как дотянуть до лида, собрать команду, защитить проект перед
+                      топами. Готового ответа на каждую у меня нет, но почти всегда
+                      есть похожий опыт, через который уже проходил.
                     </p>
                   </div>
                   <span className="inline-flex items-center gap-2 text-[#A6FF00] mt-8 pt-6 border-t border-white/[0.08]">
@@ -1926,9 +1926,9 @@ export default function PreviewHome() {
                     />
                   </span>
                 </button>
-                {/* Правая часть — созвездие из облака точек, клик = пасхалка */}
+                {/* Правая часть — головоломка с лучом; решил → 3D-портрет из точек */}
                 <div className="relative hidden md:block border-l border-white/[0.06] bg-black/20">
-                  <ConstellationFigures className="absolute inset-0" />
+                  <MentoringPanel className="absolute inset-0" />
                 </div>
               </div>
             </div>

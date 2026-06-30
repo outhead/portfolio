@@ -1,30 +1,32 @@
 "use client";
 
 /* ─────────────────────────────────────────────────────────────────
- * ConstellationFigures — мини-головоломка «луч развилки» в LED-стиле.
- * Эмиттер сверху пускает луч. По умолчанию луч идёт вниз в центральный
- * узел (сеньор-лид) — путь уже есть. На поле лежит ДЕЛИТЕЛЬ (призма):
- * перетащи его на луч — луч расщепляется натрое, боковые ветви зажигают
- * два боковых узла. Все три цели зажжены → «срабатывает»: вспышка +
- * пасхалка egg:found("constellation"). Луч можно крутить (сбивает цель).
- * Без параллакса/мерцания (статичный фон). Canvas, DPR≤1.5, 40fps-кап,
- * IO-пауза, prefers-reduced-motion рисует решённое состояние.
+ * ConstellationFigures — мини-головоломка «двойное разделение луча».
+ * Эмиттер сверху пускает луч. Два ДЕЛИТЕЛЯ (ромбы) надо перетащить на
+ * луч: первый расщепляет ствол на боковые ветви + центр; второй ставится
+ * на центральную ветвь и расщепляет её ещё раз. Нужно зажечь все 4 узла.
+ * Луч можно крутить (сбивает прицел). Все цели зажжены → onSolve() +
+ * пасхалка egg:found("constellation"). Без параллакса/мерцания.
+ * Canvas, DPR≤1.5, 40fps-кап, IO-пауза, prefers-reduced-motion.
  * ──────────────────────────────────────────────────────────────── */
 
 import { useEffect, useRef } from "react";
 
 type Pt = { x: number; y: number };
 
-const GREEN = "166,255,0"; // #A6FF00
+const GREEN = "166,255,0";
 const DIM = "120,128,108";
 const GRID = "150,160,138";
 
-const EM_F: Pt = { x: 0.5, y: 0.11 }; // эмиттер
-const GOAL_F: Pt = { x: 0.5, y: 0.66 }; // центральная цель
-const SPLIT_Y = 0.42; // каноническая высота делителя
-const SIDE_Y = 0.7; // высота боковых целей
-const SPREAD = (40 * Math.PI) / 180; // угол расщепления
-const HITR = 17; // допуск попадания (px)
+const EM_F: Pt = { x: 0.5, y: 0.1 };
+const SA_Y = 0.34; // каноническая высота делителя A
+const SB_Y = 0.56; // делителя B
+const TOP_Y = 0.5; // высота верхних целей
+const BOT_Y = 0.8; // высота нижних целей
+const SPREAD = (38 * Math.PI) / 180;
+const SPREAD2 = (33 * Math.PI) / 180;
+const THR = 15; // допуск «делитель на луче» (px)
+const HITR = 17; // допуск попадания в цель (px)
 
 const rot = (v: Pt, a: number): Pt => ({
   x: v.x * Math.cos(a) - v.y * Math.sin(a),
@@ -40,8 +42,16 @@ function segDist(px: number, py: number, ax: number, ay: number, bx: number, by:
   return Math.hypot(px - (ax + dx * t), py - (ay + dy * t));
 }
 
-export default function ConstellationFigures({ className = "" }: { className?: string }) {
+export default function ConstellationFigures({
+  className = "",
+  onSolve,
+}: {
+  className?: string;
+  onSolve?: () => void;
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const solveCb = useRef(onSolve);
+  solveCb.current = onSolve;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -59,16 +69,13 @@ export default function ConstellationFigures({ className = "" }: { className?: s
     let lastDraw = 0;
     const start = performance.now();
 
-    // ── состояние игры ──────────────────────────────────────────
-    let theta = 0; // угол луча (0 = строго вниз)
+    let theta = 0;
     let EM: Pt = { x: 0, y: 0 };
-    let GOAL: Pt = { x: 0, y: 0 };
-    let LEFT: Pt = { x: 0, y: 0 };
-    let RIGHT: Pt = { x: 0, y: 0 };
-    let splitter: Pt = { x: 0, y: 0 }; // позиция делителя (px)
-    let drag: "beam" | "split" | null = null;
-    let solved = false, solveT = -1, firedEgg = false;
-    // статичная решётка фона
+    let TL: Pt = { x: 0, y: 0 }, TR: Pt = { x: 0, y: 0 };
+    let BL: Pt = { x: 0, y: 0 }, BR: Pt = { x: 0, y: 0 };
+    let spA: Pt = { x: 0, y: 0 }, spB: Pt = { x: 0, y: 0 };
+    let drag: "beam" | "A" | "B" | null = null;
+    let solved = false, solveT = -1, fired = false;
     let lattice: Pt[] = [];
 
     const F = (o: Pt): Pt => ({ x: o.x * W, y: o.y * H });
@@ -83,17 +90,15 @@ export default function ConstellationFigures({ className = "" }: { className?: s
       ctx!.shadowBlur = 0;
     }
 
-    // дотовый луч-сегмент
-    function beam(ax: number, ay: number, bx: number, by: number, color: string, gap = 6, r = 1.5) {
-      const len = Math.hypot(bx - ax, by - ay);
+    function beam(a: Pt, b: Pt, color: string, gap = 6, r = 1.5) {
+      const len = Math.hypot(b.x - a.x, b.y - a.y);
       const n = Math.max(1, Math.round(len / gap));
       for (let s = 0; s <= n; s++) {
         const t = s / n;
-        dot(ax + (bx - ax) * t, ay + (by - ay) * t, r, color);
+        dot(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, r, color);
       }
     }
 
-    // пиксельное кольцо-узел
     function node(p: Pt, R: number, color: string, fill = 0) {
       for (let a = 0; a < Math.PI * 2; a += 0.5)
         dot(p.x + Math.cos(a) * R, p.y + Math.sin(a) * R, 1.3, color);
@@ -101,12 +106,9 @@ export default function ConstellationFigures({ className = "" }: { className?: s
     }
 
     function diamond(p: Pt, s: number, color: string) {
-      // пиксельный ромб-делитель
-      ctx!.fillStyle = color;
       for (let i = -s; i <= s; i++) {
         const w = s - Math.abs(i);
-        for (let j = -w; j <= w; j += 2)
-          dot(p.x + j, p.y + i, 1.1, color);
+        for (let j = -w; j <= w; j += 2) dot(p.x + j, p.y + i, 1.1, color);
       }
     }
 
@@ -122,9 +124,7 @@ export default function ConstellationFigures({ className = "" }: { className?: s
       ctx!.stroke();
     }
 
-    // ── геометрия луча ──────────────────────────────────────────
     function exit(o: Pt, d: Pt): Pt {
-      // точка выхода луча за пределы панели
       let t = 1e9;
       if (d.x > 1e-4) t = Math.min(t, (W - o.x) / d.x);
       else if (d.x < -1e-4) t = Math.min(t, -o.x / d.x);
@@ -133,84 +133,89 @@ export default function ConstellationFigures({ className = "" }: { className?: s
       return { x: o.x + d.x * t, y: o.y + d.y * t };
     }
 
-    type Seg = { a: Pt; b: Pt };
-    function geometry(): { segs: Seg[]; active: boolean; split: Pt | null } {
+    type Geo = {
+      d: Pt;
+      aOn: boolean; bOn: boolean;
+      A: Pt | null; B: Pt | null;
+      trunkEnd: Pt;
+      aLend: Pt; aRend: Pt; cEnd: Pt; bLend: Pt; bRend: Pt;
+    };
+
+    function geometry(): Geo {
       const d: Pt = { x: Math.sin(theta), y: Math.cos(theta) };
-      // проекция делителя на луч
-      const tx = splitter.x - EM.x, ty = splitter.y - EM.y;
-      const proj = tx * d.x + ty * d.y;
-      const nearest = { x: EM.x + d.x * proj, y: EM.y + d.y * proj };
-      const perp = Math.hypot(splitter.x - nearest.x, splitter.y - nearest.y);
-      const active = proj > 24 && proj < Math.hypot(W, H) && perp < 16;
+      // делитель A на стволе?
+      const ax = spA.x - EM.x, ay = spA.y - EM.y;
+      const ap = ax * d.x + ay * d.y;
+      const aN = { x: EM.x + d.x * ap, y: EM.y + d.y * ap };
+      const aOn = ap > 24 && Math.hypot(spA.x - aN.x, spA.y - aN.y) < THR;
+      const A = aOn ? aN : null;
 
-      if (!active) {
-        return { segs: [{ a: EM, b: exit(EM, d) }], active: false, split: null };
+      const cOrigin = A ?? EM;
+      // делитель B на центральной ветви (после A)?
+      let bOn = false, B: Pt | null = null;
+      if (aOn) {
+        const bx = spB.x - cOrigin.x, by = spB.y - cOrigin.y;
+        const bp = bx * d.x + by * d.y;
+        const bN = { x: cOrigin.x + d.x * bp, y: cOrigin.y + d.y * bp };
+        bOn = bp > 16 && Math.hypot(spB.x - bN.x, spB.y - bN.y) < THR;
+        if (bOn) B = bN;
       }
-      const S = nearest;
-      const dl = rot(d, -SPREAD), drr = rot(d, SPREAD);
-      return {
-        segs: [
-          { a: EM, b: S }, // ствол
-          { a: S, b: exit(S, d) }, // центр
-          { a: S, b: exit(S, dl) }, // левая ветвь
-          { a: S, b: exit(S, drr) }, // правая ветвь
-        ],
-        active: true,
-        split: S,
-      };
-    }
 
-    function hits(segs: Seg[], tgt: Pt) {
-      for (const s of segs) {
-        // цель должна быть «по ходу» — между началом и концом сегмента
-        if (segDist(tgt.x, tgt.y, s.a.x, s.a.y, s.b.x, s.b.y) < HITR) return true;
-      }
-      return false;
+      const trunkEnd = A ?? exit(EM, d);
+      const aLend = A ? exit(A, rot(d, -SPREAD)) : EM;
+      const aRend = A ? exit(A, rot(d, SPREAD)) : EM;
+      const cEnd = B ?? exit(cOrigin, d);
+      const bLend = B ? exit(B, rot(d, -SPREAD2)) : EM;
+      const bRend = B ? exit(B, rot(d, SPREAD2)) : EM;
+
+      return { d, aOn, bOn, A, B, trunkEnd, aLend, aRend, cEnd, bLend, bRend };
     }
 
     function draw(now: number) {
       if (stopped) return;
       const tt = (now - start) / 1000;
       ctx!.clearRect(0, 0, W, H);
-
-      // статичный фон-решётка (без мерцания)
       for (const g of lattice) dot(g.x, g.y, 0.8, `rgba(${GRID},0.05)`);
 
-      const { segs, active, split } = geometry();
+      const G = geometry();
+      const lit = `rgba(${GREEN},0.85)`;
+      const dim = `rgba(${DIM},0.7)`;
 
       // попадания
-      const hG = hits([segs[1] ?? segs[0]], GOAL) || (!active && hits(segs, GOAL));
-      const hL = active && hits([segs[2]], LEFT);
-      const hR = active && hits([segs[3]], RIGHT);
-      const allHit = hG && hL && hR;
-      if (allHit && !solved) {
+      const hTL = G.aOn && segDist(TL.x, TL.y, G.A!.x, G.A!.y, G.aLend.x, G.aLend.y) < HITR;
+      const hTR = G.aOn && segDist(TR.x, TR.y, G.A!.x, G.A!.y, G.aRend.x, G.aRend.y) < HITR;
+      const hBL = G.bOn && segDist(BL.x, BL.y, G.B!.x, G.B!.y, G.bLend.x, G.bLend.y) < HITR;
+      const hBR = G.bOn && segDist(BR.x, BR.y, G.B!.x, G.B!.y, G.bRend.x, G.bRend.y) < HITR;
+      const all = hTL && hTR && hBL && hBR;
+      if (all && !solved) {
         solved = true; solveT = now;
-        if (!firedEgg) {
-          firedEgg = true;
+        if (!fired) {
+          fired = true;
           try { window.dispatchEvent(new CustomEvent("egg:found", { detail: "constellation" })); } catch {}
+          solveCb.current?.();
         }
       }
-      if (!allHit && solved) { solved = false; solveT = -1; }
 
-      // лучи: горящие — зелёные, ствол чуть мягче
-      const litColor = `rgba(${GREEN},0.85)`;
-      beam(segs[0].a.x, segs[0].a.y, segs[0].b.x, segs[0].b.y, active ? litColor : litColor, 6, 1.6);
-      if (active) {
-        beam(segs[1].a.x, segs[1].a.y, segs[1].b.x, segs[1].b.y, hG ? litColor : `rgba(${DIM},0.7)`, 6, 1.5);
-        beam(segs[2].a.x, segs[2].a.y, segs[2].b.x, segs[2].b.y, hL ? litColor : `rgba(${DIM},0.7)`, 6, 1.5);
-        beam(segs[3].a.x, segs[3].a.y, segs[3].b.x, segs[3].b.y, hR ? litColor : `rgba(${DIM},0.7)`, 6, 1.5);
+      // ствол
+      beam(EM, G.trunkEnd, lit, 6, 1.6);
+      if (G.aOn && G.A) {
+        beam(G.A, G.aLend, hTL ? lit : dim, 6, 1.5);
+        beam(G.A, G.aRend, hTR ? lit : dim, 6, 1.5);
+        beam(G.A, G.cEnd, lit, 6, 1.5);
+        if (G.bOn && G.B) {
+          beam(G.B, G.bLend, hBL ? lit : dim, 6, 1.5);
+          beam(G.B, G.bRend, hBR ? lit : dim, 6, 1.5);
+        }
       }
 
-      // бегущий импульс по горящим лучам (направленный, не дрожь)
+      // бегущие импульсы по горящим ветвям
       if (!reduce) {
         const pp = (tt * 0.55) % 1;
-        const pulseSeg = (s: Seg) => dot(s.a.x + (s.b.x - s.a.x) * pp, s.a.y + (s.b.y - s.a.y) * pp, 2.4, "rgba(207,255,122,0.95)", 12);
-        if (!active) { if (hG) pulseSeg(segs[0]); }
-        else {
-          if (hG) pulseSeg(segs[1]);
-          if (hL) pulseSeg(segs[2]);
-          if (hR) pulseSeg(segs[3]);
-        }
+        const pulse = (a: Pt, b: Pt) => dot(a.x + (b.x - a.x) * pp, a.y + (b.y - a.y) * pp, 2.4, "rgba(207,255,122,0.95)", 12);
+        if (hTL && G.A) pulse(G.A, G.aLend);
+        if (hTR && G.A) pulse(G.A, G.aRend);
+        if (hBL && G.B) pulse(G.B, G.bLend);
+        if (hBR && G.B) pulse(G.B, G.bRend);
       }
 
       // эмиттер
@@ -218,39 +223,33 @@ export default function ConstellationFigures({ className = "" }: { className?: s
       dot(EM.x, EM.y, 2.2, `rgba(${GREEN},0.9)`, 8);
 
       // цели
-      const target = (p: Pt, hit: boolean, big = false) => {
+      const target = (p: Pt, hit: boolean) => {
         if (hit) {
-          dot(p.x, p.y, big ? 12 : 9, `rgba(${GREEN},0.10)`, big ? 24 : 16);
-          dot(p.x, p.y, big ? 5 : 4, `rgba(${GREEN},0.95)`, 14);
+          dot(p.x, p.y, 9, `rgba(${GREEN},0.10)`, 16);
+          dot(p.x, p.y, 4, `rgba(${GREEN},0.95)`, 14);
           dot(p.x, p.y, 2, "rgba(234,255,176,1)", 8);
-          node(p, big ? 9 : 7, `rgba(${GREEN},0.8)`);
+          node(p, 7, `rgba(${GREEN},0.8)`);
         } else {
-          node(p, big ? 9 : 7, `rgba(${DIM},0.55)`, 0.3);
+          node(p, 7, `rgba(${DIM},0.5)`, 0.25);
         }
       };
-      target(GOAL, hG, true);
-      target(LEFT, hL);
-      target(RIGHT, hR);
+      target(TL, hTL); target(TR, hTR); target(BL, hBL); target(BR, hBR);
 
-      // делитель
-      diamond(splitter, 7, active ? `rgba(${GREEN},0.95)` : `rgba(${GRID},0.6)`);
-      if (active && split) node(split, 5, `rgba(${GREEN},0.7)`);
+      // делители
+      diamond(spA, 7, G.aOn ? `rgba(${GREEN},0.95)` : `rgba(${GRID},0.6)`);
+      diamond(spB, 6, G.bOn ? `rgba(${GREEN},0.95)` : `rgba(${GRID},0.55)`);
 
-      // угловые декали (статичные); рамка зеленеет на решении
-      corner(0.9, 0.2, 11, solved ? `rgba(${GREEN},0.6)` : `rgba(${GRID},0.28)`);
-      dot(0.12 * W, 0.86 * H, 1.4, `rgba(${GRID},0.3)`);
-      dot(0.12 * W + 5, 0.86 * H, 1, `rgba(${GRID},0.2)`);
+      corner(0.9, 0.18, 11, solved ? `rgba(${GREEN},0.6)` : `rgba(${GRID},0.28)`);
 
-      // вспышка успеха (одноразовая, направленная)
+      // вспышка успеха
       if (solved && solveT >= 0) {
         const bp = (now - solveT) / 1100;
         if (bp < 1) {
-          const g = GOAL;
-          const wr = bp * Math.hypot(W, H) * 0.5;
-          ctx!.strokeStyle = `rgba(${GREEN},${(1 - bp) * 0.5})`;
+          const wr = bp * Math.hypot(W, H) * 0.55;
+          ctx!.strokeStyle = `rgba(${GREEN},${(1 - bp) * 0.55})`;
           ctx!.lineWidth = 2;
           ctx!.beginPath();
-          ctx!.arc(g.x, g.y, wr, 0, Math.PI * 2);
+          ctx!.arc(EM.x, EM.y + H * 0.4, wr, 0, Math.PI * 2);
           ctx!.stroke();
         }
       }
@@ -275,51 +274,45 @@ export default function ConstellationFigures({ className = "" }: { className?: s
       ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
 
       EM = F(EM_F);
-      GOAL = F(GOAL_F);
-      // боковые цели = куда канонически бьют ветви при вертикальном луче и делителе на SPLIT_Y
-      const Sx = EM.x, Sy = SPLIT_Y * H;
-      const dl = rot({ x: 0, y: 1 }, -SPREAD), drr = rot({ x: 0, y: 1 }, SPREAD);
-      const kL = (SIDE_Y * H - Sy) / dl.y, kR = (SIDE_Y * H - Sy) / drr.y;
-      LEFT = { x: Sx + dl.x * kL, y: SIDE_Y * H };
-      RIGHT = { x: Sx + drr.x * kR, y: SIDE_Y * H };
+      const d = { x: 0, y: 1 };
+      const SA = { x: EM.x, y: SA_Y * H };
+      const dAl = rot(d, -SPREAD), dAr = rot(d, SPREAD);
+      TL = { x: SA.x + dAl.x * ((TOP_Y * H - SA.y) / dAl.y), y: TOP_Y * H };
+      TR = { x: SA.x + dAr.x * ((TOP_Y * H - SA.y) / dAr.y), y: TOP_Y * H };
+      const SB = { x: EM.x, y: SB_Y * H };
+      const dBl = rot(d, -SPREAD2), dBr = rot(d, SPREAD2);
+      BL = { x: SB.x + dBl.x * ((BOT_Y * H - SB.y) / dBl.y), y: BOT_Y * H };
+      BR = { x: SB.x + dBr.x * ((BOT_Y * H - SB.y) / dBr.y), y: BOT_Y * H };
 
-      // решётка фона (шаг 14px, статичная)
       lattice = [];
       const step = 14;
       for (let y = step; y < H; y += step)
         for (let x = step; x < W; x += step) lattice.push({ x, y });
 
-      if (reduce || drag === null) {
-        // если игрок ещё не трогал — делитель лежит сбоку (путь к центру уже горит)
-        if (!solved && drag === null && splitter.x === 0)
-          splitter = { x: 0.72 * W, y: 0.26 * H };
-      }
-      if (reduce) {
-        // решённое статичное состояние
-        splitter = { x: EM.x, y: SPLIT_Y * H };
-        draw(start + 3000);
-      }
+      // стартовые позиции делителей — в углах снизу, не на луче
+      if (spA.x === 0) spA = { x: 0.18 * W, y: 0.9 * H };
+      if (spB.x === 0) spB = { x: 0.82 * W, y: 0.9 * H };
+
+      if (reduce) draw(start + 3000);
     }
 
     function pos(e: PointerEvent): Pt {
       const rect = canvas!.getBoundingClientRect();
       return { x: e.clientX - rect.left, y: e.clientY - rect.top };
     }
-
     function onDown(e: PointerEvent) {
       const p = pos(e);
-      if (Math.hypot(p.x - splitter.x, p.y - splitter.y) < 22) drag = "split";
-      else {
-        drag = "beam";
-        theta = clamp(Math.atan2(p.x - EM.x, p.y - EM.y), -0.7, 0.7);
-      }
+      if (Math.hypot(p.x - spA.x, p.y - spA.y) < 22) drag = "A";
+      else if (Math.hypot(p.x - spB.x, p.y - spB.y) < 22) drag = "B";
+      else { drag = "beam"; theta = clamp(Math.atan2(p.x - EM.x, p.y - EM.y), -0.7, 0.7); }
       try { canvas!.setPointerCapture(e.pointerId); } catch {}
       if (reduce) draw(performance.now());
     }
     function onMove(e: PointerEvent) {
       if (!drag) return;
       const p = pos(e);
-      if (drag === "split") splitter = { x: clamp(p.x, 8, W - 8), y: clamp(p.y, 8, H - 8) };
+      if (drag === "A") spA = { x: clamp(p.x, 8, W - 8), y: clamp(p.y, 8, H - 8) };
+      else if (drag === "B") spB = { x: clamp(p.x, 8, W - 8), y: clamp(p.y, 8, H - 8) };
       else theta = clamp(Math.atan2(p.x - EM.x, p.y - EM.y), -0.7, 0.7);
       if (reduce) draw(performance.now());
     }
@@ -361,7 +354,7 @@ export default function ConstellationFigures({ className = "" }: { className?: s
       ref={canvasRef}
       className={className}
       style={{ width: "100%", height: "100%", display: "block", cursor: "grab", touchAction: "none" }}
-      aria-label="Головоломка: перетащи делитель на луч и зажги все три узла"
+      aria-label="Головоломка: перетащи два делителя на луч и зажги все четыре узла"
       role="img"
     />
   );
