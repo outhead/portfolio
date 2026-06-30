@@ -183,28 +183,32 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
           </div>
         )}
 
+        {/* Breadcrumb — наверх hero, чтобы не копился стопкой в нижнем углу */}
+        <Link
+          href="/#portfolio"
+          className="absolute top-0 left-0 z-[6] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] pt-20 md:pt-24 inline-flex items-center gap-2 text-white/35 no-underline hover:text-white/65 transition-colors"
+        >
+          <LedText text="←" className="h-[11px] w-auto" />
+          <span className="sr-only">Все проекты</span>
+          <LedText text="Все проекты" className="h-[9px] w-auto" />
+        </Link>
+
+        {/* Низ hero: заголовок слева, роль/год справа на одной базовой линии */}
         <div className="relative z-[5] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] pb-10 md:pb-16 w-full animate-fade-in-up">
-          {/* Breadcrumb */}
-          <Link
-            href="/#portfolio"
-            className="inline-flex items-center gap-2 text-white/35 no-underline hover:text-white/65 transition-colors mb-8"
-          >
-            <LedText text="←" className="h-[11px] w-auto" />
-            <span className="sr-only">Все проекты</span>
-            <LedText text="Все проекты" className="h-[9px] w-auto" />
-          </Link>
-
-          <div className="text-white/35 mb-2">
-            <span className="sr-only">{project.company}</span>
-            <LedText text={project.company} className="h-[10px] w-auto" />
+          <div className="flex items-end justify-between gap-x-8 gap-y-4 flex-wrap">
+            <div className="min-w-0">
+              <div className="text-white/35 mb-2">
+                <span className="sr-only">{project.company}</span>
+                <LedText text={project.company} className="h-[10px] w-auto" />
+              </div>
+              <h1 className="text-white">
+                <LedLines text={project.title} maxChars={32} lineClass="h-[18px] md:h-[30px]" />
+              </h1>
+            </div>
+            <p className="text-[16px] tracking-[0.05em] text-white/40 uppercase shrink-0 pb-1">
+              {project.role} · {project.period}
+            </p>
           </div>
-          <h1 className="mb-5 text-white">
-            <LedLines text={project.title} maxChars={32} lineClass="h-[18px] md:h-[30px]" />
-          </h1>
-          <p className="text-[16px] tracking-[0.05em] text-white/40 uppercase">
-            {project.role} · {project.period}
-          </p>
-
         </div>
       </section>
 
