@@ -871,7 +871,7 @@ function Toolbox() {
 
           <motion.div
             variants={stagger}
-            className="grid grid-cols-4 md:grid-cols-8 gap-2.5 md:gap-3"
+            className="grid grid-cols-4 lg:grid-cols-8 gap-2.5 md:gap-3"
           >
             {tools.map((t) => (
               <motion.div
