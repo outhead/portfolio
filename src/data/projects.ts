@@ -67,6 +67,11 @@ export interface Project {
    */
   heroSlogan?: string;
   /**
+   * Если true — на фоне hero рендерится зелёный пиксельный огонь (PixelFire).
+   * Для кейса про диодный шрифт: «шрифт горит» в прямом смысле.
+   */
+  heroFire?: boolean;
+  /**
    * Если задан — на странице кейса под results-баром рендерится заметная
    * лаймовая CTA-кнопка «Попробовать вживую» (для проектов с живым демо).
    */
@@ -824,7 +829,8 @@ export const projects: Project[] = [
     type: "experiment",
     coverColor: "#0a0a0a",
     coverLed: ["диодный шрифт", "89 глифов", "5×7 точек", "весь сайт"],
-    heroSlogan: "РУКОПИСИ НЕ ГОРЯТ. ЭТОТ ШРИФТ — ГОРИТ",
+    heroSlogan: "РУКОПИСИ НЕ ГОРЯТ.\nА ВОТ ЭТОТ ШРИФТ — ГОРИТ",
+    heroFire: true,
     metric: "89",
     metricLabel: "глифов · свой движок",
     tryUrl: "/led",

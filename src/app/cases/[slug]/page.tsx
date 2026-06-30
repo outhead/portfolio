@@ -17,6 +17,7 @@ import FontSpecimen from "@/components/FontSpecimen";
 import ParticleStudio from "@/components/ParticleStudio";
 import ParticlePortrait from "@/components/ParticlePortrait";
 import PixelCube3D from "@/components/PixelCube3D";
+import PixelFire from "@/components/PixelFire";
 
 /* Пиксельный лейбл секций кейса — единый язык с табло главной */
 function CaseLabel({
@@ -156,20 +157,29 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
             )}
           </div>
         )}
+        {/* Зелёный пиксельный огонь на фоне hero — «шрифт горит» */}
+        {project.heroFire && (
+          <div className="absolute inset-0 z-0 pointer-events-none">
+            <PixelFire className="absolute inset-0 w-full h-full" />
+          </div>
+        )}
         {/* Градиент уравновешивает контраст под текст hero, но не должен забивать обложку */}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-transparent" />
 
         {/* Слоган LED-шрифтом по центру пустой зоны hero — для кейсов без куба/обложки */}
         {project.heroSlogan && !heroCube && !project.coverParticles && !project.heroImage && !project.coverImage && !project.coverVideo && (
-          <div className="absolute inset-x-0 top-0 bottom-[34%] z-[4] flex items-center justify-center px-6 pointer-events-none animate-fade-in-up">
-            <span className="sr-only">{project.heroSlogan}</span>
-            <LedLines
-              text={project.heroSlogan}
-              center
-              maxChars={22}
-              lineClass="h-[16px] md:h-[24px]"
-              className="text-[#A6FF00]/80 drop-shadow-[0_0_16px_rgba(166,255,0,0.5)]"
-            />
+          <div className="absolute inset-x-0 top-0 bottom-[36%] z-[4] flex flex-col items-center justify-center gap-2 md:gap-3 px-6 pointer-events-none animate-fade-in-up">
+            <span className="sr-only">{project.heroSlogan.replace(/\n/g, " ")}</span>
+            {project.heroSlogan.split("\n").map((line, i) => (
+              <LedLines
+                key={i}
+                text={line}
+                center
+                maxChars={40}
+                lineClass="h-[16px] md:h-[24px]"
+                className="text-[#A6FF00]/90 [filter:drop-shadow(0_2px_6px_rgba(0,0,0,0.85))_drop-shadow(0_0_16px_rgba(166,255,0,0.5))]"
+              />
+            ))}
           </div>
         )}
 
