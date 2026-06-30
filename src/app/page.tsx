@@ -1399,7 +1399,7 @@ export default function PreviewHome() {
                     src="/images/gpn/prize.png"
                     alt=""
                     aria-hidden
-                    className="absolute right-5 md:right-9 top-1/2 -translate-y-1/2 h-[82%] lg:h-[64%] xl:h-[80%] w-auto pointer-events-none select-none"
+                    className="absolute right-5 md:right-9 top-1/2 -translate-y-1/2 h-auto w-auto max-h-[80%] lg:max-h-[64%] xl:max-h-[78%] max-w-[40%] lg:max-w-[34%] xl:max-w-[36%] pointer-events-none select-none"
                   />
                   {/* Тап по статуэтке = пасхалка «награда» (морф+автоскролл),
                       а не переход в кейс. Остальная карточка остаётся ссылкой. */}
@@ -1420,14 +1420,14 @@ export default function PreviewHome() {
                     dot={1.45}
                     className="relative h-[36px] md:h-[46px] w-auto self-start text-[#C9A66B]"
                   />
-                  <div className="relative mt-auto">
+                  <div className="relative mt-auto max-w-[56%] lg:max-w-[60%] xl:max-w-[58%]">
                     <div className="text-white/50">
                       <span className="sr-only">Customer Experience Awards</span>
-                      <LedText text="Customer Experience Awards" className="h-[10px] w-auto" />
+                      <LedText text="Customer Experience Awards" preserve="xMinYMid meet" className="h-[10px] w-auto max-w-full" />
                     </div>
                     <div className="mt-6 text-[#C9A66B]/80">
                       <span className="sr-only">Победитель в сегменте B2E</span>
-                      <LedText text="Победитель в сегменте B2E" className="h-[10px] w-auto" />
+                      <LedText text="Победитель в сегменте B2E" preserve="xMinYMid meet" className="h-[10px] w-auto max-w-full" />
                     </div>
                   </div>
                 </Oled>
