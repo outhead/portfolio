@@ -17,7 +17,6 @@ import FontSpecimen from "@/components/FontSpecimen";
 import ParticleStudio from "@/components/ParticleStudio";
 import ParticlePortrait from "@/components/ParticlePortrait";
 import PixelCube3D from "@/components/PixelCube3D";
-import PixelFire from "@/components/PixelFire";
 
 /* Пиксельный лейбл секций кейса — единый язык с табло главной */
 function CaseLabel({
@@ -157,35 +156,12 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
             )}
           </div>
         )}
-        {/* Пиксельный огонь (только десктоп lg+): пламя из букв слогана, буквы — чёрный вырез */}
-        {project.heroFire && (
-          <div className="absolute inset-0 z-[4] pointer-events-none hidden lg:block">
-            <span className="sr-only">{(project.heroSlogan ?? "").replace(/\n/g, " ")}</span>
-            <PixelFire text={project.heroSlogan} className="absolute inset-0 w-full h-full" />
-          </div>
-        )}
-        {/* Мобайл/планшет (<lg): чистый зелёный слоган без огня — огонь там тесно и ломается */}
-        {project.heroFire && project.heroSlogan && (
-          <div className="absolute inset-x-0 top-0 bottom-[34%] z-[4] flex flex-col items-center justify-center gap-2 px-6 pointer-events-none animate-fade-in-up lg:hidden">
-            {project.heroSlogan.split("\n").map((line, i) => (
-              <LedLines
-                key={i}
-                text={line}
-                center
-                maxChars={40}
-                lineClass="h-[13px] md:h-[18px]"
-                className="text-[#A6FF00]/90 [filter:drop-shadow(0_2px_6px_rgba(0,0,0,0.85))_drop-shadow(0_0_16px_rgba(166,255,0,0.5))]"
-              />
-            ))}
-          </div>
-        )}
-        {/* Градиент уравновешивает контраст под текст hero. При огне — мягче,
-            чтобы пламя снизу не забивалось чёрным. */}
-        <div className={`absolute inset-0 bg-gradient-to-t ${project.heroFire ? "from-black/55 via-black/10 to-transparent" : "from-black via-black/35 to-transparent"}`} />
+        {/* Градиент уравновешивает контраст под текст hero */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-transparent" />
 
-        {/* Слоган LED-шрифтом по центру (для кейсов без огня и без куба/обложки) */}
-        {project.heroSlogan && !project.heroFire && !heroCube && !project.coverParticles && !project.heroImage && !project.coverImage && !project.coverVideo && (
-          <div className="absolute inset-x-0 top-0 bottom-[36%] z-[4] flex flex-col items-center justify-center gap-2 md:gap-3 px-6 pointer-events-none animate-fade-in-up">
+        {/* Слоган LED-шрифтом по центру hero — крупно, на всех размерах */}
+        {project.heroSlogan && !heroCube && !project.coverParticles && !project.heroImage && !project.coverImage && !project.coverVideo && (
+          <div className="absolute inset-x-0 top-0 bottom-[34%] z-[4] flex flex-col items-center justify-center gap-2.5 md:gap-3.5 px-4 md:px-6 pointer-events-none animate-fade-in-up">
             <span className="sr-only">{project.heroSlogan.replace(/\n/g, " ")}</span>
             {project.heroSlogan.split("\n").map((line, i) => (
               <LedLines
@@ -193,7 +169,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                 text={line}
                 center
                 maxChars={40}
-                lineClass="h-[16px] md:h-[24px]"
+                lineClass="h-[16px] sm:h-[20px] md:h-[28px] lg:h-[34px]"
                 className="text-[#A6FF00]/90 [filter:drop-shadow(0_2px_6px_rgba(0,0,0,0.85))_drop-shadow(0_0_16px_rgba(166,255,0,0.5))]"
               />
             ))}

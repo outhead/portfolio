@@ -830,7 +830,6 @@ export const projects: Project[] = [
     coverColor: "#0a0a0a",
     coverLed: ["89 глифов", "5×7 точек", "весь сайт"],
     heroSlogan: "РУКОПИСИ НЕ ГОРЯТ.\nА ВОТ ЭТОТ ШРИФТ — ГОРИТ",
-    heroFire: true,
     metric: "89",
     metricLabel: "глифов · свой движок",
     tryUrl: "/led",
