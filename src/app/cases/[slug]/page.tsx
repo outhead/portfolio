@@ -166,9 +166,9 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
             <LedLines
               text={project.heroSlogan}
               center
-              maxChars={28}
-              lineClass="h-[12px] md:h-[16px]"
-              className="text-[#A6FF00]/75 drop-shadow-[0_0_12px_rgba(166,255,0,0.45)]"
+              maxChars={22}
+              lineClass="h-[16px] md:h-[24px]"
+              className="text-[#A6FF00]/80 drop-shadow-[0_0_16px_rgba(166,255,0,0.5)]"
             />
           </div>
         )}

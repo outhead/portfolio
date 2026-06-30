@@ -824,7 +824,7 @@ export const projects: Project[] = [
     type: "experiment",
     coverColor: "#0a0a0a",
     coverLed: ["диодный шрифт", "89 глифов", "5×7 точек", "весь сайт"],
-    heroSlogan: "ТЕКСТ НЕ НАБРАН — ОН ГОРИТ",
+    heroSlogan: "РУКОПИСИ НЕ ГОРЯТ. ЭТОТ ШРИФТ — ГОРИТ",
     metric: "89",
     metricLabel: "глифов · свой движок",
     tryUrl: "/led",
