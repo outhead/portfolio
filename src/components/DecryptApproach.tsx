@@ -19,6 +19,7 @@ const randPoolChar = () =>
   SCRAMBLE_POOL[Math.floor(Math.random() * SCRAMBLE_POOL.length)];
 
 const STAGGER = 12; // мс на символ — скорость «волны» оседания
+const STAGGER_OUT = 7; // мс на символ — скорость «волны» рассыпания техтекста
 const SCRAMBLE_MS = 320; // сколько символ крутится до своей точки оседания
 const TICK = 45; // частота кадров перебора
 const isScrambleable = (ch: string) => /[0-9A-Za-zА-Яа-яЁё]/.test(ch);
@@ -44,20 +45,8 @@ function parseParagraphs(text: string): Seg[][] {
     .map(parseSegments);
 }
 
-/**
- * Перебор букв по символам. Все скрэмблируемые символы (буквы/цифры) получают
- * глобальный индекс; settleAt растёт слева направо (stagger). Пока t < settleAt —
- * показываем случайный символ из пула, после — настоящий. Пробелы и пунктуация
- * остаются на месте. Тик 45мс, как у счётчиков на главной.
- */
-function ScrambleParagraphs({
-  paras,
-  prose,
-}: {
-  paras: Seg[][];
-  prose: string;
-}) {
-  // Глобальная индексация скрэмблируемых символов для stagger-оседания.
+// Модель параграфов с глобальным индексом скрэмблируемых символов (для stagger).
+function buildModel(paras: Seg[][]) {
   let gi = 0;
   const model = paras.map((segs) =>
     segs.map((seg) => ({
@@ -68,36 +57,16 @@ function ScrambleParagraphs({
       }),
     }))
   );
-  const total = gi;
+  return { model, count: gi };
+}
 
-  const dur = total * STAGGER + SCRAMBLE_MS;
+type Model = ReturnType<typeof buildModel>["model"];
 
-  const [t, setT] = useState(() => {
-    if (typeof window === "undefined") return dur; // SSR — сразу финал
-    return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? dur : 0;
-  });
-  const [tick, setTick] = useState(0); // форсит ре-рандом на каждом кадре
-  const startRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    if (t >= dur) return;
-    startRef.current = performance.now();
-    const id = setInterval(() => {
-      const elapsed = performance.now() - (startRef.current ?? 0);
-      setTick((v) => v + 1);
-      if (elapsed >= dur) {
-        clearInterval(id);
-        setT(dur);
-      } else {
-        setT(elapsed);
-      }
-    }, TICK);
-    return () => clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  void tick; // зависимость для перерисовки — рандом считается при рендере
-
+function renderModel(
+  model: Model,
+  prose: string,
+  glyph: (c: { ch: string; scramble: boolean; idx: number }) => string
+) {
   return (
     <div className="space-y-3">
       {model.map((segs, pi) => (
@@ -107,17 +76,78 @@ function ScrambleParagraphs({
               key={si}
               className={seg.bold ? "text-white/90 font-semibold" : undefined}
             >
-              {seg.chars.map((c, k) => {
-                if (!c.scramble) return <span key={k}>{c.ch}</span>;
-                const settleAt = c.idx * STAGGER + SCRAMBLE_MS;
-                const settled = t >= settleAt;
-                return <span key={k}>{settled ? c.ch : randPoolChar()}</span>;
-              })}
+              {seg.chars.map((c, k) => (
+                <span key={k}>{c.scramble ? glyph(c) : c.ch}</span>
+              ))}
             </span>
           ))}
         </p>
       ))}
     </div>
+  );
+}
+
+/**
+ * Расшифровка в два слитных этапа, БЕЗ мгновенной подмены текста:
+ *  1) буквы технического текста (то, что на экране) на своих местах уходят в
+ *     перебор слева направо — «начинают расшифровываться»;
+ *  2) из перебора слева направо оседает простой текст.
+ * Структура (тех → простой) меняется в момент пикового шума, поэтому рывок не
+ * виден. Тик 45мс, как у счётчиков на главной. prefers-reduced-motion — сразу финал.
+ */
+function DecryptReveal({
+  techParas,
+  simpleParas,
+  prose,
+}: {
+  techParas: Seg[][];
+  simpleParas: Seg[][];
+  prose: string;
+}) {
+  const tech = buildModel(techParas);
+  const simple = buildModel(simpleParas);
+
+  const dissolveDur = tech.count * STAGGER_OUT + 140; // тех уходит в шум
+  const settleDur = simple.count * STAGGER + SCRAMBLE_MS; // простой оседает
+  const total = dissolveDur + settleDur;
+
+  const [t, setT] = useState(() => {
+    if (typeof window === "undefined") return total;
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? total : 0;
+  });
+  const [tick, setTick] = useState(0);
+  const startRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (t >= total) return;
+    startRef.current = performance.now();
+    const id = setInterval(() => {
+      const elapsed = performance.now() - (startRef.current ?? 0);
+      setTick((v) => v + 1);
+      if (elapsed >= total) {
+        clearInterval(id);
+        setT(total);
+      } else {
+        setT(elapsed);
+      }
+    }, TICK);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  void tick; // форсит ре-рандом на каждом кадре
+
+  // Этап 1: технический текст рассыпается в шум слева направо.
+  if (t < dissolveDur) {
+    return renderModel(tech.model, prose, (c) =>
+      t < c.idx * STAGGER_OUT ? c.ch : randPoolChar()
+    );
+  }
+
+  // Этап 2: из шума слева направо собирается простой текст.
+  const tt = t - dissolveDur;
+  return renderModel(simple.model, prose, (c) =>
+    tt >= c.idx * STAGGER + SCRAMBLE_MS ? c.ch : randPoolChar()
   );
 }
 
@@ -173,7 +203,11 @@ export default function DecryptApproach({
           aria-hidden={!revealed}
         >
           {revealed ? (
-            <ScrambleParagraphs paras={simpleParas} prose={prose} />
+            <DecryptReveal
+              techParas={techParas}
+              simpleParas={simpleParas}
+              prose={prose}
+            />
           ) : (
             renderParas(simpleParas)
           )}
