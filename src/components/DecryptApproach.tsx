@@ -45,9 +45,13 @@ function parseParagraphs(text: string): Seg[][] {
  * показываем случайный символ из пула, после — настоящий. Пробелы и пунктуация
  * остаются на месте. Тик 45мс, как у счётчиков на главной.
  */
-function ScrambleParagraphs({ paras }: { paras: Seg[][] }) {
-  const proseSimple = "leading-relaxed text-base md:text-xl";
-
+function ScrambleParagraphs({
+  paras,
+  prose,
+}: {
+  paras: Seg[][];
+  prose: string;
+}) {
   // Глобальная индексация скрэмблируемых символов для stagger-оседания.
   let gi = 0;
   const model = paras.map((segs) =>
@@ -95,11 +99,11 @@ function ScrambleParagraphs({ paras }: { paras: Seg[][] }) {
   return (
     <div className="space-y-3">
       {model.map((segs, pi) => (
-        <p key={pi} className={proseSimple}>
+        <p key={pi} className={prose}>
           {segs.map((seg, si) => (
             <span
               key={si}
-              className={seg.bold ? "text-[#A6FF00] font-semibold" : "text-white/80"}
+              className={seg.bold ? "text-white/90 font-semibold" : undefined}
             >
               {seg.chars.map((c, k) => {
                 if (!c.scramble) return <span key={k}>{c.ch}</span>;
@@ -127,12 +131,13 @@ export default function DecryptApproach({
   const techParas = parseParagraphs(technical);
   const simpleParas = parseParagraphs(simple);
 
-  const proseTech = "text-white/65 leading-relaxed text-sm md:text-base";
+  // Единый стиль для обоих состояний: кегль и яркость не меняются при переключении.
+  const prose = "text-white/65 leading-relaxed text-sm md:text-base";
 
-  const renderTech = () => (
-    <div className="space-y-3 decrypt-fadeswap">
-      {techParas.map((segs, pi) => (
-        <p key={pi} className={proseTech}>
+  const renderParas = (paras: Seg[][]) => (
+    <div className="space-y-3">
+      {paras.map((segs, pi) => (
+        <p key={pi} className={prose}>
           {segs.map((seg, si) =>
             seg.bold ? (
               <strong key={si} className="text-white/90 font-semibold">
@@ -147,9 +152,31 @@ export default function DecryptApproach({
     </div>
   );
 
+  // Оба варианта всегда в DOM (grid-стек в одной ячейке): высота области = по
+  // большему тексту и не прыгает, абзацы и кнопка держат позицию. Невидимый слой
+  // через visibility:hidden продолжает занимать место.
   return (
     <div>
-      {revealed ? <ScrambleParagraphs paras={simpleParas} /> : renderTech()}
+      <div className="grid">
+        <div
+          className="[grid-area:1/1]"
+          style={{ visibility: revealed ? "hidden" : "visible" }}
+          aria-hidden={revealed}
+        >
+          {renderParas(techParas)}
+        </div>
+        <div
+          className="[grid-area:1/1]"
+          style={{ visibility: revealed ? "visible" : "hidden" }}
+          aria-hidden={!revealed}
+        >
+          {revealed ? (
+            <ScrambleParagraphs paras={simpleParas} prose={prose} />
+          ) : (
+            renderParas(simpleParas)
+          )}
+        </div>
+      </div>
 
       <button
         type="button"
