@@ -71,7 +71,7 @@ export default function ConstellationFigures({
 
     function draw(now: number) {
       if (stopped) return;
-      const segs = trace(live, LW, LH);
+      const segs = trace(live, LW, LH, undefined, targetsPx);
       const hits = targetHits(segs, targetsPx);
       const all = hits.length > 0 && hits.every(Boolean);
       if (all && !solved) {

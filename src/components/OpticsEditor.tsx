@@ -73,7 +73,7 @@ export default function OpticsEditor() {
       raf = requestAnimationFrame(loop);
       const lv = live();
       const tp = targetsPx();
-      const segs = trace(lv, VW, VH);
+      const segs = trace(lv, VW, VH, undefined, tp);
       const hits = targetHits(segs, tp);
       drawField(ctx!, VW, VH, lv, { segs, targetsPx: tp, hits, time: (now - start) / 1000, edit: true, selected: selRef.current });
     }

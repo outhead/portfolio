@@ -84,8 +84,10 @@ export function mirrorEnds(m: { p: Pt; ang: number }): [Pt, Pt] {
   return [add(m.p, mul(tang, ML / 2)), sub(m.p, mul(tang, ML / 2))];
 }
 
-/** Прогон лучей. Возвращает сегменты с цветом. */
-export function trace(live: Live, W: number, H: number, spread = SPREAD): Seg[] {
+/** Прогон лучей. Возвращает сегменты с цветом.
+ *  targets — если переданы, луч ПОГЛОЩАЕТСЯ целью своего цвета (заканчивается
+ *  на узле, не летит дальше до края — убирает «хвосты» под целями). */
+export function trace(live: Live, W: number, H: number, spread = SPREAD, targets?: Target[]): Seg[] {
   const segs: Seg[] = [];
   let mA: Pt | null = null, mB: Pt | null = null, nrm: Pt | null = null;
   if (live.mirror) {
@@ -100,7 +102,7 @@ export function trace(live: Live, W: number, H: number, spread = SPREAD): Seg[] 
   while (queue.length && guard++ < 80) {
     const bm = queue.shift()!;
     const ex = exitT(bm.o, bm.d, W, H);
-    let bestT = ex.t, kind: "stone" | "mirror" | null = null, hp = ex.p;
+    let bestT = ex.t, kind: "stone" | "mirror" | "target" | null = null, hp = ex.p;
     let st: Live["stones"][number] | null = null;
 
     for (const stone of live.stones) {
@@ -116,6 +118,17 @@ export function trace(live: Live, W: number, H: number, spread = SPREAD): Seg[] 
     if (mA && mB) {
       const mt = raySeg(bm.o, bm.d, mA, mB);
       if (mt !== null && mt < bestT) { bestT = mt; kind = "mirror"; hp = add(bm.o, mul(bm.d, mt)); st = null; }
+    }
+    // поглощение целью своего цвета — луч заканчивается на узле
+    if (targets) {
+      for (const t of targets) {
+        if (t.key !== bm.key) continue;
+        const proj = (t.x - bm.o.x) * bm.d.x + (t.y - bm.o.y) * bm.d.y;
+        if (proj > 4 && proj < bestT) {
+          const near = add(bm.o, mul(bm.d, proj));
+          if (Math.hypot(near.x - t.x, near.y - t.y) < HITR) { bestT = proj; kind = "target"; hp = near; st = null; }
+        }
+      }
     }
 
     segs.push({ a: bm.o, b: hp, key: bm.key });
@@ -148,10 +161,10 @@ export const FIELD_H = 380;
 export const MENTORING_LEVEL: Level = {
   emitter: { x: 0.5, y: 0.08 },
   stones: [
-    // стартовые позиции — в трее снизу, далеко от решения (иначе уровень начат решённым)
-    { minus: "amber", plus: "lime", x: 0.14, y: 0.9 },
-    { minus: "cyan", plus: "magenta", x: 0.86, y: 0.9 },
-    { minus: "lime", plus: "cyan", x: 0.4, y: 0.93 },
+    // стартовые позиции — трей, не у самой нижней грани (иначе ромбы смазываются о бордюр)
+    { minus: "amber", plus: "lime", x: 0.16, y: 0.82 },
+    { minus: "cyan", plus: "magenta", x: 0.84, y: 0.82 },
+    { minus: "lime", plus: "cyan", x: 0.3, y: 0.86 },
   ],
   mirror: { x: 0.397, y: 0.862, ang: -2.621 },
   targets: [
