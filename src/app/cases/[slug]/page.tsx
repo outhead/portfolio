@@ -163,12 +163,13 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
             <PixelFire className="absolute inset-0 w-full h-full" />
           </div>
         )}
-        {/* Градиент уравновешивает контраст под текст hero, но не должен забивать обложку */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-transparent" />
+        {/* Градиент уравновешивает контраст под текст hero. При огне — мягче,
+            чтобы пламя снизу не забивалось чёрным. */}
+        <div className={`absolute inset-0 bg-gradient-to-t ${project.heroFire ? "from-black/55 via-black/10 to-transparent" : "from-black via-black/35 to-transparent"}`} />
 
-        {/* Слоган LED-шрифтом по центру пустой зоны hero — для кейсов без куба/обложки */}
+        {/* Слоган LED-шрифтом — чёрные буквы как вырез в пламени, в нижней зоне hero */}
         {project.heroSlogan && !heroCube && !project.coverParticles && !project.heroImage && !project.coverImage && !project.coverVideo && (
-          <div className="absolute inset-x-0 top-0 bottom-[36%] z-[4] flex flex-col items-center justify-center gap-2 md:gap-3 px-6 pointer-events-none animate-fade-in-up">
+          <div className="absolute inset-x-0 top-[30%] bottom-[16%] z-[4] flex flex-col items-center justify-center gap-2 md:gap-3 px-6 pointer-events-none animate-fade-in-up">
             <span className="sr-only">{project.heroSlogan.replace(/\n/g, " ")}</span>
             {project.heroSlogan.split("\n").map((line, i) => (
               <LedLines
@@ -177,7 +178,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
                 center
                 maxChars={40}
                 lineClass="h-[16px] md:h-[24px]"
-                className="text-[#A6FF00]/90 [filter:drop-shadow(0_2px_6px_rgba(0,0,0,0.85))_drop-shadow(0_0_16px_rgba(166,255,0,0.5))]"
+                className="text-black [filter:drop-shadow(0_0_2px_rgba(0,0,0,0.7))]"
               />
             ))}
           </div>
