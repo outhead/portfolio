@@ -415,7 +415,7 @@ export default function ProjectCard({
       <article
         ref={articleRef}
         className={`relative rounded-2xl overflow-hidden bg-[#0b0b0a] h-full ${
-          wide ? "aspect-[4/3] md:aspect-[16/9]" : "aspect-[4/3]"
+          wide ? "aspect-[4/3] md:aspect-auto lg:aspect-[16/9]" : "aspect-[4/3]"
         }`}
       >
         {/* Экран — медиа на всю карточку */}

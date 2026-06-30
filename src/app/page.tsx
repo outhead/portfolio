@@ -1645,7 +1645,7 @@ export default function PreviewHome() {
               <Link href="/experiments" data-ym-goal="nav_experiments" data-ym-goal-params='{"placement":"work_grid"}' className="no-underline group block h-full">
                 <div className="relative h-full min-h-[280px] md:min-h-[340px] rounded-2xl overflow-hidden bg-[#0b0b0a]">
                   <div className="absolute inset-0">
-                    <PixelCubePile color="#A6FF00" pitch={5.2} maxCubes={26} />
+                    <PixelCubePile color="#A6FF00" logoSrc="/images/logos/question.svg" idleCenter centerFrac={0.4} pitch={5.2} maxCubes={26} />
                   </div>
                   <div aria-hidden className="absolute inset-x-0 top-0 h-16 md:h-20 bg-gradient-to-b from-black/60 to-transparent z-[1] pointer-events-none" />
                   <div aria-hidden className="absolute inset-x-0 bottom-0 h-28 md:h-36 bg-gradient-to-t from-black/85 via-black/45 to-transparent z-[1] pointer-events-none" />
