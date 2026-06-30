@@ -13,7 +13,7 @@ import ConstellationFigures from "./ConstellationFigures";
 import ParticlePortrait from "./ParticlePortrait";
 import { MENTORING_LEVEL } from "@/lib/optics";
 
-const PORTRAIT = [{ src: "/images/hero-portrait.png", depth: "/images/hero-depth.png" }];
+const PORTRAIT = [{ src: "/images/mikki-portrait.png", depth: "/images/mikki-depth.png" }];
 
 export default function MentoringPanel({ className = "" }: { className?: string }) {
   const [phase, setPhase] = useState<"play" | "portrait">("play");
@@ -35,7 +35,9 @@ export default function MentoringPanel({ className = "" }: { className?: string 
               level={MENTORING_LEVEL}
               lockMirror
               onSolve={() => {
-                // дать догореть победной вспышке, затем сменить на портрет
+                // засчитываем пасхалку «созвездие» в счётчик на главной
+                window.dispatchEvent(new CustomEvent("egg:found", { detail: "constellation" }));
+                // дать догореть победной вспышке, затем сменить на приз
                 window.setTimeout(() => setPhase("portrait"), 950);
               }}
             />
