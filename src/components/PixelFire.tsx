@@ -5,25 +5,27 @@ import { layoutLedText, LED_ROWS } from "@/components/ledFont";
 
 /**
  * PixelFire — зелёный пиксельный огонь (doom-fire) на дот-решётке.
- * Если задан `text` — пламя поднимается ИЗ БУКВ слогана (text-emitter), а сами
- * буквы рисуются чёрным поверх: тёмный вырез в собственном огне. Без `text` —
- * классический огонь снизу. База тлеет тускло, изредка вспышка (flare).
- * Текст рисуется прямо в канвасе → идеально совпадает с пламенем.
- * Сетка прогревается на старте, поэтому пламя видно сразу (без «наливания»).
+ * С `text`: буквы слогана горят (пламя поднимается из ячеек под буквами),
+ * сами буквы — чёрный вырез поверх. Разрешение текста ОТВЯЗАНО от шага огня:
+ * буквы рисуются мелкой чёткой сеткой (tpx), а эмиттер огня — на грубой
+ * решётке cell. Поэтому длинный слоган влезает, а пламя не сливается в стену.
+ * База тлеет, изредка вспышка (flare). Сетка прогревается на старте.
  *
  * Перф: DPR ≤ 1.5, FPS-кап ~32, пауза вне экрана (IO), reduced-motion → статика.
- * Параметры огня подбирались в fire-lab.html.
  */
 const CFG = {
-  cell: 9,
-  dot: 0.38,
-  cooling: 0.62,   // чуть ниже охлаждение → языки выше (читаемее буквы)
-  wind: 0.8,
-  source: 0.62,    // ярче базы, чтобы чёрный текст читался всегда
-  flareFreq: 0.5,
+  cell: 10,        // шаг решётки огня (px)
+  dot: 0.4,        // радиус точки огня на максимуме тепла (доли cell)
+  cooling: 0.72,   // охлаждение → высота языков (больше = короче)
+  wind: 0.7,
+  source: 0.5,
+  flareFreq: 0.4,
   flareAmp: 0.7,
-  density: 0.18,
-  bright: 1.1,
+  density: 0.22,   // порог отрисовки (больше = реже пламя)
+  bright: 1.05,
+  textW: 0.62,     // целевая ширина текста (доля ширины hero)
+  textH: 0.3,      // максимум высоты блока текста (доля высоты hero)
+  textCenter: 0.4, // центр блока текста по высоте (доля)
 };
 
 export default function PixelFire({ text, className = "" }: { text?: string; className?: string }) {
@@ -52,35 +54,39 @@ export default function PixelFire({ text, className = "" }: { text?: string; cla
       bR[b] = (0.14 + t * C.dot) * C.cell;
     }
 
-    let W = 1, H = 1, cols = 1, rows = 1;
+    let W = 1, H = 1, cols = 1, rows = 1, tpx = 4;
     let heat = new Float32Array(1);
     let mask = new Uint8Array(1);
+    let blackDots: number[] = []; // плоский [cx,cy, cx,cy, ...] центры чёрных точек (px)
 
     const buildText = () => {
       mask = new Uint8Array(cols * rows);
+      blackDots = [];
       if (!hasText) return;
       const lines = textKey.split("\n").filter((s) => s.length);
       const lays = lines.map((l) => layoutLedText(l, 1));
       const maxCols = Math.max(1, ...lays.map((l) => l.cols));
       const totalRows = lines.length * LED_ROWS + (lines.length - 1) * 2;
-      let px = Math.floor((W * 0.78 / C.cell) / maxCols);
-      px = Math.min(px, Math.floor((H * 0.4 / C.cell) / totalRows));
-      px = Math.max(2, px);
-      const blockRows = totalRows * px;
-      // центр блока ~42% высоты — пламя из букв уходит в верхнюю треть
-      let ry = Math.round(rows * 0.42 - blockRows / 2);
+      // tpx — пиксель буквы, отвязан от шага огня
+      tpx = Math.round((W * C.textW) / maxCols);
+      tpx = Math.min(tpx, Math.floor((H * C.textH) / totalRows));
+      if (tpx < 3) tpx = 3;
+      const blockH = totalRows * tpx;
+      let yTop = Math.round(H * C.textCenter - blockH / 2);
       for (const lay of lays) {
-        const tW = lay.cols * px;
-        const ox = Math.floor((cols - tW) / 2);
+        const tW = lay.cols * tpx;
+        const ox = Math.round((W - tW) / 2);
         for (const d of lay.dots) {
           if (!d.lit) continue;
-          for (let yy = 0; yy < px; yy++)
-            for (let xx = 0; xx < px; xx++) {
-              const cx = ox + d.col * px + xx, cy = ry + d.row * px + yy;
-              if (cx >= 0 && cx < cols && cy >= 0 && cy < rows) mask[cy * cols + cx] = 1;
-            }
+          const px = ox + d.col * tpx, py = yTop + d.row * tpx;
+          blackDots.push(px + tpx / 2, py + tpx / 2);
+          const c0 = Math.floor(px / C.cell), c1 = Math.floor((px + tpx - 1) / C.cell);
+          const r0 = Math.floor(py / C.cell), r1 = Math.floor((py + tpx - 1) / C.cell);
+          for (let cc = c0; cc <= c1; cc++)
+            for (let rr = r0; rr <= r1; rr++)
+              if (cc >= 0 && cc < cols && rr >= 0 && rr < rows) mask[rr * cols + cc] = 1;
         }
-        ry += (LED_ROWS + 2) * px;
+        yTop += (LED_ROWS + 2) * tpx;
       }
     };
 
@@ -94,7 +100,7 @@ export default function PixelFire({ text, className = "" }: { text?: string; cla
       rows = Math.ceil(H / C.cell) + 1;
       heat = new Float32Array(cols * rows);
       buildText();
-      for (let i = 0; i < 70; i++) step(); // прогрев — пламя сразу заполнено
+      for (let i = 0; i < 70; i++) step(); // прогрев — пламя сразу
     };
 
     const FRAME_MS = 1000 / 32;
@@ -140,26 +146,19 @@ export default function PixelFire({ text, className = "" }: { text?: string; cla
           if (h < C.density) continue;
           let b = Math.floor(((h - C.density) / (1 - C.density)) * BUCKETS);
           if (b < 0) b = 0; else if (b >= BUCKETS) b = BUCKETS - 1;
-          const cx = x * C.cell + C.cell / 2;
-          const cy = y * C.cell + C.cell / 2;
-          const r = bR[b];
+          const cx = x * C.cell + C.cell / 2, cy = y * C.cell + C.cell / 2, r = bR[b];
           paths[b].moveTo(cx + r, cy);
           paths[b].arc(cx, cy, r, 0, 6.283);
         }
       }
-      for (let b = 0; b < BUCKETS; b++) {
-        ctx.fillStyle = bColor[b];
-        ctx.fill(paths[b]);
-      }
-      // чёрные буквы — вырез в собственном пламени
-      if (hasText) {
+      for (let b = 0; b < BUCKETS; b++) { ctx.fillStyle = bColor[b]; ctx.fill(paths[b]); }
+      // чёрные буквы — мелкий чёткий вырез поверх своего пламени
+      if (hasText && blackDots.length) {
         const p = new Path2D();
-        const rr = C.cell * 0.52;
-        for (let i = 0; i < mask.length; i++) {
-          if (!mask[i]) continue;
-          const x = i % cols, y = (i / cols) | 0;
-          p.moveTo(x * C.cell + C.cell / 2 + rr, y * C.cell + C.cell / 2);
-          p.arc(x * C.cell + C.cell / 2, y * C.cell + C.cell / 2, rr, 0, 6.283);
+        const rr = tpx * 0.6;
+        for (let i = 0; i < blackDots.length; i += 2) {
+          p.moveTo(blackDots[i] + rr, blackDots[i + 1]);
+          p.arc(blackDots[i], blackDots[i + 1], rr, 0, 6.283);
         }
         ctx.fillStyle = "#000";
         ctx.fill(p);
@@ -178,11 +177,8 @@ export default function PixelFire({ text, className = "" }: { text?: string; cla
     resize();
     const ro = new ResizeObserver(resize); ro.observe(canvas);
 
-    if (reduce) {
-      draw();
-    } else {
-      raf = requestAnimationFrame(loop);
-    }
+    if (reduce) draw();
+    else raf = requestAnimationFrame(loop);
 
     const io = new IntersectionObserver(
       (entries) => {

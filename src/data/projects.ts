@@ -828,7 +828,7 @@ export const projects: Project[] = [
     tags: ["Type Design", "Creative Coding", "SVG", "AI Agents"],
     type: "experiment",
     coverColor: "#0a0a0a",
-    coverLed: ["диодный шрифт", "89 глифов", "5×7 точек", "весь сайт"],
+    coverLed: ["89 глифов", "5×7 точек", "весь сайт"],
     heroSlogan: "РУКОПИСИ НЕ ГОРЯТ.\nА ВОТ ЭТОТ ШРИФТ — ГОРИТ",
     heroFire: true,
     metric: "89",
