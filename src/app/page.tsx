@@ -1067,7 +1067,7 @@ function TestimonialCard({ t }: { t: Testimonial }) {
               foundEgg("dog");
             }}
             aria-label={showDog ? `Вернуть фото: ${t.name}` : "Показать сюрприз"}
-            className="relative shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-full overflow-hidden border border-white/[0.08] bg-white/[0.04] cursor-pointer p-0"
+            className="relative shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-full overflow-hidden border border-white/[0.08] bg-white/[0.04] cursor-pointer p-0 transition-colors duration-200 hover:border-[#A6FF00]"
           >
             <Image
               src={showDog ? t.dog : t.avatar}
