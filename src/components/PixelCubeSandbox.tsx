@@ -1,21 +1,15 @@
 "use client";
 
 /* ─────────────────────────────────────────────────────────────────
- * PixelCubePile — кубы падают В ОБЪЁМЕ (настоящая 3D-сцена).
- * Физика: cannon-es (реальные box-контакты, трение, стекинг, сон) —
- * маленькие бренд-кубики насыпаются в ёмкость и реалистично
- * укладываются. Курсор — невидимая кинематическая сфера: физически
- * расталкивает все кубы в зоне (режим push).
+ * PixelCubeSandbox — реалистичная физика кубиков, насыпанных в ёмкость.
+ * Физика: cannon-es (настоящие box-контакты, трение, стекинг, сон).
+ * Рендер: тот же дот-матричный проектор, что у PixelCubePile —
+ * 8 вершин куба проецируются камерой, грани с flat-shading,
+ * сцена сэмплится в сетку диодов.
  *
- * Рендер: камера с перспективой проецирует 8 вершин каждого куба,
- * грани с flat-shading; сцена рисуется в хайрес-буфер и сэмплится в
- * дот-сетку — тот же пиксельный язык, что у вращающихся кубов.
- *
- * В покое один куб подвешен по центру (логотип). На ховере он падает
- * и начинается засыпание; после ухода курсора дно убирается, кубы
- * утекают, и снова появляется центральный куб.
- *
- * Настройки физики подобраны в песочнице /secret/lab/cubes.
+ * Курсор — реальная сила (applyForce) в трёх режимах: push / stir /
+ * vortex. Вся угловая динамика (перевороты, качение) рождается из
+ * контактов и трения движка, а не из фейкового спина.
  * ──────────────────────────────────────────────────────────────── */
 
 import { useEffect, useRef } from "react";
@@ -31,33 +25,17 @@ const cross = (a: V3, b: V3): V3 => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[
 const norm = (a: V3): V3 => { const m = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / m, a[1] / m, a[2] / m]; };
 const scale = (a: V3, k: number): V3 => [a[0] * k, a[1] * k, a[2] * k];
 
-function qNorm(q: Q): Q { const m = Math.hypot(q[0], q[1], q[2], q[3]) || 1; return [q[0] / m, q[1] / m, q[2] / m, q[3] / m]; }
-function qRot(q: Q, v: V3): V3 {
+function qRotArr(q: Q, v: V3): V3 {
   const u: V3 = [q[0], q[1], q[2]];
   const t = cross(u, v).map((x) => x * 2) as V3;
   return add(add(v, t.map((x) => x * q[3]) as V3), cross(u, t));
 }
-function qIntegrate(q: Q, w: V3, dt: number): Q {
-  const wq: Q = [w[0] * dt * 0.5, w[1] * dt * 0.5, w[2] * dt * 0.5, 0];
-  const dq: Q = [
-    wq[3] * q[0] + wq[0] * q[3] + wq[1] * q[2] - wq[2] * q[1],
-    wq[3] * q[1] - wq[0] * q[2] + wq[1] * q[3] + wq[2] * q[0],
-    wq[3] * q[2] + wq[0] * q[1] - wq[1] * q[0] + wq[2] * q[3],
-    wq[3] * q[3] - wq[0] * q[0] - wq[1] * q[1] - wq[2] * q[2],
-  ];
-  return qNorm([q[0] + dq[0], q[1] + dq[1], q[2] + dq[2], q[3] + dq[3]]);
-}
-function qAxis(axis: V3, ang: number): Q {
-  const h = ang / 2, s = Math.sin(h);
-  return [axis[0] * s, axis[1] * s, axis[2] * s, Math.cos(h)];
-}
-const Q_IDLE: Q = qAxis([1, 0, 0], -0.42);
 function hexToRgb(hex: string): [number, number, number] {
   const h = hex.replace("#", "");
   return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
 }
 
-// геометрия единичного куба (полусторона 1) — масштабируется под куб
+// геометрия единичного куба (полусторона 1) — масштабируется под каждый куб
 const CV: V3[] = [
   [-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1],
   [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1],
@@ -71,32 +49,50 @@ const CF: { idx: [number, number, number, number]; n: V3 }[] = [
   { idx: [0, 1, 5, 4], n: [0, -1, 0] },
 ];
 
-// ── запечённые настройки физики (подобраны в песочнице) ──
-const GRAV = 32, REST = 0.05, FRIC = 0.45;
-const CUBE_SCALE = 0.69;   // размер насыпаемого кубика (доля базового)
-const SBASE = 0.42;        // базовая полусторона
-const CUR_R = 1.0, CUR_PUSH = 75; // невидимая сфера курсора (push)
+export type CursorMode = "push" | "stir" | "vortex" | "off";
+
+export interface CubeSandboxParams {
+  gravity: number;      // сила тяжести
+  restitution: number;  // упругость удара (0 — не прыгают)
+  friction: number;     // трение (выше — быстрее укладываются)
+  cubeScale: number;    // размер кубика (доля базового)
+  cursorMode: CursorMode;
+  cursorRadius: number; // радиус влияния курсора (мировые ед.)
+  cursorPush: number;   // сила курсора
+  spawnRate: number;    // кубов/сек на ховере
+  maxCubes: number;
+  autoRain: boolean;    // сыпать без курсора (ёмкость всегда с дном)
+}
+
+export const DEFAULT_PARAMS: CubeSandboxParams = {
+  gravity: 22,
+  restitution: 0.05,
+  friction: 0.45,
+  cubeScale: 0.62,
+  cursorMode: "stir",
+  cursorRadius: 1.0,
+  cursorPush: 40,
+  spawnRate: 26,
+  maxCubes: 60,
+  autoRain: false,
+};
 
 interface Cube { body: Body; col: [number, number, number]; half: number; }
 
-export default function PixelCubePile({
+export default function PixelCubeSandbox({
   color = "#FF2436",
   colors,
   logoSrc,
-  grid = 124,
-  pitch,
-  maxCubes,
-  idleCenter = false,
-  centerFrac = 0.5,
+  pitch = 5.2,
+  paramsRef,
+  onCount,
 }: {
   color?: string;
   colors?: string[];
   logoSrc?: string;
-  grid?: number;
   pitch?: number;
-  maxCubes?: number;
-  idleCenter?: boolean;
-  centerFrac?: number;
+  paramsRef: React.RefObject<CubeSandboxParams>;
+  onCount?: (n: number) => void;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -109,12 +105,13 @@ export default function PixelCubePile({
     if (!wrap || !canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+    const P = () => paramsRef.current;
 
     const palette = (colors && colors.length ? colors : [color]).map(hexToRgb);
     const [br, bg, bb] = palette[0];
     const lightW = norm([-0.4, 0.78, 0.5]);
 
-    // белый знак
+    // ── лого-текстура (белый знак на грани) ──
     const LS = 128;
     const logoTex = document.createElement("canvas");
     logoTex.width = LS; logoTex.height = LS;
@@ -143,7 +140,8 @@ export default function PixelCubePile({
     // ── ёмкость (мир) ──
     let HX = 2.3;
     const HZ = 1.25;
-    const FLOOR = -0.9;
+    const FLOOR = -0.9;    // дно ниже — насыпь копится в кадре
+    const SBASE = 0.42;    // базовая полусторона куба
 
     // ── камера ──
     const lookAt: V3 = [0, 0.4, 0];
@@ -153,13 +151,10 @@ export default function PixelCubePile({
     const camU = cross(camZ, camR);
 
     let W = 0, H = 0, outW = 0, outH = 0, dpr = 1;
-    let GX = grid;
+    let GX = 124;
     let Sx = 0, Sy = 0, focal = 0, cxp = 0, cyp = 0, gridY = 0;
     let cellSize = 0, rDot = 0;
-    let CENTER_Y = 0.6;
     const bgDots = document.createElement("canvas");
-    const mobile = window.matchMedia("(max-width: 767px)").matches;
-    const maxN = maxCubes ?? (mobile ? 30 : 45);
 
     const measure = () => {
       const r = wrap.getBoundingClientRect();
@@ -170,24 +165,12 @@ export default function PixelCubePile({
       Sx = Math.min(660, Math.max(380, Math.round(W * 0.9)));
       Sy = Math.round(Sx * H / W);
       buf.width = Sx; buf.height = Sy;
-      GX = pitch ? Math.max(40, Math.round(W / pitch)) : grid;
+      GX = Math.max(40, Math.round(W / pitch));
       gridY = Math.max(8, Math.round(GX * H / W));
       lo.width = GX; lo.height = gridY;
       focal = Math.min(Sx * 0.92, Sy * 1.64);
       cxp = Sx / 2; cyp = Sy * 0.42;
       HX = Math.max(1.6, (Sx * 0.5) * 5.45 / focal * 0.78);
-      {
-        let loY = -1, hiY = 3;
-        for (let it = 0; it < 32; it++) {
-          const mid = (loY + hiY) / 2;
-          const d: V3 = [-camC[0], mid - camC[1], -camC[2]];
-          const vy = dot(d, camU);
-          const front = Math.max(0.05, -dot(d, camZ));
-          const sy = cyp - vy * focal / front;
-          if (sy > Sy * centerFrac) loY = mid; else hiY = mid;
-        }
-        CENTER_Y = (loY + hiY) / 2;
-      }
       cellSize = outW / GX;
       rDot = cellSize * 0.28;
       bgDots.width = outW; bgDots.height = outH;
@@ -238,13 +221,13 @@ export default function PixelCubePile({
       bctx.restore();
     };
 
-    // рисуем куб: центр p, ориентация q, полусторона half, bright — покой
-    const drawCube = (p: V3, q: Q, half: number, col: [number, number, number], bright: boolean) => {
-      const worldV = CV.map((lv) => add(p, qRot(q, scale(lv, half))));
+    // рисуем куб: центр p, ориентация q, полусторона half
+    const drawCube = (p: V3, q: Q, half: number, col: [number, number, number]) => {
+      const worldV = CV.map((lv) => add(p, qRotArr(q, scale(lv, half))));
       const pv = worldV.map(project);
-      const amb = bright ? 0.62 : 0.32, dif = bright ? 0.42 : 0.95;
+      const amb = 0.32, dif = 0.95;
       const faces = CF.map((f, i) => {
-        const wn = qRot(q, f.n);
+        const wn = qRotArr(q, f.n);
         const facing = dot(wn, camZ);
         const cen = f.idx.reduce((a, k) => add(a, worldV[k]), [0, 0, 0] as V3).map((x) => x / 4) as V3;
         const depth = project(cen)[2];
@@ -278,6 +261,7 @@ export default function PixelCubePile({
     let floorBody: Body | null = null;
     let cubeCMat: import("cannon-es").ContactMaterial | null = null;
     let cubeMaterial: import("cannon-es").Material | null = null;
+    // невидимая сфера курсора — физически расталкивает кубы
     let cursorBody: Body | null = null;
     let cursorMaterial: import("cannon-es").Material | null = null;
     let curRadiusUsed = 0;
@@ -287,27 +271,27 @@ export default function PixelCubePile({
     let curVel: V3 = [0, 0, 0];
     let simT = 0;
 
-    // idle-куб (логотип по центру) — рендерится, не физическое тело
-    let idleShown = idleCenter;
-    let idleQ: Q = Q_IDLE;
-    const IDLE_HALF = SBASE;
-
     const spawn = () => {
       if (!world || !CANNONref || !cubeMaterial) return;
-      if (cubes.length >= maxN) return;
+      if (cubes.length >= P().maxCubes) return;
       const C = CANNONref;
-      const half = SBASE * CUBE_SCALE;
+      const half = SBASE * P().cubeScale;
       const shape = new C.Box(new C.Vec3(half, half, half));
       const x = (Math.random() * 2 - 1) * (HX - half - 0.05);
       const z = (Math.random() * 2 - 1) * (HZ - half - 0.05);
       const body = new C.Body({
-        mass: 1, shape, material: cubeMaterial,
+        mass: 1,
+        shape,
+        material: cubeMaterial,
         position: new C.Vec3(x, 2.1 + Math.random() * 0.5, z),
-        linearDamping: 0.05, angularDamping: 0.35,
+        linearDamping: 0.05,
+        angularDamping: 0.35,
       });
       body.velocity.set((Math.random() - 0.5) * 0.5, -1.4 - Math.random() * 0.6, (Math.random() - 0.5) * 0.5);
       body.angularVelocity.set((Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4);
-      body.allowSleep = true; body.sleepSpeedLimit = 0.28; body.sleepTimeLimit = 0.5;
+      body.allowSleep = true;
+      body.sleepSpeedLimit = 0.28;
+      body.sleepTimeLimit = 0.5;
       world.addBody(body);
       cubes.push({ body, col: palette[(Math.random() * palette.length) | 0], half });
     };
@@ -318,33 +302,36 @@ export default function PixelCubePile({
         const C = CANNONref;
         floorBody = new C.Body({ mass: 0, material: cubeMaterial! });
         floorBody.addShape(new C.Plane());
-        floorBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+        floorBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0); // нормаль вверх
         floorBody.position.set(0, FLOOR, 0);
         world.addBody(floorBody);
       } else if (!on && floorBody) {
         world.removeBody(floorBody);
         floorBody = null;
-        for (const cu of cubes) cu.body.wakeUp(); // иначе спящие зависают
+        // будим всех: иначе спящие кубы зависают в воздухе («прилипают»),
+        // когда убрали опору под ними
+        for (const cu of cubes) cu.body.wakeUp();
       }
     };
 
-    const ensureCursorBody = (rad: number) => {
+    // невидимая сфера курсора нужного радиуса (пересоздаём при смене радиуса)
+    const ensureCursorBody = (r: number) => {
       if (!world || !CANNONref || !cursorMaterial) return;
-      if (cursorBody && Math.abs(curRadiusUsed - rad) < 0.02) return;
+      if (cursorBody && Math.abs(curRadiusUsed - r) < 0.02) return;
       const C = CANNONref;
       if (cursorBody) world.removeBody(cursorBody);
       cursorBody = new C.Body({ mass: 0, type: C.Body.KINEMATIC, material: cursorMaterial });
-      cursorBody.addShape(new C.Sphere(rad));
+      cursorBody.addShape(new C.Sphere(r));
       cursorBody.position.set(0, -1000, 0);
       cursorBody.collisionResponse = true;
       world.addBody(cursorBody);
-      curRadiusUsed = rad;
+      curRadiusUsed = r;
     };
 
     import("cannon-es").then((C) => {
       if (cancelled) return;
       CANNONref = C;
-      world = new C.World({ gravity: new C.Vec3(0, -GRAV, 0) });
+      world = new C.World({ gravity: new C.Vec3(0, -P().gravity, 0) });
       world.broadphase = new C.SAPBroadphase(world);
       world.allowSleep = true;
       // @ts-expect-error solver.iterations есть у GSSolver (дефолтный)
@@ -353,14 +340,22 @@ export default function PixelCubePile({
       world.solver.tolerance = 0.001;
 
       cubeMaterial = new C.Material("cube");
-      cubeCMat = new C.ContactMaterial(cubeMaterial, cubeMaterial, { friction: FRIC, restitution: REST });
+      cubeCMat = new C.ContactMaterial(cubeMaterial, cubeMaterial, {
+        friction: P().friction,
+        restitution: P().restitution,
+      });
       world.addContactMaterial(cubeCMat);
-      world.defaultContactMaterial.friction = FRIC;
-      world.defaultContactMaterial.restitution = REST;
+      world.defaultContactMaterial.friction = P().friction;
+      world.defaultContactMaterial.restitution = P().restitution;
 
+      // материал курсор↔куб: почти без трения, лёгкий отскок — сфера
+      // толкает кубы упруго, не «прилипая» к ним
       cursorMaterial = new C.Material("cursor");
-      world.addContactMaterial(new C.ContactMaterial(cubeMaterial, cursorMaterial, { friction: 0.05, restitution: 0.4 }));
+      world.addContactMaterial(new C.ContactMaterial(cubeMaterial, cursorMaterial, {
+        friction: 0.05, restitution: 0.4,
+      }));
 
+      // стенки ёмкости (статичные плоскости), нормалями внутрь
       const wall = (pos: V3, euler: V3) => {
         const b = new C.Body({ mass: 0, material: cubeMaterial! });
         b.addShape(new C.Plane());
@@ -368,25 +363,41 @@ export default function PixelCubePile({
         b.position.set(pos[0], pos[1], pos[2]);
         world!.addBody(b);
       };
-      wall([-HX, 0, 0], [0, Math.PI / 2, 0]);
-      wall([HX, 0, 0], [0, -Math.PI / 2, 0]);
-      wall([0, 0, -HZ], [0, 0, 0]);
-      wall([0, 0, HZ], [0, Math.PI, 0]);
+      wall([-HX, 0, 0], [0, Math.PI / 2, 0]);   // левая, нормаль +x
+      wall([HX, 0, 0], [0, -Math.PI / 2, 0]);   // правая, нормаль -x
+      wall([0, 0, -HZ], [0, 0, 0]);             // задняя, нормаль +z
+      wall([0, 0, HZ], [0, Math.PI, 0]);        // передняя, нормаль -z
 
-      ensureCursorBody(CUR_R);
+      ensureCursorBody(P().cursorRadius);
+
+      // idle-куб по центру: пусть просто упадёт и ляжет (реалистично).
+      // Дно ставим, чтобы одиночный куб не улетал вниз в покое.
+      setFloor(true);
+      spawn();
     });
 
     const applyCursor = () => {
-      if (!world || !CANNONref || !cursorBody) return;
+      if (!world || !CANNONref) return;
+      const pr = P();
       const C = CANNONref;
-      if (!curWorld || !hoverRef.current) {
+      ensureCursorBody(pr.cursorRadius);
+      if (!cursorBody) return;
+
+      // курсор вне зоны или выключен — паркуем сферу под миром
+      if (!curWorld || pr.cursorMode === "off") {
         cursorBody.position.set(0, -1000, 0);
         cursorBody.velocity.set(0, 0, 0);
         return;
       }
+
+      // невидимая сфера следует за курсором и физически расталкивает
+      // все кубы, которых касается; её скорость = скорость руки, поэтому
+      // взмахом кубы разлетаются
       cursorBody.position.set(curWorld[0], curWorld[1], curWorld[2]);
       cursorBody.velocity.set(curVel[0], curVel[1], curVel[2]);
-      const R = CUR_R;
+
+      // доп. силовое поле поверх контакта (усиление + режимы) и пробуждение
+      const R = pr.cursorRadius;
       for (const cu of cubes) {
         const b = cu.body;
         const dp: V3 = [b.position.x - curWorld[0], b.position.y - curWorld[1], b.position.z - curWorld[2]];
@@ -395,18 +406,33 @@ export default function PixelCubePile({
         b.wakeUp();
         const f = 1 - dist / R;
         const n = dist < 1e-3 ? ([0, 1, 0] as V3) : scale(dp, 1 / dist);
-        const force = scale(n, CUR_PUSH * (0.4 + f * f));
+        let force: V3 = [0, 0, 0];
+        if (pr.cursorMode === "push") {
+          force = scale(n, pr.cursorPush * (0.4 + f * f));
+        } else if (pr.cursorMode === "stir") {
+          force = add(scale(curVel, f * 6), scale(n, pr.cursorPush * 0.2 * f));
+        } else if (pr.cursorMode === "vortex") {
+          const tang = cross([0, 1, 0], n);
+          force = add(scale(tang, pr.cursorPush * 1.2 * f), scale(n, -pr.cursorPush * 0.2 * f));
+        }
         b.applyForce(new C.Vec3(force[0], force[1], force[2]), b.position);
       }
     };
 
-    let raf = 0, last = performance.now(), spawnAcc = 0;
+    let raf = 0, last = performance.now(), spawnAcc = 0, countAcc = 0;
     const frame = (now: number) => {
       let dt = (now - last) / 1000; last = now;
       dt = Math.min(0.033, dt);
       simT += dt;
 
       if (world && CANNONref) {
+        const pr = P();
+        world.gravity.set(0, -pr.gravity, 0);
+        if (cubeCMat) { cubeCMat.friction = pr.friction; cubeCMat.restitution = pr.restitution; }
+        world.defaultContactMaterial.friction = pr.friction;
+        world.defaultContactMaterial.restitution = pr.restitution;
+
+        // курсор → мир + скорость
         const ptr = ptrRef.current;
         if (ptr) {
           const wpos = screenToWorld(ptr.x, ptr.y);
@@ -414,43 +440,35 @@ export default function PixelCubePile({
           curPrev = wpos; curWorld = wpos;
         } else { curWorld = null; curPrev = null; curVel = [0, 0, 0]; }
 
-        if (hoverRef.current && cubes.length < maxN) {
+        // спавн
+        const wantSpawn = pr.autoRain || hoverRef.current;
+        if (wantSpawn && cubes.length < pr.maxCubes) {
           spawnAcc += dt;
-          const interval = 1 / 26;
+          const interval = 1 / Math.max(1, pr.spawnRate);
           while (spawnAcc > interval) { spawnAcc -= interval; spawn(); }
         }
 
         applyCursor();
         world.step(1 / 60, dt, 4);
 
+        // убрать улетевшие вниз (дно убрано)
         for (let i = cubes.length - 1; i >= 0; i--) {
           if (cubes[i].body.position.y < FLOOR - 6) {
             world.removeBody(cubes[i].body);
             cubes.splice(i, 1);
           }
         }
-        // насыпь утекла — вернуть подвешенный центральный куб
-        if (idleCenter && !idleShown && !hoverRef.current && cubes.length === 0) {
-          idleShown = true; idleQ = Q_IDLE;
-        }
       }
 
       // рендер
       bctx.clearRect(0, 0, Sx, Sy);
-      type R = { p: V3; q: Q; half: number; col: [number, number, number]; bright: boolean; depth: number };
-      const list: R[] = cubes.map((cu) => {
+      const list = cubes.map((cu) => {
         const b = cu.body;
         const p: V3 = [b.position.x, b.position.y, b.position.z];
         const q: Q = [b.quaternion.x, b.quaternion.y, b.quaternion.z, b.quaternion.w];
-        return { p, q, half: cu.half, col: cu.col, bright: false, depth: project(p)[2] };
-      });
-      if (idleShown) {
-        idleQ = qIntegrate(idleQ, [0.42, 1.15, 0], dt);
-        const p: V3 = [0, CENTER_Y + Math.sin(simT * 1.6) * 0.05, 0];
-        list.push({ p, q: idleQ, half: IDLE_HALF, col: palette[0], bright: true, depth: project(p)[2] });
-      }
-      list.sort((a, b) => b.depth - a.depth);
-      for (const c of list) drawCube(c.p, c.q, c.half, c.col, c.bright);
+        return { p, q, half: cu.half, col: cu.col, depth: project(p)[2] };
+      }).sort((a, b) => b.depth - a.depth);
+      for (const c of list) drawCube(c.p, c.q, c.half, c.col);
 
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, outW, outH);
@@ -473,20 +491,20 @@ export default function PixelCubePile({
           ctx.fill();
         }
       }
+
+      countAcc += dt;
+      if (onCount && countAcc > 0.2) { countAcc = 0; onCount(cubes.length); }
+
       raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);
 
-    const activate = () => {
-      hoverRef.current = true;
-      setFloor(true);
-      // отпускаем подвешенный куб: он проливается вниз вместе с потоком
-      if (idleShown) { idleShown = false; if (world && CANNONref) spawn(); }
-    };
+    const activate = () => { hoverRef.current = true; setFloor(true); };
     const deactivate = () => {
       hoverRef.current = false;
       ptrRef.current = null;
-      setFloor(false); // дно убрано — насыпь утекает, потом вернётся idle-куб
+      if (P().autoRain) { setFloor(true); return; }
+      setFloor(false); // дно убрано — насыпь утекает вниз
     };
     const onEnter = () => activate();
     const onLeave = () => deactivate();
@@ -497,25 +515,8 @@ export default function PixelCubePile({
     wrap.addEventListener("mouseenter", onEnter);
     wrap.addEventListener("mouseleave", onLeave);
     wrap.addEventListener("pointermove", onMove);
-
-    const isTouch = window.matchMedia("(hover: none)").matches;
-    let io: IntersectionObserver | null = null;
-    if (isTouch && typeof IntersectionObserver !== "undefined") {
-      io = new IntersectionObserver((es) => es.forEach((e) => (e.isIntersecting ? activate() : deactivate())),
-        { rootMargin: "-50% 0px -35% 0px", threshold: 0 });
-      io.observe(wrap);
-    }
     const onResize = () => measure();
     window.addEventListener("resize", onResize);
-
-    // пауза рендера/физики, когда карточка вне вьюпорта
-    let rafRunning = true;
-    const visIO = new IntersectionObserver((es) => {
-      const vis = es[0].isIntersecting;
-      if (vis && !rafRunning) { rafRunning = true; last = performance.now(); raf = requestAnimationFrame(frame); }
-      else if (!vis && rafRunning) { rafRunning = false; cancelAnimationFrame(raf); }
-    }, { threshold: 0 });
-    visIO.observe(wrap);
 
     return () => {
       cancelled = true;
@@ -523,11 +524,10 @@ export default function PixelCubePile({
       wrap.removeEventListener("mouseenter", onEnter);
       wrap.removeEventListener("mouseleave", onLeave);
       wrap.removeEventListener("pointermove", onMove);
-      io?.disconnect();
-      visIO.disconnect();
       window.removeEventListener("resize", onResize);
     };
-  }, [color, colors, logoSrc, grid, pitch, maxCubes, idleCenter, centerFrac]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [color, colors, logoSrc, pitch]);
 
   return (
     <div ref={wrapRef} className="absolute inset-0">
