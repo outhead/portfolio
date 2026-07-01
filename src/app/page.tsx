@@ -1926,8 +1926,9 @@ export default function PreviewHome() {
                     />
                   </span>
                 </button>
-                {/* Правая часть — головоломка с лучом; решил → 3D-портрет из точек */}
-                <div className="relative hidden md:block border-l border-white/[0.06] bg-black/20">
+                {/* Правая часть — головоломка с лучом; решил → 3D-портрет из точек.
+                    На мобиле — снизу отдельным блоком с фикс-высотой (панель absolute). */}
+                <div className="relative border-t md:border-t-0 md:border-l border-white/[0.06] bg-black/20 min-h-[300px] md:min-h-0">
                   <MentoringPanel className="absolute inset-0" />
                 </div>
               </div>

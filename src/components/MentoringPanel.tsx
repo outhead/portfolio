@@ -63,6 +63,14 @@ export default function MentoringPanel({ className = "" }: { className?: string 
               latchAssemble
               forceAssemble
             />
+            <motion.span
+              className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 select-none font-mono lowercase tracking-[0.35em] text-[11px] text-[#A6FF00]/55"
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7, duration: 0.8 }}
+            >
+              good boy
+            </motion.span>
           </motion.div>
         )}
       </AnimatePresence>
