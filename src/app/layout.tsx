@@ -41,7 +41,7 @@ export const metadata: Metadata = {
   authors: [{ name: "Егор Шугаев", url: "https://shugaev.vercel.app" }],
   robots: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
   openGraph: {
-    title: "Егор Шугаев — Дизайн-директор · Консультант · Ментор",
+    title: "Дизайн-директор · Консультант · Ментор",
     description: "11 лет в дизайне, 7 в руководстве в бигтехе.",
     type: "website",
     locale: "ru_RU",
@@ -58,8 +58,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Егор Шугаев — Дизайн-директор · Консультант · Ментор",
-    description: "Дизайн-директор в бигтехе: МТС, Ozon, Газпром Нефть, MWS AI. 11 лет в дизайне, 7 в руководстве. Сейчас — консультирую, advisory, менторинг.",
+    title: "Дизайн-директор · Консультант · Ментор",
+    description: "11 лет в дизайне, 7 в руководстве в бигтехе.",
     images: ["/og-image.png"],
   },
 };
