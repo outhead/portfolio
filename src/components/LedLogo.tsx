@@ -146,6 +146,7 @@ export default function LedLogo({ className }: { className?: string }) {
   const hovering = useRef(false);
   const playing = useRef(false); // секвенция квадрата играет (по клику на квадрат)
   const playStart = useRef(0);
+  const clickReq = useRef(false); // запрос проигрывания монограммы по клику (форсит фазу text)
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -194,6 +195,16 @@ export default function LedLogo({ className }: { className?: string }) {
     };
 
     const frame = (now: number) => {
+      // Клик по квадрату — всегда проигрываем монограмму, даже если сейчас идёт
+      // авто-эффект (волна/эквалайзер/дождь/скан). Иначе клик «не срабатывал».
+      if (clickReq.current) {
+        clickReq.current = false;
+        phase = "text";
+        start = now;            // сбросить таймер удержания, чтобы эффект не влез сразу
+        playing.current = true;
+        playStart.current = now;
+        textDirty = true;
+      }
       const t = (now - start) / 1000;
 
       if (phase === "text") {
@@ -362,9 +373,9 @@ export default function LedLogo({ className }: { className?: string }) {
       ))}
       {/* Кликабельная зона — только зелёный квадрат. Клик запускает секвенцию один раз. */}
       <rect
-        x={SQ_ANIM_LEFT * PITCH}
+        x={(SQ_ANIM_LEFT - 1) * PITCH}
         y={0}
-        width={SQ_ANIM_W * PITCH}
+        width={(SQ_ANIM_W + 2) * PITCH}
         height={VB_H}
         fill="#000"
         opacity={0}
@@ -373,10 +384,8 @@ export default function LedLogo({ className }: { className?: string }) {
         aria-label="Запустить анимацию монограммы"
         onPointerDown={(e) => {
           e.stopPropagation();
-          if (!playing.current) {
-            playing.current = true;
-            playStart.current = performance.now();
-          }
+          // Форсим проигрывание монограммы в след. кадре (даже если идёт эффект).
+          clickReq.current = true;
           // Пасхалка «лого-центр» — засчитываем в счётчик главной.
           try {
             window.dispatchEvent(new CustomEvent("egg:found", { detail: "logo" }));
