@@ -10,8 +10,6 @@ import FinalCTA from "@/components/FinalCTA";
 import EggLeaderboard from "@/components/EggLeaderboard";
 import PixelCubePile from "@/components/PixelCubePile";
 import PixelPhoto from "@/components/PixelPhoto";
-import LedGridBurst from "@/components/LedGridBurst";
-import BioRotator from "@/components/BioRotator";
 import MentoringPanel from "@/components/MentoringPanel";
 import { TypographyFix } from "@/components/TypographyFix";
 import { workProjects } from "@/data/projects";
@@ -2025,74 +2023,6 @@ export default function PreviewHome() {
 
       {/* ═══════ FINAL CTA — счётчик + фейерверк, easter-egg на 15/30/46 кликах ═══════ */}
       <FinalCTA />
-
-      {/* ═══════ ABOUT — о себе, последняя секция перед глобальным футером ═══════ */}
-      <section
-        id="about"
-        className="relative z-[1] overflow-hidden bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20"
-      >
-        {/* лёгкий ambient-свет, плавно проявляется при скролле в вид */}
-        <motion.div
-          aria-hidden
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true, margin: "-15% 0px -15% 0px" }}
-          transition={{ duration: 1.3, ease: "easeOut" }}
-          className="pointer-events-none absolute inset-0 z-0"
-          style={{
-            background:
-              "radial-gradient(ellipse 45% 55% at 22% 42%, rgba(166,255,0,0.06), transparent 65%)",
-          }}
-        />
-        <motion.div
-          className="relative z-[1]"
-          initial="hidden"
-          whileInView="show"
-          viewport={viewport}
-          variants={stagger}
-        >
-          <motion.div variants={fadeUp} className="mb-8 md:mb-12">
-            <SectionLabel>ОБО МНЕ</SectionLabel>
-          </motion.div>
-
-          {/* Фото + bio — единая тёмная панель в языке карточек кейсов.
-              Панель «собирает» блок, чтобы справа не зияла чёрная пустота. */}
-          <div className="grid md:grid-cols-[minmax(200px,260px)_minmax(0,640px)] gap-6 md:gap-8 lg:gap-10 items-center rounded-2xl border border-white/[0.06] bg-[#0b0b0a] p-5 md:p-7 lg:p-9">
-            <motion.div variants={fadeUp} className="w-full max-w-[200px] sm:max-w-[220px] mx-auto md:max-w-none md:mx-0">
-              {/* aspect-[4/5] на узкой колонке + кап ширины ниже lg —
-                  фото больше не растягивается во весь экран на мобиле/планшете */}
-              <div className="relative aspect-[4/5] rounded-xl overflow-hidden border border-white/[0.06] bg-black">
-                <span className="sr-only">Егор Шугаев — дизайн-директор, ментор и независимый консультант</span>
-                {/* портрет собран из тех же LED-ячеек, что и фон; диоды загораются, радиальные взрывы */}
-                <LedGridBurst
-                  src="/images/photos/me-pixel-color.png"
-                  className="absolute inset-0 z-0"
-                />
-                <div className="absolute inset-0 z-20 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
-                <div className="absolute z-30 bottom-4 left-4 right-4 flex items-center gap-1.5 text-[12px] tracking-[0.2em] uppercase text-white/74">
-                  <span className="relative flex h-1.5 w-1.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#A6FF00]" />
-                  </span>
-                  <span className="sr-only">Сейчас · МСК</span>
-                  <LedText text="Сейчас · МСК" className="h-[9px] w-auto" />
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div variants={fadeUp} className="flex flex-col justify-center">
-              <BioRotator
-                className="max-w-2xl"
-                items={[
-                  <>Пришёл в дизайн из&nbsp;полиграфии и&nbsp;остался в&nbsp;нём по простой причине: мне нравится узнавать первопричины потребностей пользователей и&nbsp;решений бизнеса, искать провалы, <span className="text-[#C9A66B]">растить людей и&nbsp;цифры</span>. В&nbsp;какой-то момент это оказалось не побочным интересом, а&nbsp;рабочей профессией.</>,
-                  <>Сейчас мне интересна связка <span className="text-[#A6FF00]">«дизайн и&nbsp;AI»</span>. Менторю дизайнеров и&nbsp;лидов, экспериментирую сам, пишу код. Иногда поделки получаются криво, но это часть процесса.</>,
-                  <>Работаю от&nbsp;задачи: строю и&nbsp;автоматизирую процессы, влезаю глубоко — от&nbsp;стратегии до&nbsp;ревью макетов. Задача руководителя, как я&nbsp;её вижу, — <span className="text-[#C9A66B]">дать команде ясность</span>: кто чем занят и&nbsp;зачем. Тогда люди действуют увереннее, а&nbsp;не на&nbsp;ощупь.</>,
-                ]}
-              />
-            </motion.div>
-          </div>
-        </motion.div>
-      </section>
 
       {/* ═══════ CONTACTS — bento-грид из action-тайлов ═══════ */}
       <section

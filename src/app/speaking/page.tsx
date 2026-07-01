@@ -1,6 +1,8 @@
 "use client";
 
 import LedText from "@/components/LedText";
+import LedGridBurst from "@/components/LedGridBurst";
+import BioRotator from "@/components/BioRotator";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, type Variants } from "framer-motion";
@@ -114,6 +116,55 @@ export default function SpeakingPage() {
           </motion.p>
         </motion.div>
       </section>
+
+      {/* ===== ABOUT — портрет + био, перенесено с главной ===== */}
+      <motion.section
+        initial="hidden"
+        whileInView="show"
+        viewport={viewport}
+        variants={stagger}
+        className="relative z-[1] overflow-hidden px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] pb-12 md:pb-16 bg-black"
+      >
+        <motion.div variants={fadeUp} className="mb-8 md:mb-10 inline-flex items-center gap-2 text-white/75">
+          <LedText text="[" className="h-[12px] md:h-[13px] w-auto text-[#C9A66B]" />
+          <span className="sr-only">Обо мне</span>
+          <LedText text="ОБО МНЕ" className="h-[12px] md:h-[13px] w-auto" />
+          <LedText text="]" className="h-[12px] md:h-[13px] w-auto text-[#C9A66B]" />
+        </motion.div>
+
+        {/* Фото + bio — единая тёмная панель в языке карточек кейсов */}
+        <div className="grid md:grid-cols-[minmax(200px,260px)_minmax(0,640px)] gap-6 md:gap-8 lg:gap-10 items-center rounded-2xl border border-white/[0.06] bg-[#0b0b0a] p-5 md:p-7 lg:p-9">
+          <motion.div variants={fadeUp} className="w-full max-w-[200px] sm:max-w-[220px] mx-auto md:max-w-none md:mx-0">
+            <div className="relative aspect-[4/5] rounded-xl overflow-hidden border border-white/[0.06] bg-black">
+              <span className="sr-only">Егор Шугаев — дизайн-директор, ментор и независимый консультант</span>
+              <LedGridBurst
+                src="/images/photos/me-pixel-color.png"
+                className="absolute inset-0 z-0"
+              />
+              <div className="absolute inset-0 z-20 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
+              <div className="absolute z-30 bottom-4 left-4 right-4 flex items-center gap-1.5 text-[12px] tracking-[0.2em] uppercase text-white/74">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#A6FF00]" />
+                </span>
+                <span className="sr-only">Сейчас · МСК</span>
+                <LedText text="Сейчас · МСК" className="h-[9px] w-auto" />
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div variants={fadeUp} className="flex flex-col justify-center">
+            <BioRotator
+              className="max-w-2xl"
+              items={[
+                <>Пришёл в дизайн из&nbsp;полиграфии и&nbsp;остался в&nbsp;нём по простой причине: мне нравится узнавать первопричины потребностей пользователей и&nbsp;решений бизнеса, искать провалы, <span className="text-[#C9A66B]">растить людей и&nbsp;цифры</span>. В&nbsp;какой-то момент это оказалось не побочным интересом, а&nbsp;рабочей профессией.</>,
+                <>Сейчас мне интересна связка <span className="text-[#A6FF00]">«дизайн и&nbsp;AI»</span>. Менторю дизайнеров и&nbsp;лидов, экспериментирую сам, пишу код. Иногда поделки получаются криво, но это часть процесса.</>,
+                <>Работаю от&nbsp;задачи: строю и&nbsp;автоматизирую процессы, влезаю глубоко — от&nbsp;стратегии до&nbsp;ревью макетов. Задача руководителя, как я&nbsp;её вижу, — <span className="text-[#C9A66B]">дать команде ясность</span>: кто чем занят и&nbsp;зачем. Тогда люди действуют увереннее, а&nbsp;не на&nbsp;ощупь.</>,
+              ]}
+            />
+          </motion.div>
+        </div>
+      </motion.section>
 
       {/* ===== TALKS GRID — основной блок, собран из кейсов ===== */}
       <motion.section

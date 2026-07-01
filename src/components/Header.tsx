@@ -46,7 +46,7 @@ const navLinks: Array<{ href: string; label: string; goal: string }> = [
   { href: "/speaking", label: "Выступления", goal: "nav_speaking" },
 ];
 
-const sectionIds = ["portfolio", "about", "contacts"];
+const sectionIds = ["portfolio", "contacts"];
 
 export default function Header() {
   const pathname = usePathname();
