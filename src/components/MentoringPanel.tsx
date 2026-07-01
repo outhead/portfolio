@@ -64,7 +64,7 @@ export default function MentoringPanel({ className = "" }: { className?: string 
               forceAssemble
             />
             <motion.span
-              className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 select-none font-mono lowercase tracking-[0.28em] text-[18px] md:text-[22px] text-[#A6FF00]/70"
+              className="pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 select-none font-mono uppercase tracking-[0.3em] text-[11px] md:text-[13px] text-white/70"
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7, duration: 0.8 }}
