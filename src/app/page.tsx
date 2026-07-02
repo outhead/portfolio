@@ -1877,13 +1877,13 @@ export default function PreviewHome() {
         >
           {/* ── МЕНТОРИНГ: слева кнопка записи, справа созвездие-пасхалка ── */}
           <motion.div variants={fadeUp}>
-            <div className="relative rounded-2xl overflow-hidden border border-[#A6FF00]/15 hover:border-[#A6FF00]/35 transition-colors duration-300 bg-[#0c0e09]">
+            <div className="relative rounded-2xl overflow-hidden border border-white/[0.06] hover:border-[#A6FF00]/30 transition-colors duration-300 bg-[#0b0b0a]">
               <div
                 aria-hidden
                 className="absolute inset-0 pointer-events-none"
                 style={{
                   background:
-                    "radial-gradient(ellipse 65% 90% at 10% 0%, rgba(166,255,0,0.07), transparent 60%)",
+                    "radial-gradient(ellipse 50% 70% at 8% 0%, rgba(166,255,0,0.035), transparent 55%)",
                 }}
               />
               <div className="relative grid md:grid-cols-[1fr_minmax(0,340px)] items-stretch">
@@ -1896,26 +1896,26 @@ export default function PreviewHome() {
                   className="group text-left no-underline p-8 md:p-12 flex flex-col justify-between min-h-[300px] md:min-h-[360px]"
                 >
                   <div>
-                    <div className="inline-flex items-center gap-2 text-white/75 mb-5">
+                    <div className="inline-flex items-center gap-2.5 text-white/60 mb-6">
                       <span className="h-1.5 w-1.5 rounded-full bg-[#A6FF00]" />
                       <span className="sr-only">МЕНТОРИНГ</span>
-                      <LedText text="МЕНТОРИНГ" className="h-[11px] w-auto" />
+                      <LedText text="МЕНТОРИНГ" className="h-[10px] w-auto" />
                     </div>
-                    <h3 className="text-white mb-5 max-w-lg">
+                    <h3 className="text-white mb-6 max-w-lg">
                       <LedLines
                         text="Довожу дизайнеров до сеньор-лида"
                         maxChars={26}
                         lineClass="h-[16px] md:h-[22px]"
                       />
                     </h3>
-                    <p className="text-[16px] text-white/72 leading-relaxed max-w-lg">
+                    <p className="text-[15px] md:text-[16px] text-white/65 leading-[1.75] max-w-[46ch]">
                       Больше 40 менти, а сессий ещё больше. Разбираем развилки роста:
                       как дотянуть до лида, собрать команду, защитить проект перед
                       топами. Даю не только свой опыт, но и учу думать, чтобы дальше
                       ты проходил такие развилки сам.
                     </p>
                   </div>
-                  <span className="inline-flex items-center gap-2 text-[#A6FF00] mt-8 pt-6 border-t border-white/[0.08]">
+                  <span className="inline-flex items-center gap-2.5 text-[#A6FF00] mt-10 pt-5 border-t border-white/[0.06] self-start pr-10 group-hover:border-[#A6FF00]/25 transition-colors">
                     <span className="sr-only">Записаться на сессию</span>
                     <LedText text="Записаться на сессию" className="h-[10px] w-auto" />
                     <LedText
