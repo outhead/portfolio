@@ -11,6 +11,7 @@ import EggLeaderboard from "@/components/EggLeaderboard";
 import PixelCubePile from "@/components/PixelCubePile";
 import PixelPhoto from "@/components/PixelPhoto";
 import MentoringPanel from "@/components/MentoringPanel";
+import GlyphTicker from "@/components/GlyphTicker";
 import { TypographyFix } from "@/components/TypographyFix";
 import { workProjects } from "@/data/projects";
 import { Plus } from "lucide-react";
@@ -92,6 +93,7 @@ function SectionLabel({
     >
       <span className="sr-only">{children}</span>
       <LedText text="[" className="h-[12px] md:h-[13px] w-auto text-[#C9A66B]" />
+      <LedText text="◆" className="h-[8px] md:h-[9px] w-auto text-[#A6FF00]" />
       <LedText
         text={typeof children === "string" ? children : ""}
         className="h-[12px] md:h-[13px] w-auto"
@@ -1634,11 +1636,24 @@ export default function PreviewHome() {
         </motion.div>
       </section>
 
+      {/* ── Глиф-тикер: живая лента между хиро и кейсами ── */}
+      <div className="relative z-[1] bg-black border-t border-white/[0.06] py-4 md:py-5">
+        <GlyphTicker items={["Открыт к предложениям", "Дизайн-директор", "AI", "Менторинг", "7 лет в продукте"]} />
+      </div>
+
       {/* ═══════ PROJECTS — полноширинный асимметричный бенто ═══════ */}
       <section
         id="portfolio"
-        className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20"
+        className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-16 md:py-24"
       >
+        {/* Вертикальный микро-лейбл на полях — печатная вёрстка (desktop only) */}
+        <div
+          aria-hidden
+          className="hidden lg:flex absolute left-8 top-1/2 -translate-y-1/2 rotate-180 [writing-mode:vertical-rl] items-center gap-3 text-white/25 select-none pointer-events-none"
+        >
+          <span className="font-mono text-[10px] tracking-[0.4em] uppercase">Работы · 2017—2026</span>
+          <span className="w-px h-16 bg-white/10" />
+        </div>
         <motion.div
           initial="hidden"
           whileInView="show"
@@ -1743,7 +1758,7 @@ export default function PreviewHome() {
       </section>
 
       {/* ═══════ CAREER — hover-list с историей ролей, сразу после кейсов ═══════ */}
-      <section className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20">
+      <section className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-16 md:py-24">
         <motion.div
           initial="hidden"
           whileInView="show"
@@ -1762,7 +1777,7 @@ export default function PreviewHome() {
       {/* ═══════ SERVICES / EXPERTISE — 3-колоночный бенто по мотивам Stokt ═══════ */}
       <section
         id="skills"
-        className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20"
+        className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-16 md:py-24"
       >
         <motion.div
           initial="hidden"
@@ -1843,7 +1858,7 @@ export default function PreviewHome() {
       </section>
 
       {/* ═══════ TESTIMONIALS — с астериксом * (stokt) ═══════ */}
-      <section className="relative z-[1] overflow-hidden bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20">
+      <section className="relative z-[1] overflow-hidden bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-16 md:py-24">
         {/* лёгкий ambient-свет, плавно проявляется при скролле в вид */}
         <motion.div
           aria-hidden
@@ -1901,7 +1916,7 @@ export default function PreviewHome() {
           whileInView="show"
           viewport={viewport}
           variants={stagger}
-          className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20 flex flex-col gap-5 md:gap-6"
+          className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-16 md:py-24 flex flex-col gap-5 md:gap-6"
         >
           {/* ── МЕНТОРИНГ: слева кнопка записи, справа созвездие-пасхалка ── */}
           <motion.div variants={fadeUp}>
@@ -2070,10 +2085,19 @@ export default function PreviewHome() {
       {/* ═══════ FINAL CTA — счётчик + фейерверк, easter-egg на 15/30/46 кликах ═══════ */}
       <FinalCTA />
 
+      {/* ── Глиф-тикер перед контактами: золотой, медленнее ── */}
+      <div className="relative z-[1] bg-black border-t border-white/[0.06] py-4 md:py-5">
+        <GlyphTicker
+          items={["Телеграм — быстрее всего", "Москва · весь мир", "CV в один клик"]}
+          color="text-[#C9A66B]/60"
+          speed={46}
+        />
+      </div>
+
       {/* ═══════ CONTACTS — bento-грид из action-тайлов ═══════ */}
       <section
         id="contacts"
-        className="relative z-[1] overflow-hidden bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20"
+        className="relative z-[1] overflow-hidden bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-16 md:py-24"
       >
         {/* лёгкий ambient-свет, плавно проявляется при скролле в вид */}
         <motion.div

@@ -439,6 +439,24 @@ export default function ProjectCard({
       >
         {/* Экран — медиа на всю карточку */}
         <div className="absolute inset-0">{MediaLayer}</div>
+        {/* Кроп-метки: плюсики по углам, как на печатном макете. На ховере — лайм. */}
+        <div aria-hidden className="absolute inset-0 z-[2] pointer-events-none">
+          {[
+            "top-2.5 left-2.5",
+            "top-2.5 right-2.5",
+            "bottom-2.5 left-2.5",
+            "bottom-2.5 right-2.5",
+          ].map((pos) => (
+            <span
+              key={pos}
+              className={`absolute ${pos} w-2 h-2 text-white/[0.14] md:group-hover:text-[#A6FF00]/60 transition-colors duration-500`}
+            >
+              <svg viewBox="0 0 8 8" className="w-full h-full" fill="none" stroke="currentColor" strokeWidth="1">
+                <path d="M4 0v8M0 4h8" />
+              </svg>
+            </span>
+          ))}
+        </div>
         {/* Затемнения для читаемости подписей поверх яркого медиа */}
         <div aria-hidden className="absolute inset-x-0 top-0 h-16 md:h-20 bg-gradient-to-b from-black/60 to-transparent z-[1] pointer-events-none" />
         <div aria-hidden className="absolute inset-x-0 bottom-0 h-28 md:h-36 bg-gradient-to-t from-black/85 via-black/45 to-transparent z-[1] pointer-events-none" />
