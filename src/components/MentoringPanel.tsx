@@ -9,7 +9,7 @@
 
 import { useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import ConstellationFigures from "./ConstellationFigures";
+import ConstellationFiguresV2 from "./ConstellationFiguresV2";
 import ParticlePortrait from "./ParticlePortrait";
 import { MENTORING_LEVEL } from "@/lib/optics";
 
@@ -30,7 +30,7 @@ export default function MentoringPanel({ className = "" }: { className?: string 
             exit={{ opacity: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <ConstellationFigures
+            <ConstellationFiguresV2
               className="absolute inset-0"
               level={MENTORING_LEVEL}
               lockMirror

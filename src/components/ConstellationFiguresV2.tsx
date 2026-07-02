@@ -41,10 +41,11 @@ export type V2Params = {
 };
 
 export const V2_DEFAULTS: V2Params = {
-  raySpeed: 26,
-  rayStep: 7,
-  gemSize: 9,
-  glow: 1,
+  // значения из песочницы, утверждены 02.07.2026
+  raySpeed: 28,
+  rayStep: 14,
+  gemSize: 13,
+  glow: 2,
   particles: true,
 };
 
