@@ -11,7 +11,6 @@ import EggLeaderboard from "@/components/EggLeaderboard";
 import PixelCubePile from "@/components/PixelCubePile";
 import PixelPhoto from "@/components/PixelPhoto";
 import MentoringPanel from "@/components/MentoringPanel";
-import GlyphTicker from "@/components/GlyphTicker";
 import { TypographyFix } from "@/components/TypographyFix";
 import { workProjects } from "@/data/projects";
 import { Plus } from "lucide-react";
@@ -93,7 +92,6 @@ function SectionLabel({
     >
       <span className="sr-only">{children}</span>
       <LedText text="[" className="h-[12px] md:h-[13px] w-auto text-[#C9A66B]" />
-      <LedText text="◆" className="h-[8px] md:h-[9px] w-auto text-[#A6FF00]" />
       <LedText
         text={typeof children === "string" ? children : ""}
         className="h-[12px] md:h-[13px] w-auto"
@@ -1636,11 +1634,6 @@ export default function PreviewHome() {
         </motion.div>
       </section>
 
-      {/* ── Глиф-тикер: живая лента между хиро и кейсами ── */}
-      <div className="relative z-[1] bg-black border-t border-white/[0.06] py-4 md:py-5">
-        <GlyphTicker items={["Открыт к предложениям", "Дизайн-директор", "AI", "Менторинг", "7 лет в продукте"]} />
-      </div>
-
       {/* ═══════ PROJECTS — полноширинный асимметричный бенто ═══════ */}
       <section
         id="portfolio"
@@ -1835,7 +1828,7 @@ export default function PreviewHome() {
                 label: "РЕМЕСЛО",
                 title: "Оптимизирую процессы",
                 Icon: Code2,
-                accent: "#56D2E2",
+                accent: "#C6C9C2",
                 animation: "ai" as PulseVariant,
                 body:
                   "Автоматизирую рутину, собираю AI-инструменты и агенты под конкретные задачи. Понимаю, что реально сделать руками и сколько это стоит в человеко-часах. Знаю, когда применять AI, а когда нанимать эксперта.",
@@ -2084,15 +2077,6 @@ export default function PreviewHome() {
 
       {/* ═══════ FINAL CTA — счётчик + фейерверк, easter-egg на 15/30/46 кликах ═══════ */}
       <FinalCTA />
-
-      {/* ── Глиф-тикер перед контактами: золотой, медленнее ── */}
-      <div className="relative z-[1] bg-black border-t border-white/[0.06] py-4 md:py-5">
-        <GlyphTicker
-          items={["Телеграм — быстрее всего", "Москва · весь мир", "CV в один клик"]}
-          color="text-[#C9A66B]/60"
-          speed={46}
-        />
-      </div>
 
       {/* ═══════ CONTACTS — bento-грид из action-тайлов ═══════ */}
       <section

@@ -385,8 +385,6 @@ export default function ProjectCard({
       ? firstYear
       : `${firstYear}–${lastYear}`;
   const metaText = `${periodShort} · ${project.roleShort ?? project.role}`;
-  // LED-индекс «01», «02»… — из 0-based index сетки.
-  const indexLabel = typeof index === "number" ? String(index + 1).padStart(2, "0") : null;
 
   // Медиа-слой на весь экран. Idle-куб подвешен на ~40% высоты — оптический
   // центр свободной зоны над тайтлом.
@@ -439,23 +437,35 @@ export default function ProjectCard({
       >
         {/* Экран — медиа на всю карточку */}
         <div className="absolute inset-0">{MediaLayer}</div>
-        {/* Кроп-метки: плюсики по углам, как на печатном макете. На ховере — лайм. */}
+        {/* Кроп-метки: плюсики по углам, как на печатном макете.
+            На ховере белеют и чуть расходятся наружу — «макет оживает». */}
         <div aria-hidden className="absolute inset-0 z-[2] pointer-events-none">
           {[
-            "top-2.5 left-2.5",
-            "top-2.5 right-2.5",
-            "bottom-2.5 left-2.5",
-            "bottom-2.5 right-2.5",
-          ].map((pos) => (
+            { pos: "top-2.5 left-2.5", out: "md:group-hover:-translate-x-0.5 md:group-hover:-translate-y-0.5" },
+            { pos: "top-2.5 right-2.5", out: "md:group-hover:translate-x-0.5 md:group-hover:-translate-y-0.5" },
+            { pos: "bottom-2.5 left-2.5", out: "md:group-hover:-translate-x-0.5 md:group-hover:translate-y-0.5" },
+            { pos: "bottom-2.5 right-2.5", out: "md:group-hover:translate-x-0.5 md:group-hover:translate-y-0.5" },
+          ].map(({ pos, out }) => (
             <span
               key={pos}
-              className={`absolute ${pos} w-2 h-2 text-white/[0.14] md:group-hover:text-[#A6FF00]/60 transition-colors duration-500`}
+              className={`absolute ${pos} ${out} w-2 h-2 text-white/[0.14] md:group-hover:text-white/60 transition-all duration-500 ease-out`}
             >
               <svg viewBox="0 0 8 8" className="w-full h-full" fill="none" stroke="currentColor" strokeWidth="1">
                 <path d="M4 0v8M0 4h8" />
               </svg>
             </span>
           ))}
+        </div>
+        {/* Сканлайн: полоса развёртки, один проход при наведении (desktop) */}
+        <div aria-hidden className="hidden md:block absolute inset-0 z-[2] pointer-events-none overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <style>{`@keyframes cardScanline{from{transform:translateY(-8%)}to{transform:translateY(108%)}}`}</style>
+          <div
+            className="absolute inset-x-0 h-10 group-hover:[animation:cardScanline_1.1s_cubic-bezier(0.4,0,0.6,1)_1]"
+            style={{
+              background:
+                "linear-gradient(to bottom, transparent, rgba(255,255,255,0.05) 45%, rgba(255,255,255,0.09) 50%, rgba(255,255,255,0.05) 55%, transparent)",
+            }}
+          />
         </div>
         {/* Затемнения для читаемости подписей поверх яркого медиа */}
         <div aria-hidden className="absolute inset-x-0 top-0 h-16 md:h-20 bg-gradient-to-b from-black/60 to-transparent z-[1] pointer-events-none" />
@@ -467,12 +477,6 @@ export default function ProjectCard({
         <div className="relative z-[2] h-full flex flex-col p-4 md:p-5 pointer-events-none">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-2 md:gap-2.5 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
-              {indexLabel && (
-                <span className="inline-flex text-white/30 md:group-hover:text-[#A6FF00] transition-colors duration-300">
-                  <span className="sr-only">{`Кейс ${indexLabel}`}</span>
-                  <LedText text={indexLabel} className="h-[9px] md:h-[10px] w-auto" />
-                </span>
-              )}
               {showCompany && (
                 <span className="inline-flex text-white/75">
                   <span className="sr-only">{project.company}</span>
