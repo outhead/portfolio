@@ -662,14 +662,8 @@ type ServiceTileData = {
   items: string[];
 };
 
-// Канва PulseAnimation рисует активные кадры захардкоженным лаймом (#A6FF00).
-// Перекрашиваем её под акцент тайла CSS-фильтром: hue-rotate сдвигает лайм
-// в золото/циан, а белые idle-точки при этом остаются нейтральными.
-// Для лаймового акцента фильтр не нужен (undefined → без filter).
-const ANIMATION_TINT: Record<string, string> = {
-  "#C9A66B": "hue-rotate(-45deg) saturate(0.55) brightness(0.9)", // золото
-  "#56D2E2": "hue-rotate(130deg) saturate(0.7) brightness(0.9)", // циан
-};
+// Канва PulseAnimation рисует активные кадры лаймом (#A6FF00) — оставляем
+// родной цвет: лейблы/иконки золотые, анимация зелёная, idle-точки белые.
 
 function ServiceTile({ tile }: { tile: ServiceTileData }) {
   const { label, title, Icon, accent, animation, animationReverse, body } = tile;
@@ -748,10 +742,7 @@ function ServiceTile({ tile }: { tile: ServiceTileData }) {
           стоял на одной y-координате во всех плитках. Default — статичный
           серый кадр; hover (десктоп) или scroll-into-view (мобила) — зелёная анимация. */}
       <div className="h-[150px] md:h-[165px] my-4 md:my-7 flex items-center justify-center">
-        <div
-          className="relative w-[140px] h-[140px] mx-auto"
-          style={{ filter: ANIMATION_TINT[accent] }}
-        >
+        <div className="relative w-[140px] h-[140px] mx-auto">
           <PulseAnimation
             variant={animation}
             reverse={animationReverse}
@@ -1637,8 +1628,27 @@ export default function PreviewHome() {
       {/* ═══════ PROJECTS — полноширинный асимметричный бенто ═══════ */}
       <section
         id="portfolio"
-        className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20"
+        className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-16 md:py-24"
       >
+        {/* Тихое дот-поле в глубине: незажжённые диоды, растворяются к карточкам */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage: "radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1.3px)",
+            backgroundSize: "20px 20px",
+            maskImage: "linear-gradient(to bottom, black, transparent 38%, transparent 62%, black)",
+            WebkitMaskImage: "linear-gradient(to bottom, black, transparent 38%, transparent 62%, black)",
+          }}
+        />
+        {/* Вертикальный микро-лейбл на полях — печатная вёрстка (desktop only) */}
+        <div
+          aria-hidden
+          className="hidden lg:flex absolute left-8 top-1/2 -translate-y-1/2 rotate-180 [writing-mode:vertical-rl] items-center gap-3 text-white/25 select-none pointer-events-none"
+        >
+          <span className="font-mono text-[10px] tracking-[0.4em] uppercase">Работы · 2017—2026</span>
+          <span className="w-px h-16 bg-white/10" />
+        </div>
         <motion.div
           initial="hidden"
           whileInView="show"
@@ -1743,7 +1753,7 @@ export default function PreviewHome() {
       </section>
 
       {/* ═══════ CAREER — hover-list с историей ролей, сразу после кейсов ═══════ */}
-      <section className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20">
+      <section className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-16 md:py-24">
         <motion.div
           initial="hidden"
           whileInView="show"
@@ -1762,7 +1772,7 @@ export default function PreviewHome() {
       {/* ═══════ SERVICES / EXPERTISE — 3-колоночный бенто по мотивам Stokt ═══════ */}
       <section
         id="skills"
-        className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20"
+        className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-16 md:py-24"
       >
         <motion.div
           initial="hidden"
@@ -1802,7 +1812,7 @@ export default function PreviewHome() {
                 label: "ПРОДУКТ",
                 title: "Фокус на метриках",
                 Icon: Sparkles,
-                accent: "#A6FF00",
+                accent: "#C9A66B",
                 animation: "target" as PulseVariant,
                 body:
                   "Работаю на число. Discovery, гипотезы, CJM, A/B, research внутри процесса. Умею считать дизайн и доказывать его ценность продакт-менеджеру и C-левелу. Делаю это в B2C-экосистемах, B2E-инструментах и в EdTech.",
@@ -1820,7 +1830,7 @@ export default function PreviewHome() {
                 label: "РЕМЕСЛО",
                 title: "Оптимизирую процессы",
                 Icon: Code2,
-                accent: "#56D2E2",
+                accent: "#C9A66B",
                 animation: "ai" as PulseVariant,
                 body:
                   "Автоматизирую рутину, собираю AI-инструменты и агенты под конкретные задачи. Понимаю, что реально сделать руками и сколько это стоит в человеко-часах. Знаю, когда применять AI, а когда нанимать эксперта.",
@@ -1843,7 +1853,7 @@ export default function PreviewHome() {
       </section>
 
       {/* ═══════ TESTIMONIALS — с астериксом * (stokt) ═══════ */}
-      <section className="relative z-[1] overflow-hidden bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20">
+      <section className="relative z-[1] overflow-hidden bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-16 md:py-24">
         {/* лёгкий ambient-свет, плавно проявляется при скролле в вид */}
         <motion.div
           aria-hidden
@@ -1901,7 +1911,7 @@ export default function PreviewHome() {
           whileInView="show"
           viewport={viewport}
           variants={stagger}
-          className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20 flex flex-col gap-5 md:gap-6"
+          className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-16 md:py-24 flex flex-col gap-5 md:gap-6"
         >
           {/* ── МЕНТОРИНГ: слева кнопка записи, справа созвездие-пасхалка ── */}
           <motion.div variants={fadeUp}>
@@ -2073,7 +2083,7 @@ export default function PreviewHome() {
       {/* ═══════ CONTACTS — bento-грид из action-тайлов ═══════ */}
       <section
         id="contacts"
-        className="relative z-[1] overflow-hidden bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-14 md:py-20"
+        className="relative z-[1] overflow-hidden bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-16 md:py-24"
       >
         {/* лёгкий ambient-свет, плавно проявляется при скролле в вид */}
         <motion.div
