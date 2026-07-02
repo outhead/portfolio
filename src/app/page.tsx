@@ -1903,16 +1903,13 @@ export default function PreviewHome() {
                     </div>
                     <h3 className="text-white mb-6 max-w-lg">
                       <LedLines
-                        text="Довожу дизайнеров до сеньор-лида"
+                        text={"Довожу дизайнеров до сеньор-лида"}
                         maxChars={26}
                         lineClass="h-[16px] md:h-[22px]"
                       />
                     </h3>
                     <p className="text-[15px] md:text-[16px] text-white/65 leading-[1.75] max-w-[46ch]">
-                      Больше 40 менти, а сессий ещё больше. Разбираем развилки роста:
-                      как дотянуть до лида, собрать команду, защитить проект перед
-                      топами. Даю не только свой опыт, но и учу думать, чтобы дальше
-                      ты проходил такие развилки сам.
+                      {"Больше 40 менти, а сессий ещё больше. Разбираем развилки роста: как дотянуть до лида, собрать команду, защитить проект перед топами. Даю не только свой опыт, но и учу думать, чтобы дальше ты проходил такие развилки сам."}
                     </p>
                   </div>
                   <span className="inline-flex items-center gap-2.5 text-[#A6FF00] mt-10 pt-5 border-t border-white/[0.06] self-start pr-10 group-hover:border-[#A6FF00]/25 transition-colors">

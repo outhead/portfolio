@@ -114,7 +114,8 @@ export function layoutLedText(
   const dots: LedDot[] = [];
   let col = 0;
   const rows = LED_ROWS * scale;
-  const chars = [...text.toUpperCase()].map((c) => (c === "Ё" ? "Е" : c));
+  // NBSP рисуем как обычный пробел (неразрывные предлоги в LedLines)
+  const chars = [...text.toUpperCase()].map((c) => (c === "Ё" ? "Е" : c === " " ? " " : c));
   for (let ci = 0; ci < chars.length; ci++) {
     const g = LED_GLYPHS[chars[ci]];
     if (!g) continue;
