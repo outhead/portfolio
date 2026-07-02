@@ -23,6 +23,10 @@ export interface Project {
   title: string;
   company: string;
   role: string;
+  /** Короткая версия роли для мета-строки карточки (одна LED-строка,
+   *  должна влезать в узкую мобильную карточку ~390px). Если не задана —
+   *  карточка использует `role`. */
+  roleShort?: string;
   period: string;
   year: number;
   description: string;
@@ -158,6 +162,7 @@ export const projects: Project[] = [
     cubeColor: "#FF2436",
     cubeLogo: "/images/logos/mts.svg",
     role: "Руководитель направления дизайна (B2C ecosystem)",
+    roleShort: "Руководитель направления",
     period: "май 2024 — июль 2025",
     year: 2024,
     description:
@@ -716,6 +721,7 @@ export const projects: Project[] = [
     title: "Как я менторю и использую AI-агентов",
     company: "Independent · Practice",
     role: "Mentor · Process Designer",
+    roleShort: "Mentor",
     period: "2024 — настоящее время",
     year: 2026,
     description:

@@ -304,7 +304,8 @@ function useMobileFocus(ref: RefObject<HTMLElement | null>): boolean {
 
 interface ProjectCardProps {
   project: Project;
-  /** index больше не отображается — оставлен в пропсах для совместимости с page.tsx */
+  /** Порядковый номер кейса в сетке (0-based). Рендерится LED-индексом
+   *  «01», «02»… слева в шапке карточки; лаймовый на ховере. */
   index?: number;
   /** Крупная карточка (featured). */
   featured?: boolean;
@@ -316,6 +317,7 @@ interface ProjectCardProps {
 
 export default function ProjectCard({
   project,
+  index,
   featured = false,
   wide = false,
   showTags = true,
@@ -368,6 +370,23 @@ export default function ProjectCard({
   const showCompany = !/pet\s*project/i.test(project.company);
 
   const hasCube = !!(project.cubeColor && project.cubeLogo);
+
+  // ── Мета «год · роль» у нижней кромки экрана ────────────────────────
+  // Диапазон лет достаём из period («май 2024 — июль 2025» → «2024–2025»),
+  // открытые периоды сжимаем до «с 2025». Длину строки режем на уровне
+  // ДАННЫХ (roleShort в projects.ts), а не CSS-скейлом — LED-строка должна
+  // влезать в мобильную карточку ~390px как есть.
+  const periodYears = project.period.match(/\d{4}/g) ?? [String(project.year)];
+  const firstYear = periodYears[0];
+  const lastYear = periodYears[periodYears.length - 1];
+  const periodShort = /настоящ/i.test(project.period)
+    ? `с ${firstYear}`
+    : firstYear === lastYear
+      ? firstYear
+      : `${firstYear}–${lastYear}`;
+  const metaText = `${periodShort} · ${project.roleShort ?? project.role}`;
+  // LED-индекс «01», «02»… — из 0-based index сетки.
+  const indexLabel = typeof index === "number" ? String(index + 1).padStart(2, "0") : null;
 
   // Медиа-слой на весь экран. Idle-куб подвешен на ~40% высоты — оптический
   // центр свободной зоны над тайтлом.
@@ -429,12 +448,18 @@ export default function ProjectCard({
             Низ: только тайтл, без чипов. */}
         <div className="relative z-[2] h-full flex flex-col p-4 md:p-5 pointer-events-none">
           <div className="flex items-start justify-between gap-4">
-            <div className="text-white/75 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+            <div className="flex items-center gap-2 md:gap-2.5 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+              {indexLabel && (
+                <span className="inline-flex text-white/30 md:group-hover:text-[#A6FF00] transition-colors duration-300">
+                  <span className="sr-only">{`Кейс ${indexLabel}`}</span>
+                  <LedText text={indexLabel} className="h-[9px] md:h-[10px] w-auto" />
+                </span>
+              )}
               {showCompany && (
-                <>
+                <span className="inline-flex text-white/75">
                   <span className="sr-only">{project.company}</span>
                   <LedText text={project.company} className="h-[9px] md:h-[10px] w-auto" />
-                </>
+                </span>
               )}
             </div>
             {showTags && project.tags.length > 0 && (
@@ -445,7 +470,8 @@ export default function ProjectCard({
             )}
           </div>
           <div className="mt-auto flex flex-col items-center text-center pb-1 md:pb-1.5">
-            <h3 className="text-white max-w-full drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
+            {/* Ховер-сдвиг тайтла — только desktop (md:), на мобиле статично */}
+            <h3 className="text-white max-w-full drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] md:group-hover:-translate-y-0.5">
               <LedLines
                 text={project.title}
                 center
@@ -459,6 +485,16 @@ export default function ProjectCard({
                 }
               />
             </h3>
+            {/* Мета «год · роль». На мобиле видна сразу (opacity-100),
+                на desktop дремлет на 60% и проявляется по ховеру. */}
+            <div className="mt-1.5 md:mt-2 max-w-full text-white/50 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] transition-opacity duration-300 opacity-100 md:opacity-60 md:group-hover:opacity-100">
+              <span className="sr-only">{metaText}</span>
+              <LedText
+                text={metaText}
+                className="h-[8px] md:h-[9px] w-auto max-w-full"
+                preserve="xMidYMid meet"
+              />
+            </div>
           </div>
         </div>
       </article>
