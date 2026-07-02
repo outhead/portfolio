@@ -50,8 +50,9 @@ export default function MentoringPanel({ className = "" }: { className?: string 
             animate={{ opacity: 1 }}
             transition={{ duration: 0.9 }}
           >
+            {/* пёс: воздух сверху и снизу, не упирается в подпись */}
             <ParticlePortrait
-              className="absolute inset-0 w-full h-full"
+              className="absolute inset-x-0 top-[4%] bottom-[14%]"
               trackingRef={ref}
               shapes={PORTRAIT}
               count={12000}
@@ -64,7 +65,7 @@ export default function MentoringPanel({ className = "" }: { className?: string 
               forceAssemble
             />
             <motion.span
-              className="pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 select-none font-mono uppercase tracking-[0.3em] text-[11px] md:text-[13px] text-white/70"
+              className="pointer-events-none absolute bottom-4 md:bottom-5 left-1/2 -translate-x-1/2 select-none whitespace-nowrap font-mono uppercase tracking-[0.3em] text-[11px] md:text-[13px] text-white/70"
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7, duration: 0.8 }}
