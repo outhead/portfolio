@@ -456,17 +456,6 @@ export default function ProjectCard({
             </span>
           ))}
         </div>
-        {/* Сканлайн: полоса развёртки, один проход при наведении (desktop) */}
-        <div aria-hidden className="hidden md:block absolute inset-0 z-[2] pointer-events-none overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          <style>{`@keyframes cardScanline{from{transform:translateY(-8%)}to{transform:translateY(108%)}}`}</style>
-          <div
-            className="absolute inset-x-0 h-10 group-hover:[animation:cardScanline_1.1s_cubic-bezier(0.4,0,0.6,1)_1]"
-            style={{
-              background:
-                "linear-gradient(to bottom, transparent, rgba(255,255,255,0.05) 45%, rgba(255,255,255,0.09) 50%, rgba(255,255,255,0.05) 55%, transparent)",
-            }}
-          />
-        </div>
         {/* Затемнения для читаемости подписей поверх яркого медиа */}
         <div aria-hidden className="absolute inset-x-0 top-0 h-16 md:h-20 bg-gradient-to-b from-black/60 to-transparent z-[1] pointer-events-none" />
         <div aria-hidden className="absolute inset-x-0 bottom-0 h-28 md:h-36 bg-gradient-to-t from-black/85 via-black/45 to-transparent z-[1] pointer-events-none" />

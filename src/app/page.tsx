@@ -662,14 +662,8 @@ type ServiceTileData = {
   items: string[];
 };
 
-// Канва PulseAnimation рисует активные кадры захардкоженным лаймом (#A6FF00).
-// Перекрашиваем её под акцент тайла CSS-фильтром: hue-rotate сдвигает лайм
-// в золото/циан, а белые idle-точки при этом остаются нейтральными.
-// Для лаймового акцента фильтр не нужен (undefined → без filter).
-const ANIMATION_TINT: Record<string, string> = {
-  "#C9A66B": "hue-rotate(-45deg) saturate(0.55) brightness(0.9)", // золото
-  "#56D2E2": "hue-rotate(130deg) saturate(0.7) brightness(0.9)", // циан
-};
+// Канва PulseAnimation рисует активные кадры лаймом (#A6FF00) — оставляем
+// родной цвет: лейблы/иконки золотые, анимация зелёная, idle-точки белые.
 
 function ServiceTile({ tile }: { tile: ServiceTileData }) {
   const { label, title, Icon, accent, animation, animationReverse, body } = tile;
@@ -748,10 +742,7 @@ function ServiceTile({ tile }: { tile: ServiceTileData }) {
           стоял на одной y-координате во всех плитках. Default — статичный
           серый кадр; hover (десктоп) или scroll-into-view (мобила) — зелёная анимация. */}
       <div className="h-[150px] md:h-[165px] my-4 md:my-7 flex items-center justify-center">
-        <div
-          className="relative w-[140px] h-[140px] mx-auto"
-          style={{ filter: ANIMATION_TINT[accent] }}
-        >
+        <div className="relative w-[140px] h-[140px] mx-auto">
           <PulseAnimation
             variant={animation}
             reverse={animationReverse}
@@ -1810,7 +1801,7 @@ export default function PreviewHome() {
                 label: "ПРОДУКТ",
                 title: "Фокус на метриках",
                 Icon: Sparkles,
-                accent: "#A6FF00",
+                accent: "#C9A66B",
                 animation: "target" as PulseVariant,
                 body:
                   "Работаю на число. Discovery, гипотезы, CJM, A/B, research внутри процесса. Умею считать дизайн и доказывать его ценность продакт-менеджеру и C-левелу. Делаю это в B2C-экосистемах, B2E-инструментах и в EdTech.",
@@ -1828,7 +1819,7 @@ export default function PreviewHome() {
                 label: "РЕМЕСЛО",
                 title: "Оптимизирую процессы",
                 Icon: Code2,
-                accent: "#C6C9C2",
+                accent: "#C9A66B",
                 animation: "ai" as PulseVariant,
                 body:
                   "Автоматизирую рутину, собираю AI-инструменты и агенты под конкретные задачи. Понимаю, что реально сделать руками и сколько это стоит в человеко-часах. Знаю, когда применять AI, а когда нанимать эксперта.",
