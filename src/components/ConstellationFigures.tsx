@@ -50,6 +50,9 @@ export default function ConstellationFigures({
     const reduce =
       typeof window !== "undefined" &&
       window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    const coarse =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(pointer: coarse)").matches;
 
     let dpr = 1, s = 1, offX = 0, offY = 0;
     let raf = 0, stopped = false, visible = true;
@@ -71,6 +74,12 @@ export default function ConstellationFigures({
 
     function draw(now: number) {
       if (stopped) return;
+      // полная очистка канваса в device-px: глоу/точки за пределами логического
+      // поля (letterbox-поля при contain-скейле) иначе накапливаются артефактами
+      ctx!.save();
+      ctx!.setTransform(1, 0, 0, 1, 0, 0);
+      ctx!.clearRect(0, 0, canvas!.width, canvas!.height);
+      ctx!.restore();
       const segs = trace(live, LW, LH, undefined, targetsPx);
       const hits = targetHits(segs, targetsPx);
       const all = hits.length > 0 && hits.every(Boolean);
@@ -116,18 +125,21 @@ export default function ConstellationFigures({
     }
     function onDown(e: PointerEvent) {
       const p = pos(e);
+      // хит-зоны считаем в ЭКРАННЫХ px и переводим в логические (/s):
+      // на телефоне поле ужимается, и логические 22px становятся меньше пальца
+      const pick = (base: number) => Math.max(base, (coarse ? 34 : base) / s);
       if (live.mirror && !lockMirror) {
         const [mA] = mirrorEnds(live.mirror);
-        if (Math.hypot(p.x - mA.x, p.y - mA.y) < 16) drag = { kind: "mrot" };
+        if (Math.hypot(p.x - mA.x, p.y - mA.y) < pick(16)) drag = { kind: "mrot" };
       }
       if (!drag) {
-        let bi = -1, best = 22;
+        let bi = -1, best = pick(22);
         live.stones.forEach((st, i) => {
           const d = Math.hypot(p.x - st.p.x, p.y - st.p.y);
           if (d < best) { best = d; bi = i; }
         });
         if (bi >= 0) drag = { kind: "stone", i: bi };
-        else if (live.mirror && !lockMirror && Math.hypot(p.x - live.mirror.p.x, p.y - live.mirror.p.y) < 26) drag = { kind: "mirror" };
+        else if (live.mirror && !lockMirror && Math.hypot(p.x - live.mirror.p.x, p.y - live.mirror.p.y) < pick(26)) drag = { kind: "mirror" };
       }
       try { canvas!.setPointerCapture(e.pointerId); } catch {}
       if (reduce && drag) draw(performance.now());
@@ -142,6 +154,8 @@ export default function ConstellationFigures({
       if (reduce) draw(performance.now());
     }
     function onUp() { drag = null; }
+    // лонгтап на телефоне не должен выделять текст/вызывать контекстное меню
+    function onCtx(e: Event) { e.preventDefault(); }
 
     const ro = new ResizeObserver(() => fit());
     ro.observe(canvas);
@@ -149,6 +163,7 @@ export default function ConstellationFigures({
     canvas.addEventListener("pointermove", onMove);
     canvas.addEventListener("pointerup", onUp);
     canvas.addEventListener("pointercancel", onUp);
+    canvas.addEventListener("contextmenu", onCtx);
     fit();
     if (!reduce) raf = requestAnimationFrame(tick);
 
@@ -171,6 +186,7 @@ export default function ConstellationFigures({
       canvas.removeEventListener("pointermove", onMove);
       canvas.removeEventListener("pointerup", onUp);
       canvas.removeEventListener("pointercancel", onUp);
+      canvas.removeEventListener("contextmenu", onCtx);
     };
   }, [level, lockMirror]);
 
@@ -178,7 +194,16 @@ export default function ConstellationFigures({
     <canvas
       ref={canvasRef}
       className={className}
-      style={{ width: "100%", height: "100%", display: "block", cursor: "grab", touchAction: "none" }}
+      style={{
+        width: "100%",
+        height: "100%",
+        display: "block",
+        cursor: "grab",
+        touchAction: "none",
+        userSelect: "none",
+        WebkitUserSelect: "none",
+        WebkitTouchCallout: "none",
+      } as React.CSSProperties}
       aria-label="Головоломка: двигай камни-призмы, чтобы зажечь все узлы своего цвета"
       role="img"
     />
