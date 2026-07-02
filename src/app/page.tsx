@@ -422,6 +422,8 @@ const careerJobs: Array<{
   scope: string;
   details?: string[];
   current?: boolean;
+  /** Путь к SVG-лого для hover-подложки на десктопе; нет лого — ничего не показываем. */
+  logo?: string;
 }> = [
   {
     year: "Сейчас",
@@ -440,6 +442,7 @@ const careerJobs: Array<{
     company: "MWS AI",
     role: "AI Visioner",
     scope: "AI-дивизион МТС Web Services, 2 продукта",
+    logo: "/images/logos/mts.svg",
     details: [
       "Задавал AI-направление двум флагманским продуктам дивизиона",
       "Определял UX-принципы для AI-агентов и чат-интерфейсов",
@@ -451,6 +454,7 @@ const careerJobs: Array<{
     company: "МТС",
     role: "Design Director",
     scope: "8 команд, 6 лидов, 3 арт-дира, 40+ дизайнеров, 4 запуска голосовой",
+    logo: "/images/logos/mts.svg",
     details: [
       "Голосовая экосистема: 4 публичных запуска за 2025 (вкл. AI-шумоподавление, впервые на рынке моб. связи)",
       "Кросс-продуктовая интеграция Мой МТС: 30+ экосистемных продуктов в одном flow поверх 5 параллельных бизнесов",
@@ -462,6 +466,7 @@ const careerJobs: Array<{
     company: "Газпром Нефть",
     role: "Head of Design",
     scope: "76 команд, 42 лида, 100+ дизайнеров, CX Award'24",
+    logo: "/images/logos/gazpromneft.svg",
     details: [
       "Собрал единую дизайн-функцию из разрозненных команд",
       "Запустил дизайн-систему для 76 продуктов",
@@ -473,6 +478,7 @@ const careerJobs: Array<{
     company: "Ozon",
     role: "Community Lead",
     scope: "Канал с 0 до 17К подписчиков, −60% к оттоку на найме",
+    logo: "/images/logos/ozon.svg",
     details: [
       "Построил дизайн-комьюнити с нуля",
       "Вырастил канал с 0 до 17К подписчиков",
@@ -484,6 +490,7 @@ const careerJobs: Array<{
     company: "МТС",
     role: "Art Director B2C",
     scope: "16 команд, 60+ дизайнеров, 11М+ пользователей",
+    logo: "/images/logos/mts.svg",
     details: [
       "Арт-дирекшн B2C-экосистемы МТС",
       "×10 рост транзакций в МТС Cashback",
@@ -542,7 +549,16 @@ function CareerHoverList() {
             </button>
 
             {/* Desktop: статичная строка (hover-раскрытие ниже через group-hover) */}
-            <div className="hidden md:flex items-center gap-6 px-7 py-5">
+            <div className="relative hidden md:flex items-center gap-6 px-7 py-5">
+              {/* Hover-награда: большое полупрозрачное лого компании справа, за текстом */}
+              {job.logo && (
+                <img
+                  src={job.logo}
+                  alt=""
+                  aria-hidden
+                  className="pointer-events-none select-none absolute right-8 top-1/2 -translate-y-1/2 translate-x-2 group-hover:translate-x-0 h-9 max-w-[160px] w-auto object-contain brightness-0 invert opacity-0 group-hover:opacity-[0.16] transition-all duration-500 ease-out"
+                />
+              )}
               <span
                 className={`shrink-0 w-2 h-2 rounded-full ${
                   job.current ? "bg-[#A6FF00]" : "bg-white/25"
@@ -553,7 +569,7 @@ function CareerHoverList() {
                 <span className="sr-only">{job.year}</span>
                 <LedText text={job.year} className="h-[10px] w-auto" />
               </span>
-              <span className="flex-1 min-w-0 flex flex-row items-baseline gap-3">
+              <span className="relative z-[1] flex-1 min-w-0 flex flex-row items-baseline gap-3">
                 <span className="text-white min-w-0">
                   <span className="sr-only">{job.company}</span>
                   <LedText text={job.company} className="h-[12px] w-auto" />
@@ -646,6 +662,15 @@ type ServiceTileData = {
   items: string[];
 };
 
+// Канва PulseAnimation рисует активные кадры захардкоженным лаймом (#A6FF00).
+// Перекрашиваем её под акцент тайла CSS-фильтром: hue-rotate сдвигает лайм
+// в золото/циан, а белые idle-точки при этом остаются нейтральными.
+// Для лаймового акцента фильтр не нужен (undefined → без filter).
+const ANIMATION_TINT: Record<string, string> = {
+  "#C9A66B": "hue-rotate(-45deg) saturate(0.55) brightness(0.9)", // золото
+  "#56D2E2": "hue-rotate(130deg) saturate(0.7) brightness(0.9)", // циан
+};
+
 function ServiceTile({ tile }: { tile: ServiceTileData }) {
   const { label, title, Icon, accent, animation, animationReverse, body } = tile;
   const tileRef = useRef<HTMLDivElement>(null);
@@ -723,7 +748,10 @@ function ServiceTile({ tile }: { tile: ServiceTileData }) {
           стоял на одной y-координате во всех плитках. Default — статичный
           серый кадр; hover (десктоп) или scroll-into-view (мобила) — зелёная анимация. */}
       <div className="h-[150px] md:h-[165px] my-4 md:my-7 flex items-center justify-center">
-        <div className="relative w-[140px] h-[140px] mx-auto">
+        <div
+          className="relative w-[140px] h-[140px] mx-auto"
+          style={{ filter: ANIMATION_TINT[accent] }}
+        >
           <PulseAnimation
             variant={animation}
             reverse={animationReverse}
@@ -1401,7 +1429,7 @@ export default function PreviewHome() {
 
             {/* ── Нейроструктура: узлы, связи, сигналы ── */}
             <motion.div variants={fadeUp} className="col-span-12 lg:col-span-5">
-              <Oled className="h-full p-5 md:p-7 flex flex-col gap-4">
+              <Oled className="h-full p-5 md:p-6 flex flex-col gap-4">
                 <div className="flex items-center justify-between text-white/35">
                   <span
                     onMouseEnter={goHomeHover}
@@ -1468,7 +1496,7 @@ export default function PreviewHome() {
 
             {/* ── В цифрах: LED-счётчики + тихий граф из точек ── */}
             <motion.div variants={fadeUp} className="col-span-12 lg:col-span-5">
-              <Oled className="h-full p-5 md:p-7 flex items-center">
+              <Oled className="h-full p-5 md:p-6 flex items-center">
                 <div className="relative w-full flex justify-center gap-8 md:gap-14 lg:gap-4 xl:gap-4 2xl:gap-12">
                   {[
                     { v: "30", l: "запусков" },
@@ -1501,7 +1529,7 @@ export default function PreviewHome() {
                 onMouseEnter={showAward}
                 className="block h-full no-underline group"
               >
-                <Oled className="h-full p-5 md:p-7 flex flex-col gap-6 transition-colors duration-300 group-hover:border-[#C9A66B]/30">
+                <Oled className="h-full p-5 md:p-6 flex flex-col gap-4 transition-colors duration-300 group-hover:border-[#C9A66B]/30">
                   <div
                     aria-hidden
                     className="absolute inset-0 pointer-events-none"
@@ -1568,8 +1596,8 @@ export default function PreviewHome() {
                 data-ym-goal="nav_skills"
                 className="block h-full no-underline group"
               >
-                <Oled className="h-full p-5 md:p-7 transition-colors duration-300 group-hover:border-[#A6FF00]/25">
-                  <div className="mb-5 text-white/40">
+                <Oled className="h-full p-5 md:p-6 transition-colors duration-300 group-hover:border-[#A6FF00]/25">
+                  <div className="mb-4 text-white/40">
                     <span className="sr-only">Экспертиза</span>
                     <LedText text="Экспертиза" className="h-[10px] w-auto" />
                   </div>
@@ -1774,7 +1802,7 @@ export default function PreviewHome() {
                 label: "ПРОДУКТ",
                 title: "Фокус на метриках",
                 Icon: Sparkles,
-                accent: "#C9A66B",
+                accent: "#A6FF00",
                 animation: "target" as PulseVariant,
                 body:
                   "Работаю на число. Discovery, гипотезы, CJM, A/B, research внутри процесса. Умею считать дизайн и доказывать его ценность продакт-менеджеру и C-левелу. Делаю это в B2C-экосистемах, B2E-инструментах и в EdTech.",
@@ -1792,7 +1820,7 @@ export default function PreviewHome() {
                 label: "РЕМЕСЛО",
                 title: "Оптимизирую процессы",
                 Icon: Code2,
-                accent: "#C9A66B",
+                accent: "#56D2E2",
                 animation: "ai" as PulseVariant,
                 body:
                   "Автоматизирую рутину, собираю AI-инструменты и агенты под конкретные задачи. Понимаю, что реально сделать руками и сколько это стоит в человеко-часах. Знаю, когда применять AI, а когда нанимать эксперта.",
@@ -1911,6 +1939,27 @@ export default function PreviewHome() {
                     <p className="text-[15px] md:text-[16px] text-white/65 leading-[1.75] max-w-[46ch]">
                       {"Больше 40 менти, а сессий ещё больше. Разбираем развилки роста: как дотянуть до лида, собрать команду, защитить проект перед топами. Даю не только свой опыт, но и учу думать, чтобы дальше ты проходил такие развилки сам."}
                     </p>
+                    {/* LED-метрики менторинга: число + подпись, три колонки с разделителями */}
+                    <div className="mt-8 flex items-stretch">
+                      {[
+                        { v: "40+", l: "менти" },
+                        { v: "7", l: "лет опыта" },
+                        { v: "300+", l: "сессий" },
+                      ].map((m, i) => (
+                        <div
+                          key={m.l}
+                          className={`flex flex-col gap-2 ${i > 0 ? "ml-4 pl-4 md:ml-6 md:pl-6 border-l border-white/[0.06]" : ""}`}
+                        >
+                          <span className="text-[#A6FF00]">
+                            <span className="sr-only">{`${m.v} ${m.l}`}</span>
+                            <LedText text={m.v} className="h-[14px] md:h-[16px] w-auto" />
+                          </span>
+                          <span className="text-white/50">
+                            <LedText text={m.l} className="h-[9px] w-auto" />
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                   <span className="inline-flex items-center gap-2.5 text-[#A6FF00] mt-10 pt-5 border-t border-white/[0.06] self-start pr-10 group-hover:border-[#A6FF00]/25 transition-colors">
                     <span className="sr-only">Записаться на сессию</span>
@@ -2086,10 +2135,10 @@ export default function PreviewHome() {
 
             {/* 2-5. Email, LinkedIn, GitHub, CV — 4 равных мини-плитки */}
             {[
-              { label: "Email", value: "egor.outhead@gmail.com", href: "mailto:egor.outhead@gmail.com", Icon: Mail, goal: "cta_email" },
-              { label: "LinkedIn", value: "егор-шугаев-03735078", href: "https://www.linkedin.com/in/егор-шугаев-03735078/", Icon: LinkedinIcon, goal: "cta_linkedin" },
-              { label: "GitHub", value: "outhead", href: "https://github.com/outhead", Icon: GithubIcon, goal: "cta_github" },
-              { label: "CV / PDF", value: "Скачать", href: "/Egor_Shugaev_CV.pdf", Icon: FileDown, goal: "cta_cv" },
+              { label: "Email", value: "Написать", sr: "egor.outhead@gmail.com", href: "mailto:egor.outhead@gmail.com", Icon: Mail, goal: "cta_email" },
+              { label: "LinkedIn", value: "Егор Шугаев", sr: "Егор Шугаев", href: "https://www.linkedin.com/in/егор-шугаев-03735078/", Icon: LinkedinIcon, goal: "cta_linkedin" },
+              { label: "GitHub", value: "outhead", sr: "outhead", href: "https://github.com/outhead", Icon: GithubIcon, goal: "cta_github" },
+              { label: "CV / PDF", value: "PDF · 2026", sr: "Скачать CV, PDF, 2026", href: "/Egor_Shugaev_CV.pdf", Icon: FileDown, goal: "cta_cv" },
             ].map((link) => (
               <motion.div key={link.label} variants={fadeUp}>
                 <Link
@@ -2108,7 +2157,7 @@ export default function PreviewHome() {
                       <link.Icon className="w-4 h-4 text-white/45 group-hover:text-white transition-colors" strokeWidth={1.75} />
                     </div>
                     <div className="text-white/80 group-hover:text-white transition-colors min-w-0 overflow-hidden">
-                      <span className="sr-only">{link.value}</span>
+                      <span className="sr-only">{link.sr}</span>
                       <LedText text={link.value} className="h-[10px] w-auto max-w-full" />
                     </div>
                   </div>
