@@ -2,6 +2,12 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "export",
+  // Инлайним CSS в <style> внутри HTML: Вебвизор Метрики записывает DOM,
+  // и стили попадают в запись — записи сессий не ломаются после деплоев
+  // (хэшированные .css старых билдов иначе отдают 404 в плеере)
+  experimental: {
+    inlineCss: true,
+  },
   images: {
     unoptimized: true,
   },
