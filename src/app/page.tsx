@@ -1429,7 +1429,7 @@ export default function PreviewHome() {
 
             {/* ── Нейроструктура: узлы, связи, сигналы ── */}
             <motion.div variants={fadeUp} className="col-span-12 lg:col-span-5">
-              <Oled className="h-full p-5 md:p-7 flex flex-col gap-4">
+              <Oled className="h-full p-5 md:p-6 flex flex-col gap-4">
                 <div className="flex items-center justify-between text-white/35">
                   <span
                     onMouseEnter={goHomeHover}
@@ -1496,7 +1496,7 @@ export default function PreviewHome() {
 
             {/* ── В цифрах: LED-счётчики + тихий граф из точек ── */}
             <motion.div variants={fadeUp} className="col-span-12 lg:col-span-5">
-              <Oled className="h-full p-5 md:p-7 flex items-center">
+              <Oled className="h-full p-5 md:p-6 flex items-center">
                 <div className="relative w-full flex justify-center gap-8 md:gap-14 lg:gap-4 xl:gap-4 2xl:gap-12">
                   {[
                     { v: "30", l: "запусков" },
@@ -1529,7 +1529,7 @@ export default function PreviewHome() {
                 onMouseEnter={showAward}
                 className="block h-full no-underline group"
               >
-                <Oled className="h-full p-5 md:p-7 flex flex-col gap-6 transition-colors duration-300 group-hover:border-[#C9A66B]/30">
+                <Oled className="h-full p-5 md:p-6 flex flex-col gap-4 transition-colors duration-300 group-hover:border-[#C9A66B]/30">
                   <div
                     aria-hidden
                     className="absolute inset-0 pointer-events-none"
@@ -1596,8 +1596,8 @@ export default function PreviewHome() {
                 data-ym-goal="nav_skills"
                 className="block h-full no-underline group"
               >
-                <Oled className="h-full p-5 md:p-7 transition-colors duration-300 group-hover:border-[#A6FF00]/25">
-                  <div className="mb-5 text-white/40">
+                <Oled className="h-full p-5 md:p-6 transition-colors duration-300 group-hover:border-[#A6FF00]/25">
+                  <div className="mb-4 text-white/40">
                     <span className="sr-only">Экспертиза</span>
                     <LedText text="Экспертиза" className="h-[10px] w-auto" />
                   </div>
@@ -1939,6 +1939,27 @@ export default function PreviewHome() {
                     <p className="text-[15px] md:text-[16px] text-white/65 leading-[1.75] max-w-[46ch]">
                       {"Больше 40 менти, а сессий ещё больше. Разбираем развилки роста: как дотянуть до лида, собрать команду, защитить проект перед топами. Даю не только свой опыт, но и учу думать, чтобы дальше ты проходил такие развилки сам."}
                     </p>
+                    {/* LED-метрики менторинга: число + подпись, три колонки с разделителями */}
+                    <div className="mt-8 flex items-stretch">
+                      {[
+                        { v: "40+", l: "менти" },
+                        { v: "7", l: "лет опыта" },
+                        { v: "300+", l: "сессий" },
+                      ].map((m, i) => (
+                        <div
+                          key={m.l}
+                          className={`flex flex-col gap-2 ${i > 0 ? "ml-4 pl-4 md:ml-6 md:pl-6 border-l border-white/[0.06]" : ""}`}
+                        >
+                          <span className="text-[#A6FF00]">
+                            <span className="sr-only">{`${m.v} ${m.l}`}</span>
+                            <LedText text={m.v} className="h-[14px] md:h-[16px] w-auto" />
+                          </span>
+                          <span className="text-white/50">
+                            <LedText text={m.l} className="h-[9px] w-auto" />
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                   <span className="inline-flex items-center gap-2.5 text-[#A6FF00] mt-10 pt-5 border-t border-white/[0.06] self-start pr-10 group-hover:border-[#A6FF00]/25 transition-colors">
                     <span className="sr-only">Записаться на сессию</span>
@@ -2114,10 +2135,10 @@ export default function PreviewHome() {
 
             {/* 2-5. Email, LinkedIn, GitHub, CV — 4 равных мини-плитки */}
             {[
-              { label: "Email", value: "egor.outhead@gmail.com", href: "mailto:egor.outhead@gmail.com", Icon: Mail, goal: "cta_email" },
-              { label: "LinkedIn", value: "егор-шугаев-03735078", href: "https://www.linkedin.com/in/егор-шугаев-03735078/", Icon: LinkedinIcon, goal: "cta_linkedin" },
-              { label: "GitHub", value: "outhead", href: "https://github.com/outhead", Icon: GithubIcon, goal: "cta_github" },
-              { label: "CV / PDF", value: "Скачать", href: "/Egor_Shugaev_CV.pdf", Icon: FileDown, goal: "cta_cv" },
+              { label: "Email", value: "Написать", sr: "egor.outhead@gmail.com", href: "mailto:egor.outhead@gmail.com", Icon: Mail, goal: "cta_email" },
+              { label: "LinkedIn", value: "Егор Шугаев", sr: "Егор Шугаев", href: "https://www.linkedin.com/in/егор-шугаев-03735078/", Icon: LinkedinIcon, goal: "cta_linkedin" },
+              { label: "GitHub", value: "outhead", sr: "outhead", href: "https://github.com/outhead", Icon: GithubIcon, goal: "cta_github" },
+              { label: "CV / PDF", value: "PDF · 2026", sr: "Скачать CV, PDF, 2026", href: "/Egor_Shugaev_CV.pdf", Icon: FileDown, goal: "cta_cv" },
             ].map((link) => (
               <motion.div key={link.label} variants={fadeUp}>
                 <Link
@@ -2136,7 +2157,7 @@ export default function PreviewHome() {
                       <link.Icon className="w-4 h-4 text-white/45 group-hover:text-white transition-colors" strokeWidth={1.75} />
                     </div>
                     <div className="text-white/80 group-hover:text-white transition-colors min-w-0 overflow-hidden">
-                      <span className="sr-only">{link.value}</span>
+                      <span className="sr-only">{link.sr}</span>
                       <LedText text={link.value} className="h-[10px] w-auto max-w-full" />
                     </div>
                   </div>
