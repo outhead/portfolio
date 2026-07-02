@@ -140,13 +140,14 @@ export default function ConstellationFiguresV2({
       const len = Math.hypot(b.x - a.x, b.y - a.y);
       if (len < 1) return;
       const ux = (b.x - a.x) / len, uy = (b.y - a.y) / len;
-      const step = P().rayStep;
+      // на тач-устройствах поле ужато — уплотняем шаг, чтобы луч читался
+      const step = Math.max(4, coarse ? Math.min(P().rayStep, 8) : P().rayStep);
       const phase = ((t * P().raySpeed) % step + step) % step;
-      const baseA = key === "white" ? 0.62 : 0.8;
+      const baseA = key === "white" ? 0.78 : 0.95;
       for (let d = phase; d < len; d += step) {
-        const w = 0.72 + 0.28 * Math.sin(d * 0.55 - t * 5); // дизеринг яркости
+        const w = 0.82 + 0.18 * Math.sin(d * 0.55 - t * 5); // дизеринг яркости
         const near = Math.min(1, d / 26); // разгон у истока
-        px(a.x + ux * d, a.y + uy * d, 1.9 + 0.5 * w, css(c, baseA * w * (0.55 + 0.45 * near)));
+        px(a.x + ux * d, a.y + uy * d, 2.2 + 0.5 * w, css(c, baseA * w * (0.7 + 0.3 * near)));
       }
       // яркое ядро у истока
       dot(a.x + ux * 3, a.y + uy * 3, 1.6, css(c, 0.9), 10, `${c[0]},${c[1]},${c[2]}`);
