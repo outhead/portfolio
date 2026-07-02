@@ -14,6 +14,7 @@ import DecryptApproach from "@/components/DecryptApproach";
 import LedText from "@/components/LedText";
 import { LedLines } from "@/components/LedBoard";
 import FontSpecimen from "@/components/FontSpecimen";
+import LedShowcase from "@/components/LedShowcase";
 import ParticleStudio from "@/components/ParticleStudio";
 import ParticlePortrait from "@/components/ParticlePortrait";
 import PixelCube3D from "@/components/PixelCube3D";
@@ -370,6 +371,8 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
 
                 {/* Интерактивный спесимен LED-шрифта (только led-font-engine) */}
                 {section.specimen && <FontSpecimen />}
+                {/* Галерея исполнений LED-шрифта (led-font-engine) */}
+                {section.showcase && <LedShowcase className="mt-8 md:mt-10" />}
                 {/* Встроенный конструктор частиц (particle-portrait) */}
                 {section.studio && <div className="mt-8 md:mt-10"><ParticleStudio /></div>}
 
