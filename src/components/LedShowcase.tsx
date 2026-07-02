@@ -92,11 +92,11 @@ export default function LedShowcase({ className = "" }: { className?: string }) 
 
       {/* 3. Счётчик: прокрут цифр, новый глиф ₽ (клик — перекрутить) */}
       <Tile label="Счётчик · клик">
-        <div className="flex flex-col items-center gap-3 py-10">
+        <div className="flex flex-col items-center gap-5 md:gap-6 py-10">
           <LedCounter value="1 240 500 ₽" className="h-[24px] md:h-[30px]" tone="#F2F4EF" />
-          <span className="text-white/45">
-            <span className="sr-only">Выручка стенда, %+12</span>
-            <LedText text="Выручка стенда ↑ 12%" className="h-[9px] md:h-[10px] w-auto" />
+          <span className="text-white/35">
+            <span className="sr-only">Доход за квартал, рост 12%</span>
+            <LedText text="Доход за квартал ↑ 12%" className="h-[8px] md:h-[9px] w-auto" />
           </span>
         </div>
       </Tile>
