@@ -249,7 +249,7 @@ export default function SpeakingPage() {
               </div>
             </div>
             <ul className="space-y-2.5 text-[16px] md:text-[16px] text-white/65 leading-relaxed mb-5">
-              <li>30+ менти за&nbsp;карьеру (включая АД-период)</li>
+              <li>40+ менти за&nbsp;карьеру (включая АД-период)</li>
               <li>ВШЭ — читал курс по&nbsp;прикладному ИИ</li>
               <li>Воркшопы для&nbsp;продуктовых команд</li>
             </ul>
