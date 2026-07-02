@@ -76,6 +76,37 @@ const viewport = { once: true, margin: "-10% 0px -10% 0px" };
 // ───────────────────────────────────────────────────────────────────
 // SectionLabel (bracket mono)
 // ───────────────────────────────────────────────────────────────────
+// ───────────────────────────────────────────────────────────────────
+// SectionSeam — стык секций: линия-«горизонт» с тихим свечением сверху.
+// Цвет в формате "r,g,b" — акцент секции. Чистый CSS, перф-нейтрально.
+// ───────────────────────────────────────────────────────────────────
+function SectionSeam({
+  color = "166,255,0",
+  intensity = 0.045,
+}: {
+  color?: string;
+  intensity?: number;
+}) {
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-28 overflow-hidden">
+      {/* цветной сегмент поверх серой границы — «зажжённая» часть горизонта */}
+      <div
+        className="absolute inset-x-0 top-0 h-px"
+        style={{
+          background: `linear-gradient(90deg, transparent 8%, rgba(${color},0.22) 35%, rgba(${color},0.22) 65%, transparent 92%)`,
+        }}
+      />
+      {/* свечение от линии вниз */}
+      <div
+        className="absolute left-1/2 -translate-x-1/2 top-0 w-[76%] h-28"
+        style={{
+          background: `radial-gradient(ellipse 55% 100% at 50% 0%, rgba(${color},${intensity}), transparent 72%)`,
+        }}
+      />
+    </div>
+  );
+}
+
 function SectionLabel({
   children,
   tone = "dark",
@@ -1630,6 +1661,18 @@ export default function PreviewHome() {
         id="portfolio"
         className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-16 md:py-24"
       >
+        <SectionSeam color="166,255,0" />
+        {/* Тихое дот-поле в глубине: незажжённые диоды, растворяются к центру */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage: "radial-gradient(rgba(255,255,255,0.045) 1px, transparent 1.3px)",
+            backgroundSize: "22px 22px",
+            maskImage: "linear-gradient(to bottom, black, transparent 30%, transparent 70%, black)",
+            WebkitMaskImage: "linear-gradient(to bottom, black, transparent 30%, transparent 70%, black)",
+          }}
+        />
         {/* Вертикальный микро-лейбл на полях — печатная вёрстка (desktop only) */}
         <div
           aria-hidden
@@ -1743,6 +1786,7 @@ export default function PreviewHome() {
 
       {/* ═══════ CAREER — hover-list с историей ролей, сразу после кейсов ═══════ */}
       <section className="relative z-[1] bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-16 md:py-24">
+        <SectionSeam color="225,230,220" intensity={0.03} />
         <motion.div
           initial="hidden"
           whileInView="show"
@@ -1843,6 +1887,7 @@ export default function PreviewHome() {
 
       {/* ═══════ TESTIMONIALS — с астериксом * (stokt) ═══════ */}
       <section className="relative z-[1] overflow-hidden bg-black border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-16 md:py-24">
+        <SectionSeam color="201,166,107" intensity={0.04} />
         {/* лёгкий ambient-свет, плавно проявляется при скролле в вид */}
         <motion.div
           aria-hidden
