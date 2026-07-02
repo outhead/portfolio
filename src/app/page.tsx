@@ -556,7 +556,7 @@ function CareerHoverList() {
                   src={job.logo}
                   alt=""
                   aria-hidden
-                  className="pointer-events-none select-none absolute right-7 top-1/2 -translate-y-1/2 translate-x-2 group-hover:translate-x-0 h-[62%] w-auto brightness-0 invert opacity-0 group-hover:opacity-[0.12] transition-all duration-500 ease-out"
+                  className="pointer-events-none select-none absolute right-8 top-1/2 -translate-y-1/2 translate-x-2 group-hover:translate-x-0 h-9 max-w-[160px] w-auto object-contain brightness-0 invert opacity-0 group-hover:opacity-[0.16] transition-all duration-500 ease-out"
                 />
               )}
               <span
