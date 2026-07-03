@@ -7,6 +7,7 @@
 import { useRef, useState } from "react";
 import ConstellationFigures from "@/components/ConstellationFigures";
 import ConstellationFiguresV2, { V2_DEFAULTS, type V2Params } from "@/components/ConstellationFiguresV2";
+import ConstellationFiguresV3 from "@/components/ConstellationFiguresV3";
 import { MENTORING_LEVEL } from "@/lib/optics";
 import { useLocale } from "@/lib/useLocale";
 import { pick } from "@/lib/i18n";
@@ -36,7 +37,7 @@ export default function OpticsLabPage() {
   const locale = useLocale();
   const paramsRef = useRef<V2Params>({ ...V2_DEFAULTS });
   const [ui, setUi] = useState<V2Params>({ ...V2_DEFAULTS });
-  const [mode, setMode] = useState<"v2" | "v1">("v2");
+  const [mode, setMode] = useState<"v3" | "v2" | "v1">("v3");
   const [nonce, setNonce] = useState(0); // пересоздать сцену (reset)
   const [solved, setSolved] = useState(false);
 
@@ -57,7 +58,16 @@ export default function OpticsLabPage() {
           {/* сцена */}
           <div>
             <div className="relative aspect-[16/12] md:aspect-[16/10] rounded-2xl overflow-hidden bg-[#0b0b0a] border border-white/[0.06]">
-              {mode === "v2" ? (
+              {mode === "v3" ? (
+                <ConstellationFiguresV3
+                  key={`v3-${nonce}`}
+                  className="absolute inset-0"
+                  level={MENTORING_LEVEL}
+                  lockMirror
+                  paramsRef={paramsRef}
+                  onSolve={() => setSolved(true)}
+                />
+              ) : mode === "v2" ? (
                 <ConstellationFiguresV2
                   key={`v2-${nonce}`}
                   className="absolute inset-0"
@@ -78,7 +88,7 @@ export default function OpticsLabPage() {
             </div>
 
             <div className="flex gap-2 mt-3">
-              {(["v2", "v1"] as const).map((m) => (
+              {(["v3", "v2", "v1"] as const).map((m) => (
                 <button
                   key={m}
                   onClick={() => { setMode(m); setSolved(false); setNonce((n) => n + 1); }}
@@ -86,7 +96,11 @@ export default function OpticsLabPage() {
                     mode === m ? "border-white/70 text-white bg-white/10" : "border-white/15 text-white/50 hover:text-white/80"
                   }`}
                 >
-                  {m === "v2" ? pick("V2 — новая", "V2 — new", locale) : pick("V1 — как на проде", "V1 — as in prod", locale)}
+                  {m === "v3"
+                    ? pick("V3 — псевдо-3D", "V3 — pseudo-3D", locale)
+                    : m === "v2"
+                      ? pick("V2 — как на проде", "V2 — as in prod", locale)
+                      : pick("V1 — старая", "V1 — legacy", locale)}
                 </button>
               ))}
               <button

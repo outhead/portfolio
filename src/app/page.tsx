@@ -2145,7 +2145,7 @@ export default function PreviewHome() {
                           key={m.l}
                           className={`flex flex-col gap-2 ${i > 0 ? "ml-4 pl-4 md:ml-6 md:pl-6 border-l border-white/[0.06]" : ""}`}
                         >
-                          <span className="text-[#FF8A00]">
+                          <span className="text-[#C9A66B]">
                             <span className="sr-only">{`${m.v} ${m.l}`}</span>
                             <LedText text={m.v} className="h-[14px] md:h-[16px] w-auto" />
                           </span>
@@ -2156,12 +2156,12 @@ export default function PreviewHome() {
                       ))}
                     </div>
                   </div>
-                  <span className="inline-flex items-center gap-2.5 mt-10 self-start rounded-full bg-[#A6FF00] text-black px-6 py-3.5 shadow-[0_0_40px_-8px_rgba(166,255,0,0.5)] group-hover:bg-white transition-colors">
+                  <span className="inline-flex items-center gap-2.5 text-[#A6FF00] mt-10 pt-5 border-t border-white/[0.06] self-start pr-10 group-hover:border-[#A6FF00]/25 transition-colors">
                     <span className="sr-only">{T.bookSession}</span>
                     <LedText text={T.bookSession} className="h-[10px] w-auto" />
                     <LedText
                       text="→"
-                      className="h-[13px] w-auto group-hover:translate-x-1 transition-transform"
+                      className="h-[12px] w-auto group-hover:translate-x-1 transition-transform"
                     />
                   </span>
                 </button>
