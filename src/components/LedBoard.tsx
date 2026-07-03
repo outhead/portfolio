@@ -13,6 +13,8 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { layoutLedText, LED_ROWS } from "@/components/ledFont";
 import LedText from "@/components/LedText";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 export type LedLine = { text?: string; words?: readonly string[]; color: string };
 
@@ -258,6 +260,7 @@ export function LedCounter({
   className?: string;
   tone?: string;
 }) {
+  const locale = useLocale();
   const [disp, setDisp] = useState(value);
   const busy = useRef(false);
 
@@ -297,7 +300,7 @@ export function LedCounter({
     <button
       type="button"
       onClick={spin}
-      aria-label={`Значение ${value}`}
+      aria-label={pick(`Значение ${value}`, `Value ${value}`, locale)}
       className={`appearance-none bg-transparent border-none p-0 cursor-pointer self-start ${className}`}
       style={{ color: tone }}
     >

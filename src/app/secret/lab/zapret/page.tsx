@@ -5,13 +5,15 @@ import { LedLines } from "@/components/LedBoard";
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 /**
  * Прототип «Не нажимай» (There Is No Game). Очевидный ход («Выйти») — обманка.
  * Решение — нарушить запрет: нажать «НЕ НАЖИМАТЬ» ~7 раз (эскалация текста).
  * Поле заголовка/текста фиксированной высоты, чтобы кнопка не прыгала.
  */
-const MESSAGES = [
+const MESSAGES_RU = [
   "Дальше ничего нет. Не жми кнопку ниже.",
   "Серьёзно, не надо.",
   "Я же просил.",
@@ -20,8 +22,19 @@ const MESSAGES = [
   "Последний раз по-хорошему.",
   "...ну ты понял.",
 ];
+const MESSAGES_EN = [
+  "There's nothing further. Don't press the button below.",
+  "Seriously, don't.",
+  "I asked you nicely.",
+  "This is a bad idea.",
+  "Okay, that's enough.",
+  "Last time the nice way.",
+  "...well, you get it.",
+];
 
 export default function ZapretProto() {
+  const locale = useLocale();
+  const MESSAGES = pick(MESSAGES_RU, MESSAGES_EN, locale);
   const [presses, setPresses] = useState(0);
   const [won, setWon] = useState(false);
   const [exitShake, setExitShake] = useState(false);
@@ -41,14 +54,14 @@ export default function ZapretProto() {
       {!won ? (
         <div className="relative z-[1] w-full max-w-[440px] mx-auto flex flex-col items-center text-center">
           <p className="text-white/40 mb-3">
-            <span className="sr-only">Прототип · A</span>
-            <LedText text="Прототип · A" className="h-[9px] w-auto" />
+            <span className="sr-only">{pick("Прототип · A", "Prototype · A", locale)}</span>
+            <LedText text={pick("Прототип · A", "Prototype · A", locale)} className="h-[9px] w-auto" />
           </p>
 
           {/* Фикс-высота заголовка+сообщения, чтобы кнопка не прыгала */}
           <div className="flex flex-col items-center justify-start" style={{ height: 200 }}>
             <h1 className="mb-4">
-              <LedLines text="Тупик" center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
+              <LedLines text={pick("Тупик", "Dead end", locale)} center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
             </h1>
             <p className="text-sm md:text-[16px] text-white/60 leading-relaxed max-w-sm">
               {MESSAGES[presses]}
@@ -60,8 +73,8 @@ export default function ZapretProto() {
             onClick={press}
             className="px-8 py-4 rounded-md border-2 border-[#A6FF00] bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00]/20 transition-colors"
           >
-            <span className="sr-only">Не нажимать</span>
-            <LedText text="Не нажимать" className="h-[13px] w-auto" />
+            <span className="sr-only">{pick("Не нажимать", "Do not press", locale)}</span>
+            <LedText text={pick("Не нажимать", "Do not press", locale)} className="h-[13px] w-auto" />
           </button>
 
           <button
@@ -69,22 +82,22 @@ export default function ZapretProto() {
             onClick={() => { setExitShake(true); setTimeout(() => setExitShake(false), 400); }}
             className={`mt-6 text-[14px] tracking-[0.12em] uppercase transition-all ${exitShake ? "translate-x-1 text-[#C9A66B]" : "text-white/40 hover:text-white/60"}`}
           >
-            {exitShake ? "выхода тут нет" : "Выйти →"}
+            {exitShake ? pick("выхода тут нет", "no exit here", locale) : pick("Выйти →", "Exit →", locale)}
           </button>
         </div>
       ) : (
         <div className="relative z-[1] w-full max-w-[420px] mx-auto flex flex-col items-center text-center">
           <p className="text-white/40 mb-4">
-            <span className="sr-only">Разгадал</span>
-            <LedText text="Разгадал" className="h-[9px] w-auto" />
+            <span className="sr-only">{pick("Разгадал", "Solved", locale)}</span>
+            <LedText text={pick("Разгадал", "Solved", locale)} className="h-[9px] w-auto" />
           </p>
           <h1 className="text-[#A6FF00] mb-5">
-            <LedLines text="Готово" center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
+            <LedLines text={pick("Готово", "Done", locale)} center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
           </h1>
-          <p className="text-sm text-white/60 mb-8 max-w-xs">Ты не послушался — в этом и был фокус.</p>
+          <p className="text-sm text-white/60 mb-8 max-w-xs">{pick("Ты не послушался — в этом и был фокус.", "You didn't listen — that was the whole trick.", locale)}</p>
           <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
             <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2.2} />
-            <span className="sr-only">На главную</span><LedText text="На главную" className="h-[10px] w-auto" />
+            <span className="sr-only">{pick("На главную", "Home", locale)}</span><LedText text={pick("На главную", "Home", locale)} className="h-[10px] w-auto" />
           </Link>
         </div>
       )}

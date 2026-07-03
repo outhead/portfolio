@@ -10,6 +10,8 @@
 import LedText from "@/components/LedText";
 import { LedBoard, LedCounter } from "@/components/LedBoard";
 import PixelFire from "@/components/PixelFire";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 function Tile({
   label,
@@ -34,6 +36,7 @@ function Tile({
 }
 
 export default function LedShowcase({ className = "" }: { className?: string }) {
+  const locale = useLocale();
   return (
     <div className={`grid md:grid-cols-2 gap-4 md:gap-5 ${className}`}>
       {/* мерцание вывески — локальные keyframes */}
@@ -49,7 +52,7 @@ export default function LedShowcase({ className = "" }: { className?: string }) 
       `}</style>
 
       {/* 1. Неоновая вывеска: глоу в два слоя + редкое подмигивание */}
-      <Tile label="Вывеска · глоу">
+      <Tile label={pick("Вывеска · глоу", "Sign · glow", locale)}>
         <div className="flex flex-col items-center gap-3 py-10">
           <span
             className="text-[#A6FF00]"
@@ -59,8 +62,8 @@ export default function LedShowcase({ className = "" }: { className?: string }) 
                 "drop-shadow(0 0 6px rgba(166,255,0,0.55)) drop-shadow(0 0 22px rgba(166,255,0,0.25))",
             }}
           >
-            <span className="sr-only">Открыто</span>
-            <LedText text="Открыто" scale={2} dot={1.5} className="h-[26px] md:h-[32px] w-auto" />
+            <span className="sr-only">{pick("Открыто", "Open", locale)}</span>
+            <LedText text={pick("Открыто", "Open", locale)} scale={2} dot={1.5} className="h-[26px] md:h-[32px] w-auto" />
           </span>
           <span className="text-white/55">
             <span className="sr-only">« 24/7 »</span>
@@ -70,7 +73,7 @@ export default function LedShowcase({ className = "" }: { className?: string }) 
       </Tile>
 
       {/* 2. Аэропортовое табло: волна гашения/загорания */}
-      <Tile label="Табло · волна">
+      <Tile label={pick("Табло · волна", "Board · wave", locale)}>
         <div className="w-[86%] max-w-[420px]">
           <LedBoard
             className="w-full h-auto"
@@ -81,31 +84,39 @@ export default function LedShowcase({ className = "" }: { className?: string }) 
             minRows={26}
             dim="rgba(255,255,255,0.04)"
             intervalMs={2600}
-            lines={[
-              { words: ["Рейс SU-1874", "Рейс DP-405", "Рейс FV-6021"], color: "#F2F4EF" },
-              { words: ["Выход B12", "Выход A3", "Выход C7"], color: "#C9A66B" },
-              { words: ["Посадка идёт", "Ожидание", "Закрыт ->"], color: "#A6FF00" },
-            ]}
+            lines={pick(
+              [
+                { words: ["Рейс SU-1874", "Рейс DP-405", "Рейс FV-6021"], color: "#F2F4EF" },
+                { words: ["Выход B12", "Выход A3", "Выход C7"], color: "#C9A66B" },
+                { words: ["Посадка идёт", "Ожидание", "Закрыт ->"], color: "#A6FF00" },
+              ],
+              [
+                { words: ["Flight SU-1874", "Flight DP-405", "Flight FV-6021"], color: "#F2F4EF" },
+                { words: ["Gate B12", "Gate A3", "Gate C7"], color: "#C9A66B" },
+                { words: ["Boarding", "Waiting", "Closed ->"], color: "#A6FF00" },
+              ],
+              locale,
+            )}
           />
         </div>
       </Tile>
 
       {/* 3. Счётчик: прокрут цифр, новый глиф ₽ (клик — перекрутить) */}
-      <Tile label="Счётчик · клик">
+      <Tile label={pick("Счётчик · клик", "Counter · click", locale)}>
         <div className="flex flex-col items-center gap-5 md:gap-6 py-10">
-          <LedCounter value="1 240 500 ₽" className="h-[24px] md:h-[30px]" tone="#F2F4EF" />
+          <LedCounter value={pick("1 240 500 ₽", "1 240 500 $", locale)} className="h-[24px] md:h-[30px]" tone="#F2F4EF" />
           <span className="text-white/35">
-            <span className="sr-only">Доход за квартал, рост 12%</span>
-            <LedText text="Доход за квартал ↑ 12%" className="h-[8px] md:h-[9px] w-auto" />
+            <span className="sr-only">{pick("Доход за квартал, рост 12%", "Quarterly revenue, up 12%", locale)}</span>
+            <LedText text={pick("Доход за квартал ↑ 12%", "Quarterly revenue ↑ 12%", locale)} className="h-[8px] md:h-[9px] w-auto" />
           </span>
         </div>
       </Tile>
 
       {/* 4. Пиксельный огонь: doom-fire сквозь маску текста.
           Сдвиг вниз — эмиттер текста в CFG стоит высоко, выравниваем композицию плитки. */}
-      <Tile label="Огонь · маска">
+      <Tile label={pick("Огонь · маска", "Fire · mask", locale)}>
         <div className="absolute inset-x-0 top-[22%] -bottom-[8%]">
-          <PixelFire text="ЖАРА" className="w-full h-full" />
+          <PixelFire text={pick("ЖАРА", "HEAT", locale)} className="w-full h-full" />
         </div>
       </Tile>
     </div>

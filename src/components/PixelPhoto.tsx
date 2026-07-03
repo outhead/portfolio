@@ -10,6 +10,8 @@
  * ──────────────────────────────────────────────────────────────── */
 
 import { useEffect, useRef } from "react";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 export type PixelPhotoProps = {
   src: string;
@@ -53,6 +55,7 @@ export default function PixelPhoto({
   hiColor = DEF_HI,
   className = "",
 }: PixelPhotoProps) {
+  const locale = useLocale();
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -200,7 +203,7 @@ export default function PixelPhoto({
       ref={canvasRef}
       className={className}
       style={{ width: "100%", height: "100%", display: "block" }}
-      aria-label="Пиксельный портрет"
+      aria-label={pick("Пиксельный портрет", "Pixel portrait", locale)}
       role="img"
     />
   );

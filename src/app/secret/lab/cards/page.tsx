@@ -10,18 +10,24 @@ import PixelCube3D, { type CubeMode } from "@/components/PixelCube3D";
 import PixelCubeRain from "@/components/PixelCubeRain";
 import PixelCubePile from "@/components/PixelCubePile";
 import { ArrowUpRight } from "lucide-react";
+import { useLocale } from "@/lib/useLocale";
+import { pick, type Locale } from "@/lib/i18n";
 
 const MTS_RED = "#FF2436";
 
-const MODES: { mode: CubeMode; label: string }[] = [
-  { mode: "spin", label: "Spin · турнтейбл Y" },
-  { mode: "tumble", label: "Tumble · кувырок 2 оси" },
-  { mode: "pendulum", label: "Pendulum · качание" },
-  { mode: "lissajous", label: "Lissajous · дрейф" },
+const MODES: { mode: CubeMode; labelRu: string; labelEn: string }[] = [
+  { mode: "spin", labelRu: "Spin · турнтейбл Y", labelEn: "Spin · Y turntable" },
+  { mode: "tumble", labelRu: "Tumble · кувырок 2 оси", labelEn: "Tumble · 2-axis flip" },
+  { mode: "pendulum", labelRu: "Pendulum · качание", labelEn: "Pendulum · sway" },
+  { mode: "lissajous", labelRu: "Lissajous · дрейф", labelEn: "Lissajous · drift" },
 ];
 
+// Заголовок демо-карточки МТС по локали.
+const MTS_TITLE = { ru: "Дать МТС голос и собрать Мой МТС в платформу", en: "Give MTS a voice and shape My MTS into a platform" };
+const mtsTitle = (locale: Locale) => pick(MTS_TITLE.ru, MTS_TITLE.en, locale);
+
 /** Карточка с физикой засыпания кубиками (Matter.js), как webgl-блок. */
-function RainCard() {
+function RainCard({ locale }: { locale: Locale }) {
   return (
     <div className="no-underline group h-full block w-full max-w-[520px]">
       <article className="relative rounded-2xl overflow-hidden bg-[#0f0f0e] border border-white/[0.06] group-hover:border-white/20 transition-colors duration-300 h-full">
@@ -34,12 +40,12 @@ function RainCard() {
             />
             <PixelCubeRain color={MTS_RED} />
             <div className="absolute top-4 left-4 md:top-5 md:left-5 z-[2] text-white/75 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
-              <LedText text="МТС" className="h-[9px] md:h-[10px] w-auto" />
+              <LedText text={pick("МТС", "MTS", locale)} className="h-[9px] md:h-[10px] w-auto" />
             </div>
           </div>
           <div className="flex-1 flex flex-col items-center justify-center gap-4 md:gap-5 text-center px-5 py-6 md:py-7">
             <h3 className="text-white max-w-full">
-              <LedLines text="Дать МТС голос и собрать Мой МТС в платформу" center maxChars={22} lineClass="h-[15px] md:h-[18px]" />
+              <LedLines text={mtsTitle(locale)} center maxChars={22} lineClass="h-[15px] md:h-[18px]" />
             </h3>
             <div className="flex flex-wrap justify-center gap-1.5 md:gap-2">
               <TagChip>B2C</TagChip>
@@ -97,7 +103,7 @@ function ProdCard({
 }
 
 /** Карточка-прототип: окно с PixelCube вместо видео/глянца. */
-function PrototypeCard({ active = false }: { active?: boolean }) {
+function PrototypeCard({ active = false, locale }: { active?: boolean; locale: Locale }) {
   return (
     <div className="no-underline group h-full block w-full max-w-[520px]">
       <article className="relative rounded-2xl overflow-hidden bg-[#0f0f0e] border border-white/[0.06] group-hover:border-white/20 transition-colors duration-300 h-full">
@@ -119,7 +125,7 @@ function PrototypeCard({ active = false }: { active?: boolean }) {
               className="relative h-[64%]"
               logo={
                 <span className="text-white">
-                  <LedText text="МТС" className="h-[14px] w-auto" />
+                  <LedText text={pick("МТС", "MTS", locale)} className="h-[14px] w-auto" />
                 </span>
               }
             />
@@ -129,14 +135,14 @@ function PrototypeCard({ active = false }: { active?: boolean }) {
             </div>
             {/* компания — верхний левый угол */}
             <div className="absolute top-4 left-4 md:top-5 md:left-5 z-[2] text-white/75 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
-              <LedText text="МТС" className="h-[9px] md:h-[10px] w-auto" />
+              <LedText text={pick("МТС", "MTS", locale)} className="h-[9px] md:h-[10px] w-auto" />
             </div>
           </div>
           {/* Заголовок */}
           <div className="flex-1 flex flex-col items-center justify-center gap-4 md:gap-5 text-center px-5 py-6 md:py-7">
             <h3 className="text-white max-w-full">
               <LedLines
-                text="Дать МТС голос и собрать Мой МТС в платформу"
+                text={mtsTitle(locale)}
                 center
                 maxChars={22}
                 lineClass="h-[15px] md:h-[18px]"
@@ -154,7 +160,7 @@ function PrototypeCard({ active = false }: { active?: boolean }) {
 }
 
 /** Карточка с настоящим 3D-кубом, спроецированным в дот-матрицу. */
-function PrototypeCard3D() {
+function PrototypeCard3D({ locale }: { locale: Locale }) {
   return (
     <div className="no-underline group h-full block w-full max-w-[520px]">
       <article className="relative rounded-2xl overflow-hidden bg-[#0f0f0e] border border-white/[0.06] group-hover:border-white/20 transition-colors duration-300 h-full">
@@ -173,12 +179,12 @@ function PrototypeCard3D() {
               <ArrowUpRight className="w-4 h-4 text-white/90" strokeWidth={2} />
             </div>
             <div className="absolute top-4 left-4 md:top-5 md:left-5 z-[2] text-white/75 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
-              <LedText text="МТС" className="h-[9px] md:h-[10px] w-auto" />
+              <LedText text={pick("МТС", "MTS", locale)} className="h-[9px] md:h-[10px] w-auto" />
             </div>
           </div>
           <div className="flex-1 flex flex-col items-center justify-center gap-4 md:gap-5 text-center px-5 py-6 md:py-7">
             <h3 className="text-white max-w-full">
-              <LedLines text="Дать МТС голос и собрать Мой МТС в платформу" center maxChars={22} lineClass="h-[15px] md:h-[18px]" />
+              <LedLines text={mtsTitle(locale)} center maxChars={22} lineClass="h-[15px] md:h-[18px]" />
             </h3>
             <div className="flex flex-wrap justify-center gap-1.5 md:gap-2">
               <TagChip>B2C</TagChip>
@@ -192,38 +198,39 @@ function PrototypeCard3D() {
 }
 
 export default function CardsLabPage() {
+  const locale = useLocale();
   return (
     <main className="min-h-screen bg-black px-5 md:px-[8%] py-16 md:py-24">
       <div className="mb-12 text-white/40">
-        <LedText text="Прототип · пиксельные заглушки" className="h-[11px] w-auto" />
+        <LedText text={pick("Прототип · пиксельные заглушки", "Prototype · pixel placeholders", locale)} className="h-[11px] w-auto" />
       </div>
 
       {/* ПРОД — финальные карточки кейсов */}
       <div className="mb-20">
         <span className="block mb-5 text-[12px] tracking-[0.1em] uppercase text-white/35">
-          Прод · карточки кейсов (подвешенный куб → засыпание на ховере)
+          {pick("Прод · карточки кейсов (подвешенный куб → засыпание на ховере)", "Prod · case cards (hovering cube → collapse on hover)", locale)}
         </span>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
-          <ProdCard company="МТС" color="#FF2436" logo="/images/logos/mts.svg"
-            title="Дать МТС голос и собрать Мой МТС в платформу" tags={["B2C", "Ecosystem"]} />
-          <ProdCard company="Газпром Нефть" color="#1C92E5" logo="/images/logos/gazpromneft.svg"
-            title="Построить ЦК дизайна и разморозить флагман" tags={["B2E", "Design System"]} />
+          <ProdCard company="MTS" color="#FF2436" logo="/images/logos/mts.svg"
+            title={mtsTitle(locale)} tags={["B2C", "Ecosystem"]} />
+          <ProdCard company={pick("Газпром Нефть", "Gazprom Neft", locale)} color="#1C92E5" logo="/images/logos/gazpromneft.svg"
+            title={pick("Построить ЦК дизайна и разморозить флагман", "Build a design center and unfreeze the flagship", locale)} tags={["B2E", "Design System"]} />
           <ProdCard company="Ozon" color="#2E6BFF" logo="/images/logos/ozon.svg"
-            title="Дизайн-процессы и HR-бренд" tags={["B2C", "E-com"]} />
-          <ProdCard company="Менторинг" logo="/images/logos/smiley.svg"
-            title="Менторинг для дизайнеров и лидов" tags={["Practice"]} palette={["#3DDC84"]} />
+            title={pick("Дизайн-процессы и HR-бренд", "Design processes and employer brand", locale)} tags={["B2C", "E-com"]} />
+          <ProdCard company={pick("Менторинг", "Mentoring", locale)} logo="/images/logos/smiley.svg"
+            title={pick("Менторинг для дизайнеров и лидов", "Mentoring for designers and leads", locale)} tags={["Practice"]} palette={["#3DDC84"]} />
         </div>
       </div>
 
       {/* Примерка логотипов и цветов */}
       <div className="mb-16">
         <span className="block mb-5 text-[12px] tracking-[0.1em] uppercase text-white/35">
-          Примерка · логотипы и бренд-цвета (наведи на каждую)
+          {pick("Примерка · логотипы и бренд-цвета (наведи на каждую)", "Fitting · logos and brand colors (hover each)", locale)}
         </span>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {[
-            { name: "МТС", color: "#FF2436", logo: "/images/logos/mts.svg" },
-            { name: "Газпром Нефть", color: "#1C92E5", logo: "/images/logos/gazpromneft.svg" },
+            { name: "MTS", color: "#FF2436", logo: "/images/logos/mts.svg" },
+            { name: pick("Газпром Нефть", "Gazprom Neft", locale), color: "#1C92E5", logo: "/images/logos/gazpromneft.svg" },
             { name: "Ozon", color: "#2E6BFF", logo: "/images/logos/ozon.svg" },
           ].map((b) => (
             <div key={b.name} className="flex flex-col gap-3">
@@ -247,7 +254,7 @@ export default function CardsLabPage() {
       {/* Менторинг — зелёные и коричневые кубики со смайлами */}
       <div className="mb-16">
         <span className="block mb-4 text-[12px] tracking-[0.1em] uppercase text-white/35">
-          Менторинг · зелёные кубики со смайлами, центральный застыл (наведи мышь)
+          {pick("Менторинг · зелёные кубики со смайлами, центральный застыл (наведи мышь)", "Mentoring · green cubes with smileys, the center one froze (hover)", locale)}
         </span>
         <div className="relative w-full max-w-[520px] aspect-[16/9] rounded-xl border border-white/[0.08] overflow-hidden bg-black/40">
           <div
@@ -257,7 +264,7 @@ export default function CardsLabPage() {
           />
           <PixelCubePile color="#3DDC84" logoSrc="/images/logos/smiley.svg" grid={110} idleCenter />
           <div className="absolute top-3 left-3 z-[2] text-white/75 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
-            <LedText text="Менторинг" className="h-[8px] w-auto" />
+            <LedText text={pick("Менторинг", "Mentoring", locale)} className="h-[8px] w-auto" />
           </div>
         </div>
       </div>
@@ -265,7 +272,7 @@ export default function CardsLabPage() {
       {/* Гибрид — большие вращающиеся 3D-кубы + физика засыпания */}
       <div className="mb-16">
         <span className="block mb-4 text-[12px] tracking-[0.1em] uppercase text-white/35">
-          Гибрид · 3D-кубы падают в объёме и копятся физикой (наведи мышь)
+          {pick("Гибрид · 3D-кубы падают в объёме и копятся физикой (наведи мышь)", "Hybrid · 3D cubes fall in volume and pile up with physics (hover)", locale)}
         </span>
         <div className="no-underline group block w-full max-w-[520px]">
           <article className="relative rounded-2xl overflow-hidden bg-[#0f0f0e] border border-white/[0.06] group-hover:border-white/20 transition-colors duration-300">
@@ -278,12 +285,12 @@ export default function CardsLabPage() {
                 />
                 <PixelCubePile color={MTS_RED} logoSrc="/images/logos/mts.svg" />
                 <div className="absolute top-4 left-4 md:top-5 md:left-5 z-[2] text-white/75 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
-                  <LedText text="МТС" className="h-[9px] md:h-[10px] w-auto" />
+                  <LedText text={pick("МТС", "MTS", locale)} className="h-[9px] md:h-[10px] w-auto" />
                 </div>
               </div>
               <div className="flex-1 flex flex-col items-center justify-center gap-4 md:gap-5 text-center px-5 py-6 md:py-7">
                 <h3 className="text-white max-w-full">
-                  <LedLines text="Дать МТС голос и собрать Мой МТС в платформу" center maxChars={22} lineClass="h-[15px] md:h-[18px]" />
+                  <LedLines text={mtsTitle(locale)} center maxChars={22} lineClass="h-[15px] md:h-[18px]" />
                 </h3>
                 <div className="flex flex-wrap justify-center gap-1.5 md:gap-2">
                   <TagChip>B2C</TagChip>
@@ -298,15 +305,15 @@ export default function CardsLabPage() {
       {/* Режимы вращения — наведи на каждый */}
       <div className="mb-16">
         <span className="block mb-5 text-[12px] tracking-[0.1em] uppercase text-white/35">
-          Режимы вращения (наведи мышь — ускоряется)
+          {pick("Режимы вращения (наведи мышь — ускоряется)", "Rotation modes (hover — speeds up)", locale)}
         </span>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {MODES.map(({ mode, label }) => (
+          {MODES.map(({ mode, labelRu, labelEn }) => (
             <div key={mode} className="flex flex-col items-center gap-3">
               <div className="w-full max-w-[180px] rounded-xl border border-white/[0.08] bg-black/40 overflow-hidden p-2">
                 <PixelCube3D color={MTS_RED} logoSrc="/images/logos/mts.svg" grid={40} mode={mode} className="w-full" />
               </div>
-              <span className="text-[12px] tracking-[0.06em] uppercase text-white/40 text-center">{label}</span>
+              <span className="text-[12px] tracking-[0.06em] uppercase text-white/40 text-center">{pick(labelRu, labelEn, locale)}</span>
             </div>
           ))}
         </div>
@@ -315,20 +322,20 @@ export default function CardsLabPage() {
       {/* Физика засыпания кубиками — как webgl-блок */}
       <div className="mb-16">
         <span className="block mb-4 text-[12px] tracking-[0.1em] uppercase text-white/35">
-          Физика засыпания · кубики падают и копятся (наведи мышь)
+          {pick("Физика засыпания · кубики падают и копятся (наведи мышь)", "Collapse physics · cubes fall and pile up (hover)", locale)}
         </span>
         <div className="max-w-[520px]">
-          <RainCard />
+          <RainCard locale={locale} />
         </div>
       </div>
 
       {/* Вариант B — настоящий 3D-куб в дот-матрице */}
       <div className="mb-16">
         <span className="block mb-4 text-[12px] tracking-[0.1em] uppercase text-white/35">
-          Вариант B · 3D-куб спроецирован в LED-сетку (вращается, ховер ускоряет и зажигает)
+          {pick("Вариант B · 3D-куб спроецирован в LED-сетку (вращается, ховер ускоряет и зажигает)", "Option B · 3D cube projected onto the LED grid (rotates, hover speeds up and lights it)", locale)}
         </span>
         <div className="grid md:grid-cols-2 gap-10 md:gap-12 items-start">
-          <PrototypeCard3D />
+          <PrototypeCard3D locale={locale} />
           <div className="flex items-center justify-center">
             <div className="w-[280px]">
               <PixelCube3D color={MTS_RED} logoSrc="/images/logos/mts.svg" grid={52} className="w-full" />
@@ -338,23 +345,25 @@ export default function CardsLabPage() {
       </div>
 
       <span className="block mb-4 text-[12px] tracking-[0.1em] uppercase text-white/35">
-        Вариант A · статичная изо-плитка (отклонён)
+        {pick("Вариант A · статичная изо-плитка (отклонён)", "Option A · static iso tile (rejected)", locale)}
       </span>
       <div className="grid md:grid-cols-2 gap-10 md:gap-12 items-start">
         <div className="flex flex-col gap-4">
-          <span className="text-[12px] tracking-[0.1em] uppercase text-white/35">Покой (наведи мышь →)</span>
-          <PrototypeCard />
+          <span className="text-[12px] tracking-[0.1em] uppercase text-white/35">{pick("Покой (наведи мышь →)", "Idle (hover →)", locale)}</span>
+          <PrototypeCard locale={locale} />
         </div>
         <div className="flex flex-col gap-4">
-          <span className="text-[12px] tracking-[0.1em] uppercase text-white/35">Зажжённое состояние (active)</span>
-          <PrototypeCard active />
+          <span className="text-[12px] tracking-[0.1em] uppercase text-white/35">{pick("Зажжённое состояние (active)", "Lit state (active)", locale)}</span>
+          <PrototypeCard active locale={locale} />
         </div>
       </div>
 
       <p className="mt-14 max-w-2xl text-white/45 text-[14px] leading-relaxed">
-        Куб собран из LED-точек на языке сайта. В покое диоды притушены, на ховере карточки
-        матрица насыщается бренд-цветом и лого зажигается. Видео убрано. Для Газпрома и
-        смайла понадобятся bitmap-спрайты лого (МТС читается через LedText как есть).
+        {pick(
+          "Куб собран из LED-точек на языке сайта. В покое диоды притушены, на ховере карточки матрица насыщается бренд-цветом и лого зажигается. Видео убрано. Для Газпрома и смайла понадобятся bitmap-спрайты лого (МТС читается через LedText как есть).",
+          "The cube is built from LED dots in the site's own language. At rest the diodes are dimmed; on card hover the matrix saturates with the brand color and the logo lights up. Video is gone. Gazprom and the smiley will need bitmap logo sprites (MTS renders through LedText as is).",
+          locale,
+        )}
       </p>
     </main>
   );

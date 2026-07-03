@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import MentoringBooking from "@/components/MentoringBooking";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 /** Открыть модалку записи из любого места: openBooking() либо
  *  любой элемент с атрибутом data-open-booking (клик перехватывается). */
@@ -11,6 +13,7 @@ export function openBooking() {
 
 export default function BookingModal() {
   const [open, setOpen] = useState(false);
+  const locale = useLocale();
 
   // Триггеры: кастомное событие + делегированный клик по [data-open-booking]
   useEffect(() => {
@@ -52,7 +55,7 @@ export default function BookingModal() {
       className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-3 sm:p-6"
       role="dialog"
       aria-modal="true"
-      aria-label="Запись на встречу"
+      aria-label={pick("Запись на встречу", "Book a meeting", locale)}
     >
       <div
         className="absolute inset-0 bg-black/75 backdrop-blur-sm"
@@ -62,7 +65,7 @@ export default function BookingModal() {
         <button
           type="button"
           onClick={() => setOpen(false)}
-          aria-label="Закрыть"
+          aria-label={pick("Закрыть", "Close", locale)}
           className="absolute top-3 right-3 z-[2] inline-flex items-center justify-center w-9 h-9 rounded-full bg-black/40 border border-white/10 text-white/70 hover:text-white hover:border-white/30 transition-colors"
         >
           ✕

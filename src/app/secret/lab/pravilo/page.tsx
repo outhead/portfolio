@@ -5,6 +5,8 @@ import { LedLines } from "@/components/LedBoard";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { useLocale } from "@/lib/useLocale";
+import { pick, type Locale } from "@/lib/i18n";
 
 /**
  * Прототип B-v2 — «Перепиши правило» (Baba Is You, усложнённый).
@@ -19,7 +21,19 @@ const INITIAL: Chip[] = [
   { id: "c", word: "Открыт" },
 ];
 
+// Ключи слов (word) — внутренние, на них завязана логика. Отображение — по локали.
+const WORD_LABEL: Record<string, { ru: string; en: string }> = {
+  "Выход": { ru: "Выход", en: "Exit" },
+  "Не": { ru: "Не", en: "Not" },
+  "Открыт": { ru: "Открыт", en: "Open" },
+};
+const wordLabel = (word: string, locale: Locale) => {
+  const m = WORD_LABEL[word];
+  return m ? pick(m.ru, m.en, locale) : word;
+};
+
 export default function PraviloProto() {
+  const locale = useLocale();
   const [chips, setChips] = useState<Chip[]>(INITIAL);
   const [won, setWon] = useState(false);
   const [hint, setHint] = useState(false);
@@ -65,7 +79,7 @@ export default function PraviloProto() {
       setChips(rest); // останется «ВЫХОД ОТКРЫТ» → откроется
     } else {
       // выкинул нужное слово — так выход не собрать, вернуть всё
-      setFlash("Так выход не собрать.");
+      setFlash(pick("Так выход не собрать.", "That won't make the exit.", locale));
       setTimeout(() => { setChips(INITIAL); setFlash(null); }, 900);
     }
   };
@@ -79,11 +93,11 @@ export default function PraviloProto() {
       {!won ? (
         <div className="relative z-[1] w-full max-w-[520px] mx-auto flex flex-col items-center text-center select-none">
           <p className="text-white/40 mb-3">
-            <span className="sr-only">Прототип · B</span>
-            <LedText text="Прототип · B" className="h-[9px] w-auto" />
+            <span className="sr-only">{pick("Прототип · B", "Prototype · B", locale)}</span>
+            <LedText text={pick("Прототип · B", "Prototype · B", locale)} className="h-[9px] w-auto" />
           </p>
           <h1 className="mb-8">
-            <LedLines text="Найди выход" center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
+            <LedLines text={pick("Найди выход", "Find the exit", locale)} center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
           </h1>
 
           <div className={`w-24 h-32 rounded-lg border-2 mb-12 transition-all duration-500 ${open ? "border-[#A6FF00] bg-[#A6FF00]/15 shadow-[0_0_50px_-8px_rgba(166,255,0,0.7)]" : "border-white/25 bg-white/[0.03]"}`} />
@@ -106,38 +120,38 @@ export default function PraviloProto() {
                   className={`touch-none cursor-grab active:cursor-grabbing inline-flex items-center px-4 py-2.5 rounded-md border ${cls} ${active ? "z-10 shadow-lg" : ""}`}
                   style={active ? { transform: `translate(${off.x}px, ${off.y}px)`, transition: "none" } : { transition: "transform .2s ease" }}
                 >
-                  <span className="sr-only">{c.word}</span>
-                  <LedText text={c.word} className="h-[11px] md:h-[12px] w-auto pointer-events-none" />
+                  <span className="sr-only">{wordLabel(c.word, locale)}</span>
+                  <LedText text={wordLabel(c.word, locale)} className="h-[11px] md:h-[12px] w-auto pointer-events-none" />
                 </div>
               );
             })}
           </div>
 
           <p className="mt-10 text-[14px] text-[#C9A66B]/85 transition-opacity duration-700 min-h-[20px]" style={{ opacity: hint || flash ? 1 : 0 }}>
-            {flash ?? "Перетасовки тут не помогут. Лишнее — за край."}
+            {flash ?? pick("Перетасовки тут не помогут. Лишнее — за край.", "Reshuffling won't help. Toss the extra past the edge.", locale)}
           </p>
         </div>
       ) : (
-        <Won note="Ты не переставил слова, а выбросил лишнее за край." />
+        <Won note={pick("Ты не переставил слова, а выбросил лишнее за край.", "You didn't rearrange the words — you tossed the extra one past the edge.", locale)} locale={locale} />
       )}
     </main>
   );
 }
 
-function Won({ note }: { note: string }) {
+function Won({ note, locale }: { note: string; locale: Locale }) {
   return (
     <div className="relative z-[1] w-full max-w-[420px] mx-auto flex flex-col items-center text-center">
       <p className="text-white/40 mb-4">
-        <span className="sr-only">Разгадал</span>
-        <LedText text="Разгадал" className="h-[9px] w-auto" />
+        <span className="sr-only">{pick("Разгадал", "Solved", locale)}</span>
+        <LedText text={pick("Разгадал", "Solved", locale)} className="h-[9px] w-auto" />
       </p>
       <h1 className="text-[#A6FF00] mb-5">
-        <LedLines text="Открыто" center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
+        <LedLines text={pick("Открыто", "Open", locale)} center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
       </h1>
       <p className="text-sm text-white/60 mb-8 max-w-xs">{note}</p>
       <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
         <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2.2} />
-        <span className="sr-only">На главную</span><LedText text="На главную" className="h-[10px] w-auto" />
+        <span className="sr-only">{pick("На главную", "Home", locale)}</span><LedText text={pick("На главную", "Home", locale)} className="h-[10px] w-auto" />
       </Link>
     </div>
   );

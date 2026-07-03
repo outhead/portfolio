@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, X, ZoomIn } from "lucide-react";
 import { ymGoal } from "@/lib/yandex-metrika";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 export interface HeroImage {
   src: string;
@@ -34,6 +36,7 @@ const SWIPE_MAX_VERTICAL = 60; // если вертикальное смещен
  * - Click на постер → fullscreen overlay; ESC закрывает; в overlay — тоже свайп.
  */
 export default function HeroSlider({ heroes, label }: HeroSliderProps) {
+  const locale = useLocale();
   const [active, setActive] = useState(0);
   const [zoomed, setZoomed] = useState(false);
 
@@ -165,7 +168,7 @@ export default function HeroSlider({ heroes, label }: HeroSliderProps) {
           onPointerDown={onPointerDown}
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerCancel}
-          aria-label="Открыть постер в полном размере"
+          aria-label={pick("Открыть постер в полном размере", "Open poster full size", locale)}
           className="group relative block w-full overflow-hidden rounded-2xl border border-white/[0.06] bg-black cursor-zoom-in select-none touch-pan-y"
           style={{ aspectRatio: aspect }}
         >
@@ -180,13 +183,13 @@ export default function HeroSlider({ heroes, label }: HeroSliderProps) {
               playsInline
               preload="metadata"
               className="absolute inset-0 w-full h-full object-contain pointer-events-none"
-              aria-label={current.alt ?? `Видео ${active + 1}`}
+              aria-label={current.alt ?? pick(`Видео ${active + 1}`, `Video ${active + 1}`, locale)}
             />
           ) : (
             <Image
               key={current.src}
               src={current.src}
-              alt={current.alt ?? `Постер ${active + 1}`}
+              alt={current.alt ?? pick(`Постер ${active + 1}`, `Poster ${active + 1}`, locale)}
               fill
               sizes="(min-width: 1024px) 80vw, 100vw"
               className="object-contain transition-opacity duration-300 pointer-events-none"
@@ -205,7 +208,7 @@ export default function HeroSlider({ heroes, label }: HeroSliderProps) {
             <button
               type="button"
               onClick={prev}
-              aria-label="Предыдущий постер"
+              aria-label={pick("Предыдущий постер", "Previous poster", locale)}
               className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 inline-flex items-center justify-center w-10 h-10 md:w-11 md:h-11 rounded-full bg-black/25 hover:bg-black/60 active:bg-black text-white/30 hover:text-white/85 border border-white/[0.05] hover:border-white/[0.12] backdrop-blur-sm transition-colors z-10"
             >
               <ChevronLeft className="w-5 h-5" strokeWidth={2} />
@@ -213,7 +216,7 @@ export default function HeroSlider({ heroes, label }: HeroSliderProps) {
             <button
               type="button"
               onClick={next}
-              aria-label="Следующий постер"
+              aria-label={pick("Следующий постер", "Next poster", locale)}
               className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 inline-flex items-center justify-center w-10 h-10 md:w-11 md:h-11 rounded-full bg-black/25 hover:bg-black/60 active:bg-black text-white/30 hover:text-white/85 border border-white/[0.05] hover:border-white/[0.12] backdrop-blur-sm transition-colors z-10"
             >
               <ChevronRight className="w-5 h-5" strokeWidth={2} />
@@ -233,7 +236,7 @@ export default function HeroSlider({ heroes, label }: HeroSliderProps) {
                 nextDirection.current = "dot";
                 setActive(idx);
               }}
-              aria-label={`Перейти к постеру ${idx + 1}`}
+              aria-label={pick(`Перейти к постеру ${idx + 1}`, `Go to poster ${idx + 1}`, locale)}
               className={`h-1.5 rounded-full transition-all ${
                 idx === active
                   ? "w-8 bg-[#A6FF00]"
@@ -263,7 +266,7 @@ export default function HeroSlider({ heroes, label }: HeroSliderProps) {
               e.stopPropagation();
               close();
             }}
-            aria-label="Закрыть"
+            aria-label={pick("Закрыть", "Close", locale)}
             className="fixed top-[max(1.25rem,env(safe-area-inset-top))] right-[max(1.25rem,env(safe-area-inset-right))] z-20 inline-flex items-center justify-center w-12 h-12 rounded-full bg-black/70 hover:bg-black active:bg-black text-white border border-white/15 backdrop-blur-sm transition-colors"
           >
             <X className="w-5 h-5" strokeWidth={2} />
@@ -284,7 +287,7 @@ export default function HeroSlider({ heroes, label }: HeroSliderProps) {
                   e.stopPropagation();
                   prev();
                 }}
-                aria-label="Предыдущий"
+                aria-label={pick("Предыдущий", "Previous", locale)}
                 className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-20 inline-flex items-center justify-center w-11 h-11 rounded-full bg-black/60 hover:bg-black active:bg-black text-white border border-white/15 backdrop-blur-sm transition-colors"
               >
                 <ChevronLeft className="w-5 h-5" strokeWidth={2} />
@@ -295,7 +298,7 @@ export default function HeroSlider({ heroes, label }: HeroSliderProps) {
                   e.stopPropagation();
                   next();
                 }}
-                aria-label="Следующий"
+                aria-label={pick("Следующий", "Next", locale)}
                 className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-20 inline-flex items-center justify-center w-11 h-11 rounded-full bg-black/60 hover:bg-black active:bg-black text-white border border-white/15 backdrop-blur-sm transition-colors"
               >
                 <ChevronRight className="w-5 h-5" strokeWidth={2} />
@@ -324,13 +327,13 @@ export default function HeroSlider({ heroes, label }: HeroSliderProps) {
                   playsInline
                   controls
                   className="absolute inset-0 w-full h-full object-contain"
-                  aria-label={current.alt ?? `Видео ${active + 1}`}
+                  aria-label={current.alt ?? pick(`Видео ${active + 1}`, `Video ${active + 1}`, locale)}
                 />
               ) : (
                 <Image
                   key={current.src}
                   src={current.src}
-                  alt={current.alt ?? `Постер ${active + 1}`}
+                  alt={current.alt ?? pick(`Постер ${active + 1}`, `Poster ${active + 1}`, locale)}
                   fill
                   sizes="100vw"
                   className="object-contain pointer-events-none"

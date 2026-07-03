@@ -8,6 +8,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import LedLogo from "@/components/LedLogo";
 import LedText from "@/components/LedText";
 import { PixelGlyph } from "@/components/OledKit";
+import { localizedHref, pathInLocale, stripLocale, type Locale } from "@/lib/i18n";
+import { useLocale } from "@/lib/useLocale";
+import { getDict } from "@/lib/dict";
+
+/** Локаль-зависимый путь к CV. */
+const CV_HREF: Record<Locale, string> = {
+  ru: "/Egor_Shugaev_CV.pdf",
+  en: "/Egor_Shugaev_CV_EN.pdf",
+};
 
 /** Пиксельный «документ со стрелкой вниз» — иконка CV в языке LED-точек. */
 const GLYPH_FILE_DOWN = [
@@ -40,22 +49,60 @@ function PixelUnderline({ active }: { active: boolean }) {
   );
 }
 
-const navLinks: Array<{ href: string; label: string; goal: string }> = [
-  { href: "/#portfolio", label: "Работы", goal: "nav_portfolio" },
-  { href: "/experiments", label: "Эксперименты", goal: "nav_experiments" },
-  { href: "/speaking", label: "Выступления", goal: "nav_speaking" },
+/** Переключатель RU/EN: флипает текущий путь на его двойник в другой локали. */
+function LangSwitch({ locale, pathname, compact = false }: { locale: Locale; pathname: string; compact?: boolean }) {
+  const dict = getDict(locale);
+  return (
+    <div
+      className={`inline-flex items-center ${compact ? "gap-1" : "gap-0.5"}`}
+      role="group"
+      aria-label={dict.lang.switchAria}
+    >
+      {(["ru", "en"] as Locale[]).map((lng, i) => {
+        const active = locale === lng;
+        return (
+          <span key={lng} className="inline-flex items-center">
+            {i === 1 && <span aria-hidden className="text-white/20 px-1">/</span>}
+            <Link
+              href={pathInLocale(pathname, lng)}
+              data-ym-goal="lang_switch"
+              data-ym-goal-params={`{"to":"${lng}"}`}
+              aria-label={lng === "ru" ? "Русский" : "English"}
+              aria-current={active ? "true" : undefined}
+              className={`no-underline transition-colors min-h-[44px] flex items-center ${
+                active ? "text-white" : "text-white/45 hover:text-white/80"
+              }`}
+            >
+              <LedText text={dict.lang[lng]} className="h-[10px] w-auto" />
+            </Link>
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
+const rawNavLinks: Array<{ href: string; key: "works" | "experiments" | "speaking"; goal: string }> = [
+  { href: "/#portfolio", key: "works", goal: "nav_portfolio" },
+  { href: "/experiments", key: "experiments", goal: "nav_experiments" },
+  { href: "/speaking", key: "speaking", goal: "nav_speaking" },
 ];
 
 const sectionIds = ["portfolio", "contacts"];
 
 export default function Header() {
   const pathname = usePathname();
+  const locale = useLocale();
+  const dict = getDict(locale);
+  const bare = stripLocale(pathname);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [headerSolid, setHeaderSolid] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
+
+  const navLinks = rawNavLinks.map((l) => ({ ...l, label: dict.nav[l.key] }));
 
   useEffect(() => {
     const onScroll = () => {
@@ -119,8 +166,8 @@ export default function Header() {
         }`}
       >
         <Link
-          href="/"
-          aria-label="Главная"
+          href={localizedHref("/", locale)}
+          aria-label={dict.a11y.home}
           onMouseEnter={() => {
             if (typeof window !== "undefined" && window.matchMedia("(hover: hover) and (pointer: fine)").matches)
               window.dispatchEvent(new Event("hero:home"));
@@ -130,18 +177,18 @@ export default function Header() {
           <LedLogo className="h-[12px] md:h-[11px] 2xl:h-[12px] w-auto" />
         </Link>
 
-        <nav aria-label="Основная навигация" className="hidden md:flex gap-4 lg:gap-6 lg:absolute lg:left-1/2 lg:-translate-x-1/2">
+        <nav aria-label="Navigation" className="hidden md:flex gap-4 lg:gap-6 lg:absolute lg:left-1/2 lg:-translate-x-1/2">
           {navLinks.map((link) => {
-            // Определяем активный пункт: для якорей — по активной секции на главной,
-            // для внешних страниц (/experiments, /speaking, /mentoring) — по pathname
+            // Активный пункт: для якорей — по активной секции на главной,
+            // для страниц (/experiments, /speaking) — по пути без языкового префикса
             const isAnchor = link.href.startsWith("/#");
             const isActive = isAnchor
-              ? pathname === "/" && activeSection === link.href.replace("/#", "")
-              : pathname === link.href;
+              ? bare === "/" && activeSection === link.href.replace("/#", "")
+              : bare === link.href;
             return (
               <Link
                 key={link.href}
-                href={link.href}
+                href={localizedHref(link.href, locale)}
                 data-ym-goal={link.goal}
                 aria-label={link.label}
                 className={`relative no-underline transition-colors duration-200 group min-h-[44px] flex items-center ${
@@ -156,16 +203,17 @@ export default function Header() {
         </nav>
 
         <div className="hidden md:flex items-center gap-4">
+          <LangSwitch locale={locale} pathname={pathname} />
           <Link
-            href="/Egor_Shugaev_CV.pdf"
+            href={CV_HREF[locale]}
             target="_blank"
             data-ym-goal="cta_cv"
             data-ym-goal-params='{"placement":"header"}'
-            aria-label="Скачать CV"
+            aria-label={dict.cv.aria}
             className="inline-flex items-center gap-1.5 text-white/65 no-underline hover:text-white transition-colors border border-white/[0.08] hover:border-white/25 rounded px-3 py-2 min-h-[44px]"
           >
             <PixelGlyph rows={GLYPH_FILE_DOWN} className="h-[13px] w-auto text-[#A6FF00]" />
-            <LedText text="CV" className="h-[11px] w-auto" />
+            <LedText text={dict.cv.short} className="h-[11px] w-auto" />
           </Link>
         </div>
 
@@ -174,7 +222,7 @@ export default function Header() {
           ref={btnRef}
           className="md:hidden bg-transparent border-none p-3 min-w-[44px] min-h-[44px] flex items-center justify-center text-white/70"
           onClick={() => setMenuOpen(!menuOpen)}
-          aria-label={menuOpen ? "Закрыть меню" : "Открыть меню"}
+          aria-label={menuOpen ? dict.a11y.closeMenu : dict.a11y.openMenu}
           aria-expanded={menuOpen}
           aria-controls="mobile-nav"
         >
@@ -188,7 +236,7 @@ export default function Header() {
               ref={menuRef}
               id="mobile-nav"
               role="navigation"
-              aria-label="Мобильная навигация"
+              aria-label="Navigation"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
@@ -199,7 +247,7 @@ export default function Header() {
                 {navLinks.map((link) => (
                   <Link
                     key={link.href}
-                    href={link.href}
+                    href={localizedHref(link.href, locale)}
                     data-ym-goal={link.goal}
                     data-ym-goal-params='{"placement":"mobile_menu"}'
                     aria-label={link.label}
@@ -210,16 +258,20 @@ export default function Header() {
                   </Link>
                 ))}
                 <Link
-                  href="/Egor_Shugaev_CV.pdf"
+                  href={CV_HREF[locale]}
                   target="_blank"
                   data-ym-goal="cta_cv"
                   data-ym-goal-params='{"placement":"mobile_menu"}'
-                  aria-label="Скачать CV"
+                  aria-label={dict.cv.download}
                   className="inline-flex items-center gap-2 text-white/40 no-underline hover:text-white/60 transition-colors mt-2 pt-4 border-t border-white/[0.06] min-h-[44px]"
                 >
                   <PixelGlyph rows={GLYPH_FILE_DOWN} className="h-[14px] w-auto text-[#A6FF00]" />
-                  <LedText text="Скачать CV" className="h-[12px] w-auto" />
+                  <LedText text={dict.cv.download} className="h-[12px] w-auto" />
                 </Link>
+                {/* Переключатель языка — в самом низу мобильного меню */}
+                <div className="mt-1" onClick={() => setMenuOpen(false)}>
+                  <LangSwitch locale={locale} pathname={pathname} compact />
+                </div>
               </nav>
             </motion.div>
           )}

@@ -7,6 +7,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, type Variants } from "framer-motion";
 import { Mic2, GraduationCap, Send, ArrowUpRight, Play } from "lucide-react";
+import { useLocale } from "@/lib/useLocale";
+import { pick, localizedHref, type Locale } from "@/lib/i18n";
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 24 },
@@ -25,65 +27,69 @@ const viewport = { once: true, margin: "-10% 0px -10% 0px" };
 // ───────────────────────────────────────────────────────────
 // Speaking & interviews — собрано из кейсов МТС и Газпром Нефти
 // ───────────────────────────────────────────────────────────
-const TALKS: Array<{
+function buildTalks(locale: Locale): Array<{
   label: string;
   era: string;
   url: string;
   thumbnail: string;
-}> = [
-  // МТС
-  {
-    label: "Интервью со мной — Art-director МТС",
-    era: "МТС · 2024–2025",
-    url: "https://youtu.be/opoCmrnQUDI",
-    thumbnail: "/images/mts/links/mts-interview.jpg",
-  },
-  {
-    label: "«Чаптеры или как засинкать 150 дизайнеров»",
-    era: "МТС · ранние годы",
-    url: "https://youtu.be/2F6TrdrWYKc",
-    thumbnail: "/images/mts/links/mts-first.jpg",
-  },
-  // ГПН
-  {
-    label: "Полное выступление со студией Pinkman",
-    era: "ГПН · 2023",
-    url: "https://youtu.be/lLxhnXgoCTQ",
-    thumbnail: "/images/gpn/links/pinkman.jpg",
-  },
-  {
-    label: "World Usability Day — кейс ГПН",
-    era: "ГПН · 2022",
-    url: "https://www.youtube.com/live/OjdF0lLFGv4?t=5003",
-    thumbnail: "/images/gpn/links/wud-2022.jpg",
-  },
-  {
-    label: "ЦЕХ News #13 — ИИ в дизайне",
-    era: "Webflow Conf · 2023",
-    url: "https://youtu.be/4s7j57G71fg",
-    thumbnail: "/images/gpn/links/ai-edited.jpg",
-  },
-  {
-    label: "«ИИ бесполезен» — подкаст про ИИ",
-    era: "ГПН · 2023",
-    url: "https://youtu.be/iGQzN9T4upA",
-    thumbnail: "/images/gpn/links/ai-fun.jpg",
-  },
-  {
-    label: "AI в дизайне — кафедра Skillbox",
-    era: "Skillbox · 2023",
-    url: "https://youtu.be/u1AQGiFpgMI",
-    thumbnail: "/images/gpn/links/ai-skillbox.jpg",
-  },
-  {
-    label: "Раннее интервью на ЦЕХ — нейросети",
-    era: "ЦЕХ · 2022",
-    url: "https://youtu.be/cEw5iTNTfZg",
-    thumbnail: "/images/gpn/links/ai-old.jpg",
-  },
-];
+}> {
+  return [
+    // МТС
+    {
+      label: pick("Интервью со мной — Art-director МТС", "An interview with me — Art Director at MTS", locale),
+      era: pick("МТС · 2024–2025", "MTS · 2024–2025", locale),
+      url: "https://youtu.be/opoCmrnQUDI",
+      thumbnail: "/images/mts/links/mts-interview.jpg",
+    },
+    {
+      label: pick("«Чаптеры или как засинкать 150 дизайнеров»", "“Chapters, or how to sync 150 designers”", locale),
+      era: pick("МТС · ранние годы", "MTS · early years", locale),
+      url: "https://youtu.be/2F6TrdrWYKc",
+      thumbnail: "/images/mts/links/mts-first.jpg",
+    },
+    // ГПН
+    {
+      label: pick("Полное выступление со студией Pinkman", "Full talk with the Pinkman studio", locale),
+      era: pick("ГПН · 2023", "Gazprom Neft · 2023", locale),
+      url: "https://youtu.be/lLxhnXgoCTQ",
+      thumbnail: "/images/gpn/links/pinkman.jpg",
+    },
+    {
+      label: pick("World Usability Day — кейс ГПН", "World Usability Day — Gazprom Neft case", locale),
+      era: pick("ГПН · 2022", "Gazprom Neft · 2022", locale),
+      url: "https://www.youtube.com/live/OjdF0lLFGv4?t=5003",
+      thumbnail: "/images/gpn/links/wud-2022.jpg",
+    },
+    {
+      label: pick("ЦЕХ News #13 — ИИ в дизайне", "TSEKH News #13 — AI in design", locale),
+      era: pick("Webflow Conf · 2023", "Webflow Conf · 2023", locale),
+      url: "https://youtu.be/4s7j57G71fg",
+      thumbnail: "/images/gpn/links/ai-edited.jpg",
+    },
+    {
+      label: pick("«ИИ бесполезен» — подкаст про ИИ", "“AI is useless” — a podcast about AI", locale),
+      era: pick("ГПН · 2023", "Gazprom Neft · 2023", locale),
+      url: "https://youtu.be/iGQzN9T4upA",
+      thumbnail: "/images/gpn/links/ai-fun.jpg",
+    },
+    {
+      label: pick("AI в дизайне — кафедра Skillbox", "AI in design — Skillbox department", locale),
+      era: pick("Skillbox · 2023", "Skillbox · 2023", locale),
+      url: "https://youtu.be/u1AQGiFpgMI",
+      thumbnail: "/images/gpn/links/ai-skillbox.jpg",
+    },
+    {
+      label: pick("Раннее интервью на ЦЕХ — нейросети", "Early interview at TSEKH — neural networks", locale),
+      era: pick("ЦЕХ · 2022", "TSEKH · 2022", locale),
+      url: "https://youtu.be/cEw5iTNTfZg",
+      thumbnail: "/images/gpn/links/ai-old.jpg",
+    },
+  ];
+}
 
 export default function SpeakingPage() {
+  const locale = useLocale();
+  const TALKS = buildTalks(locale);
   return (
     <>
       {/* ===== HERO ===== */}
@@ -97,22 +103,24 @@ export default function SpeakingPage() {
           <motion.div variants={fadeUp}>
             <div className="inline-flex items-center gap-2.5 text-white/50 mb-4">
               <span className="h-1 w-1 rounded-full bg-[#A6FF00]" />
-              <span className="sr-only">Публично</span>
-              <LedText text="Публично" className="h-[10px] w-auto" />
+              <span className="sr-only">{pick("Публично", "Public", locale)}</span>
+              <LedText text={pick("Публично", "Public", locale)} className="h-[10px] w-auto" />
             </div>
           </motion.div>
           <motion.h1 variants={fadeUp} className="mb-6 md:mb-8 text-white flex flex-col gap-[8px] md:gap-[11px]">
-            <span className="sr-only">Говорю и пишу</span>
-            <LedText text="Говорю" scale={2} dot={1.45} className="h-[28px] md:h-[48px] w-auto self-start" />
-            <LedText text="И пишу" scale={2} dot={1.45} className="h-[28px] md:h-[48px] w-auto self-start" />
+            <span className="sr-only">{pick("Говорю и пишу", "I speak and write", locale)}</span>
+            <LedText text={pick("Говорю", "I speak", locale)} scale={2} dot={1.45} className="h-[28px] md:h-[48px] w-auto self-start" />
+            <LedText text={pick("И пишу", "And write", locale)} scale={2} dot={1.45} className="h-[28px] md:h-[48px] w-auto self-start" />
           </motion.h1>
           <motion.p
             variants={fadeUp}
             className="text-base md:text-lg text-white/60 leading-relaxed max-w-2xl"
           >
-            Выступаю на отраслевых конференциях, менторю дизайнеров и лидов, веду Telegram-канал
-            «Снятся ли Егору нейросети» про AI-инструменты для дизайнеров. Не штатный спикер —
-            к каждому большому залу готовлюсь долго и тщательно.
+            {pick(
+              "Выступаю на отраслевых конференциях, менторю дизайнеров и лидов, веду Telegram-канал «Снятся ли Егору нейросети» про AI-инструменты для дизайнеров. Не штатный спикер — к каждому большому залу готовлюсь долго и тщательно.",
+              "I speak at industry conferences, mentor designers and leads, and run the Telegram channel “Does Egor Dream of Neural Networks?” about AI tools for designers. Not a full-time speaker — I put a lot of time and care into prepping for every big stage.",
+              locale,
+            )}
           </motion.p>
         </motion.div>
       </section>
@@ -127,8 +135,8 @@ export default function SpeakingPage() {
       >
         <motion.div variants={fadeUp} className="mb-8 md:mb-10 inline-flex items-center gap-2 text-white/75">
           <LedText text="[" className="h-[12px] md:h-[13px] w-auto text-[#C9A66B]" />
-          <span className="sr-only">Обо мне</span>
-          <LedText text="ОБО МНЕ" className="h-[12px] md:h-[13px] w-auto" />
+          <span className="sr-only">{pick("Обо мне", "About me", locale)}</span>
+          <LedText text={pick("ОБО МНЕ", "ABOUT ME", locale)} className="h-[12px] md:h-[13px] w-auto" />
           <LedText text="]" className="h-[12px] md:h-[13px] w-auto text-[#C9A66B]" />
         </motion.div>
 
@@ -136,7 +144,7 @@ export default function SpeakingPage() {
         <div className="grid md:grid-cols-[minmax(200px,260px)_minmax(0,640px)] gap-6 md:gap-8 lg:gap-10 items-center rounded-2xl border border-white/[0.06] bg-[#0b0b0a] p-5 md:p-7 lg:p-9">
           <motion.div variants={fadeUp} className="w-full max-w-[200px] sm:max-w-[220px] mx-auto md:max-w-none md:mx-0">
             <div className="relative aspect-[4/5] rounded-xl overflow-hidden border border-white/[0.06] bg-black">
-              <span className="sr-only">Егор Шугаев — дизайн-директор, ментор и независимый консультант</span>
+              <span className="sr-only">{pick("Егор Шугаев — дизайн-директор, ментор и независимый консультант", "Egor Shugaev — design director, mentor and independent consultant", locale)}</span>
               <LedGridBurst
                 src="/images/photos/me-pixel-color.png"
                 className="absolute inset-0 z-0"
@@ -147,8 +155,8 @@ export default function SpeakingPage() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A6FF00]/60 opacity-75" />
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#A6FF00]" />
                 </span>
-                <span className="sr-only">Сейчас · МСК</span>
-                <LedText text="Сейчас · МСК" className="h-[9px] w-auto" />
+                <span className="sr-only">{pick("Сейчас · МСК", "Now · MSK", locale)}</span>
+                <LedText text={pick("Сейчас · МСК", "Now · MSK", locale)} className="h-[9px] w-auto" />
               </div>
             </div>
           </motion.div>
@@ -156,11 +164,19 @@ export default function SpeakingPage() {
           <motion.div variants={fadeUp} className="flex flex-col justify-center">
             <BioRotator
               className="max-w-2xl"
-              items={[
-                <>Пришёл в дизайн из&nbsp;полиграфии и&nbsp;остался в&nbsp;нём по простой причине: мне нравится узнавать первопричины потребностей пользователей и&nbsp;решений бизнеса, искать провалы, <span className="text-[#C9A66B]">растить людей и&nbsp;цифры</span>. В&nbsp;какой-то момент это оказалось не побочным интересом, а&nbsp;рабочей профессией.</>,
-                <>Сейчас мне интересна связка <span className="text-[#A6FF00]">«дизайн и&nbsp;AI»</span>. Менторю дизайнеров и&nbsp;лидов, экспериментирую сам, пишу код. Иногда поделки получаются криво, но это часть процесса.</>,
-                <>Работаю от&nbsp;задачи: строю и&nbsp;автоматизирую процессы, влезаю глубоко — от&nbsp;стратегии до&nbsp;ревью макетов. Задача руководителя, как я&nbsp;её вижу, — <span className="text-[#C9A66B]">дать команде ясность</span>: кто чем занят и&nbsp;зачем. Тогда люди действуют увереннее, а&nbsp;не на&nbsp;ощупь.</>,
-              ]}
+              items={pick(
+                [
+                  <>Пришёл в дизайн из&nbsp;полиграфии и&nbsp;остался в&nbsp;нём по простой причине: мне нравится узнавать первопричины потребностей пользователей и&nbsp;решений бизнеса, искать провалы, <span className="text-[#C9A66B]">растить людей и&nbsp;цифры</span>. В&nbsp;какой-то момент это оказалось не побочным интересом, а&nbsp;рабочей профессией.</>,
+                  <>Сейчас мне интересна связка <span className="text-[#A6FF00]">«дизайн и&nbsp;AI»</span>. Менторю дизайнеров и&nbsp;лидов, экспериментирую сам, пишу код. Иногда поделки получаются криво, но это часть процесса.</>,
+                  <>Работаю от&nbsp;задачи: строю и&nbsp;автоматизирую процессы, влезаю глубоко — от&nbsp;стратегии до&nbsp;ревью макетов. Задача руководителя, как я&nbsp;её вижу, — <span className="text-[#C9A66B]">дать команде ясность</span>: кто чем занят и&nbsp;зачем. Тогда люди действуют увереннее, а&nbsp;не на&nbsp;ощупь.</>,
+                ],
+                [
+                  <>I came into design from&nbsp;print and&nbsp;stayed for a&nbsp;simple reason: I love getting to the root of what users need and&nbsp;why businesses decide the way they do, hunting for the gaps, <span className="text-[#C9A66B]">growing both people and&nbsp;numbers</span>. At&nbsp;some point what started as&nbsp;a&nbsp;side interest quietly became the&nbsp;job.</>,
+                  <>Right now I'm&nbsp;drawn to the pairing of <span className="text-[#A6FF00]">“design and&nbsp;AI”</span>. I mentor designers and&nbsp;leads, experiment on my own, and&nbsp;write code. Some of what I make comes out clunky, but that's part of the process.</>,
+                  <>I start from the&nbsp;problem: I build and&nbsp;automate processes and&nbsp;go deep — from&nbsp;strategy all the way to&nbsp;design reviews. A&nbsp;leader's job, the way I see it, is to&nbsp;<span className="text-[#C9A66B]">give the team clarity</span>: who's doing what, and&nbsp;why. That's when people move with confidence instead of feeling their way in the dark.</>,
+                ],
+                locale,
+              )}
             />
           </motion.div>
         </div>
@@ -177,8 +193,8 @@ export default function SpeakingPage() {
         <motion.div variants={fadeUp} className="mb-8 md:mb-10 flex items-center gap-3">
           <Mic2 className="w-4 h-4 text-white/40" strokeWidth={1.75} />
           <span className="text-white/70">
-            <span className="sr-only">Видео и интервью</span>
-            <LedText text="Видео и интервью" className="h-[11px] w-auto" />
+            <span className="sr-only">{pick("Видео и интервью", "Videos and interviews", locale)}</span>
+            <LedText text={pick("Видео и интервью", "Videos and interviews", locale)} className="h-[11px] w-auto" />
           </span>
           <span className="text-[14px] md:text-[14px] text-white/35 tabular-nums">
             {TALKS.length}
@@ -244,20 +260,20 @@ export default function SpeakingPage() {
             <div className="flex items-center gap-2 mb-4">
               <GraduationCap className="w-4 h-4 text-white/40" strokeWidth={1.5} />
               <div className="text-white/70">
-                <span className="sr-only">Менторство и курсы</span>
-                <LedText text="Менторство и курсы" className="h-[11px] w-auto" />
+                <span className="sr-only">{pick("Менторство и курсы", "Mentorship and courses", locale)}</span>
+                <LedText text={pick("Менторство и курсы", "Mentorship and courses", locale)} className="h-[11px] w-auto" />
               </div>
             </div>
             <ul className="space-y-2.5 text-[16px] md:text-[16px] text-white/65 leading-relaxed mb-5">
-              <li>40+ менти за&nbsp;карьеру (включая АД-период)</li>
-              <li>ВШЭ — читал курс по&nbsp;прикладному ИИ</li>
-              <li>Воркшопы для&nbsp;продуктовых команд</li>
+              <li>{pick("40+ менти за карьеру (включая АД-период)", "40+ mentees over my career (including my design-director years)", locale)}</li>
+              <li>{pick("ВШЭ — читал курс по прикладному ИИ", "HSE — taught a course on applied AI", locale)}</li>
+              <li>{pick("Воркшопы для продуктовых команд", "Workshops for product teams", locale)}</li>
             </ul>
             <Link
               href="mailto:egor.outhead@gmail.com?subject=Менторство"
               className="inline-flex items-center gap-2 text-[14px] md:text-[16px] tracking-[0.04em] text-white/55 hover:text-[#A6FF00] transition-colors no-underline"
             >
-              Записаться <ArrowUpRight className="w-3.5 h-3.5" strokeWidth={2} />
+              {pick("Записаться", "Book a session", locale)} <ArrowUpRight className="w-3.5 h-3.5" strokeWidth={2} />
             </Link>
           </motion.div>
 
@@ -266,19 +282,23 @@ export default function SpeakingPage() {
             <div className="flex items-center gap-2 mb-4">
               <Send className="w-4 h-4 text-white/40" strokeWidth={1.5} />
               <div className="text-white/70">
-                <span className="sr-only">Telegram-канал</span>
-                <LedText text="Telegram-канал" className="h-[11px] w-auto" />
+                <span className="sr-only">{pick("Telegram-канал", "Telegram channel", locale)}</span>
+                <LedText text={pick("Telegram-канал", "Telegram channel", locale)} className="h-[11px] w-auto" />
               </div>
             </div>
             <p className="text-[16px] md:text-[16px] text-white/65 leading-relaxed mb-5">
-              «Снятся ли Егору нейросети» — авторский канал про AI-инструменты для&nbsp;дизайнеров. Разборы Claude, Cursor, vibe-coding.
+              {pick(
+                "«Снятся ли Егору нейросети» — авторский канал про AI-инструменты для дизайнеров. Разборы Claude, Cursor, vibe-coding.",
+                "“Does Egor Dream of Neural Networks?” — my own channel about AI tools for designers. Breakdowns of Claude, Cursor, vibe-coding.",
+                locale,
+              )}
             </p>
             <Link
               href="https://t.me/aiegorka"
               target="_blank"
               className="inline-flex items-center gap-2 text-[14px] md:text-[16px] tracking-[0.04em] text-white/55 hover:text-[#A6FF00] transition-colors no-underline"
             >
-              Читать канал <ArrowUpRight className="w-3.5 h-3.5" strokeWidth={2} />
+              {pick("Читать канал", "Read the channel", locale)} <ArrowUpRight className="w-3.5 h-3.5" strokeWidth={2} />
             </Link>
           </motion.div>
         </div>
@@ -296,15 +316,15 @@ export default function SpeakingPage() {
           {[
             {
               src: "/images/photos/photo-4.jpg",
-              alt: "Егор Шугаев выступает на конференции по AI в дизайне",
+              alt: pick("Егор Шугаев выступает на конференции по AI в дизайне", "Egor Shugaev speaking at a conference on AI in design", locale),
             },
             {
               src: "/images/photos/photo-5.jpg",
-              alt: "Егор Шугаев — портрет дизайн-директора",
+              alt: pick("Егор Шугаев — портрет дизайн-директора", "Egor Shugaev — portrait of a design director", locale),
             },
             {
               src: "/images/photos/photo-6.jpg",
-              alt: "Егор Шугаев на воркшопе по дизайн-менеджменту",
+              alt: pick("Егор Шугаев на воркшопе по дизайн-менеджменту", "Egor Shugaev at a design-management workshop", locale),
             },
           ].map((photo, i) => (
             <motion.div

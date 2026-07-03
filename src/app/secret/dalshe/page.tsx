@@ -7,6 +7,8 @@ import confetti from "canvas-confetti";
 import QuestBackground from "@/components/QuestBackground";
 import HintButton from "@/components/HintButton";
 import QuestButton from "@/components/QuestButton";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 // Игровое поле — решётка 5×5 (координаты 0..4).
 // «Официальное» поле 3×3 — это центральные клетки (1..3, 1..3).
@@ -222,6 +224,7 @@ function celebrate() {
 type Phase = "play" | "celebrate" | "score";
 
 export default function SecretDalshePage() {
+  const locale = useLocale();
   const [marks, setMarks] = useState<Marks>(FIRST_MOVE);
   const [over, setOver] = useState(false);
   const [won, setWon] = useState(false);
@@ -246,7 +249,7 @@ export default function SecretDalshePage() {
     setOver(true);
     setWon(true);
     setWinLine({ cells, color: WIN_COLOR });
-    setStatus("Победа");
+    setStatus(pick("Победа", "Victory", locale));
     setPhase("celebrate");
     celebrate();
     phaseTimer.current = setTimeout(() => setPhase("score"), 1500);
@@ -273,7 +276,7 @@ export default function SecretDalshePage() {
 
     if (innerBoard(next).indexOf("") === -1) {
       setOver(true);
-      setStatus("Ничья");
+      setStatus(pick("Ничья", "Draw", locale));
       return;
     }
 
@@ -292,11 +295,11 @@ export default function SecretDalshePage() {
       const wl = innerWinLine(after);
       if (wl && wl.who === "O") {
         setOver(true);
-        setStatus("Компьютер выиграл.");
+        setStatus(pick("Компьютер выиграл.", "The computer won.", locale));
         setWinLine({ cells: wl.cells, color: WIN_COLOR });
       } else if (innerBoard(after).indexOf("") === -1) {
         setOver(true);
-        setStatus("Ничья");
+        setStatus(pick("Ничья", "Draw", locale));
       }
     }, 520);
   }
@@ -321,7 +324,7 @@ export default function SecretDalshePage() {
         viewBox={`0 0 ${BOX} ${BOX}`}
         style={{ width: "100%", height: "auto", display: "block", overflow: "visible" }}
         role="img"
-        aria-label="Игровое поле крестики-нолики"
+        aria-label={pick("Игровое поле крестики-нолики", "Tic-tac-toe board", locale)}
       >
         {Array.from({ length: 25 }).map((_, i) => {
           const r = Math.floor(i / 5);
@@ -381,19 +384,23 @@ export default function SecretDalshePage() {
           /* ─── Экран победы с таблицей лидеров ─── */
           <div className="w-full max-w-[420px] mx-auto flex flex-col items-center text-center">
             <h1 className="text-[#A6FF00] mb-8">
-              <LedLines text="Победа" center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
+              <LedLines text={pick("Победа", "Victory", locale)} center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
             </h1>
 
             <p className="text-sm md:text-[16px] text-white/60 mb-8 max-w-xs">
-              Ты выиграл там, где выиграть нельзя. Дальше — сложнее.
+              {pick(
+                "Ты выиграл там, где выиграть нельзя. Дальше — сложнее.",
+                "You won where winning is impossible. It gets harder from here.",
+                locale,
+              )}
             </p>
 
             <div className="flex flex-wrap items-center justify-center gap-3">
               <QuestButton href="/secret/dalshe2" ymGoal="quest2_solved" arrow>
-                Следующая загадка
+                {pick("Следующая загадка", "Next riddle", locale)}
               </QuestButton>
               <QuestButton variant="secondary" onClick={reset}>
-                Сыграть снова
+                {pick("Сыграть снова", "Play again", locale)}
               </QuestButton>
             </div>
           </div>
@@ -403,7 +410,7 @@ export default function SecretDalshePage() {
             {phase === "celebrate" ? (
               <>
                 <h1 className="text-[#A6FF00] mb-6">
-                  <LedLines text="Победа" center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
+                  <LedLines text={pick("Победа", "Victory", locale)} center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
                 </h1>
                 {board}
               </>
@@ -412,14 +419,18 @@ export default function SecretDalshePage() {
                 {/* Шапка фикс-высоты (лейбл внутри) → поле на одной Y с L2/L3 */}
                 <div className="flex flex-col items-center" style={{ minHeight: "clamp(108px, 17vw, 150px)" }}>
                   <p className="text-white/40 mb-3">
-                    <span className="sr-only">Крестики-нолики · Загадка №2</span>
-                    <LedText text="Крестики-нолики · Загадка №2" className="h-[9px] w-auto" />
+                    <span className="sr-only">{pick("Крестики-нолики · Загадка №2", "Tic-tac-toe · Riddle #2", locale)}</span>
+                    <LedText text={pick("Крестики-нолики · Загадка №2", "Tic-tac-toe · Riddle #2", locale)} className="h-[9px] w-auto" />
                   </p>
                   <h1 className="mb-3">
-                    <LedLines text="Обыграй компьютер" center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
+                    <LedLines text={pick("Обыграй компьютер", "Beat the computer", locale)} center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
                   </h1>
                   <p className="text-[14px] md:text-sm text-white/55 leading-relaxed max-w-sm">
-                    Компьютер ходит первым и не любит проигрывать.
+                    {pick(
+                      "Компьютер ходит первым и не любит проигрывать.",
+                      "The computer moves first and hates losing.",
+                      locale,
+                    )}
                   </p>
                 </div>
                 {board}
@@ -431,13 +442,20 @@ export default function SecretDalshePage() {
                 <HintButton
                   className="mt-3"
                   disabled={won}
-                  hints={[
-                    "Честно его не обыграть. Мысли «out of the box».",
-                    "Поле не заканчивается на рамке. Кликни по клеткам снаружи и собери ряд там.",
-                  ]}
+                  hints={pick(
+                    [
+                      "Честно его не обыграть. Мысли «out of the box».",
+                      "Поле не заканчивается на рамке. Кликни по клеткам снаружи и собери ряд там.",
+                    ],
+                    [
+                      "You can't beat it fairly. Think outside the box.",
+                      "The board doesn't end at the frame. Click the cells outside and make your row there.",
+                    ],
+                    locale,
+                  )}
                 />
                 <QuestButton variant="secondary" onClick={reset} className="mt-5">
-                  {over ? "Повторить" : "Начать заново"}
+                  {over ? pick("Повторить", "Play again", locale) : pick("Начать заново", "Restart", locale)}
                 </QuestButton>
               </>
             )}

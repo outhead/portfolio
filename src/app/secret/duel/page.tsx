@@ -8,6 +8,8 @@ import { connectP2P, type P2PHandle } from "../pong/rtc";
 import { connectRelay, type Relay } from "../pong/pongRelay";
 import { FW, FH } from "../pong/field";
 import { submitFeedback } from "../leaderboard";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 // Телеграм-канал для вейтлиста после игр.
 const TG_CHANNEL = "https://t.me/aiegorka";
@@ -52,6 +54,7 @@ const clampPaddle = (x: number, owner: 0 | 1, w: number) =>
   owner === 0 ? clamp(x, 0, MID - w) : clamp(x, MID, FW - w);
 
 export default function DuelPage() {
+  const locale = useLocale();
   const [phase, setPhase] = useState<Phase>("connecting");
   const [role, setRole] = useState<"host" | "guest">("host");
   const [shareUrl, setShareUrl] = useState("");
@@ -948,7 +951,7 @@ export default function DuelPage() {
   async function sendFollow() {
     if (fbSending || fbDone || (!fbTg.trim() && !fbText.trim())) return;
     setFbSending(true);
-    const ok = await submitFeedback(myNameRef.current || "Гость", {
+    const ok = await submitFeedback(myNameRef.current || pick("Гость", "Guest", locale), {
       telegram: fbTg.trim(), feedback: fbText.trim(), published: true,
     });
     setFbSending(false);
@@ -962,21 +965,21 @@ export default function DuelPage() {
       }} />
       <div className="relative z-[1] w-full max-w-[440px] mx-auto flex flex-col items-center text-center">
         <p className="text-white/40 mb-1.5 whitespace-nowrap">
-          <span className="sr-only">Дуэль · сквош</span>
-          <LedText text="Дуэль · сквош" className="h-[8px] w-auto" />
+          <span className="sr-only">{pick("Дуэль · сквош", "Duel · squash", locale)}</span>
+          <LedText text={pick("Дуэль · сквош", "Duel · squash", locale)} className="h-[8px] w-auto" />
           <span className="ml-2 normal-case tracking-normal" style={{ color: transport === "p2p" ? "rgba(166,255,0,0.65)" : "rgba(255,255,255,0.25)" }}>
-            <span className={transport === "p2p" ? "animate-pulse" : ""}>●</span> {transport === "p2p" ? "p2p" : "сервер"}
+            <span className={transport === "p2p" ? "animate-pulse" : ""}>●</span> {transport === "p2p" ? "p2p" : pick("сервер", "server", locale)}
           </span>
           {ping != null ? (
             <span className="ml-1.5 normal-case tracking-normal"
               style={{ color: ping <= 120 ? "rgba(166,255,0,0.7)" : ping <= 200 ? "#FFD60A" : "#FF6B6B" }}>
-              {ping} мс
+              {ping} {pick("мс", "ms", locale)}
             </span>
           ) : null}
         </p>
         <div className="flex items-center justify-center gap-2.5 sm:gap-5 mb-2">
           <span className="text-white/40">
-            <LedText text={oppName || "соперник"} className="h-[7px] sm:h-[8px] w-auto" />
+            <LedText text={oppName || pick("соперник", "rival", locale)} className="h-[7px] sm:h-[8px] w-auto" />
           </span>
           <span key={`t${theirs}`} className="text-white/80 score-pop inline-flex">
             <LedText text={String(theirs)} scale={2} dot={1.45} className="h-[16px] sm:h-[20px] w-auto" />
@@ -986,7 +989,7 @@ export default function DuelPage() {
             <LedText text={String(mine)} scale={2} dot={1.45} className="h-[16px] sm:h-[20px] w-auto" />
           </span>
           <span className="text-white/40">
-            <LedText text={myName || "ты"} className="h-[7px] sm:h-[8px] w-auto" />
+            <LedText text={myName || pick("ты", "you", locale)} className="h-[7px] sm:h-[8px] w-auto" />
           </span>
         </div>
 
@@ -999,7 +1002,7 @@ export default function DuelPage() {
           {ping != null && ping > 200 ? (
             <div className="absolute top-2 left-1/2 -translate-x-1/2 z-[2] pointer-events-none px-3 py-1.5 rounded-md bg-black/70 backdrop-blur-sm border border-[#FF6B6B]/30">
               <p className="text-[12px] text-[#FF6B6B] leading-snug text-center max-w-[240px]">
-                Высокий пинг ({ping} мс) — мяч будет дёргаться.
+                {pick(`Высокий пинг (${ping} мс) — мяч будет дёргаться.`, `High ping (${ping} ms) — the ball will stutter.`, locale)}
               </p>
             </div>
           ) : null}
@@ -1014,32 +1017,32 @@ export default function DuelPage() {
 
           {phase !== "playing" && phase !== "count" ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-md rounded-lg px-6 text-center">
-              {phase === "connecting" ? <p className="text-white/60 text-sm">Подключаюсь…</p> : null}
+              {phase === "connecting" ? <p className="text-white/60 text-sm">{pick("Подключаюсь…", "Connecting…", locale)}</p> : null}
 
               {phase === "waiting" ? (
                 role === "host" ? (
                   shareUrl ? (
                     <>
-                      <p className="text-[16px] text-white/80 mb-1">Жду соперника</p>
-                      <p className="text-[14px] text-white/45 mb-5 max-w-xs">Кинь ссылку другу — игра начнётся, когда он откроет.</p>
-                      <QuestButton onClick={copy}>{copied ? "скопировано" : "копировать ссылку"}</QuestButton>
-                      <QuestButton href="/secret/duel?solo=1" variant="tertiary" className="mt-4">тренировка одному</QuestButton>
+                      <p className="text-[16px] text-white/80 mb-1">{pick("Жду соперника", "Waiting for a rival", locale)}</p>
+                      <p className="text-[14px] text-white/45 mb-5 max-w-xs">{pick("Кинь ссылку другу — игра начнётся, когда он откроет.", "Send the link to a friend — the game starts when they open it.", locale)}</p>
+                      <QuestButton onClick={copy}>{copied ? pick("скопировано", "copied", locale) : pick("копировать ссылку", "copy link", locale)}</QuestButton>
+                      <QuestButton href="/secret/duel?solo=1" variant="tertiary" className="mt-4">{pick("тренировка одному", "solo practice", locale)}</QuestButton>
                     </>
                   ) : (
-                    <p className="text-white/70 text-sm">Жду, пока напарник откроет дуэль…</p>
+                    <p className="text-white/70 text-sm">{pick("Жду, пока напарник откроет дуэль…", "Waiting for your partner to open the duel…", locale)}</p>
                   )
                 ) : (
-                  <p className="text-white/70 text-sm">Готов. Начинаем…</p>
+                  <p className="text-white/70 text-sm">{pick("Готов. Начинаем…", "Ready. Starting…", locale)}</p>
                 )
               ) : null}
 
               {phase === "over" ? (
                 <>
                   <p className="text-[#A6FF00] mb-3 flex justify-center">
-                    <span className="sr-only">{iWon ? "Ты выиграл" : "Ты проиграл"}</span>
-                    <LedText text={iWon ? "Ты выиграл" : "Ты проиграл"} scale={2} dot={1.45} className="h-[20px] sm:h-[26px] w-auto" />
+                    <span className="sr-only">{iWon ? pick("Ты выиграл", "You won", locale) : pick("Ты проиграл", "You lost", locale)}</span>
+                    <LedText text={iWon ? pick("Ты выиграл", "You won", locale) : pick("Ты проиграл", "You lost", locale)} scale={2} dot={1.45} className="h-[20px] sm:h-[26px] w-auto" />
                   </p>
-                  <QuestButton onClick={rematch}>{role === "host" ? "Реванш" : "Запросить реванш"}</QuestButton>
+                  <QuestButton onClick={rematch}>{role === "host" ? pick("Реванш", "Rematch", locale) : pick("Запросить реванш", "Request rematch", locale)}</QuestButton>
                 </>
               ) : null}
             </div>
@@ -1049,17 +1052,17 @@ export default function DuelPage() {
         {followOpen && phase === "over" ? (
           <div className="relative z-[1] w-full max-w-[360px] mx-auto mt-4 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 text-center">
             {fbDone ? (
-              <p className="text-[14px] text-[#A6FF00]">Спасибо! Если оставил телеграм — позову на новые игры.</p>
+              <p className="text-[14px] text-[#A6FF00]">{pick("Спасибо! Если оставил телеграм — позову на новые игры.", "Thanks! If you left your Telegram — I'll ping you for new games.", locale)}</p>
             ) : (
               <>
-                <p className="text-[14px] text-white/75 mb-3">Понравилось? Оставь телеграм — позову на новые игры и расскажу о проектах.</p>
-                <input value={fbTg} onChange={(e) => setFbTg(e.target.value)} maxLength={80} placeholder="Телеграм / ник" aria-label="Телеграм"
+                <p className="text-[14px] text-white/75 mb-3">{pick("Понравилось? Оставь телеграм — позову на новые игры и расскажу о проектах.", "Enjoyed it? Drop your Telegram — I'll ping you for new games and share my projects.", locale)}</p>
+                <input value={fbTg} onChange={(e) => setFbTg(e.target.value)} maxLength={80} placeholder={pick("Телеграм / ник", "Telegram / handle", locale)} aria-label={pick("Телеграм", "Telegram", locale)}
                   className="w-full mb-2 bg-white/[0.06] border border-white/15 rounded-full px-4 py-2.5 text-[14px] text-white text-center placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors" />
-                <textarea value={fbText} onChange={(e) => setFbText(e.target.value)} maxLength={500} rows={2} placeholder="Отзыв (необязательно)" aria-label="Отзыв"
+                <textarea value={fbText} onChange={(e) => setFbText(e.target.value)} maxLength={500} rows={2} placeholder={pick("Отзыв (необязательно)", "Feedback (optional)", locale)} aria-label={pick("Отзыв", "Feedback", locale)}
                   className="w-full mb-3 bg-white/[0.06] border border-white/15 rounded-xl px-4 py-2.5 text-[14px] text-white placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors resize-none" />
                 <div className="flex items-center justify-center gap-3">
-                  <QuestButton onClick={sendFollow} disabled={fbSending || (!fbTg.trim() && !fbText.trim())}>{fbSending ? "..." : "Оставить"}</QuestButton>
-                  <QuestButton href={TG_CHANNEL} external variant="secondary">Канал</QuestButton>
+                  <QuestButton onClick={sendFollow} disabled={fbSending || (!fbTg.trim() && !fbText.trim())}>{fbSending ? "..." : pick("Оставить", "Submit", locale)}</QuestButton>
+                  <QuestButton href={TG_CHANNEL} external variant="secondary">{pick("Канал", "Channel", locale)}</QuestButton>
                 </div>
               </>
             )}
@@ -1067,7 +1070,11 @@ export default function DuelPage() {
         ) : null}
 
         <p className="hidden sm:block mt-3 text-[12px] text-white/40 max-w-xs">
-          Твоя половина — снизу. Отбивай мячи в своей зоне (←→ или палец). Лови бонусы: мультибол и широкая ракетка. До {WIN_SCORE}.
+          {pick(
+            `Твоя половина — снизу. Отбивай мячи в своей зоне (←→ или палец). Лови бонусы: мультибол и широкая ракетка. До ${WIN_SCORE}.`,
+            `Your half is at the bottom. Return the balls in your zone (←→ or finger). Grab boosts: multiball and a wider paddle. First to ${WIN_SCORE}.`,
+            locale,
+          )}
         </p>
       </div>
     </main>

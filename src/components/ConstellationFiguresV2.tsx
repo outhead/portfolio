@@ -26,6 +26,8 @@ import {
   type Pt,
   type Target,
 } from "@/lib/optics";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 const LW = FIELD_W, LH = FIELD_H;
 const GRID = "150,160,138";
@@ -64,6 +66,7 @@ export default function ConstellationFiguresV2({
   paramsRef?: React.MutableRefObject<V2Params>;
   onSolve?: () => void;
 }) {
+  const locale = useLocale();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const solveCb = useRef(onSolve);
   solveCb.current = onSolve;
@@ -413,7 +416,11 @@ export default function ConstellationFiguresV2({
         WebkitUserSelect: "none",
         WebkitTouchCallout: "none",
       } as React.CSSProperties}
-      aria-label="Головоломка (песочница): двигай кристаллы, чтобы зажечь все узлы"
+      aria-label={pick(
+        "Головоломка (песочница): двигай кристаллы, чтобы зажечь все узлы",
+        "Puzzle (sandbox): drag the crystals to light up every node",
+        locale
+      )}
       role="img"
     />
   );

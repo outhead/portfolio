@@ -15,6 +15,9 @@ import { TypographyFix } from "@/components/TypographyFix";
 import { workProjects } from "@/data/projects";
 import { Plus } from "lucide-react";
 import { ymGoal } from "@/lib/yandex-metrika";
+import { useLocale } from "@/lib/useLocale";
+import { pick, localizedHref, type Locale } from "@/lib/i18n";
+import { localizeProject } from "@/lib/localizeProject";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
@@ -37,14 +40,16 @@ import {
 
 // Любимые выступления — пиксельные превью на главной (прямые ссылки на видео).
 // Полный список — на /speaking.
-const SPEAKING_PICKS: Array<{ label: string; url: string; thumb: string }> = [
+const SPEAKING_PICKS: Array<{ label: string; labelEn: string; url: string; thumb: string }> = [
   {
     label: "«ИИ бесполезен» — подкаст про ИИ",
+    labelEn: "“AI is useless” — a podcast about AI",
     url: "https://youtu.be/iGQzN9T4upA",
     thumb: "/images/gpn/links/ai-fun.jpg",
   },
   {
     label: "ЦЕХ News #13 — ИИ в дизайне",
+    labelEn: "TSEKH News #13 — AI in design",
     url: "https://youtu.be/4s7j57G71fg",
     thumb: "/images/gpn/links/ai-edited.jpg",
   },
@@ -501,10 +506,12 @@ const careerJobs: Array<{
 
 function CareerHoverList() {
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
+  const locale = useLocale();
+  const jobs = locale === "en" ? careerJobs.map((j, i) => ({ ...j, ...careerJobsEn[i] })) : careerJobs;
 
   return (
     <div className="rounded-2xl border border-white/[0.06] overflow-hidden bg-[#0f0f0e]">
-      {careerJobs.map((job, i) => {
+      {jobs.map((job, i) => {
         const isExpanded = expandedIdx === i;
         const toggle = () =>
           setExpandedIdx((prev) => (prev === i ? null : i));
@@ -867,6 +874,7 @@ const tools: Array<{ name: string; icon: React.ReactNode }> = [
 function Toolbox() {
   // 8-плиточный bento с иконками: каждая карточка — иконка тулзы + name.
   // Подзаголовок «без ритуалов и ярлыков» — лёгкая ирония к шаблонным «my stack» секциям.
+  const T = HOME_T[useLocale()];
   return (
     <section className="relative z-[1] bg-black border-t border-white/[0.06]">
       <div className="px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-10 md:py-14">
@@ -880,9 +888,9 @@ function Toolbox() {
             variants={fadeUp}
             className="mb-6 md:mb-8 flex items-baseline gap-3"
           >
-            <SectionLabel>ИНСТРУМЕНТЫ</SectionLabel>
+            <SectionLabel>{T.toolsLabel}</SectionLabel>
             <span className="text-[14px] md:text-[16px] text-white/40 tracking-[0.06em]">
-              которые я использую каждый день
+              {T.toolsSub}
             </span>
           </motion.div>
 
@@ -922,18 +930,30 @@ const HERO_BUBBLES = [
   "Долистай до конца — там кнопка с сюрпризом.",
   "Жми на цифры и логотипы",
 ];
+// Английские фразы-частицы (соответствуют картинкам /images/txt-en-*).
+const HERO_BUBBLES_EN = [
+  "Whoa. Interactive.",
+  "Easter eggs and mini-quests are hidden across the site.",
+  "Scroll to the end — there is a surprise button.",
+  "Tap the numbers and logos",
+];
 const TEXT_START = 4; // индексы текст-форм начинаются здесь
-const HERO_SHAPES = [
+// Текст-формы: на EN берём картинки txt-en-*, где текст фраз английский.
+const heroTxtShapes = (en: boolean) =>
+  HERO_BUBBLES.map((_, i) => ({
+    src: `/images/txt-${en ? "en-" : ""}${i}-portrait.png`,
+    depth: `/images/txt-${en ? "en-" : ""}${i}-depth.png`,
+  }));
+const buildHeroShapes = (en: boolean) => [
   { src: "/images/hero-portrait.png", depth: "/images/hero-depth.png" }, // 0 рим-свет (я)
   { src: "/images/face-c-portrait.png", depth: "/images/face-c-depth.png" }, // 1 награда
   { src: "/images/face-e-portrait.png", depth: "/images/face-e-depth.png" }, // 2 бас
-  { src: "/images/fig-a-portrait.png", depth: "/images/fig-a-depth.png", depthScale: 0.35 }, // 3 глитч (фигура из точек)
-  ...HERO_BUBBLES.map((_, i) => ({
-    src: `/images/txt-${i}-portrait.png`,
-    depth: `/images/txt-${i}-depth.png`,
-  })), // 4..7 фразы из частиц
-  { src: "/images/egg-portrait.png", depth: "/images/egg-depth.png", depthScale: 0.5 }, // 8 яйцо (одиночный клик по МТС)
+  { src: "/images/fig-a-portrait.png", depth: "/images/fig-a-depth.png", depthScale: 0.35 }, // 3 глитч
+  ...heroTxtShapes(en), // 4..7 фразы из частиц
+  { src: "/images/egg-portrait.png", depth: "/images/egg-depth.png", depthScale: 0.5 }, // 8 яйцо
 ];
+const HERO_SHAPES = buildHeroShapes(false);
+const HERO_SHAPES_EN = buildHeroShapes(true);
 const SHAPE_EGG = TEXT_START + HERO_BUBBLES.length; // 8
 
 // ── Счётчик пасхалок (egg hunt) ────────────────────────────────────
@@ -1051,6 +1071,7 @@ const TESTIMONIALS: Testimonial[] = [
 
 function TestimonialCard({ t }: { t: Testimonial }) {
   const [showDog, setShowDog] = useState(false);
+  const locale = useLocale();
   return (
     <motion.div
       variants={fadeUp}
@@ -1083,7 +1104,7 @@ function TestimonialCard({ t }: { t: Testimonial }) {
               setShowDog((v) => !v);
               foundEgg("dog");
             }}
-            aria-label={showDog ? `Вернуть фото: ${t.name}` : "Показать сюрприз"}
+            aria-label={showDog ? pick(`Вернуть фото: ${t.name}`, `Restore photo: ${t.name}`, locale) : pick("Показать сюрприз", "Show surprise", locale)}
             className="relative shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-full overflow-hidden border border-white/[0.08] bg-white/[0.04] cursor-pointer p-0 transition-colors duration-200 hover:border-[#A6FF00]"
           >
             <Image
@@ -1133,7 +1154,166 @@ function TestimonialCard({ t }: { t: Testimonial }) {
   );
 }
 
+// ── Локализация главной ────────────────────────────────────────────
+const HOME_T = {
+  ru: {
+    heroLine1: "7 ЛЕТ", heroLine2: "РАЗВИВАЮ",
+    heroWords: ["ЛЮДЕЙ", "КОМАНДЫ", "ВИЗУАЛ", "СЕРВИСЫ", "ИНТЕРЕС"],
+    h1: "7 лет развиваю людей, команды, визуал, сервисы — дизайн-директор Егор Шугаев",
+    heroSub: "От стратегии и культуры до AI и цифровых продуктов.",
+    discuss: "Обсудить проект", viewCases: "Смотреть кейсы",
+    designDirector: "Дизайн-директор",
+    found: "Найдено", of: "из",
+    boardTitle: "Открыть доску искателей",
+    boardAria: (a: number, b: number) => `Найдено пасхалок: ${a} из ${b}. Открыть доску`,
+    counters: [{ v: "30", l: "запусков" }, { v: "11", l: "лет в дизайне" }, { v: "27", l: "команд" }],
+    awardTileLabel: "Награда · 2024", awardCEA: "Customer Experience Awards",
+    awardWinner: "Победитель в сегменте B2E",
+    awardAria: "Открыть кейс Газпром Нефть — CX Awards 2024",
+    awardTapAria: "Награда — засчитать пасхалку",
+    expertise: "Экспертиза", expertiseAria: "Перейти к экспертизе",
+    expItems: [
+      { num: "01", label: "Управление", note: "дизайн-функции и команды" },
+      { num: "02", label: "Направления", note: "B2C / B2E / EdTech / E-COM" },
+      { num: "03", label: "Ремесло", note: "процессы и применение AI" },
+    ],
+    worksMargin: "Работы · 2017—2026",
+    experiments: "Эксперименты", experimentsTitle: "Код, WebGL, шейдеры.",
+    showMore: (n: number) => `Показать ещё ${n} кейса`,
+    career: "КАРЬЕРА", expertiseLabel: "ЭКСПЕРТИЗА",
+    testimonials: "ОТЗЫВЫ", dontTake: "Не верьте мне на слово",
+    askThose: "* Спросите тех, кто со мной работал",
+    mentoring: "МЕНТОРИНГ",
+    mentoringHeading: "Довожу дизайнеров до сеньор-лида",
+    mentoringBody: "Больше 40 менти, а сессий ещё больше. Разбираем развилки роста: как дотянуть до лида, собрать команду, защитить проект перед топами. Даю не только свой опыт, но и учу думать, чтобы дальше ты проходил такие развилки сам.",
+    mentoringMetrics: [{ v: "40+", l: "менти" }, { v: "7", l: "лет опыта" }, { v: "200+", l: "сессий" }],
+    bookSession: "Записаться на сессию",
+    toolsLabel: "ИНСТРУМЕНТЫ", toolsSub: "которые я использую каждый день",
+    contacts: "КОНТАКТЫ", message: "Написать",
+    ctaEmailVal: "Написать", ctaLinkedinVal: "Егор Шугаев", ctaCvVal: "PDF · 2026",
+    ctaCvSr: "Скачать CV, PDF, 2026",
+    location: "Москва, Россия", openWorld: "Открыт к работе по всему миру",
+  },
+  en: {
+    heroLine1: "7 YEARS", heroLine2: "GROWING",
+    heroWords: ["PEOPLE", "TEAMS", "VISUALS", "SERVICES", "INTEREST"],
+    h1: "7 years growing people, teams, visuals, services and interest — design director Egor Shugaev",
+    heroSub: "From strategy and culture to AI and digital products.",
+    discuss: "Discuss a project", viewCases: "View cases",
+    designDirector: "Design Director",
+    found: "Found", of: "of",
+    boardTitle: "Open the finders' board",
+    boardAria: (a: number, b: number) => `Easter eggs found: ${a} of ${b}. Open the board`,
+    counters: [{ v: "30", l: "launches" }, { v: "11", l: "years in design" }, { v: "27", l: "teams" }],
+    awardTileLabel: "Award · 2024", awardCEA: "Customer Experience Awards",
+    awardWinner: "Winner in the B2E segment",
+    awardAria: "Open the Gazprom Neft case — CX Awards 2024",
+    awardTapAria: "Award — count the easter egg",
+    expertise: "Expertise", expertiseAria: "Go to expertise",
+    expItems: [
+      { num: "01", label: "Management", note: "design functions & teams" },
+      { num: "02", label: "Domains", note: "B2C / B2E / EdTech / E-COM" },
+      { num: "03", label: "Craft", note: "process & applied AI" },
+    ],
+    worksMargin: "Work · 2017—2026",
+    experiments: "Experiments", experimentsTitle: "Code, WebGL, shaders.",
+    showMore: (n: number) => `Show ${n} more`,
+    career: "CAREER", expertiseLabel: "EXPERTISE",
+    testimonials: "TESTIMONIALS", dontTake: "Don't just take my word for it",
+    askThose: "* Ask the people who've worked with me",
+    mentoring: "MENTORING",
+    mentoringHeading: "I take designers to senior and lead",
+    mentoringBody: "40+ mentees, and far more sessions. We work through the tough turning points: how to make lead, build a team, defend your work to the top. I don't just hand over my experience — I teach you how to think, so you can navigate those crossroads on your own next time.",
+    mentoringMetrics: [{ v: "40+", l: "mentees" }, { v: "7", l: "years of experience" }, { v: "200+", l: "sessions" }],
+    bookSession: "Book a session",
+    toolsLabel: "TOOLS", toolsSub: "the ones I use every day",
+    contacts: "CONTACTS", message: "Message",
+    ctaEmailVal: "Message", ctaLinkedinVal: "Egor Shugaev", ctaCvVal: "PDF · 2026",
+    ctaCvSr: "Download CV, PDF, 2026",
+    location: "Moscow, Russia", openWorld: "Open to work worldwide",
+  },
+} as const;
+
+// Английские параллели карьеры (индекс-в-индекс с careerJobs)
+const careerJobsEn: Array<{ year: string; company: string; role: string; scope: string; details?: string[] }> = [
+  {
+    year: "Now", company: "Freelance", role: "Mentor · Consultant · AI Visioner",
+    scope: "Mentoring, consulting, AI experiments",
+    details: [
+      "40+ mentees over my career (including the AD period)",
+      "Consulting: design-function audits, hiring, process setup",
+      "Taught an applied-AI course at HSE",
+    ],
+  },
+  {
+    year: "2025–2026", company: "MWS AI", role: "AI Visioner",
+    scope: "AI division of MTS Web Services, 2 products",
+    details: [
+      "Set the AI direction for two flagship division products",
+      "Defined UX principles for AI agents and chat interfaces",
+      "Built a UI Kit for internal AI products",
+    ],
+  },
+  {
+    year: "2024–2025", company: "MTS", role: "Design Director",
+    scope: "8 teams, 6 leads, 3 art directors, 40+ designers, 4 voice launches",
+    details: [
+      "Voice ecosystem: 4 public launches in 2025 (incl. AI noise cancellation, a market first for mobile voice)",
+      "Cross-product integration of My MTS: 30+ ecosystem products in one flow over 5 separate businesses",
+      "AI in the team's daily work: Cursor, Claude, Figma plugins — I led by example",
+    ],
+  },
+  {
+    year: "2022–2024", company: "Gazprom Neft", role: "Head of Design",
+    scope: "76 teams, 42 leads, 100+ designers, CX Award'24",
+    details: [
+      "Built a single design function from scattered teams",
+      "Launched a design system for 76 products",
+      "CX Awards'24 for the Unified Service Portal (ESO)",
+    ],
+  },
+  {
+    year: "2021–2022", company: "Ozon", role: "Community Lead",
+    scope: "Channel from 0 to 17K subscribers, −60% designer hiring drop-off",
+    details: [
+      "Built a design community from scratch",
+      "Grew the channel from 0 to 17K subscribers",
+      "Cut candidate drop-off in designer hiring by 60%",
+    ],
+  },
+  {
+    year: "2017–2021", company: "MTS", role: "Art Director B2C",
+    scope: "16 teams, 60+ designers, 11M+ users",
+    details: [
+      "Art direction of the MTS B2C ecosystem",
+      "×10 growth in MTS Cashback transactions",
+      "Unified the visual language across 16 teams",
+    ],
+  },
+];
+
+// Английские параллели отзывов (индекс-в-индекс с TESTIMONIALS)
+const testimonialsEn: Array<{ quote: string; role: string; dogRole?: string }> = [
+  {
+    quote: "An innovator, fluent in AI. Level-headed — every decision is a considered one. He builds strong teams and processes that actually run smoothly. And on top of all that, a genuinely great person to work with.",
+    role: "Managing Director, Raiffeisen (formerly MTS)",
+  },
+  {
+    quote: "I worked with Egor both at Gazprom Neft and when he was at MTS. It's hard to find anyone better than Egor. He's a legend of design, AI, and management.",
+    role: "Head of the Project Office, Gazprom Neft",
+    dogRole: "Head of the None-of-Your-Doggone-Business project, Woof Woof Neft",
+  },
+  {
+    quote: "With Egor, hard problems get easier — strong hard skills paired with a rare knack for building processes that actually work. Egor genuinely cares about the outcome and does whatever it takes to get there.",
+    role: "CPO Eva, MegaFon (formerly CPO of the voice ecosystem)",
+  },
+];
+
 export default function PreviewHome() {
+  const homeLocale = useLocale();
+  const T = HOME_T[homeLocale];
+  const heroShapes = homeLocale === "en" ? HERO_SHAPES_EN : HERO_SHAPES;
+  const heroBubbles = homeLocale === "en" ? HERO_BUBBLES_EN : HERO_BUBBLES;
   const heroSphereRef = useRef<HTMLDivElement>(null);
   // Пасхалки портрета: форма + наборы кликнутых чисел/логотипов
   const [heroShape, setHeroShape] = useState(0);
@@ -1321,16 +1501,16 @@ export default function PreviewHome() {
   }, []);
 
   const heroLines: LedLine[] = [
-    { text: "7 ЛЕТ", color: "#F2F4EF" },
-    { text: "РАЗВИВАЮ", color: "#F2F4EF" },
-    { words: ["ЛЮДЕЙ", "КОМАНДЫ", "ВИЗУАЛ", "СЕРВИСЫ", "ИНТЕРЕС"], color: "#A6FF00" },
+    { text: T.heroLine1, color: "#F2F4EF" },
+    { text: T.heroLine2, color: "#F2F4EF" },
+    { words: [...T.heroWords], color: "#A6FF00" },
   ];
   // На главной по умолчанию показываем только готовые work-кейсы (без wip).
   // wip-кейсы (ozon, mts-b2c) — за кнопкой «Показать ещё», чтобы недоделанные
   // карточки не утяжеляли первое впечатление.
   const [showExtraProjects, setShowExtraProjects] = useState(false);
-  const mainProjects = useMemo(() => workProjects.filter((p) => !p.wip), []);
-  const extraProjects = useMemo(() => workProjects.filter((p) => p.wip), []);
+  const mainProjects = useMemo(() => workProjects.filter((p) => !p.wip).map((p) => localizeProject(p, homeLocale)), [homeLocale]);
+  const extraProjects = useMemo(() => workProjects.filter((p) => p.wip).map((p) => localizeProject(p, homeLocale)), [homeLocale]);
   return (
     <>
       <TypographyFix />
@@ -1382,10 +1562,10 @@ export default function PreviewHome() {
                   />
                 </div>
                 <h1 className="sr-only">
-                  7 лет развиваю людей, команды, визуал, сервисы — дизайн-директор Егор Шугаев
+                  {T.h1}
                 </h1>
                 <p className="font-service mt-5 md:mt-6 max-w-[460px] text-[16px] md:text-[20px] leading-snug tracking-[0.02em] text-white/60">
-                  От стратегии и культуры до AI и цифровых продуктов.
+                  {T.heroSub}
                 </p>
                 <div className="mt-5 md:mt-6 flex flex-wrap items-center gap-3">
                   <button
@@ -1395,8 +1575,8 @@ export default function PreviewHome() {
                     data-ym-goal-params='{"placement":"hero"}'
                     className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-[#A6FF00] text-black hover:bg-white transition-colors"
                   >
-                    <span className="sr-only">Обсудить проект</span>
-                    <LedText text="Обсудить проект" className="h-[11px] w-auto" />
+                    <span className="sr-only">{T.discuss}</span>
+                    <LedText text={T.discuss} className="h-[11px] w-auto" />
                     <LedText text="→" className="h-[13px] w-auto" />
                   </button>
                   <Link
@@ -1404,16 +1584,16 @@ export default function PreviewHome() {
                     data-ym-goal="hero_view_cases"
                     className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 hover:border-[#A6FF00]/60 hover:text-[#A6FF00] transition-colors no-underline"
                   >
-                    <span className="sr-only">Смотреть кейсы</span>
-                    <LedText text="Смотреть кейсы" className="h-[11px] w-auto" />
+                    <span className="sr-only">{T.viewCases}</span>
+                    <LedText text={T.viewCases} className="h-[11px] w-auto" />
                     <LedText text="→" className="h-[13px] w-auto" />
                   </Link>
                 </div>
                 <div className="mt-9 md:mt-auto md:pt-8 flex items-center gap-6 md:gap-10 flex-wrap">
                   <img onClick={() => tapLogo("ozon")} src="/images/logos/ozon.svg" alt="Ozon" className="h-4 md:h-5 w-auto self-center brightness-0 invert opacity-55 hover:opacity-100 transition-opacity cursor-pointer" />
-                  <img onClick={() => tapLogo("mts")} src="/images/logos/mts.svg" alt="МТС" className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity cursor-pointer" />
-                  <img onClick={() => tapLogo("gpn")} src="/images/logos/gazpromneft.svg" alt="Газпром нефть" className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity cursor-pointer" />
-                  <img onClick={() => tapLogo("hse")} src="/images/logos/hse.svg" alt="ВШЭ" className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity cursor-pointer" />
+                  <img onClick={() => tapLogo("mts")} src="/images/logos/mts.svg" alt={pick("МТС", "MTS", homeLocale)} className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity cursor-pointer" />
+                  <img onClick={() => tapLogo("gpn")} src="/images/logos/gazpromneft.svg" alt={pick("Газпром нефть", "Gazprom Neft", homeLocale)} className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity cursor-pointer" />
+                  <img onClick={() => tapLogo("hse")} src="/images/logos/hse.svg" alt={pick("ВШЭ", "HSE", homeLocale)} className="h-6 md:h-8 w-auto brightness-0 invert opacity-55 hover:opacity-100 transition-opacity cursor-pointer" />
                 </div>
               </Oled>
             </motion.div>
@@ -1426,9 +1606,9 @@ export default function PreviewHome() {
                     onMouseEnter={goHomeHover}
                     className="inline-flex items-center gap-2 cursor-pointer"
                   >
-                    <span className="sr-only">Дизайн-директор</span>
+                    <span className="sr-only">{T.designDirector}</span>
                     <LedText text="[" className="h-[10px] w-auto text-[#C9A66B]/70" />
-                    <LedText text="Дизайн-директор" className="h-[10px] w-auto" />
+                    <LedText text={T.designDirector} className="h-[10px] w-auto" />
                     <LedText text="]" className="h-[10px] w-auto text-[#C9A66B]/70" />
                   </span>
                 </div>
@@ -1442,7 +1622,7 @@ export default function PreviewHome() {
                   <ParticlePortrait
                     className="absolute inset-0 w-full h-full"
                     trackingRef={heroSphereRef}
-                    shapes={HERO_SHAPES}
+                    shapes={heroShapes}
                     active={heroShape}
                     count={4500}
                     color={[255, 255, 255]}
@@ -1456,7 +1636,7 @@ export default function PreviewHome() {
                   {/* Фразы собираются из самих частиц (форма-текст), не оверлеем.
                       Озвучка для скринридера: */}
                   <span aria-live="polite" className="sr-only">
-                    {bubbleStage > 0 ? HERO_BUBBLES[(bubbleStage - 1) % HERO_BUBBLES.length] : ""}
+                    {bubbleStage > 0 ? heroBubbles[(bubbleStage - 1) % heroBubbles.length] : ""}
                   </span>
                 </div>
                 {/* Счётчик пасхалок в нижней строке: лейбл слева (где была
@@ -1465,10 +1645,10 @@ export default function PreviewHome() {
                   type="button"
                   onClick={() => setBoardOpen(true)}
                   className="w-full flex items-center justify-between text-white/35 select-none cursor-pointer hover:text-white/60 transition-colors"
-                  title="Открыть доску искателей"
-                  aria-label={`Найдено пасхалок: ${eggCount} из ${eggTotal}. Открыть доску`}
+                  title={T.boardTitle}
+                  aria-label={T.boardAria(eggCount, eggTotal)}
                 >
-                  <LedText text="Найдено" className="h-[10px] w-auto opacity-70" />
+                  <LedText text={T.found} className="h-[10px] w-auto opacity-70" />
                   <motion.span
                     key={eggCount}
                     initial={{ scale: 1.5 }}
@@ -1477,7 +1657,7 @@ export default function PreviewHome() {
                     className="inline-flex"
                   >
                     <LedText
-                      text={`${eggCount} из ${eggTotal}`}
+                      text={`${eggCount} ${T.of} ${eggTotal}`}
                       className={`h-[12px] w-auto ${eggDone ? "text-[#A6FF00]" : "text-white/75"}`}
                     />
                   </motion.span>
@@ -1489,11 +1669,7 @@ export default function PreviewHome() {
             <motion.div variants={fadeUp} className="col-span-12 lg:col-span-5">
               <Oled className="h-full p-5 md:p-6 flex items-center">
                 <div className="relative w-full flex justify-center gap-8 md:gap-14 lg:gap-4 xl:gap-4 2xl:gap-12">
-                  {[
-                    { v: "30", l: "запусков" },
-                    { v: "11", l: "лет в дизайне" },
-                    { v: "27", l: "команд" },
-                  ].map((m, i) => (
+                  {T.counters.map((m, i) => (
                     <div
                       key={m.l}
                       onClick={() => tapNum(i)}
@@ -1513,8 +1689,8 @@ export default function PreviewHome() {
             {/* ── Награда: тёплая золотая LED-матрица, ссылка на кейс ── */}
             <motion.div variants={fadeUp} className="col-span-12 lg:col-span-5">
               <Link
-                href="/cases/gazprom-neft"
-                aria-label="Открыть кейс Газпром Нефть — CX Awards 2024"
+                href={localizedHref("/cases/gazprom-neft", homeLocale)}
+                aria-label={T.awardAria}
                 data-ym-goal="case_open"
                 data-ym-goal-params='{"case_slug":"gazprom-neft","placement":"hero_award_tile"}'
                 onMouseEnter={showAward}
@@ -1535,8 +1711,8 @@ export default function PreviewHome() {
                     }}
                   />
                   <div className="relative text-[#C9A66B]/70">
-                    <span className="sr-only">Награда · 2024</span>
-                    <LedText text="Награда · 2024" className="h-[10px] w-auto" />
+                    <span className="sr-only">{T.awardTileLabel}</span>
+                    <LedText text={T.awardTileLabel} className="h-[10px] w-auto" />
                   </div>
                   {/* Пиксельная статуэтка CX Awards — справа, во всю высоту панели */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -1551,7 +1727,7 @@ export default function PreviewHome() {
                   <div
                     role="button"
                     tabIndex={0}
-                    aria-label="Награда — засчитать пасхалку"
+                    aria-label={T.awardTapAria}
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); tapAward(); }}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); tapAward(); }
@@ -1560,19 +1736,19 @@ export default function PreviewHome() {
                   />
                   <span className="sr-only">CX Awards 2024</span>
                   <LedText
-                    text="СХ·24"
+                    text={pick("СХ·24", "CX·24", homeLocale)}
                     scale={2}
                     dot={1.45}
                     className="relative h-[36px] md:h-[46px] w-auto self-start text-[#C9A66B]"
                   />
                   <div className="relative mt-auto max-w-[56%] lg:max-w-[60%] xl:max-w-[58%]">
                     <div className="text-white/50">
-                      <span className="sr-only">Customer Experience Awards</span>
-                      <LedText text="Customer Experience Awards" preserve="xMinYMid meet" className="h-[10px] w-auto max-w-full" />
+                      <span className="sr-only">{T.awardCEA}</span>
+                      <LedText text={T.awardCEA} preserve="xMinYMid meet" className="h-[10px] w-auto max-w-full" />
                     </div>
                     <div className="mt-6 text-[#C9A66B]/80">
-                      <span className="sr-only">Победитель в сегменте B2E</span>
-                      <LedText text="Победитель в сегменте B2E" preserve="xMinYMid meet" className="h-[10px] w-auto max-w-full" />
+                      <span className="sr-only">{T.awardWinner}</span>
+                      <LedText text={T.awardWinner} preserve="xMinYMid meet" className="h-[10px] w-auto max-w-full" />
                     </div>
                   </div>
                 </Oled>
@@ -1583,20 +1759,20 @@ export default function PreviewHome() {
             <motion.div variants={fadeUp} className="col-span-12 lg:col-span-7">
               <Link
                 href="#skills"
-                aria-label="Перейти к экспертизе"
+                aria-label={T.expertiseAria}
                 data-ym-goal="nav_skills"
                 className="block h-full no-underline group"
               >
                 <Oled className="h-full p-5 md:p-6 transition-colors duration-300 group-hover:border-[#A6FF00]/25">
                   <div className="mb-4 text-white/40">
-                    <span className="sr-only">Экспертиза</span>
-                    <LedText text="Экспертиза" className="h-[10px] w-auto" />
+                    <span className="sr-only">{T.expertise}</span>
+                    <LedText text={T.expertise} className="h-[10px] w-auto" />
                   </div>
                   <ul className="flex flex-col">
                     {[
-                      { num: "01", label: "Управление", note: "дизайн-функции и команды", glyph: GLYPH_ORG },
-                      { num: "02", label: "Направления", note: "B2C / B2E / EdTech / E-COM", glyph: GLYPH_GRID },
-                      { num: "03", label: "Ремесло", note: "процессы и применение AI", glyph: GLYPH_CODE },
+                      { ...T.expItems[0], glyph: GLYPH_ORG },
+                      { ...T.expItems[1], glyph: GLYPH_GRID },
+                      { ...T.expItems[2], glyph: GLYPH_CODE },
                     ].map((item) => (
                       <li
                         key={item.num}
@@ -1646,7 +1822,7 @@ export default function PreviewHome() {
           aria-hidden
           className="hidden lg:flex absolute left-8 top-1/2 -translate-y-1/2 rotate-180 [writing-mode:vertical-rl] items-center gap-3 text-white/25 select-none pointer-events-none"
         >
-          <span className="font-mono text-[10px] tracking-[0.4em] uppercase">Работы · 2017—2026</span>
+          <span className="font-mono text-[10px] tracking-[0.4em] uppercase">{T.worksMargin}</span>
           <span className="w-px h-16 bg-white/10" />
         </div>
         <motion.div
@@ -1678,7 +1854,7 @@ export default function PreviewHome() {
               {/* Плитка-«экран» в одном языке с кейсами: зелёная дот-матрица
                   на всю площадь, лейбл сверху, тайтл и «Смотреть» внизу.
                   В покое — тихая сетка, на ховере сыплются зелёные кубики. */}
-              <Link href="/experiments" data-ym-goal="nav_experiments" data-ym-goal-params='{"placement":"work_grid"}' className="no-underline group block h-full">
+              <Link href={localizedHref("/experiments", homeLocale)} data-ym-goal="nav_experiments" data-ym-goal-params='{"placement":"work_grid"}' className="no-underline group block h-full">
                 <div className="relative h-full min-h-[280px] md:min-h-[340px] rounded-2xl overflow-hidden bg-[#0b0b0a]">
                   <div className="absolute inset-0">
                     <PixelCubePile color="#A6FF00" logoSrc="/images/logos/question.svg" idleCenter centerFrac={0.4} pitch={5.2} maxCubes={26} />
@@ -1692,13 +1868,13 @@ export default function PreviewHome() {
                       Низ — только тайтл, как у кейсов. */}
                   <div className="relative z-[2] h-full flex flex-col p-4 md:p-5 pointer-events-none">
                     <div className="text-white/75 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
-                      <span className="sr-only">Эксперименты</span>
-                      <LedText text="Эксперименты" className="h-[9px] md:h-[10px] w-auto" />
+                      <span className="sr-only">{T.experiments}</span>
+                      <LedText text={T.experiments} className="h-[9px] md:h-[10px] w-auto" />
                     </div>
                     <div className="mt-auto flex flex-col items-center text-center pb-1 md:pb-1.5">
                       <h3 className="text-white max-w-full drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
                         <LedLines
-                          text="Код, WebGL, шейдеры."
+                          text={T.experimentsTitle}
                           center
                           maxChars={12}
                           lineClass="h-[15px] md:h-[18px]"
@@ -1730,8 +1906,8 @@ export default function PreviewHome() {
                   >
                     <Plus className="w-4 h-4 text-white/74 group-hover:text-[#A6FF00] transition-colors" strokeWidth={2} />
                     <span className="text-white/80 group-hover:text-white transition-colors">
-                      <span className="sr-only">Показать ещё {extraProjects.length} кейса</span>
-                      <LedText text={`Показать ещё ${extraProjects.length} кейса`} className="h-[11px] w-auto" />
+                      <span className="sr-only">{T.showMore(extraProjects.length)}</span>
+                      <LedText text={T.showMore(extraProjects.length)} className="h-[11px] w-auto" />
                     </span>
                   </button>
                 </motion.div>
@@ -1762,7 +1938,7 @@ export default function PreviewHome() {
         >
           <motion.div variants={fadeUp}>
             <div className="mb-4 flex items-center justify-between">
-              <SectionLabel>КАРЬЕРА</SectionLabel>
+              <SectionLabel>{T.career}</SectionLabel>
             </div>
             <CareerHoverList />
           </motion.div>
@@ -1782,7 +1958,7 @@ export default function PreviewHome() {
         >
           {/* Заголовок — meta + мощный слоган */}
           <motion.div variants={fadeUp} className="mb-10 md:mb-14 max-w-4xl">
-            <SectionLabel>ЭКСПЕРТИЗА</SectionLabel>
+            <SectionLabel>{T.expertiseLabel}</SectionLabel>
           </motion.div>
 
           {/* На мобиле — горизонтальная карусель со snap-скроллом, на md+ — 3-колоночный грид. */}
@@ -1791,13 +1967,16 @@ export default function PreviewHome() {
               {
                 key: "management",
                 index: "01",
-                label: "УПРАВЛЕНИЕ",
-                title: "Строю дизайн-функции",
+                label: pick("УПРАВЛЕНИЕ", "MANAGEMENT", homeLocale),
+                title: pick("Строю дизайн-функции", "I build design orgs", homeLocale),
                 Icon: Users,
                 accent: "#C9A66B",
                 animation: "network" as PulseVariant,
-                body:
+                body: pick(
                   "Собираю команды под задачу, выстраиваю процессы, культуру и дизайн-систему. Нанимаю на рост, развиваю лидов, защищаю бюджет. Когда ухожу, стараюсь оставить функцию, которая продолжает расти без меня.",
+                  "I assemble teams around the problem and set up the processes, culture, and design system. I hire for growth, develop leads, and defend the budget. When I move on, I aim to leave behind an org that keeps growing without me.",
+                  homeLocale
+                ),
                 items: [
                   "Design Management",
                   "Org Design · Hiring",
@@ -1809,13 +1988,16 @@ export default function PreviewHome() {
               {
                 key: "product",
                 index: "02",
-                label: "ПРОДУКТ",
-                title: "Фокус на метриках",
+                label: pick("ПРОДУКТ", "PRODUCT", homeLocale),
+                title: pick("Фокус на метриках", "Focused on metrics", homeLocale),
                 Icon: Sparkles,
                 accent: "#C9A66B",
                 animation: "target" as PulseVariant,
-                body:
+                body: pick(
                   "Работаю на число. Discovery, гипотезы, CJM, A/B, research внутри процесса. Умею считать дизайн и доказывать его ценность продакт-менеджеру и C-левелу. Делаю это в B2C-экосистемах, B2E-инструментах и в EdTech.",
+                  "I work toward the number. Discovery, hypotheses, CJM, A/B tests, research built into the process. I can measure design and prove its value to product managers and the C-suite. I've done it across B2C ecosystems, B2E tools, and EdTech.",
+                  homeLocale
+                ),
                 items: [
                   "B2C-экосистемы",
                   "B2E · внутренние инструменты",
@@ -1827,13 +2009,16 @@ export default function PreviewHome() {
               {
                 key: "craft",
                 index: "03",
-                label: "РЕМЕСЛО",
-                title: "Оптимизирую процессы",
+                label: pick("РЕМЕСЛО", "CRAFT", homeLocale),
+                title: pick("Оптимизирую процессы", "I optimize processes", homeLocale),
                 Icon: Code2,
                 accent: "#C9A66B",
                 animation: "ai" as PulseVariant,
-                body:
+                body: pick(
                   "Автоматизирую рутину, собираю AI-инструменты и агенты под конкретные задачи. Понимаю, что реально сделать руками и сколько это стоит в человеко-часах. Знаю, когда применять AI, а когда нанимать эксперта.",
+                  "I automate the busywork and build AI tools and agents for specific tasks. I know what can realistically be done by hand and what it costs in person-hours — and when to reach for AI versus when to bring in an expert.",
+                  homeLocale
+                ),
                 items: [
                   "AI-инструменты · агенты",
                   "Эмоциональный дизайн · детали",
@@ -1876,10 +2061,10 @@ export default function PreviewHome() {
         >
           {/* Центрированный заголовочный блок: ярлык → крупный хедлайн → астерикс-сноска */}
           <motion.div variants={fadeUp} className="mb-14 md:mb-20 text-center">
-            <SectionLabel>ОТЗЫВЫ</SectionLabel>
+            <SectionLabel>{T.testimonials}</SectionLabel>
             <h3 className="mt-6 md:mt-8 flex justify-center text-white">
               <LedLines
-                text="Не верьте мне на слово"
+                text={T.dontTake}
                 accent="*"
                 accentColor="#C9A66B"
                 center
@@ -1888,8 +2073,8 @@ export default function PreviewHome() {
               />
             </h3>
             <p className="mt-5 md:mt-7 flex justify-center text-[#C9A66B]">
-              <span className="sr-only">* Спросите тех, кто со мной работал</span>
-              <LedText text="* Спросите тех, кто со мной работал" className="h-[11px] md:h-[14px] w-auto" />
+              <span className="sr-only">{T.askThose}</span>
+              <LedText text={T.askThose} className="h-[11px] md:h-[14px] w-auto" />
             </p>
           </motion.div>
 
@@ -1897,8 +2082,8 @@ export default function PreviewHome() {
             variants={stagger}
             className="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 overflow-x-auto md:overflow-visible snap-x snap-mandatory -mx-5 px-5 md:mx-0 md:px-0 pb-2 md:pb-0 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
-            {TESTIMONIALS.map((t) => (
-              <TestimonialCard key={t.name} t={t} />
+            {TESTIMONIALS.map((t, i) => (
+              <TestimonialCard key={t.name} t={homeLocale === "en" ? { ...t, ...testimonialsEn[i] } : t} />
             ))}
           </motion.div>
         </motion.div>
@@ -1936,26 +2121,22 @@ export default function PreviewHome() {
                   <div>
                     <div className="inline-flex items-center gap-2.5 text-white/60 mb-6">
                       <span className="h-1.5 w-1.5 rounded-full bg-[#A6FF00]" />
-                      <span className="sr-only">МЕНТОРИНГ</span>
-                      <LedText text="МЕНТОРИНГ" className="h-[10px] w-auto" />
+                      <span className="sr-only">{T.mentoring}</span>
+                      <LedText text={T.mentoring} className="h-[10px] w-auto" />
                     </div>
                     <h3 className="text-white mb-6 max-w-lg">
                       <LedLines
-                        text={"Довожу дизайнеров до сеньор-лида"}
+                        text={T.mentoringHeading}
                         maxChars={26}
                         lineClass="h-[16px] md:h-[22px]"
                       />
                     </h3>
                     <p className="text-[15px] md:text-[16px] text-white/65 leading-[1.75] max-w-[46ch]">
-                      {"Больше 40 менти, а сессий ещё больше. Разбираем развилки роста: как дотянуть до лида, собрать команду, защитить проект перед топами. Даю не только свой опыт, но и учу думать, чтобы дальше ты проходил такие развилки сам."}
+                      {T.mentoringBody}
                     </p>
                     {/* LED-метрики менторинга: число + подпись, три колонки с разделителями */}
                     <div className="mt-8 flex items-stretch">
-                      {[
-                        { v: "40+", l: "менти" },
-                        { v: "7", l: "лет опыта" },
-                        { v: "200+", l: "сессий" },
-                      ].map((m, i) => (
+                      {T.mentoringMetrics.map((m, i) => (
                         <div
                           key={m.l}
                           className={`flex flex-col gap-2 ${i > 0 ? "ml-4 pl-4 md:ml-6 md:pl-6 border-l border-white/[0.06]" : ""}`}
@@ -1972,8 +2153,8 @@ export default function PreviewHome() {
                     </div>
                   </div>
                   <span className="inline-flex items-center gap-2.5 text-[#A6FF00] mt-10 pt-5 border-t border-white/[0.06] self-start pr-10 group-hover:border-[#A6FF00]/25 transition-colors">
-                    <span className="sr-only">Записаться на сессию</span>
-                    <LedText text="Записаться на сессию" className="h-[10px] w-auto" />
+                    <span className="sr-only">{T.bookSession}</span>
+                    <LedText text={T.bookSession} className="h-[10px] w-auto" />
                     <LedText
                       text="→"
                       className="h-[12px] w-auto group-hover:translate-x-1 transition-transform"
@@ -2012,7 +2193,7 @@ export default function PreviewHome() {
                       rel="noopener noreferrer"
                       data-ym-goal="nav_speaking"
                       data-ym-goal-params='{"placement":"offer_preview"}'
-                      aria-label={v.label}
+                      aria-label={pick(v.label, v.labelEn, homeLocale)}
                       className="group/preview relative block aspect-video rounded-lg overflow-hidden border border-white/[0.08] hover:border-[#C9A66B]/45 transition-colors no-underline"
                     >
                       <PixelPhoto src={v.thumb} cols={54} aspect={1.78} className="absolute inset-0" />
@@ -2027,7 +2208,7 @@ export default function PreviewHome() {
                         <Play className="w-3.5 h-3.5 text-white fill-white ml-0.5 transition-colors group-hover/preview:text-black group-hover/preview:fill-black" strokeWidth={2} />
                       </span>
                       <span className="absolute bottom-2.5 left-3 right-3 text-[12px] leading-snug text-white/85">
-                        {v.label}
+                        {pick(v.label, v.labelEn, homeLocale)}
                       </span>
                     </a>
                   ))}
@@ -2042,25 +2223,27 @@ export default function PreviewHome() {
                   <div>
                     <div className="inline-flex items-center gap-2 text-white/75 mb-4">
                       <span className="h-1.5 w-1.5 rounded-full bg-[#C9A66B]" />
-                      <span className="sr-only">ВЫСТУПЛЕНИЯ</span>
-                      <LedText text="ВЫСТУПЛЕНИЯ" className="h-[11px] w-auto" />
+                      <span className="sr-only">{pick("ВЫСТУПЛЕНИЯ", "SPEAKING", homeLocale)}</span>
+                      <LedText text={pick("ВЫСТУПЛЕНИЯ", "SPEAKING", homeLocale)} className="h-[11px] w-auto" />
                     </div>
                     <h3 className="text-white mb-4 max-w-md">
                       <LedLines
-                        text="Выступаю и модерирую секции про AI и дизайн"
+                        text={pick("Выступаю и модерирую секции про AI и дизайн", "I speak and moderate sessions on AI and design", homeLocale)}
                         maxChars={26}
                         lineClass="h-[16px] md:h-[22px]"
                       />
                     </h3>
                     <p className="text-[15px] md:text-[16px] text-white/72 leading-relaxed max-w-md">
-                      Внутренние конференции МТС и Ozon, Дизайн-Просмотр, ВШЭ (читал
-                      курс по прикладному ИИ). Темы: AI в продукте, масштабирование
-                      дизайна, дизайн-системы.
+                      {pick(
+                        "Внутренние конференции МТС и Ozon, Дизайн-Просмотр, ВШЭ (читал курс по прикладному ИИ). Темы: AI в продукте, масштабирование дизайна, дизайн-системы.",
+                        "Internal conferences at MTS and Ozon, Design-Prosmotr, HSE (taught a course on applied AI). Topics: AI in product, scaling design, design systems.",
+                        homeLocale
+                      )}
                     </p>
                   </div>
                   <span className="inline-flex items-center gap-2 text-white/72 group-hover:text-white transition-colors pt-5 border-t border-white/[0.08]">
-                    <span className="sr-only">Смотреть все выступления</span>
-                    <LedText text="Смотреть все выступления" className="h-[10px] w-auto" />
+                    <span className="sr-only">{pick("Смотреть все выступления", "See all talks", homeLocale)}</span>
+                    <LedText text={pick("Смотреть все выступления", "See all talks", homeLocale)} className="h-[10px] w-auto" />
                     <LedText
                       text="→"
                       className="h-[12px] w-auto group-hover:translate-x-1 transition-transform"
@@ -2106,7 +2289,7 @@ export default function PreviewHome() {
           variants={stagger}
         >
           <motion.div variants={fadeUp} className="mb-8 md:mb-10">
-            <SectionLabel>КОНТАКТЫ</SectionLabel>
+            <SectionLabel>{T.contacts}</SectionLabel>
           </motion.div>
 
           {/* Bento 4×N: Telegram — широкая (col-span-2), Email/LI/GH/CV — 4 одинарных, Location — col-span-2, Accepting — col-span-2 */}
@@ -2134,8 +2317,8 @@ export default function PreviewHome() {
                       <LedText text="@egoradi" scale={2} dot={1.45} className="h-[22px] md:h-[34px] w-auto" />
                     </div>
                     <div className="mt-3 inline-flex items-center gap-2 text-black/70 group-hover:text-black transition-colors">
-                      <span className="sr-only">Написать</span>
-                      <LedText text="Написать" className="h-[10px] w-auto" />
+                      <span className="sr-only">{T.message}</span>
+                      <LedText text={T.message} className="h-[10px] w-auto" />
                       <LedText text="→" className="h-[12px] w-auto group-hover:translate-x-1 transition-transform" />
                     </div>
                   </div>
@@ -2145,10 +2328,10 @@ export default function PreviewHome() {
 
             {/* 2-5. Email, LinkedIn, GitHub, CV — 4 равных мини-плитки */}
             {[
-              { label: "Email", value: "Написать", sr: "egor.outhead@gmail.com", href: "mailto:egor.outhead@gmail.com", Icon: Mail, goal: "cta_email" },
-              { label: "LinkedIn", value: "Егор Шугаев", sr: "Егор Шугаев", href: "https://www.linkedin.com/in/егор-шугаев-03735078/", Icon: LinkedinIcon, goal: "cta_linkedin" },
+              { label: "Email", value: T.ctaEmailVal, sr: "egor.outhead@gmail.com", href: "mailto:egor.outhead@gmail.com", Icon: Mail, goal: "cta_email" },
+              { label: "LinkedIn", value: T.ctaLinkedinVal, sr: T.ctaLinkedinVal, href: "https://www.linkedin.com/in/егор-шугаев-03735078/", Icon: LinkedinIcon, goal: "cta_linkedin" },
               { label: "GitHub", value: "outhead", sr: "outhead", href: "https://github.com/outhead", Icon: GithubIcon, goal: "cta_github" },
-              { label: "CV / PDF", value: "PDF · 2026", sr: "Скачать CV, PDF, 2026", href: "/Egor_Shugaev_CV.pdf", Icon: FileDown, goal: "cta_cv" },
+              { label: "CV / PDF", value: T.ctaCvVal, sr: T.ctaCvSr, href: homeLocale === "en" ? "/Egor_Shugaev_CV_EN.pdf" : "/Egor_Shugaev_CV.pdf", Icon: FileDown, goal: "cta_cv" },
             ].map((link) => (
               <motion.div key={link.label} variants={fadeUp}>
                 <Link
@@ -2181,16 +2364,16 @@ export default function PreviewHome() {
                 {/* Текст — абсолют, чтобы НЕ блокировать drag по глобусу справа */}
                 <div className="absolute z-[2] left-6 md:left-8 top-1/2 -translate-y-1/2 max-w-[60%] md:max-w-[55%] flex flex-col items-start gap-3 pointer-events-none">
                   <h4 className="text-white">
-                    <span className="sr-only">Москва, Россия</span>
-                    <LedText text="Москва, Россия" scale={2} dot={1.45} className="h-[16px] md:h-[20px] w-auto" />
+                    <span className="sr-only">{T.location}</span>
+                    <LedText text={T.location} scale={2} dot={1.45} className="h-[16px] md:h-[20px] w-auto" />
                   </h4>
                   <div className="inline-flex items-center gap-2.5 text-white/72">
                     <span className="relative inline-flex items-center justify-center w-3 h-3 shrink-0">
                       <span className="absolute inset-0 rounded-full bg-[#A6FF00]/30 animate-ping" />
                       <span className="relative w-2 h-2 rounded-full bg-[#A6FF00] shadow-[0_0_10px_#A6FF00]" />
                     </span>
-                    <span className="sr-only">Открыт к работе по всему миру</span>
-                    <LedText text="Открыт к работе по всему миру" className="h-[10px] w-auto" />
+                    <span className="sr-only">{T.openWorld}</span>
+                    <LedText text={T.openWorld} className="h-[10px] w-auto" />
                   </div>
                 </div>
                 {/* Глобус — справа, чуть протискивается за правый край; левая часть с маркером Москвы видна */}

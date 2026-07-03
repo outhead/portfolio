@@ -10,6 +10,8 @@
 
 import { useEffect, useRef, type RefObject } from "react";
 import { ParticleEngine, type EngineConfig, type EngineShape } from "./particleEngine";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 export type Shape = { src: string; depth?: string; depthScale?: number };
 
@@ -82,6 +84,7 @@ export default function ParticlePortrait({
   trackingRef,
   className = "",
 }: ParticlePortraitProps) {
+  const locale = useLocale();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   // Текущее API доставки (worker.postMessage или engine.*) — для пуша active/force.
   const apiRef = useRef<Api | null>(null);
@@ -357,7 +360,7 @@ export default function ParticlePortrait({
       ref={canvasRef}
       className={className}
       style={{ width: "100%", height: "100%", display: "block" }}
-      aria-label="Портрет из частиц"
+      aria-label={pick("Портрет из частиц", "Particle portrait", locale)}
       role="img"
     />
   );

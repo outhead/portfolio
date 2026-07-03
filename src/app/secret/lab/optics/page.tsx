@@ -8,6 +8,8 @@ import { useRef, useState } from "react";
 import ConstellationFigures from "@/components/ConstellationFigures";
 import ConstellationFiguresV2, { V2_DEFAULTS, type V2Params } from "@/components/ConstellationFiguresV2";
 import { MENTORING_LEVEL } from "@/lib/optics";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 function Slider({
   label, value, min, max, step, onChange,
@@ -31,6 +33,7 @@ function Slider({
 }
 
 export default function OpticsLabPage() {
+  const locale = useLocale();
   const paramsRef = useRef<V2Params>({ ...V2_DEFAULTS });
   const [ui, setUi] = useState<V2Params>({ ...V2_DEFAULTS });
   const [mode, setMode] = useState<"v2" | "v1">("v2");
@@ -47,7 +50,7 @@ export default function OpticsLabPage() {
       <div className="max-w-6xl mx-auto">
         <div className="flex items-baseline justify-between mb-6">
           <h1 className="text-lg font-medium tracking-tight">Optics sandbox</h1>
-          <span className="text-[11px] text-white/40">{solved ? "решено ✓" : "двигай кристаллы"}</span>
+          <span className="text-[11px] text-white/40">{solved ? pick("решено ✓", "solved ✓", locale) : pick("двигай кристаллы", "move the crystals", locale)}</span>
         </div>
 
         <div className="grid lg:grid-cols-[1fr_320px] gap-6">
@@ -83,7 +86,7 @@ export default function OpticsLabPage() {
                     mode === m ? "border-white/70 text-white bg-white/10" : "border-white/15 text-white/50 hover:text-white/80"
                   }`}
                 >
-                  {m === "v2" ? "V2 — новая" : "V1 — как на проде"}
+                  {m === "v2" ? pick("V2 — новая", "V2 — new", locale) : pick("V1 — как на проде", "V1 — as in prod", locale)}
                 </button>
               ))}
               <button
@@ -97,11 +100,11 @@ export default function OpticsLabPage() {
 
           {/* контролы V2 */}
           <div className="space-y-5 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 h-fit">
-            <div className="text-[11px] uppercase tracking-wider text-white/50">Параметры V2</div>
-            <Slider label="Скорость луча" value={ui.raySpeed} min={0} max={80} step={2} onChange={(v) => set("raySpeed", v)} />
-            <Slider label="Шаг точек луча" value={ui.rayStep} min={4} max={14} step={1} onChange={(v) => set("rayStep", v)} />
-            <Slider label="Размер кристаллов" value={ui.gemSize} min={7} max={14} step={1} onChange={(v) => set("gemSize", v)} />
-            <Slider label="Глоу" value={ui.glow} min={0} max={2} step={0.1} onChange={(v) => set("glow", v)} />
+            <div className="text-[11px] uppercase tracking-wider text-white/50">{pick("Параметры V2", "V2 parameters", locale)}</div>
+            <Slider label={pick("Скорость луча", "Ray speed", locale)} value={ui.raySpeed} min={0} max={80} step={2} onChange={(v) => set("raySpeed", v)} />
+            <Slider label={pick("Шаг точек луча", "Ray dot spacing", locale)} value={ui.rayStep} min={4} max={14} step={1} onChange={(v) => set("rayStep", v)} />
+            <Slider label={pick("Размер кристаллов", "Crystal size", locale)} value={ui.gemSize} min={7} max={14} step={1} onChange={(v) => set("gemSize", v)} />
+            <Slider label={pick("Глоу", "Glow", locale)} value={ui.glow} min={0} max={2} step={0.1} onChange={(v) => set("glow", v)} />
             <label className="flex items-center gap-2 text-[12px] text-white/70">
               <input
                 type="checkbox"
@@ -109,12 +112,14 @@ export default function OpticsLabPage() {
                 onChange={(e) => set("particles", e.target.checked)}
                 className="accent-white/80"
               />
-              Искры и конфетти
+              {pick("Искры и конфетти", "Sparks and confetti", locale)}
             </label>
             <p className="text-[11px] leading-relaxed text-white/35">
-              Что нового: бегущие лучи с дизерингом, кристаллы с гранью-бликом и
-              дыханием, ромбы-цели с пульсом и огоньком, искры при попадании,
-              хвост при перетаскивании, ховер-фидбек. Тач-зоны увеличены.
+              {pick(
+                "Что нового: бегущие лучи с дизерингом, кристаллы с гранью-бликом и дыханием, ромбы-цели с пульсом и огоньком, искры при попадании, хвост при перетаскивании, ховер-фидбек. Тач-зоны увеличены.",
+                "What's new: running rays with dithering, crystals with a facet highlight and breathing, target diamonds with a pulse and a glint, sparks on hit, a trail while dragging, hover feedback. Touch zones enlarged.",
+                locale,
+              )}
             </p>
           </div>
         </div>

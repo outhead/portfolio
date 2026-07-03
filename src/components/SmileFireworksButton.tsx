@@ -3,6 +3,8 @@
 import LedText from "@/components/LedText";
 import { useEffect, useRef } from "react";
 import confetti from "canvas-confetti";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 function pluralize(n: number): string {
   const mod10 = n % 10;
@@ -42,6 +44,7 @@ export default function SmileFireworksButton({
   pressing = false,
   compact = false,
 }: Props) {
+  const locale = useLocale();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fireRef = useRef<((opts?: confetti.Options) => Promise<null> | null) | null>(null);
 
@@ -140,7 +143,7 @@ export default function SmileFireworksButton({
         type="button"
         onClick={handleClick}
         onMouseEnter={handleHover}
-        aria-label="Не нажимать"
+        aria-label={pick("Не нажимать", "Don't press", locale)}
         className={`group relative inline-flex items-center justify-center px-6 py-3.5 rounded-full bg-transparent overflow-hidden border border-[#A6FF00]/40 text-[#A6FF00] select-none cursor-pointer transition-colors duration-200 hover:border-[#A6FF00] hover:bg-[#A6FF00] hover:text-black ${
           pressing ? "scale-[0.97]" : "scale-100"
         }`}
@@ -151,8 +154,8 @@ export default function SmileFireworksButton({
           className="absolute inset-0 w-full h-full pointer-events-none"
         />
         <span className="relative z-[1]">
-          <span className="sr-only">Не нажимать</span>
-          <LedText text="Не нажимать" className="h-[11px] w-auto" />
+          <span className="sr-only">{pick("Не нажимать", "Don't press", locale)}</span>
+          <LedText text={pick("Не нажимать", "Don't press", locale)} className="h-[11px] w-auto" />
         </span>
       </button>
     );
@@ -165,7 +168,7 @@ export default function SmileFireworksButton({
         type="button"
         onClick={handleClick}
         onMouseEnter={handleHover}
-        aria-label="Не нажимать"
+        aria-label={pick("Не нажимать", "Don't press", locale)}
         className={`group relative inline-flex items-center justify-center w-full md:w-[300px] h-[88px] md:h-[96px] rounded-full bg-black overflow-hidden border border-[#A6FF00]/35 select-none cursor-pointer transition-all duration-300 hover:border-[#A6FF00] hover:shadow-[0_0_70px_-10px_rgba(166,255,0,0.7)] ${
           pressing ? "scale-[0.97]" : "scale-100"
         }`}
@@ -184,8 +187,8 @@ export default function SmileFireworksButton({
           className="absolute inset-0 w-full h-full pointer-events-none"
         />
         <span className="relative text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.85)]">
-          <span className="sr-only">Не нажимать</span>
-          <LedText text="Не нажимать" scale={2} dot={1.45} className="h-[18px] md:h-[24px] w-auto" />
+          <span className="sr-only">{pick("Не нажимать", "Don't press", locale)}</span>
+          <LedText text={pick("Не нажимать", "Don't press", locale)} scale={2} dot={1.45} className="h-[18px] md:h-[24px] w-auto" />
         </span>
       </button>
 
@@ -196,7 +199,14 @@ export default function SmileFireworksButton({
               <LedText text={formatCount(globalCount)} className="h-[13px] w-auto" />
             </span>
             <span className="text-white/45">
-              <LedText text={`${pluralize(globalCount)} нажали`} className="h-[8px] w-auto" />
+              <LedText
+                text={pick(
+                  `${pluralize(globalCount)} нажали`,
+                  globalCount === 1 ? "press" : "presses",
+                  locale
+                )}
+                className="h-[8px] w-auto"
+              />
             </span>
           </>
         ) : (

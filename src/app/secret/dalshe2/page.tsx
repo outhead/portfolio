@@ -7,6 +7,8 @@ import confetti from "canvas-confetti";
 import QuestBackground from "@/components/QuestBackground";
 import HintButton from "@/components/HintButton";
 import QuestButton from "@/components/QuestButton";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 /**
  * Крестики L2 — «Собери три в ряд».
@@ -51,6 +53,7 @@ function celebrate() {
 }
 
 export default function Dalshe2() {
+  const locale = useLocale();
   const [marks, setMarks] = useState<M[]>(START);
   const [won, setWon] = useState(false);
   const [lost, setLost] = useState(false);
@@ -189,14 +192,18 @@ export default function Dalshe2() {
           {/* Шапка фикс-высоты — чтобы поле во всех уровнях было на одной высоте */}
           <div className="flex flex-col items-center" style={{ minHeight: "clamp(108px, 17vw, 150px)" }}>
             <p className="text-white/40 mb-3">
-              <span className="sr-only">Крестики-нолики · Загадка №3</span>
-              <LedText text="Крестики-нолики · Загадка №3" className="h-[9px] w-auto" />
+              <span className="sr-only">{pick("Крестики-нолики · Загадка №3", "Tic-tac-toe · Riddle #3", locale)}</span>
+              <LedText text={pick("Крестики-нолики · Загадка №3", "Tic-tac-toe · Riddle #3", locale)} className="h-[9px] w-auto" />
             </p>
             <h1 className="mb-3">
-              <LedLines text="Обыграй компьютер" center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
+              <LedLines text={pick("Обыграй компьютер", "Beat the computer", locale)} center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
             </h1>
             <p className="text-[14px] md:text-sm text-white/55 leading-relaxed max-w-sm">
-              Компьютер ходит первым и не любит проигрывать.
+              {pick(
+                "Компьютер ходит первым и не любит проигрывать.",
+                "The computer moves first and hates losing.",
+                locale,
+              )}
             </p>
           </div>
 
@@ -213,34 +220,41 @@ export default function Dalshe2() {
           </div>
 
           {lost ? (
-            <p className="mt-5 text-sm text-[#C9A66B]">Компьютер собрал свою линию. Начни заново.</p>
+            <p className="mt-5 text-sm text-[#C9A66B]">{pick("Компьютер собрал свою линию. Начни заново.", "The computer made its line. Start over.", locale)}</p>
           ) : null}
 
           <HintButton
             className="mt-5"
-            hints={[
-              "Честно идеального соперника не одолеть. Лазейка не в ходах.",
-              "Фигуры можно перетаскивать. Перетащи свои крестики в ряд.",
-            ]}
+            hints={pick(
+              [
+                "Честно идеального соперника не одолеть. Лазейка не в ходах.",
+                "Фигуры можно перетаскивать. Перетащи свои крестики в ряд.",
+              ],
+              [
+                "You can't beat a perfect opponent fairly. The loophole isn't in the moves.",
+                "The pieces can be dragged. Drag your crosses into a row.",
+              ],
+              locale,
+            )}
           />
 
           <QuestButton variant="secondary" onClick={reset} className="mt-6">
-            Начать заново
+            {pick("Начать заново", "Restart", locale)}
           </QuestButton>
         </div>
       ) : (
         <div className="relative z-[1] w-full max-w-[420px] mx-auto flex flex-col items-center text-center">
           <p className="text-white/40 mb-4">
-            <span className="sr-only">Три в ряд</span>
-            <LedText text="Три в ряд" className="h-[9px] w-auto" />
+            <span className="sr-only">{pick("Три в ряд", "Three in a row", locale)}</span>
+            <LedText text={pick("Три в ряд", "Three in a row", locale)} className="h-[9px] w-auto" />
           </p>
           <h1 className="text-[#A6FF00] mb-5">
-            <LedLines text="Готово" center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
+            <LedLines text={pick("Готово", "Done", locale)} center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
           </h1>
-          <p className="text-sm text-white/60 mb-8 max-w-xs">Ты не переиграл его — ты переставил фигуры.</p>
+          <p className="text-sm text-white/60 mb-8 max-w-xs">{pick("Ты не переиграл его — ты переставил фигуры.", "You didn't outplay it — you rearranged the pieces.", locale)}</p>
           <div className="flex flex-wrap items-center justify-center gap-3">
-            <QuestButton href="/secret/dalshe3" arrow>Дальше</QuestButton>
-            <QuestButton variant="secondary" onClick={reset}>Ещё раз</QuestButton>
+            <QuestButton href="/secret/dalshe3" arrow>{pick("Дальше", "Next", locale)}</QuestButton>
+            <QuestButton variant="secondary" onClick={reset}>{pick("Ещё раз", "Again", locale)}</QuestButton>
           </div>
         </div>
       )}

@@ -6,6 +6,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import confetti from "canvas-confetti";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 /**
  * Загадка №3 — «Найди выход» (за краем экрана).
@@ -72,7 +74,7 @@ async function saveScore(entry: LbEntry): Promise<{ entries: LbEntry[]; atKey: n
   } catch { return { entries: saveLocal(entry), atKey: entry.at }; }
 }
 
-const fmtTime = (ms: number) => `${(ms / 1000).toFixed(1)} с`;
+const fmtTime = (ms: number, locale: "ru" | "en" = "ru") => `${(ms / 1000).toFixed(1)} ${locale === "en" ? "s" : "с"}`;
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
 
 function celebrate() {
@@ -85,6 +87,7 @@ function celebrate() {
 type Star = { x: number; y: number; r: number; o: number };
 
 export default function SecretLoviPage() {
+  const locale = useLocale();
   const containerRef = useRef<HTMLDivElement>(null);
   const worldRef = useRef<HTMLDivElement>(null);
 
@@ -269,7 +272,7 @@ export default function SecretLoviPage() {
   async function submitScore() {
     if (submitting || submitted || winMs == null) return;
     setSubmitting(true);
-    const entry: LbEntry = { name: (name.trim() || "Гость").slice(0, 20), timeMs: winMs, at: Date.now() };
+    const entry: LbEntry = { name: (name.trim() || pick("Гость", "Guest", locale)).slice(0, 20), timeMs: winMs, at: Date.now() };
     const { entries: top, atKey } = await saveScore(entry);
     setEntries(top);
     setYouAt(atKey);
@@ -324,8 +327,8 @@ export default function SecretLoviPage() {
             <div className="absolute" style={{ left: 0, top: 0, transform: "translate(-50%,-50%)" }}>
               <div className="w-3 h-3 rounded-full bg-white/80" />
               <div className="mt-3 text-white/40 whitespace-nowrap -translate-x-1/2 ml-1.5">
-                <span className="sr-only">ты здесь</span>
-                <LedText text="ты здесь" className="h-[8px] w-auto" />
+                <span className="sr-only">{pick("ты здесь", "you are here", locale)}</span>
+                <LedText text={pick("ты здесь", "you are here", locale)} className="h-[8px] w-auto" />
               </div>
             </div>
 
@@ -336,14 +339,14 @@ export default function SecretLoviPage() {
               onClick={solve}
               className="absolute group"
               style={{ left: ex.x, top: ex.y, transform: "translate(-50%,-50%)" }}
-              aria-label="Выход"
+              aria-label={pick("Выход", "Exit", locale)}
             >
               <div className="relative flex flex-col items-center">
                 <div className="w-28 h-28 rounded-2xl border-2 border-[#A6FF00] bg-[#A6FF00]/10 flex items-center justify-center animate-pulse"
                   style={{ boxShadow: "0 0 60px -8px rgba(166,255,0,0.7)" }}>
                   <span className="text-[#A6FF00]">
-                    <span className="sr-only">Выход</span>
-                    <LedText text="Выход" className="h-[11px] w-auto" />
+                    <span className="sr-only">{pick("Выход", "Exit", locale)}</span>
+                    <LedText text={pick("Выход", "Exit", locale)} className="h-[11px] w-auto" />
                   </span>
                 </div>
               </div>
@@ -357,17 +360,17 @@ export default function SecretLoviPage() {
       {/* HUD сверху (фикс) */}
       <div className="absolute top-0 left-0 right-0 z-[2] pt-[88px] px-5 text-center pointer-events-none">
         <p className="text-white/40 mb-3 flex justify-center">
-          <span className="sr-only">Загадка №3</span>
-          <LedText text="Загадка №3" className="h-[9px] w-auto" />
+          <span className="sr-only">{pick("Загадка №3", "Riddle #3", locale)}</span>
+          <LedText text={pick("Загадка №3", "Riddle #3", locale)} className="h-[9px] w-auto" />
         </p>
         {phase === "play" && (
           <>
             <h1 className="mb-3">
-              <LedLines text="Найди выход" center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
+              <LedLines text={pick("Найди выход", "Find the exit", locale)} center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
             </h1>
-            {startRef.current != null && <div className="text-[#A6FF00] flex justify-center"><LedText text={fmtTime(elapsed)} className="h-[11px] md:h-[12px] w-auto" /></div>}
+            {startRef.current != null && <div className="text-[#A6FF00] flex justify-center"><LedText text={fmtTime(elapsed, locale)} className="h-[11px] md:h-[12px] w-auto" /></div>}
             <p className="mt-4 text-[14px] text-[#C9A66B]/85 transition-opacity duration-700" style={{ opacity: hintMove ? 1 : 0 }}>
-              Тут тесно. Потяни экран — мир больше, чем кажется.
+              {pick("Тут тесно. Потяни экран — мир больше, чем кажется.", "It's cramped here. Drag the screen — the world is bigger than it looks.", locale)}
             </p>
           </>
         )}
@@ -382,7 +385,7 @@ export default function SecretLoviPage() {
             </svg>
           </div>
           <span className="text-white/40">
-            <LedText text={ui.dist > Math.max(sizeRef.current.w, sizeRef.current.h) * 1.2 ? "далеко" : "ближе"} className="h-[8px] w-auto" />
+            <LedText text={ui.dist > Math.max(sizeRef.current.w, sizeRef.current.h) * 1.2 ? pick("далеко", "far", locale) : pick("ближе", "closer", locale)} className="h-[8px] w-auto" />
           </span>
         </div>
       )}
@@ -392,14 +395,14 @@ export default function SecretLoviPage() {
         <div className="absolute inset-0 z-[5] flex items-start justify-center px-5 pt-[96px] pb-12 bg-black/75 backdrop-blur-sm overflow-y-auto">
           <div className="w-full max-w-[420px] mx-auto flex flex-col items-center text-center">
             <p className="text-white/40 mb-4">
-              <span className="sr-only">Выход был за краем</span>
-              <LedText text="Выход был за краем" className="h-[9px] w-auto" />
+              <span className="sr-only">{pick("Выход был за краем", "The exit was past the edge", locale)}</span>
+              <LedText text={pick("Выход был за краем", "The exit was past the edge", locale)} className="h-[9px] w-auto" />
             </p>
             <h1 className="text-[#A6FF00] mb-4">
-              <LedLines text="Нашёл" center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
+              <LedLines text={pick("Нашёл", "Found it", locale)} center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
             </h1>
             <p className="text-[16px] text-white/80 mb-8">
-              Время: <span className="text-[#A6FF00] tabular-nums">{winMs != null ? fmtTime(winMs) : ""}</span>
+              {pick("Время:", "Time:", locale)} <span className="text-[#A6FF00] tabular-nums">{winMs != null ? fmtTime(winMs, locale) : ""}</span>
             </p>
 
             {!submitted ? (
@@ -407,12 +410,12 @@ export default function SecretLoviPage() {
                 <input
                   type="text" value={name} onChange={(e) => setName(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") submitScore(); }}
-                  maxLength={20} placeholder="Твоё имя" aria-label="Имя для таблицы лидеров"
+                  maxLength={20} placeholder={pick("Твоё имя", "Your name", locale)} aria-label={pick("Имя для таблицы лидеров", "Name for the leaderboard", locale)}
                   className="flex-1 bg-white/[0.06] border border-white/15 rounded-full px-5 py-3 text-[16px] text-white text-center sm:text-left placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors"
                 />
                 <button type="button" onClick={submitScore} disabled={submitting}
                   className="inline-flex items-center justify-center px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors disabled:opacity-50">
-                  <span className="leading-none translate-y-[1px]">{submitting ? "..." : "Отправить"}</span>
+                  <span className="leading-none translate-y-[1px]">{submitting ? "..." : pick("Отправить", "Submit", locale)}</span>
                 </button>
               </div>
             ) : null}
@@ -420,8 +423,8 @@ export default function SecretLoviPage() {
             {entries.length > 0 ? (
               <div className="w-full max-w-[360px] mx-auto mb-8">
                 <p className="text-white/35 mb-3">
-                  <span className="sr-only">Быстрее всех</span>
-                  <LedText text="Быстрее всех" className="h-[8px] w-auto" />
+                  <span className="sr-only">{pick("Быстрее всех", "Fastest", locale)}</span>
+                  <LedText text={pick("Быстрее всех", "Fastest", locale)} className="h-[8px] w-auto" />
                 </p>
                 <ol className="text-left">
                   {entries.map((e, i) => {
@@ -432,18 +435,18 @@ export default function SecretLoviPage() {
                           <LedText text={String(i + 1)} className="h-[9px] w-auto" />
                         </span>
                         <span className="flex-1 text-[16px] truncate">{e.name}</span>
-                        <span className="text-[12px] text-white/45 whitespace-nowrap tabular-nums">{fmtTime(e.timeMs)}</span>
+                        <span className="text-[12px] text-white/45 whitespace-nowrap tabular-nums">{fmtTime(e.timeMs, locale)}</span>
                       </li>
                     );
                   })}
                 </ol>
               </div>
-            ) : !submitted ? (<p className="text-sm text-white/40 mb-8">Разгадай первым.</p>) : null}
+            ) : !submitted ? (<p className="text-sm text-white/40 mb-8">{pick("Разгадай первым.", "Be the first to solve it.", locale)}</p>) : null}
 
             <Link href="/" data-ym-goal="quest3_solved"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
               <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2.2} />
-              <span className="sr-only">На главную</span><LedText text="На главную" className="h-[10px] w-auto" />
+              <span className="sr-only">{pick("На главную", "Home", locale)}</span><LedText text={pick("На главную", "Home", locale)} className="h-[10px] w-auto" />
             </Link>
           </div>
         </div>

@@ -6,6 +6,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { loadEggBoard, saveEggScore, fmtEggTime, type EggEntry } from "./eggBoard";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 type Props = {
   open: boolean;
@@ -33,6 +35,7 @@ export default function EggLeaderboard({
   const [name, setName] = useState("");
   const [sending, setSending] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const locale = useLocale();
 
   useEffect(() => {
     if (!open) return;
@@ -86,7 +89,7 @@ export default function EggLeaderboard({
           <motion.div
             role="dialog"
             aria-modal="true"
-            aria-label="Лидерборд пасхалок"
+            aria-label={pick("Лидерборд пасхалок", "Easter egg leaderboard", locale)}
             className="relative w-full max-w-[440px] rounded-2xl border border-white/10 bg-[#0f0f0e] p-6 md:p-7 shadow-2xl"
             initial={{ scale: 0.92, y: 12 }}
             animate={{ scale: 1, y: 0 }}
@@ -96,16 +99,20 @@ export default function EggLeaderboard({
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="font-service text-[18px] md:text-[20px] text-white tracking-[0.01em]">
-                  Доска искателей
+                  {pick("Доска искателей", "Seekers board", locale)}
                 </div>
                 <div className="mt-1 text-[13px] text-white/45">
-                  Кто нашёл все {total} пасхалок — по скорости
+                  {pick(
+                    `Кто нашёл все ${total} пасхалок — по скорости`,
+                    `Everyone who found all ${total} eggs — ranked by speed`,
+                    locale
+                  )}
                 </div>
               </div>
               <button
                 type="button"
                 onClick={onClose}
-                aria-label="Закрыть"
+                aria-label={pick("Закрыть", "Close", locale)}
                 className="shrink-0 -mr-1 -mt-1 h-8 w-8 rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-colors"
               >
                 ✕
@@ -115,7 +122,9 @@ export default function EggLeaderboard({
             {showForm && (
               <div className="mt-5 rounded-xl border border-[#A6FF00]/30 bg-[#A6FF00]/[0.06] p-4">
                 <div className="text-[14px] text-white/85">
-                  Ты нашёл все {total}! Время: <span className="text-[#A6FF00]">{fmtEggTime(durationMs)}</span>
+                  {pick("Ты нашёл все ", "You found all ", locale)}{total}
+                  {pick("! Время: ", "! Time: ", locale)}
+                  <span className="text-[#A6FF00]">{fmtEggTime(durationMs)}</span>
                 </div>
                 <div className="mt-3 flex gap-2">
                   <input
@@ -124,7 +133,7 @@ export default function EggLeaderboard({
                     onKeyDown={(e) => {
                       if (e.key === "Enter") submit();
                     }}
-                    placeholder="Имя или ник"
+                    placeholder={pick("Имя или ник", "Name or nickname", locale)}
                     maxLength={32}
                     autoFocus
                     className="flex-1 min-w-0 rounded-lg border border-white/15 bg-black/40 px-3 py-2 text-[14px] text-white placeholder:text-white/30 outline-none focus:border-[#A6FF00]/60"
@@ -135,22 +144,26 @@ export default function EggLeaderboard({
                     disabled={!name.trim() || sending}
                     className="shrink-0 rounded-lg bg-[#A6FF00] px-4 py-2 text-[14px] font-medium text-black hover:bg-white disabled:opacity-40 transition-colors"
                   >
-                    {sending ? "…" : "Записать"}
+                    {sending ? "…" : pick("Записать", "Submit", locale)}
                   </button>
                 </div>
               </div>
             )}
 
             {submitted && (
-              <div className="mt-5 text-[14px] text-[#A6FF00]">Записал. Ты в доске ↓</div>
+              <div className="mt-5 text-[14px] text-[#A6FF00]">
+                {pick("Записал. Ты в доске ↓", "Saved. You're on the board ↓", locale)}
+              </div>
             )}
 
             <div className="mt-5 max-h-[46vh] overflow-y-auto [scrollbar-width:thin]">
               {loading ? (
-                <div className="py-8 text-center text-[13px] text-white/40">Загрузка…</div>
+                <div className="py-8 text-center text-[13px] text-white/40">
+                  {pick("Загрузка…", "Loading…", locale)}
+                </div>
               ) : entries.length === 0 ? (
                 <div className="py-8 text-center text-[13px] text-white/40">
-                  Пока никто не нашёл все. Будь первым.
+                  {pick("Пока никто не нашёл все. Будь первым.", "No one has found them all yet. Be the first.", locale)}
                 </div>
               ) : (
                 <ol className="flex flex-col">

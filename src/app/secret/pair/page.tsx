@@ -9,6 +9,8 @@ import { pairCall, pairState, sendReaction, type ReactionType } from "./pairApi"
 import QuestBackground from "@/components/QuestBackground";
 import QuestButton from "@/components/QuestButton";
 import PixelArt, { REACTION_ART } from "@/components/PixelArt";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 /**
  * Кооп-загадка. Двое (можно и с одного устройства/сети — без проверки IP).
@@ -29,7 +31,7 @@ type Phase = "loading" | "viewer" | "controller" | "full" | "error" | "done";
 
 // bits — что показываем (цель или текущее). Если передан compare — подсвечиваем
 // зелёным совпадающие позиции (для ряда «сейчас» сравниваем с целью).
-function Row({ bits, compare, wave }: { bits: string; compare?: string; wave?: boolean }) {
+function Row({ bits, compare, wave, locale }: { bits: string; compare?: string; wave?: boolean; locale: "ru" | "en" }) {
   return (
     <div className="flex gap-2.5 justify-center">
       {Array.from({ length: LEN }).map((_, i) => {
@@ -67,7 +69,7 @@ function Row({ bits, compare, wave }: { bits: string; compare?: string; wave?: b
               />
             </div>
             <span className="text-[10px]" style={{ color: labelColor }}>
-              {on ? "вкл" : "выкл"}
+              {on ? pick("вкл", "on", locale) : pick("выкл", "off", locale)}
             </span>
           </div>
         );
@@ -77,6 +79,7 @@ function Row({ bits, compare, wave }: { bits: string; compare?: string; wave?: b
 }
 
 export default function PairPage() {
+  const locale = useLocale();
   const [phase, setPhase] = useState<Phase>("loading");
   const [id, setId] = useState<string>("");
   const [shareUrl, setShareUrl] = useState("");
@@ -265,14 +268,14 @@ export default function PairPage() {
     sendReaction(id, phase === "viewer" ? "a" : "b", type);
   }
   const REACTIONS: { type: ReactionType; label: string }[] = [
-    { type: "up", label: "Палец вверх" },
-    { type: "left", label: "Левее" },
-    { type: "right", label: "Правее" },
-    { type: "poop", label: "Какашка" },
+    { type: "up", label: pick("Палец вверх", "Thumbs up", locale) },
+    { type: "left", label: pick("Левее", "More left", locale) },
+    { type: "right", label: pick("Правее", "More right", locale) },
+    { type: "poop", label: pick("Какашка", "Poop", locale) },
   ];
   const reactionBar = (
     <div className="mt-8 flex flex-col items-center gap-2.5 relative">
-      <span className="text-[11px] uppercase tracking-[0.12em] text-white/35">кинь реакцию напарнику</span>
+      <span className="text-[11px] uppercase tracking-[0.12em] text-white/35">{pick("кинь реакцию напарнику", "send a reaction", locale)}</span>
       <div className="flex items-center justify-center gap-2.5">
         {REACTIONS.map((r) => (
           <button
@@ -293,7 +296,7 @@ export default function PairPage() {
         </div>
       ) : null}
       <span className="h-4 text-[11px] text-[#A6FF00] transition-opacity" style={{ opacity: sent ? 1 : 0 }}>
-        отправлено
+        {pick("отправлено", "sent", locale)}
       </span>
     </div>
   );
@@ -308,15 +311,15 @@ export default function PairPage() {
       {/* гейт имени: без имени в игру не пускаем (нужно для подписи в пинг-понге) */}
       {needName ? (
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-6 text-center bg-black/85 backdrop-blur-sm">
-          <p className="text-white/40 mb-3"><LedText text="Как тебя зовут" className="h-[9px] w-auto" /></p>
-          <p className="text-[14px] text-white/50 mb-5 max-w-xs">Имя увидит напарник в игре.</p>
+          <p className="text-white/40 mb-3"><LedText text={pick("Как тебя зовут", "Your name", locale)} className="h-[9px] w-auto" /></p>
+          <p className="text-[14px] text-white/50 mb-5 max-w-xs">{pick("Имя увидит напарник в игре.", "Your partner will see it in the game.", locale)}</p>
           <input
             type="text" value={nameInput} onChange={(e) => setNameInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") saveName(); }}
-            maxLength={16} placeholder="Имя" aria-label="Имя"
+            maxLength={16} placeholder={pick("Имя", "Name", locale)} aria-label={pick("Имя", "Name", locale)}
             className="w-full max-w-[280px] bg-white/[0.06] border border-white/15 rounded-full px-5 py-3.5 text-[15px] text-white text-center placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors"
           />
-          <QuestButton onClick={saveName} disabled={!nameInput.trim()} className="mt-4">Продолжить</QuestButton>
+          <QuestButton onClick={saveName} disabled={!nameInput.trim()} className="mt-4">{pick("Продолжить", "Continue", locale)}</QuestButton>
         </div>
       ) : null}
 
@@ -349,24 +352,24 @@ export default function PairPage() {
 
       <div className="relative z-[1] w-full max-w-[480px] mx-auto flex flex-col items-center text-center">
         <p className="text-white/40 mb-5">
-          <span className="sr-only">Кооп · последняя загадка</span>
-          <LedText text="Кооп · последняя загадка" className="h-[9px] w-auto" />
+          <span className="sr-only">{pick("Кооп · последняя загадка", "Co-op · final riddle", locale)}</span>
+          <LedText text={pick("Кооп · последняя загадка", "Co-op · final riddle", locale)} className="h-[9px] w-auto" />
         </p>
 
-        {phase === "loading" ? <p className="text-white/50 text-sm mt-10">Соединяю…</p> : null}
+        {phase === "loading" ? <p className="text-white/50 text-sm mt-10">{pick("Соединяю…", "Connecting…", locale)}</p> : null}
 
         {phase === "error" ? (
           <>
-            <h1 className="mb-4 flex justify-center"><span className="sr-only">Сбой связи</span><LedText text="Сбой связи" scale={2} dot={1.45} className="h-[20px] md:h-[26px] w-auto" /></h1>
-            <p className="text-white/55 text-sm mb-8 max-w-xs">Не удалось открыть сессию. Попробуй обновить страницу.</p>
-            <Link href="/secret/lab/kod" className="text-[14px] text-white/40 hover:text-white/70 no-underline">← К терминалу</Link>
+            <h1 className="mb-4 flex justify-center"><span className="sr-only">{pick("Сбой связи", "Connection lost", locale)}</span><LedText text={pick("Сбой связи", "Connection lost", locale)} scale={2} dot={1.45} className="h-[20px] md:h-[26px] w-auto" /></h1>
+            <p className="text-white/55 text-sm mb-8 max-w-xs">{pick("Не удалось открыть сессию. Попробуй обновить страницу.", "Could not open the session. Try refreshing the page.", locale)}</p>
+            <Link href="/secret/lab/kod" className="text-[14px] text-white/40 hover:text-white/70 no-underline">{pick("← К терминалу", "← Back to terminal", locale)}</Link>
           </>
         ) : null}
 
         {phase === "full" ? (
           <>
-            <h1 className="mb-4 flex justify-center"><span className="sr-only">Занято</span><LedText text="Занято" scale={2} dot={1.45} className="h-[20px] md:h-[26px] w-auto" /></h1>
-            <p className="text-white/55 text-sm max-w-xs">В этой сессии уже двое. Пусть напарник создаст новую.</p>
+            <h1 className="mb-4 flex justify-center"><span className="sr-only">{pick("Занято", "Taken", locale)}</span><LedText text={pick("Занято", "Taken", locale)} scale={2} dot={1.45} className="h-[20px] md:h-[26px] w-auto" /></h1>
+            <p className="text-white/55 text-sm max-w-xs">{pick("В этой сессии уже двое. Пусть напарник создаст новую.", "This session already has two players. Have your partner start a new one.", locale)}</p>
           </>
         ) : null}
 
@@ -374,44 +377,44 @@ export default function PairPage() {
         {phase === "viewer" ? (
           <>
             <h1 className="mb-3">
-              <LedLines text="Ты видишь, как надо" center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
+              <LedLines text={pick("Ты видишь, как надо", "You see the goal", locale)} center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
             </h1>
             <p className="text-[14px] text-white/55 max-w-sm mb-8">
-              Переключить тумблеры можешь не ты. Диктуй напарнику нужный порядок.
+              {pick("Переключить тумблеры можешь не ты. Диктуй напарнику нужный порядок.", "You can't flip the switches. Tell your partner the right order.", locale)}
             </p>
 
             <p className="text-white/35 mb-3">
-              <span className="sr-only">Цель</span>
-              <LedText text="Цель" className="h-[8px] w-auto" />
+              <span className="sr-only">{pick("Цель", "Goal", locale)}</span>
+              <LedText text={pick("Цель", "Goal", locale)} className="h-[8px] w-auto" />
             </p>
-            <Row bits={target} />
+            <Row bits={target} locale={locale} />
 
             <p className="text-white/35 mt-8 mb-3">
-              <span className="sr-only">Сейчас у напарника</span>
-              <LedText text="Сейчас у напарника" className="h-[8px] w-auto" />
+              <span className="sr-only">{pick("Сейчас у напарника", "Partner's current", locale)}</span>
+              <LedText text={pick("Сейчас у напарника", "Partner's current", locale)} className="h-[8px] w-auto" />
             </p>
-            <Row bits={switches} compare={target} wave={solved} />
+            <Row bits={switches} compare={target} wave={solved} locale={locale} />
 
             {!solved ? (
               <div className="mt-10 w-full flex flex-col items-center">
                 {!joined ? (
                   <>
-                    <p className="text-[14px] text-white/50 mb-3">Отправь ссылку второму игроку (на другом устройстве):</p>
-                    <QuestButton onClick={copy}>{copied ? "скопировано" : "копировать ссылку"}</QuestButton>
+                    <p className="text-[14px] text-white/50 mb-3">{pick("Отправь ссылку второму игроку (на другом устройстве):", "Send this link to the second player (on another device):", locale)}</p>
+                    <QuestButton onClick={copy}>{copied ? pick("скопировано", "copied", locale) : pick("копировать ссылку", "copy link", locale)}</QuestButton>
                     <p className="mt-4 text-[12px] text-white/30 break-all max-w-xs">{shareUrl}</p>
                   </>
                 ) : (
                   <>
-                    <p className="text-[14px] text-[#A6FF00]">Напарник на связи. Диктуй порядок.</p>
+                    <p className="text-[14px] text-[#A6FF00]">{pick("Напарник на связи. Диктуй порядок.", "Partner's online. Call out the order.", locale)}</p>
                     {reactionBar}
                   </>
                 )}
               </div>
             ) : (
               <div className="mt-10 flex flex-col items-center">
-                <p className="text-[#A6FF00] mb-2 flex justify-center"><span className="sr-only">Сошлось!</span><LedText text="Сошлось!" scale={2} dot={1.45} className="h-[20px] md:h-[26px] w-auto" /></p>
-                <p className="text-[14px] text-white/55 max-w-xs">Вы сделали это вдвоём. Финал открыт у обоих.</p>
-                <QuestButton href={`/secret/pair/done?room=${token}&host=1`} arrow className="mt-6">Дальше</QuestButton>
+                <p className="text-[#A6FF00] mb-2 flex justify-center"><span className="sr-only">{pick("Сошлось!", "Matched!", locale)}</span><LedText text={pick("Сошлось!", "Matched!", locale)} scale={2} dot={1.45} className="h-[20px] md:h-[26px] w-auto" /></p>
+                <p className="text-[14px] text-white/55 max-w-xs">{pick("Вы сделали это вдвоём. Финал открыт у обоих.", "You did it together. The finale is open for both of you.", locale)}</p>
+                <QuestButton href={`/secret/pair/done?room=${token}&host=1`} arrow className="mt-6">{pick("Дальше", "Next", locale)}</QuestButton>
               </div>
             )}
           </>
@@ -421,10 +424,10 @@ export default function PairPage() {
         {phase === "controller" ? (
           <>
             <h1 className="mb-3">
-              <LedLines text="Ты переключаешь" center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
+              <LedLines text={pick("Ты переключаешь", "You flip", locale)} center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
             </h1>
             <p className="text-[14px] text-white/55 max-w-sm mb-10">
-              Порядок видит напарник. Слушай его и щёлкай тумблеры.
+              {pick("Порядок видит напарник. Слушай его и щёлкай тумблеры.", "Your partner sees the order. Listen and flip the switches.", locale)}
             </p>
 
             <div className="flex gap-2.5 justify-center">
@@ -432,7 +435,7 @@ export default function PairPage() {
                 const on = switches[i] === "1";
                 return (
                   <button key={i} type="button" onClick={() => flip(i)} disabled={solved}
-                    aria-label={`Тумблер ${i + 1}: ${on ? "вкл" : "выкл"}`} aria-pressed={on}
+                    aria-label={`${pick("Тумблер", "Switch", locale)} ${i + 1}: ${on ? pick("вкл", "on", locale) : pick("выкл", "off", locale)}`} aria-pressed={on}
                     className="flex flex-col items-center gap-2 group disabled:opacity-60">
                     <div className={`w-12 h-[72px] rounded-full border flex justify-center p-1.5 transition-all duration-300 group-active:scale-95 group-hover:border-white/40 ${solved ? "tgl-wave" : ""}`}
                       style={{
@@ -469,14 +472,14 @@ export default function PairPage() {
 
             {!solved ? (
               <>
-                <p className="mt-10 text-[14px] text-white/40">Напарник скажет, когда сойдётся.</p>
+                <p className="mt-10 text-[14px] text-white/40">{pick("Напарник скажет, когда сойдётся.", "Your partner will tell you when it matches.", locale)}</p>
                 {reactionBar}
               </>
             ) : (
               <div className="mt-10 flex flex-col items-center">
-                <p className="text-[#A6FF00] mb-2 flex justify-center"><span className="sr-only">Сошлось!</span><LedText text="Сошлось!" scale={2} dot={1.45} className="h-[20px] md:h-[26px] w-auto" /></p>
-                <p className="text-[14px] text-white/55 max-w-xs">Вы сделали это вдвоём. Финал открыт у обоих.</p>
-                <QuestButton href={`/secret/pair/done?room=${token}`} arrow className="mt-6">Дальше</QuestButton>
+                <p className="text-[#A6FF00] mb-2 flex justify-center"><span className="sr-only">{pick("Сошлось!", "Matched!", locale)}</span><LedText text={pick("Сошлось!", "Matched!", locale)} scale={2} dot={1.45} className="h-[20px] md:h-[26px] w-auto" /></p>
+                <p className="text-[14px] text-white/55 max-w-xs">{pick("Вы сделали это вдвоём. Финал открыт у обоих.", "You did it together. The finale is open for both of you.", locale)}</p>
+                <QuestButton href={`/secret/pair/done?room=${token}`} arrow className="mt-6">{pick("Дальше", "Next", locale)}</QuestButton>
               </div>
             )}
           </>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Send, Mail, ArrowUp } from "lucide-react";
 import LedText from "@/components/LedText";
+import { useLocale } from "@/lib/useLocale";
 
 const LinkedinIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
@@ -31,6 +32,8 @@ const links: Array<{ href: string; label: string; Icon: React.ComponentType<Reac
 ];
 
 export default function Footer() {
+  const isEn = useLocale() === "en";
+  const name = isEn ? "Egor Shugaev" : "Егор Шугаев";
   return (
     <footer className="relative z-[1] border-t border-white/[0.06] px-5 md:px-[6%] lg:px-[10%] xl:px-[14%] 2xl:px-[max(14%,calc((100%_-_1680px)/2))] py-6 md:py-8 bg-black">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -52,12 +55,12 @@ export default function Footer() {
 
         <div className="flex items-center gap-4 text-white/25">
           <span>
-            <span className="sr-only">Егор Шугаев © {new Date().getFullYear()}</span>
-            <LedText text={`Егор Шугаев © ${new Date().getFullYear()}`} className="h-[9px] w-auto" />
+            <span className="sr-only">{`${name} © ${new Date().getFullYear()}`}</span>
+            <LedText text={`${name} © ${new Date().getFullYear()}`} className="h-[9px] w-auto" />
           </span>
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            aria-label="Наверх"
+            aria-label={isEn ? "To top" : "Наверх"}
             className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-white/[0.08] text-white/30 hover:text-white/60 hover:border-white/20 transition-colors cursor-pointer bg-transparent"
           >
             <ArrowUp className="w-3.5 h-3.5" strokeWidth={2} />

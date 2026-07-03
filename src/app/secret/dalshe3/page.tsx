@@ -7,6 +7,8 @@ import confetti from "canvas-confetti";
 import QuestBackground from "@/components/QuestBackground";
 import HintButton from "@/components/HintButton";
 import QuestButton from "@/components/QuestButton";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 /**
  * Крестики L3 — «Этого не достаточно».
@@ -51,6 +53,7 @@ function celebrate() {
 }
 
 export default function Dalshe3() {
+  const locale = useLocale();
   const [marks, setMarks] = useState<M[]>(START);
   const [solved, setSolved] = useState(false);
   const [lost, setLost] = useState(false);
@@ -200,20 +203,20 @@ export default function Dalshe3() {
           {/* Шапка фикс-высоты — одна высота поля во всех уровнях */}
           <div className="flex flex-col items-center justify-center" style={{ minHeight: "clamp(108px, 17vw, 150px)" }}>
             <p className="text-white/40 mb-3">
-              <span className="sr-only">Крестики-нолики · Загадка №4</span>
-              <LedText text="Крестики-нолики · Загадка №4" className="h-[9px] w-auto" />
+              <span className="sr-only">{pick("Крестики-нолики · Загадка №4", "Tic-tac-toe · Riddle #4", locale)}</span>
+              <LedText text={pick("Крестики-нолики · Загадка №4", "Tic-tac-toe · Riddle #4", locale)} className="h-[9px] w-auto" />
             </p>
             <h1 ref={headRef} className="transition-colors flex items-center justify-center gap-[10px] md:gap-[16px]">
-              <span className="sr-only">Это не решение</span>
-              <LedText text="Это" scale={2} dot={1.45} className="h-[17px] md:h-[24px] w-auto" />
+              <span className="sr-only">{pick("Это не решение", "This is not the answer", locale)}</span>
+              <LedText text={pick("Это", "THIS IS", locale)} scale={2} dot={1.45} className="h-[17px] md:h-[24px] w-auto" />
               <span
                 ref={neRef}
                 className="transition-all inline-flex"
                 style={nearNe ? { color: "#FF4040", filter: "drop-shadow(0 0 10px rgba(255,64,64,0.9))" } : undefined}
               >
-                <LedText text="не" scale={2} dot={1.45} className="h-[17px] md:h-[24px] w-auto" />
+                <LedText text={pick("не", "NOT", locale)} scale={2} dot={1.45} className="h-[17px] md:h-[24px] w-auto" />
               </span>
-              <LedText text="решение" scale={2} dot={1.45} className="h-[17px] md:h-[24px] w-auto" />
+              <LedText text={pick("решение", "THE ANSWER", locale)} scale={2} dot={1.45} className="h-[17px] md:h-[24px] w-auto" />
             </h1>
           </div>
 
@@ -228,31 +231,38 @@ export default function Dalshe3() {
           </div>
 
           {lost ? (
-            <p className="mt-5 text-sm text-[#C9A66B]">Компьютер собрал свою линию. Начни заново.</p>
+            <p className="mt-5 text-sm text-[#C9A66B]">{pick("Компьютер собрал свою линию. Начни заново.", "The computer made its line. Start over.", locale)}</p>
           ) : null}
 
           <HintButton
             className="mt-5"
-            hints={[
-              "А кто сказал, что играть надо по правилам? Условие можно изменить.",
-              "Фигуры можно перетаскивать. Перетащи крестик прямо на слово «не».",
-            ]}
+            hints={pick(
+              [
+                "А кто сказал, что играть надо по правилам? Условие можно изменить.",
+                "Фигуры можно перетаскивать. Перетащи крестик прямо на слово «не».",
+              ],
+              [
+                "Who said you have to play by the rules? The statement itself can be changed.",
+                "The pieces can be dragged. Drag a cross right onto the word NOT in the phrase above the board.",
+              ],
+              locale,
+            )}
           />
 
           <QuestButton variant="secondary" onClick={reset} className="mt-6">
-            Начать заново
+            {pick("Начать заново", "Restart", locale)}
           </QuestButton>
         </div>
       ) : (
         <div className="relative z-[1] w-full max-w-[420px] mx-auto flex flex-col items-center text-center">
           <p className="text-white/40 mb-4">
-            <span className="sr-only">Решено</span>
-            <LedText text="Решено" className="h-[9px] w-auto" />
+            <span className="sr-only">{pick("Решено", "Solved", locale)}</span>
+            <LedText text={pick("Решено", "Solved", locale)} className="h-[9px] w-auto" />
           </p>
           <h1 className="text-[#A6FF00] mb-8">
-            <LedLines text="Это решение" center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
+            <LedLines text={pick("Это решение", "This is the answer", locale)} center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
           </h1>
-          <QuestButton href="/secret/lab/kod" arrow>Дальше</QuestButton>
+          <QuestButton href="/secret/lab/kod" arrow>{pick("Дальше", "Next", locale)}</QuestButton>
         </div>
       )}
     </main>

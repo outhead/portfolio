@@ -3,6 +3,8 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import Image from "next/image";
 import { X, Lock } from "lucide-react";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 interface ImageLightboxImage {
   src: string;
@@ -33,6 +35,7 @@ const PROTECT_PASSWORD = "4444";
 const PROTECT_STORAGE_KEY = "portfolio-protected-unlocked";
 
 export default function ImageLightbox({ images, mode = "web" }: ImageLightboxProps) {
+  const locale = useLocale();
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [unlocked, setUnlocked] = useState(false);
   const [passwordInput, setPasswordInput] = useState("");
@@ -214,9 +217,9 @@ export default function ImageLightbox({ images, mode = "web" }: ImageLightboxPro
             </div>
             <div className="md:max-w-xs">
               <div className="text-sm md:text-[16px] text-white/85 font-medium leading-snug">
-                Закрыто по NDA{protectedCount > 0 ? ` · ${protectedCount}` : ""}
+                {pick("Закрыто по NDA", "Under NDA", locale)}{protectedCount > 0 ? ` · ${protectedCount}` : ""}
               </div>
-              <div className="text-[14px] text-white/45 mt-0.5">Скрины внутренних продуктов. Введите пароль, чтобы раскрыть.</div>
+              <div className="text-[14px] text-white/45 mt-0.5">{pick("Скрины внутренних продуктов. Введите пароль, чтобы раскрыть.", "Screens of internal products. Enter the password to unlock them.", locale)}</div>
             </div>
           </div>
           <form
@@ -234,24 +237,24 @@ export default function ImageLightbox({ images, mode = "web" }: ImageLightboxPro
                 setPasswordInput(e.target.value);
                 setPasswordError(false);
               }}
-              placeholder="Пароль"
+              placeholder={pick("Пароль", "Password", locale)}
               autoComplete="off"
               className={`flex-1 px-3 py-2 rounded-md bg-black border text-sm text-white placeholder:text-white/30 outline-none transition-colors ${
                 passwordError
                   ? "border-red-500/60"
                   : "border-white/10 focus:border-[#A6FF00]/60"
               }`}
-              aria-label="Пароль доступа"
+              aria-label={pick("Пароль доступа", "Access password", locale)}
             />
             <button
               type="submit"
               className="px-4 py-2 rounded-md bg-[#A6FF00] text-black text-sm font-medium hover:bg-[#A6FF00]/85 transition-colors"
             >
-              Открыть
+              {pick("Открыть", "Unlock", locale)}
             </button>
           </form>
           {passwordError && (
-            <div className="text-[14px] text-red-400/85">Неверный пароль</div>
+            <div className="text-[14px] text-red-400/85">{pick("Неверный пароль", "Wrong password", locale)}</div>
           )}
         </div>
       )}
@@ -352,7 +355,7 @@ export default function ImageLightbox({ images, mode = "web" }: ImageLightboxPro
             <button
               onClick={close}
               className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:border-white/30 transition-colors bg-black/50 cursor-pointer"
-              aria-label="Закрыть"
+              aria-label={pick("Закрыть", "Close", locale)}
             >
               <X className="w-5 h-5" strokeWidth={1.5} />
             </button>
@@ -410,8 +413,8 @@ export default function ImageLightbox({ images, mode = "web" }: ImageLightboxPro
               </div>
             )}
             <div className="text-[12px] tracking-[0.12em] uppercase text-white/30">
-              <span className="hidden md:inline">{activeIndex + 1} / {images.length} · ESC · ← → · 2× клик — зум</span>
-              <span className="md:hidden">{activeIndex + 1} / {images.length} · щипок или 2× тап — зум</span>
+              <span className="hidden md:inline">{activeIndex + 1} / {images.length} · {pick("ESC · ← → · 2× клик — зум", "ESC · ← → · double-click to zoom", locale)}</span>
+              <span className="md:hidden">{activeIndex + 1} / {images.length} · {pick("щипок или 2× тап — зум", "pinch or double-tap to zoom", locale)}</span>
             </div>
           </div>
         </div>

@@ -14,6 +14,8 @@ import { LED_GLYPHS } from "@/components/ledFont";
 import LedText from "@/components/LedText";
 import { LedLines } from "@/components/LedBoard";
 import GlyphEditor from "@/components/GlyphEditor";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 const PITCH = 4;
 const LED_ROWS = 7;
@@ -24,23 +26,24 @@ const isCyr = (c: string) => /[А-Я]/.test(c);
 const isLat = (c: string) => /[A-Z]/.test(c);
 const isNum = (c: string) => /[0-9]/.test(c);
 
-const GROUPS: { id: string; label: string; chars: string[] }[] = [
-  { id: "cyr", label: "Кириллица", chars: ALL_KEYS.filter(isCyr).sort((a, b) => a.localeCompare(b, "ru")) },
-  { id: "lat", label: "Latin", chars: ALL_KEYS.filter(isLat).sort() },
-  { id: "num", label: "Цифры", chars: ALL_KEYS.filter(isNum).sort() },
+const GROUPS: { id: string; label: string; labelEn: string; chars: string[] }[] = [
+  { id: "cyr", label: "Кириллица", labelEn: "Cyrillic", chars: ALL_KEYS.filter(isCyr).sort((a, b) => a.localeCompare(b, "ru")) },
+  { id: "lat", label: "Latin", labelEn: "Latin", chars: ALL_KEYS.filter(isLat).sort() },
+  { id: "num", label: "Цифры", labelEn: "Numbers", chars: ALL_KEYS.filter(isNum).sort() },
   {
     id: "sym",
     label: "Знаки",
+    labelEn: "Symbols",
     chars: ALL_KEYS.filter((c) => !isCyr(c) && !isLat(c) && !isNum(c)),
   },
 ];
 
 /* ── Размерности шрифта: пресеты трёх режимов ── */
-type Preset = { id: string; label: string; cellH: number; dot: number; scale: number };
+type Preset = { id: string; label: string; labelEn: string; cellH: number; dot: number; scale: number };
 const PRESETS: Preset[] = [
-  { id: "sign", label: "Подпись", cellH: 16, dot: 1.6, scale: 1 },
-  { id: "head", label: "Заголовок", cellH: 28, dot: 1.4, scale: 2 },
-  { id: "board", label: "Табло", cellH: 44, dot: 1.05, scale: 2 },
+  { id: "sign", label: "Подпись", labelEn: "Caption", cellH: 16, dot: 1.6, scale: 1 },
+  { id: "head", label: "Заголовок", labelEn: "Heading", cellH: 28, dot: 1.4, scale: 2 },
+  { id: "board", label: "Табло", labelEn: "Board", cellH: 44, dot: 1.05, scale: 2 },
 ];
 
 /* ── Одиночный глиф: рендер всех диодов (горящие + погашенные) ── */
@@ -93,13 +96,14 @@ function GlyphMatrix({
 const CAPTION: Record<string, string> = { " ": "␣" };
 
 export default function FontSpecimen() {
+  const locale = useLocale();
   const [presetId, setPresetId] = useState("head");
   const preset = PRESETS.find((p) => p.id === presetId)!;
   const [dot, setDot] = useState(preset.dot);
   const [scale, setScale] = useState(preset.scale);
   const [grid, setGrid] = useState(true);
 
-  const [tester, setTester] = useState("Привет, World");
+  const [tester, setTester] = useState(pick("Привет, World", "Hello, World", locale));
 
   function applyPreset(p: Preset) {
     setPresetId(p.id);
@@ -124,7 +128,7 @@ export default function FontSpecimen() {
           {/* Размерность — сегменты */}
           <div className="flex items-center gap-3">
             <span className="text-white/35">
-              <LedText text="Размер" className="h-[9px] w-auto" />
+              <LedText text={pick("Размер", "Size", locale)} className="h-[9px] w-auto" />
             </span>
             <div className="flex gap-1.5 p-1 rounded-full bg-white/[0.04]">
               {PRESETS.map((p) => (
@@ -138,8 +142,8 @@ export default function FontSpecimen() {
                       : "text-white/50 hover:text-white"
                   }`}
                 >
-                  <span className="sr-only">{p.label}</span>
-                  <LedText text={p.label} className="h-[8px] w-auto" />
+                  <span className="sr-only">{pick(p.label, p.labelEn, locale)}</span>
+                  <LedText text={pick(p.label, p.labelEn, locale)} className="h-[8px] w-auto" />
                 </button>
               ))}
             </div>
@@ -155,8 +159,8 @@ export default function FontSpecimen() {
                 : "border-white/15 text-white/45 hover:text-white"
             }`}
           >
-            <span className="sr-only">Показывать погашенные диоды</span>
-            <LedText text="Сетка диодов" className="h-[8px] w-auto" />
+            <span className="sr-only">{pick("Показывать погашенные диоды", "Show unlit diodes", locale)}</span>
+            <LedText text={pick("Сетка диодов", "Diode grid", locale)} className="h-[8px] w-auto" />
           </button>
         </div>
 
@@ -164,7 +168,7 @@ export default function FontSpecimen() {
         <div className="grid sm:grid-cols-2 gap-x-8 gap-y-4 max-w-[640px]">
           <label className="flex items-center gap-3 text-white/45">
             <span className="w-24 shrink-0">
-              <LedText text="Точка" className="h-[8px] w-auto" />
+              <LedText text={pick("Точка", "Dot", locale)} className="h-[8px] w-auto" />
             </span>
             <input
               type="range"
@@ -174,13 +178,13 @@ export default function FontSpecimen() {
               value={dot}
               onChange={(e) => setDot(Number(e.target.value))}
               className="flex-1 accent-[#A6FF00]"
-              aria-label="Радиус точки"
+              aria-label={pick("Радиус точки", "Dot radius", locale)}
             />
             <span className="w-10 text-right text-[14px] tabular-nums">{dot.toFixed(2)}</span>
           </label>
           <label className="flex items-center gap-3 text-white/45">
             <span className="w-24 shrink-0">
-              <LedText text="Детализация" className="h-[8px] w-auto" />
+              <LedText text={pick("Детализация", "Detail", locale)} className="h-[8px] w-auto" />
             </span>
             <input
               type="range"
@@ -190,7 +194,7 @@ export default function FontSpecimen() {
               value={scale}
               onChange={(e) => setScale(Number(e.target.value))}
               className="flex-1 accent-[#A6FF00]"
-              aria-label="Апскейл битмапы"
+              aria-label={pick("Апскейл битмапы", "Bitmap upscale", locale)}
             />
             <span className="w-10 text-right text-[14px] tabular-nums">×{scale}</span>
           </label>
@@ -203,7 +207,7 @@ export default function FontSpecimen() {
           <section key={group.id}>
             <div className="flex items-baseline gap-3 mb-4">
               <span className="text-white/45">
-                <LedText text={group.label} className="h-[10px] w-auto" />
+                <LedText text={pick(group.label, group.labelEn, locale)} className="h-[10px] w-auto" />
               </span>
               <span className="text-[12px] tabular-nums text-white/25">{group.chars.length}</span>
             </div>
@@ -227,9 +231,11 @@ export default function FontSpecimen() {
         ))}
 
         <div className="text-[14px] text-white/35 leading-relaxed">
-          Весь набор — кириллица, латиница, цифры и знаки. Всё, что выше, нарисовано
-          прямо сейчас тем же движком 5×7, что рендерит весь сайт: это не картинки, а карта
-          зажжённых диодов.
+          {pick(
+            "Весь набор — кириллица, латиница, цифры и знаки. Всё, что выше, нарисовано прямо сейчас тем же движком 5×7, что рендерит весь сайт: это не картинки, а карта зажжённых диодов.",
+            "The full set — Cyrillic, Latin, numbers and symbols. Everything above is drawn right now by the same 5×7 engine that renders the whole site: not images, but a map of lit diodes.",
+            locale,
+          )}
         </div>
       </div>
 
@@ -242,7 +248,7 @@ export default function FontSpecimen() {
         }}
       >
         <div className="text-white/35 mb-5">
-          <LedText text="Набери своё" className="h-[9px] w-auto" />
+          <LedText text={pick("Набери своё", "Type your own", locale)} className="h-[9px] w-auto" />
         </div>
         <div className="text-[#A6FF00] max-w-full min-h-[44px] md:min-h-[60px] flex items-center">
           <LedLines
@@ -259,8 +265,8 @@ export default function FontSpecimen() {
             value={tester}
             maxLength={28}
             onChange={(e) => setTester(e.target.value)}
-            placeholder="Набери своё…"
-            aria-label="Текст для спесимена"
+            placeholder={pick("Набери своё…", "Type your own…", locale)}
+            aria-label={pick("Текст для спесимена", "Specimen text", locale)}
             className="flex-1 bg-white/[0.04] border border-white/15 focus:border-[#A6FF00]/60 outline-none rounded-xl px-4 py-3 text-[16px] text-white placeholder:text-white/30 transition-colors"
           />
           <div className="flex gap-2">
@@ -282,7 +288,7 @@ export default function FontSpecimen() {
       {/* ── Свой глиф: мини-рисовалка с сохранением ── */}
       <div className="px-5 md:px-8 py-7">
         <div className="text-white/35 mb-5">
-          <LedText text="Нарисуй свой глиф" className="h-[9px] w-auto" />
+          <LedText text={pick("Нарисуй свой глиф", "Draw your own glyph", locale)} className="h-[9px] w-auto" />
         </div>
         <GlyphEditor />
       </div>

@@ -9,6 +9,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import LedText from "@/components/LedText";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 import {
   type SavedGlyph,
   loadGlyphs,
@@ -19,12 +21,12 @@ import {
   PAGE,
 } from "@/components/glyphStore";
 
-type Size = { label: string; cols: number; rows: number };
+type Size = { label: string; labelEn?: string; cols: number; rows: number };
 
 const SIZES: Size[] = [
-  { label: "5×7 — буква", cols: 5, rows: 7 },
-  { label: "9×7 — иконка", cols: 9, rows: 7 },
-  { label: "16×16 — пиксель-арт", cols: 16, rows: 16 },
+  { label: "5×7 — буква", labelEn: "5×7 — letter", cols: 5, rows: 7 },
+  { label: "9×7 — иконка", labelEn: "9×7 — icon", cols: 9, rows: 7 },
+  { label: "16×16 — пиксель-арт", labelEn: "16×16 — pixel art", cols: 16, rows: 16 },
 ];
 
 /* Мини-превью глифа: горящие точки SVG-кружками (как в реальном шрифте). */
@@ -56,6 +58,7 @@ function GlyphPreview({ bitmap, h = 24 }: { bitmap: string[]; h?: number }) {
 type SaveState = "idle" | "saving" | "saved" | "dup" | "error";
 
 export default function GlyphEditor() {
+  const locale = useLocale();
   const [size, setSize] = useState<Size>(SIZES[0]);
   const [grid, setGrid] = useState<boolean[]>(() => new Array(SIZES[0].cols * SIZES[0].rows).fill(false));
   const [copied, setCopied] = useState(false);
@@ -205,14 +208,14 @@ export default function GlyphEditor() {
 
   const saveLabel =
     saveState === "saving"
-      ? "Публикую…"
+      ? pick("Публикую…", "Publishing…", locale)
       : saveState === "saved"
-      ? "В галерее ✓"
+      ? pick("В галерее ✓", "In gallery ✓", locale)
       : saveState === "dup" || localDup
-      ? "Уже есть"
+      ? pick("Уже есть", "Already there", locale)
       : saveState === "error"
-      ? "Ошибка, ещё раз"
-      : "Сохранить в галерею";
+      ? pick("Ошибка, ещё раз", "Error, try again", locale)
+      : pick("Сохранить в галерею", "Save to gallery", locale);
 
   return (
     <div className="flex flex-col gap-6">
@@ -229,7 +232,7 @@ export default function GlyphEditor() {
                 : "border-white/15 text-white/55 hover:text-white hover:border-white/30"
             }`}
           >
-            {s.label}
+            {pick(s.label, s.labelEn ?? s.label, locale)}
           </button>
         ))}
       </div>
@@ -250,7 +253,7 @@ export default function GlyphEditor() {
             <button
               key={i}
               type="button"
-              aria-label={`точка ${i}`}
+              aria-label={pick(`точка ${i}`, `dot ${i}`, locale)}
               onPointerDown={(e) => {
                 e.preventDefault();
                 drawing.current = !on;
@@ -272,11 +275,11 @@ export default function GlyphEditor() {
           {/* Живое мини-превью «как в шрифте» */}
           <div className="flex items-center gap-4">
             <span className="text-white/35 shrink-0">
-              <LedText text="Как в шрифте" className="h-[8px] w-auto" />
+              <LedText text={pick("Как в шрифте", "As in font", locale)} className="h-[8px] w-auto" />
             </span>
             <div className="flex items-center justify-center min-w-[44px] min-h-[40px] px-3 py-2 rounded-lg border border-white/[0.08] bg-black text-[#A6FF00]">
               {isEmpty ? (
-                <span className="text-[12px] text-white/25">пусто</span>
+                <span className="text-[12px] text-white/25">{pick("пусто", "empty", locale)}</span>
               ) : (
                 <GlyphPreview bitmap={rowsOut} h={size.rows > 9 ? 40 : 26} />
               )}
@@ -284,7 +287,7 @@ export default function GlyphEditor() {
           </div>
 
           <div className="text-white/40">
-            <LedText text="Битмапа для LED_GLYPHS" className="h-[9px] w-auto" />
+            <LedText text={pick("Битмапа для LED_GLYPHS", "Bitmap for LED_GLYPHS", locale)} className="h-[9px] w-auto" />
           </div>
           <pre className="text-[14px] leading-relaxed text-[#A6FF00]/80 bg-white/[0.03] border border-white/[0.08] rounded-xl p-4 overflow-x-auto font-service">
             {exportText}
@@ -294,7 +297,7 @@ export default function GlyphEditor() {
               type="button"
               onClick={save}
               disabled={isEmpty || localDup || saveState === "saving"}
-              title={localDup ? "Точно такой глиф уже в общей галерее" : undefined}
+              title={localDup ? pick("Точно такой глиф уже в общей галерее", "This exact glyph is already in the shared gallery", locale) : undefined}
               className="px-5 py-2.5 rounded-full bg-[#A6FF00] text-black text-[14px] font-medium hover:bg-[#b8ff33] transition-colors disabled:opacity-35 disabled:cursor-not-allowed"
             >
               {saveLabel}
@@ -304,28 +307,28 @@ export default function GlyphEditor() {
               onClick={copy}
               className="px-5 py-2.5 rounded-full border border-white/20 text-white/70 text-[14px] hover:text-white hover:border-white/40 transition-colors"
             >
-              {copied ? "Скопировано" : "Скопировать"}
+              {copied ? pick("Скопировано", "Copied", locale) : pick("Скопировать", "Copy", locale)}
             </button>
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
               className="px-5 py-2.5 rounded-full border border-white/20 text-white/70 text-[14px] hover:text-white hover:border-white/40 transition-colors"
             >
-              Импорт PNG
+              {pick("Импорт PNG", "Import PNG", locale)}
             </button>
             <button
               type="button"
               onClick={() => setShowPaste((v) => !v)}
               className="px-5 py-2.5 rounded-full border border-white/20 text-white/70 text-[14px] hover:text-white hover:border-white/40 transition-colors"
             >
-              Из кода
+              {pick("Из кода", "From code", locale)}
             </button>
             <button
               type="button"
               onClick={() => reset(size)}
               className="px-5 py-2.5 rounded-full border border-white/10 text-white/40 text-[14px] hover:text-white/70 transition-colors"
             >
-              Очистить
+              {pick("Очистить", "Clear", locale)}
             </button>
             <input
               ref={fileRef}
@@ -346,7 +349,11 @@ export default function GlyphEditor() {
                 value={pasteText}
                 onChange={(e) => setPasteText(e.target.value)}
                 rows={6}
-                placeholder={'Вставь битмапу: строки из 0/1 (или . и X), можно с кавычками и запятыми. Размер сетки определится сам.'}
+                placeholder={pick(
+                  "Вставь битмапу: строки из 0/1 (или . и X), можно с кавычками и запятыми. Размер сетки определится сам.",
+                  "Paste a bitmap: rows of 0/1 (or . and X), quotes and commas are fine. The grid size is detected automatically.",
+                  locale,
+                )}
                 className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl p-3 text-[13px] leading-relaxed text-[#A6FF00]/80 font-service outline-none focus:border-[#A6FF00]/40"
               />
               <div className="flex gap-2">
@@ -356,22 +363,25 @@ export default function GlyphEditor() {
                   disabled={!pasteText.trim()}
                   className="px-5 py-2.5 rounded-full bg-[#A6FF00] text-black text-[14px] font-medium hover:bg-[#b8ff33] transition-colors disabled:opacity-35"
                 >
-                  Загрузить в сетку
+                  {pick("Загрузить в сетку", "Load into grid", locale)}
                 </button>
                 <button
                   type="button"
                   onClick={() => { setShowPaste(false); setPasteText(""); }}
                   className="px-5 py-2.5 rounded-full border border-white/15 text-white/50 text-[14px] hover:text-white/80 transition-colors"
                 >
-                  Отмена
+                  {pick("Отмена", "Cancel", locale)}
                 </button>
               </div>
             </div>
           ) : null}
 
           <p className="text-[14px] text-white/40 max-w-[440px]">
-            «Сохранить в галерею» — глиф увидят все: галерея общая. Картинка уляжется
-            в сетку по контрасту, битмапу можно вставить прямо в{" "}
+            {pick(
+              "«Сохранить в галерею» — глиф увидят все: галерея общая. Картинка уляжется в сетку по контрасту, битмапу можно вставить прямо в ",
+              "“Save to gallery” makes the glyph visible to everyone — the gallery is shared. An image settles into the grid by contrast, and the bitmap can be pasted straight into ",
+              locale,
+            )}
             <a
               href="https://github.com/outhead/led-font"
               target="_blank"
@@ -393,7 +403,7 @@ export default function GlyphEditor() {
           <div className="border-t border-white/[0.06] pt-5">
             <div className="flex items-baseline gap-3 mb-1 flex-wrap">
               <span className="text-white/45">
-                <LedText text="Общая галерея" className="h-[9px] w-auto" />
+                <LedText text={pick("Общая галерея", "Shared gallery", locale)} className="h-[9px] w-auto" />
               </span>
               {shown.length > 0 && (
                 <span className="text-[12px] tabular-nums text-white/25">
@@ -407,18 +417,32 @@ export default function GlyphEditor() {
                   onClick={() => setShowHidden((v) => !v)}
                   className="text-[12px] text-white/40 hover:text-white/70 transition-colors underline underline-offset-2"
                 >
-                  {showHidden ? "не показывать скрытые" : `показать скрытые (${hiddenCount})`}
+                  {showHidden
+                    ? pick("не показывать скрытые", "hide hidden", locale)
+                    : pick(`показать скрытые (${hiddenCount})`, `show hidden (${hiddenCount})`, locale)}
                 </button>
               )}
             </div>
             <p className="text-[12px] text-white/30 mb-3">
-              Скрыть может любой — глиф пропадёт у всех. Раскрыть тоже может любой.
+              {pick(
+                "Скрыть может любой — глиф пропадёт у всех. Раскрыть тоже может любой.",
+                "Anyone can hide a glyph — it disappears for everyone. Anyone can bring it back too.",
+                locale,
+              )}
             </p>
             {shown.length === 0 ? (
               <p className="text-[14px] text-white/30">
                 {saved.length === 0
-                  ? "Пока пусто. Нарисуй что-нибудь и нажми «Сохранить в галерею» — глиф появится здесь у всех."
-                  : "Всё скрыто. Нажми «показать скрытые», чтобы посмотреть."}
+                  ? pick(
+                      "Пока пусто. Нарисуй что-нибудь и нажми «Сохранить в галерею» — глиф появится здесь у всех.",
+                      "Nothing here yet. Draw something and hit “Save to gallery” — the glyph will show up here for everyone.",
+                      locale,
+                    )
+                  : pick(
+                      "Всё скрыто. Нажми «показать скрытые», чтобы посмотреть.",
+                      "Everything is hidden. Hit “show hidden” to take a look.",
+                      locale,
+                    )}
               </p>
             ) : (
               <>
@@ -435,7 +459,7 @@ export default function GlyphEditor() {
                       <button
                         type="button"
                         onClick={() => loadInto(g)}
-                        title="Открыть в редакторе крупно"
+                        title={pick("Открыть в редакторе крупно", "Open large in the editor", locale)}
                         className="flex items-center justify-center"
                       >
                         <GlyphPreview bitmap={g.bitmap} h={g.rows > 9 ? 34 : 26} />
@@ -443,8 +467,8 @@ export default function GlyphEditor() {
                       <button
                         type="button"
                         onClick={() => toggleHidden(g)}
-                        title={g.hidden ? "Раскрыть для всех" : "Скрыть ото всех"}
-                        aria-label={g.hidden ? "Раскрыть глиф" : "Скрыть глиф"}
+                        title={g.hidden ? pick("Раскрыть для всех", "Show for everyone", locale) : pick("Скрыть ото всех", "Hide from everyone", locale)}
+                        aria-label={g.hidden ? pick("Раскрыть глиф", "Show glyph", locale) : pick("Скрыть глиф", "Hide glyph", locale)}
                         className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-black border border-white/20 text-white/55 text-[12px] leading-none opacity-0 group-hover:opacity-100 hover:text-white hover:border-white/50 transition-opacity flex items-center justify-center"
                       >
                         {g.hidden ? "↺" : "×"}
@@ -459,7 +483,7 @@ export default function GlyphEditor() {
                     disabled={loadingMore}
                     className="mt-4 px-5 py-2.5 rounded-full border border-white/15 text-white/55 text-[14px] hover:text-white hover:border-white/35 transition-colors disabled:opacity-40"
                   >
-                    {loadingMore ? "Загружаю…" : "Показать ещё"}
+                    {loadingMore ? pick("Загружаю…", "Loading…", locale) : pick("Показать ещё", "Show more", locale)}
                   </button>
                 )}
               </>

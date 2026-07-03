@@ -8,6 +8,8 @@ import { Send } from "lucide-react";
 import SmileFireworksButton from "./SmileFireworksButton";
 import LedText from "@/components/LedText";
 import { ymGoal } from "@/lib/yandex-metrika";
+import { useLocale } from "@/lib/useLocale";
+import { localizedHref } from "@/lib/i18n";
 
 /* Пиксельный многострочный заголовок: грубый перенос ~22 символа,
    акцент (последний символ) — лаймом, отдельным глифом в конце строки. */
@@ -131,6 +133,20 @@ const STAGES: Stage[] = [
   },
 ];
 
+const STAGES_EN: Array<{ headline: string; label?: string }> = [
+  { headline: "Thanks for scrolling all the way down. Here's a button, on the house" },
+  { headline: "heh, alright — but don't press it again" },
+  { headline: "Yeah, I knew you'd do that" },
+  { headline: "Hi there, ADHD. Remember: a weakness can always be turned into a strength" },
+  { headline: "You could stop now. But where's the fun in that" },
+  { headline: "Glad you're enjoying this button. You might enjoy this too", label: "Open" },
+];
+function localizeStage(st: Stage, i: number, isEn: boolean): Stage {
+  if (!isEn) return st;
+  const e = STAGES_EN[i];
+  return { ...st, headline: e?.headline ?? st.headline, bonus: st.bonus ? { ...st.bonus, label: e?.label ?? st.bonus.label } : st.bonus };
+}
+
 function pickStage(n: number): Stage {
   // Берём максимальный порог, который преодолён
   let active = STAGES[0];
@@ -146,6 +162,9 @@ function pluralize(n: number): string {
   if (mod10 === 1 && mod100 !== 11) return "раз";
   if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return "раза";
   return "раз";
+}
+function fireCount(n: number, isEn: boolean): string {
+  return isEn ? `${n} ${n === 1 ? "time" : "times"}` : `${n} ${pluralize(n)}`;
 }
 
 // ───────────────────────────────────────────────────────────
@@ -364,7 +383,8 @@ export default function FinalCTA() {
     };
   }, []);
 
-  const stage = useMemo(() => pickStage(sessionCount), [sessionCount]);
+  const isEn = useLocale() === "en";
+  const stage = useMemo(() => localizeStage(pickStage(sessionCount), pickStage(sessionCount).threshold, isEn), [sessionCount, isEn]);
 
   // Спецзалп при переходе на новый stage
   useEffect(() => {
@@ -467,14 +487,14 @@ export default function FinalCTA() {
 
           <motion.div variants={fadeUp} className="relative mb-5 md:mb-7 flex items-center gap-3">
             <span className="text-[#A6FF00]">
-              <span className="sr-only">Поздравляю</span>
-              <LedText text="[ Поздравляю ]" className="h-[10px] w-auto" />
+              <span className="sr-only">{isEn ? "Congrats" : "Поздравляю"}</span>
+              <LedText text={isEn ? "[ Congrats ]" : "[ Поздравляю ]"} className="h-[10px] w-auto" />
             </span>
             {sessionCount > 0 && (
               <span className="text-white/30">
-                <span className="sr-only">{`запустили фейерверк ${sessionCount} ${pluralize(sessionCount)}`}</span>
+                <span className="sr-only">{isEn ? `set off the fireworks ${fireCount(sessionCount, true)}` : `запустили фейерверк ${fireCount(sessionCount, false)}`}</span>
                 <LedText
-                  text={`· запустили фейерверк ${sessionCount} ${pluralize(sessionCount)}`}
+                  text={isEn ? `· set off the fireworks ${fireCount(sessionCount, true)}` : `· запустили фейерверк ${fireCount(sessionCount, false)}`}
                   className="h-[9px] md:h-[10px] w-auto"
                 />
               </span>
@@ -517,7 +537,7 @@ export default function FinalCTA() {
                   className="mt-4"
                 >
                   <Link
-                    href={stage.bonus.href}
+                    href={localizedHref(stage.bonus.href, isEn ? "en" : "ru")}
                     data-ym-goal="secret_open"
                     className="inline-flex items-center gap-1.5 px-4 py-2 md:px-5 md:py-2.5 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline"
                   >
@@ -550,8 +570,8 @@ export default function FinalCTA() {
                       className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-white/20 text-white/85 hover:border-white/50 hover:text-white transition-colors no-underline"
                     >
                       <Send className="w-4 h-4" strokeWidth={2.2} />
-                      <span className="sr-only">Подписаться на канал</span>
-                      <LedText text="Подписаться на канал" className="h-[11px] w-auto" />
+                      <span className="sr-only">{isEn ? "Follow the channel" : "Подписаться на канал"}</span>
+                      <LedText text={isEn ? "Follow the channel" : "Подписаться на канал"} className="h-[11px] w-auto" />
                     </Link>
                   </motion.div>
                 )}
@@ -564,7 +584,7 @@ export default function FinalCTA() {
                   transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                   className="mt-3 md:mt-4 text-[14px] md:text-[14px] text-white/45 leading-relaxed max-w-md"
                 >
-                  А ещё, если вам стало интересно — я веду телеграм-канал.
+                  {isEn ? "And if you're curious — I also run a Telegram channel." : "А ещё, если вам стало интересно — я веду телеграм-канал."}
                 </motion.p>
               )}
             </div>
@@ -573,7 +593,7 @@ export default function FinalCTA() {
             {(() => {
               // Полный номер с разрядами, без сокращений K/M — точное число.
               const display =
-                globalCount != null ? globalCount.toLocaleString("ru-RU") : "—";
+                globalCount != null ? globalCount.toLocaleString(isEn ? "en-US" : "ru-RU") : "—";
               // Размер шрифта числа даунгрейдится по длине строки, чтобы
               // длинные числа (1 234 567 / 12 345 678) не вылезали за колонку.
               const len = display.length;
@@ -604,7 +624,7 @@ export default function FinalCTA() {
                     aria-label={
                       globalCount != null
                         ? `${globalCount}`
-                        : "счётчик загружается"
+                        : (isEn ? "counter loading" : "счётчик загружается")
                     }
                   >
                     {globalCount != null ? (

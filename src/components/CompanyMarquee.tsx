@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import LedText from "@/components/LedText";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 /**
  * Бесконечный ряд компаний с auto-scroll + drag-to-spin (с инерцией).
@@ -25,6 +27,7 @@ const MAX_VELOCITY = 3000; // px/sec — потолок флика
 const DECAY = 0.96; // коэф затухания velocity к BASE_VELOCITY за кадр
 
 export default function CompanyMarquee() {
+  const locale = useLocale();
   const trackRef = useRef<HTMLDivElement>(null);
   const halfWidthRef = useRef(0);
   const offsetRef = useRef(0);
@@ -142,7 +145,7 @@ export default function CompanyMarquee() {
 
   return (
     <div
-      aria-label="Компании, в которых я работал"
+      aria-label={pick("Компании, в которых я работал", "Companies I've worked at", locale)}
       className="relative rounded-2xl border border-white/[0.08] bg-white/[0.015] py-6 md:py-8 overflow-hidden"
     >
       <div

@@ -7,17 +7,20 @@
 import { useState } from "react";
 import LedText from "@/components/LedText";
 import ParticlePortrait from "@/components/ParticlePortrait";
-
-const PORTRAITS = [
-  { label: "Рим-свет", src: "/images/hero-portrait.png", depth: "/images/hero-depth.png" },
-  { label: "Награда", src: "/images/face-c-portrait.png", depth: "/images/face-c-depth.png" },
-  { label: "Бас", src: "/images/face-e-portrait.png", depth: "/images/face-e-depth.png" },
-  { label: "Глитч", src: "/images/face-d-portrait.png", depth: "/images/face-d-depth.png" },
-  { label: "Фронт (новое)", src: "/images/face-a-portrait.png", depth: "/images/face-a-depth.png" },
-  { label: "Второе фото", src: "/images/face-b-portrait.png", depth: "/images/face-b-depth.png" },
-];
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 export default function PixelLab() {
+  const locale = useLocale();
+  const PORTRAITS = [
+    { label: pick("Рим-свет", "Rim light", locale), src: "/images/hero-portrait.png", depth: "/images/hero-depth.png" },
+    { label: pick("Награда", "Award", locale), src: "/images/face-c-portrait.png", depth: "/images/face-c-depth.png" },
+    { label: pick("Бас", "Bass", locale), src: "/images/face-e-portrait.png", depth: "/images/face-e-depth.png" },
+    { label: pick("Глитч", "Glitch", locale), src: "/images/face-d-portrait.png", depth: "/images/face-d-depth.png" },
+    { label: pick("Фронт (новое)", "Front (new)", locale), src: "/images/face-a-portrait.png", depth: "/images/face-a-depth.png" },
+    { label: pick("Второе фото", "Second photo", locale), src: "/images/face-b-portrait.png", depth: "/images/face-b-depth.png" },
+  ];
+
   const [count, setCount] = useState(5500);
   const [depthScale, setDepthScale] = useState(0.6);
   const [tilt, setTilt] = useState(0.45);
@@ -30,12 +33,15 @@ export default function PixelLab() {
       <div className="max-w-[900px] mx-auto flex flex-col gap-10">
         <div className="flex flex-col gap-3">
           <div className="text-white/40">
-            <LedText text="Лаба · частицы-портрет" className="h-[10px] w-auto" />
+            <LedText text={pick("Лаба · частицы-портрет", "Lab · particle portrait", locale)} className="h-[10px] w-auto" />
           </div>
-          <h1 className="text-2xl md:text-3xl">Портрет из частиц · 3D-глубина</h1>
+          <h1 className="text-2xl md:text-3xl">{pick("Портрет из частиц · 3D-глубина", "Particle portrait · 3D depth", locale)}</h1>
           <p className="text-[14px] md:text-[15px] text-white/55 max-w-[620px]">
-            Точки лежат по реальной карте глубины. Наведи курсор — лицо
-            собирается и поворачивается. Ползунки ниже меняют качество/нагрузку.
+            {pick(
+              "Точки лежат по реальной карте глубины. Наведи курсор — лицо собирается и поворачивается. Ползунки ниже меняют качество/нагрузку.",
+              "The dots sit along a real depth map. Hover the cursor — the face assembles and turns. The sliders below trade off quality and load.",
+              locale,
+            )}
           </p>
         </div>
 
@@ -75,10 +81,10 @@ export default function PixelLab() {
               ))}
             </div>
             {([
-              ["Точек", count, setCount, 1000, 9000, 250, ""],
-              ["Глубина", depthScale, setDepthScale, 0, 1.2, 0.05, ""],
-              ["Наклон", tilt, setTilt, 0, 1, 0.05, ""],
-              ["Контраст", gamma, setGamma, 0.5, 1.8, 0.05, ""],
+              [pick("Точек", "Dots", locale), count, setCount, 1000, 9000, 250, ""],
+              [pick("Глубина", "Depth", locale), depthScale, setDepthScale, 0, 1.2, 0.05, ""],
+              [pick("Наклон", "Tilt", locale), tilt, setTilt, 0, 1, 0.05, ""],
+              [pick("Контраст", "Contrast", locale), gamma, setGamma, 0.5, 1.8, 0.05, ""],
             ] as const).map(([label, val, set, min, max, step]) => (
               <label key={label} className="flex items-center gap-4 text-white/50">
                 <span className="w-24 shrink-0 text-[13px]">{label}</span>
@@ -100,12 +106,15 @@ export default function PixelLab() {
                 onChange={(e) => setHover(e.target.checked)}
                 className="accent-[#A6FF00] w-4 h-4"
               />
-              Собирать по наведению (выкл — всегда собран)
+              {pick("Собирать по наведению (выкл — всегда собран)", "Assemble on hover (off — always assembled)", locale)}
             </label>
 
             <p className="text-[12px] text-white/35 mt-2">
-              Меньше точек = плавнее. Глубина — сила рельефа. Наведи на холст для
-              сборки/поворота.
+              {pick(
+                "Меньше точек = плавнее. Глубина — сила рельефа. Наведи на холст для сборки/поворота.",
+                "Fewer dots = smoother. Depth is the relief strength. Hover the canvas to assemble and turn.",
+                locale,
+              )}
             </p>
           </div>
         </div>

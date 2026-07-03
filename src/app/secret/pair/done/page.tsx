@@ -6,8 +6,11 @@ import { useEffect, useState } from "react";
 import confetti from "canvas-confetti";
 import QuestBackground from "@/components/QuestBackground";
 import QuestButton from "@/components/QuestButton";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 export default function PairDone() {
+  const locale = useLocale();
   // переносим комнату/роль в пинг-понг — играем тем же составом, без новой ссылки
   const [pongHref, setPongHref] = useState("/secret/pong");
   useEffect(() => {
@@ -26,18 +29,18 @@ export default function PairDone() {
       }} />
       <div className="relative z-[1] w-full max-w-[440px] mx-auto flex flex-col items-center text-center">
         <p className="text-white/40 mb-4">
-          <span className="sr-only">Вдвоём</span>
-          <LedText text="Вдвоём" className="h-[9px] w-auto" />
+          <span className="sr-only">{pick("Вдвоём", "Together", locale)}</span>
+          <LedText text={pick("Вдвоём", "Together", locale)} className="h-[9px] w-auto" />
         </p>
         <h1 className="text-[#A6FF00] mb-6">
-          <LedLines text="Готово" center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
+          <LedLines text={pick("Готово", "Done", locale)} center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
         </h1>
         <p className="text-[16px] text-white/70 max-w-sm leading-relaxed mb-8">
-          Это нельзя было пройти одному. Спасибо вам обоим — и тому, кто видел, и тому, кто щёлкал.
+          {pick("Это нельзя было пройти одному. Спасибо вам обоим — и тому, кто видел, и тому, кто щёлкал.", "This one couldn't be solved alone. Thanks to both of you — the one who watched and the one who flipped.", locale)}
         </p>
         <div className="mb-8 flex flex-col items-center">
-          <p className="text-[14px] text-white/45 mb-3 max-w-xs">Раз уж вы вдвоём — сыграйте.</p>
-          <QuestButton href={pongHref} arrow>Пинг-понг</QuestButton>
+          <p className="text-[14px] text-white/45 mb-3 max-w-xs">{pick("Раз уж вы вдвоём — сыграйте.", "Since you're a pair — play a round.", locale)}</p>
+          <QuestButton href={pongHref} arrow>{pick("Пинг-понг", "Ping-pong", locale)}</QuestButton>
         </div>
       </div>
     </main>

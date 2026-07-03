@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { bumpHint } from "@/app/secret/leaderboard";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 /**
  * Подсказка по кнопке. Раскрывает намёки по одному (от мягкого к прямому);
@@ -18,6 +20,7 @@ export default function HintButton({
   className?: string;
 }) {
   const [level, setLevel] = useState(0); // сколько намёков уже раскрыто
+  const locale = useLocale();
 
   const reveal = () => {
     if (level >= hints.length) return;
@@ -27,7 +30,7 @@ export default function HintButton({
 
   const text = level > 0 ? hints[level - 1] : "";
   const more = level < hints.length;
-  const label = level === 0 ? "Подсказка" : "Ещё подсказка";
+  const label = level === 0 ? pick("Подсказка", "Hint", locale) : pick("Ещё подсказка", "One more hint", locale);
 
   return (
     <div className={`flex flex-col items-center gap-3 ${className}`}>

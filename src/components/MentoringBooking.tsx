@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import LedText from "@/components/LedText";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 import {
   loadFreeSlots,
   createBooking,
@@ -14,10 +16,15 @@ import {
 const inputCls =
   "w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-[15px] text-white/90 placeholder:text-white/30 outline-none focus:border-[#A6FF00]/50 transition-colors";
 
-const WEEK = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
+const WEEK_RU = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
+const WEEK_EN = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const MONTHS_RU = [
   "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
   "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь",
+];
+const MONTHS_EN = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
 ];
 const pad = (n: number) => String(n).padStart(2, "0");
 const keyOf = (y: number, m: number, d: number) => `${y}-${pad(m + 1)}-${pad(d)}`;
@@ -56,6 +63,9 @@ function monthCells(y: number, m: number): Array<number | null> {
 }
 
 export default function MentoringBooking() {
+  const locale = useLocale();
+  const WEEK = pick(WEEK_RU, WEEK_EN, locale);
+  const MONTHS = pick(MONTHS_RU, MONTHS_EN, locale);
   const [groups, setGroups] = useState<DayGroup[] | null>(null);
   const [dayKey, setDayKey] = useState<string | null>(null);
   const [monthIdx, setMonthIdx] = useState(0);
@@ -130,18 +140,22 @@ export default function MentoringBooking() {
     return (
       <div className="rounded-2xl border border-[#A6FF00]/25 bg-[#0f0f0e] p-5 md:p-6">
         <div className="flex items-center gap-2 text-[#A6FF00] mb-3">
-          <LedText text="Готово" className="h-[11px] w-auto" />
+          <LedText text={pick("Готово", "Done", locale)} className="h-[11px] w-auto" />
         </div>
         <p className="text-[15px] text-white/80 mb-1.5">{slotFull(slot)}</p>
         <p className="text-[13px] text-white/50 leading-relaxed mb-5 max-w-md">
-          Подтвержу в&nbsp;течение дня в&nbsp;Telegram и&nbsp;пришлю ссылку на&nbsp;встречу.
+          {pick(
+            "Подтвержу в течение дня в Telegram и пришлю ссылку на встречу.",
+            "I'll confirm within the day on Telegram and send the meeting link.",
+            locale,
+          )}
         </p>
         <button
           type="button"
           onClick={() => downloadIcs(slot)}
           className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-[#A6FF00] text-black hover:bg-white transition-colors"
         >
-          <LedText text="В календарь" className="h-[10px] w-auto" />
+          <LedText text={pick("В календарь", "Add to calendar", locale)} className="h-[10px] w-auto" />
         </button>
       </div>
     );
@@ -155,20 +169,23 @@ export default function MentoringBooking() {
       {/* Шаги */}
       <div className="flex items-center gap-2 mb-4 text-[12px] tracking-wide">
         <span className={step === "time" ? "text-[#A6FF00]" : "text-white/35"}>
-          1 · Когда
+          {pick("1 · Когда", "1 · When", locale)}
         </span>
         <span className="text-white/20">→</span>
         <span className={step === "form" ? "text-[#A6FF00]" : "text-white/35"}>
-          2 · Контакты
+          {pick("2 · Контакты", "2 · Contacts", locale)}
         </span>
       </div>
 
       {groups === null ? (
-        <div className="text-white/40 text-[14px] py-2">Загружаю свободные окна…</div>
+        <div className="text-white/40 text-[14px] py-2">{pick("Загружаю свободные окна…", "Loading open slots…", locale)}</div>
       ) : groups.length === 0 ? (
         <div className="text-white/55 text-[14px] py-2 leading-relaxed">
-          Свободных окон на&nbsp;ближайшие недели нет. Напиши в&nbsp;Telegram —
-          подберём время:{" "}
+          {pick(
+            "Свободных окон на ближайшие недели нет. Напиши в Telegram — подберём время: ",
+            "No open slots in the coming weeks. Message me on Telegram and we'll find a time: ",
+            locale,
+          )}
           <a href="https://t.me/egoradi" target="_blank" rel="noopener noreferrer" className="text-[#A6FF00] no-underline">
             @egoradi
           </a>
@@ -183,19 +200,19 @@ export default function MentoringBooking() {
                 type="button"
                 onClick={() => setMonthIdx((i) => Math.max(0, i - 1))}
                 disabled={monthIdx === 0}
-                aria-label="Предыдущий месяц"
+                aria-label={pick("Предыдущий месяц", "Previous month", locale)}
                 className="w-7 h-7 rounded-lg border border-white/10 text-white/70 hover:border-white/30 disabled:opacity-25 disabled:hover:border-white/10 transition-colors"
               >
                 ‹
               </button>
               <div className="text-[14px] text-white/85">
-                {cur ? `${MONTHS_RU[cur.m]} ${cur.y}` : ""}
+                {cur ? `${MONTHS[cur.m]} ${cur.y}` : ""}
               </div>
               <button
                 type="button"
                 onClick={() => setMonthIdx((i) => Math.min(months.length - 1, i + 1))}
                 disabled={monthIdx >= months.length - 1}
-                aria-label="Следующий месяц"
+                aria-label={pick("Следующий месяц", "Next month", locale)}
                 className="w-7 h-7 rounded-lg border border-white/10 text-white/70 hover:border-white/30 disabled:opacity-25 disabled:hover:border-white/10 transition-colors"
               >
                 ›
@@ -241,8 +258,8 @@ export default function MentoringBooking() {
           {/* Время выбранного дня */}
           <div className="md:border-l md:border-white/[0.06] md:pl-8">
             <div className="text-[13px] text-white/45 mb-3">
-              {day ? day.label : "Выбери дату слева"}
-              <span className="text-white/30"> · 18:00–21:00 МСК · ~60 мин</span>
+              {day ? day.label : pick("Выбери дату слева", "Pick a date on the left", locale)}
+              <span className="text-white/30">{pick(" · 18:00–21:00 МСК · ~60 мин", " · 18:00–21:00 MSK · ~60 min", locale)}</span>
             </div>
             <div className="flex flex-wrap md:flex-col gap-2 md:max-w-[200px]">
               {day?.slots.map((s) => (
@@ -268,13 +285,13 @@ export default function MentoringBooking() {
           >
             <span className="text-[#A6FF00]">✓</span>
             {slot && <span>{slotFull(slot)}</span>}
-            <span className="text-white/35 text-[13px]">· изменить</span>
+            <span className="text-white/35 text-[13px]">{pick("· изменить", "· change", locale)}</span>
           </button>
 
           <div className="grid sm:grid-cols-2 gap-3">
             <input
               className={inputCls}
-              placeholder="Имя"
+              placeholder={pick("Имя", "Name", locale)}
               value={name}
               onChange={(e) => setName(e.target.value)}
               maxLength={120}
@@ -282,7 +299,7 @@ export default function MentoringBooking() {
             />
             <input
               className={inputCls}
-              placeholder="Telegram или email"
+              placeholder={pick("Telegram или email", "Telegram or email", locale)}
               value={contact}
               onChange={(e) => setContact(e.target.value)}
               maxLength={200}
@@ -290,7 +307,7 @@ export default function MentoringBooking() {
           </div>
           <input
             className={inputCls}
-            placeholder="Что обсудить? (необязательно)"
+            placeholder={pick("Что обсудить? (необязательно)", "What to discuss? (optional)", locale)}
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
             maxLength={1000}
@@ -298,12 +315,12 @@ export default function MentoringBooking() {
 
           {err === "taken" && (
             <div className="text-[#ffb4a6] text-[13px]">
-              Слот только что заняли — выбери другое время.
+              {pick("Слот только что заняли — выбери другое время.", "That slot was just taken — pick another time.", locale)}
             </div>
           )}
           {err === "error" && (
             <div className="text-[#ffb4a6] text-[13px]">
-              Не отправилось. Попробуй ещё раз или напиши в&nbsp;Telegram.
+              {pick("Не отправилось. Попробуй ещё раз или напиши в Telegram.", "Didn't go through. Try again or message me on Telegram.", locale)}
             </div>
           )}
 
@@ -314,7 +331,7 @@ export default function MentoringBooking() {
             data-ym-goal="mentoring_booking_submit"
             className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-[#A6FF00] text-black hover:bg-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            <LedText text={sending ? "Отправляю…" : "Записаться"} className="h-[10px] w-auto" />
+            <LedText text={sending ? pick("Отправляю…", "Sending…", locale) : pick("Записаться", "Book", locale)} className="h-[10px] w-auto" />
             {!sending && <LedText text="→" className="h-[12px] w-auto" />}
           </button>
         </div>

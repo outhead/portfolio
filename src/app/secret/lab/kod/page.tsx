@@ -16,6 +16,8 @@ import {
 import QuestBackground from "@/components/QuestBackground";
 import HintButton from "@/components/HintButton";
 import QuestButton from "@/components/QuestButton";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 /**
  * Финал квеста — «Код на виду» (Notpron). Код 4488 спрятан в заголовке вкладки.
@@ -32,6 +34,7 @@ function celebrate() {
 }
 
 export default function KodFinal() {
+  const locale = useLocale();
   const [entry, setEntry] = useState("");
   const [won, setWon] = useState(false);
   const [wrong, setWrong] = useState(false);
@@ -69,7 +72,7 @@ export default function KodFinal() {
   async function submit() {
     if (submitting || submitted || winMs == null) return;
     setSubmitting(true);
-    const { entries: top, at, id } = await saveScore(name.trim() || "Гость", winMs, { hints: hintsUsed });
+    const { entries: top, at, id } = await saveScore(name.trim() || pick("Гость", "Guest", locale), winMs, { hints: hintsUsed });
     setEntries(top);
     setYouAt(at);
     setSubmitted(true);
@@ -94,13 +97,13 @@ export default function KodFinal() {
         <>
         <div className="relative z-[1] w-full max-w-[320px] mx-auto flex flex-col items-center text-center select-none">
           <p className="text-white/40 mb-3">
-            <span className="sr-only">Загадка №5 · финал</span>
-            <LedText text="Загадка №5 · финал" className="h-[9px] w-auto" />
+            <span className="sr-only">{pick("Загадка №5 · финал", "Riddle #5 · finale", locale)}</span>
+            <LedText text={pick("Загадка №5 · финал", "Riddle #5 · finale", locale)} className="h-[9px] w-auto" />
           </p>
           <h1 className="mb-2">
-            <LedLines text="Введи код" center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
+            <LedLines text={pick("Введи код", "Enter the code", locale)} center maxChars={20} lineClass="h-[17px] md:h-[24px]" />
           </h1>
-          <p className="text-[14px] text-white/40 mb-8">Терминал #0000 · доступ закрыт</p>
+          <p className="text-[14px] text-white/40 mb-8">{pick("Терминал #0000 · доступ закрыт", "Terminal #0000 · access denied", locale)}</p>
 
           <div className={`flex gap-3 mb-8 transition-transform ${wrong ? "translate-x-1" : ""}`} style={wrong ? { color: "#C9A66B" } : undefined}>
             {[0, 1, 2, 3].map((i) => (
@@ -117,7 +120,7 @@ export default function KodFinal() {
                 <LedText text={d} className="h-[15px] w-auto" />
               </button>
             ))}
-            <button type="button" onClick={back} aria-label="Стереть"
+            <button type="button" onClick={back} aria-label={pick("Стереть", "Erase", locale)}
               className="w-16 h-16 rounded-md border border-white/12 bg-white/[0.03] text-white/45 hover:border-white/30 transition-colors inline-flex items-center justify-center">
               <LedText text="←" className="h-[13px] w-auto" />
             </button>
@@ -130,10 +133,17 @@ export default function KodFinal() {
 
           <HintButton
             className="mt-8"
-            hints={[
-              "Подбирать не нужно. Цифры спрятаны где-то на странице.",
-              "Пролистай в самый низ — загляни в подвал.",
-            ]}
+            hints={pick(
+              [
+                "Подбирать не нужно. Цифры спрятаны где-то на странице.",
+                "Пролистай в самый низ — загляни в подвал.",
+              ],
+              [
+                "No need to guess. The digits are hidden somewhere on the page.",
+                "Scroll all the way down — peek into the basement.",
+              ],
+              locale,
+            )}
           />
         </div>
 
@@ -141,32 +151,32 @@ export default function KodFinal() {
         <div aria-hidden style={{ height: "128vh" }} />
         <div className="relative z-[1] w-full max-w-[440px] mx-auto text-center pb-4">
           <p className="text-white/25">
-            <span className="sr-only">Сектор 4 · Узел 4 · Шлюз 8 · Ключ 8</span>
-            <LedText text="Сектор 4 · Узел 4 · Шлюз 8 · Ключ 8" className="h-[9px] w-auto" />
+            <span className="sr-only">{pick("Сектор 4 · Узел 4 · Шлюз 8 · Ключ 8", "Sector 4 · Node 4 · Gate 8 · Key 8", locale)}</span>
+            <LedText text={pick("Сектор 4 · Узел 4 · Шлюз 8 · Ключ 8", "Sector 4 · Node 4 · Gate 8 · Key 8", locale)} className="h-[9px] w-auto" />
           </p>
-          <p className="mt-2 text-[10px] tracking-[0.2em] uppercase text-white/12">Терминал #0000 · служебная метка</p>
+          <p className="mt-2 text-[10px] tracking-[0.2em] uppercase text-white/12">{pick("Терминал #0000 · служебная метка", "Terminal #0000 · service label", locale)}</p>
         </div>
         </>
       ) : (
         <div className="relative z-[1] w-full max-w-[440px] mx-auto flex flex-col items-center text-center">
           <p className="text-white/40 mb-3">
-            <span className="sr-only">Квест пройден</span>
-            <LedText text="Квест пройден" className="h-[9px] w-auto" />
+            <span className="sr-only">{pick("Квест пройден", "Quest complete", locale)}</span>
+            <LedText text={pick("Квест пройден", "Quest complete", locale)} className="h-[9px] w-auto" />
           </p>
           <h1 className="text-[#A6FF00] mb-4">
-            <LedLines text="Доступ" center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
+            <LedLines text={pick("Доступ", "Access", locale)} center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
           </h1>
           {winMs != null ? (
             <p className="text-[16px] text-white/80 mb-8">
-              Весь квест за <span className="text-[#A6FF00] tabular-nums">{fmtQuestTime(winMs)}</span>
+              {pick("Весь квест за ", "Whole quest in ", locale)}<span className="text-[#A6FF00] tabular-nums">{fmtQuestTime(winMs)}</span>
               {hintsUsed > 0 ? (
-                <> · подсказок: <span className="text-[#C9A66B] tabular-nums">{hintsUsed}</span></>
+                <> · {pick("подсказок: ", "hints: ", locale)}<span className="text-[#C9A66B] tabular-nums">{hintsUsed}</span></>
               ) : (
-                <> · <span className="text-[#A6FF00]">без подсказок</span></>
+                <> · <span className="text-[#A6FF00]">{pick("без подсказок", "no hints", locale)}</span></>
               )}
             </p>
           ) : (
-            <p className="text-sm text-white/50 mb-8">Код был в заголовке вкладки. (Время не засчитано — квест начат не с шифра.)</p>
+            <p className="text-sm text-white/50 mb-8">{pick("Код был в заголовке вкладки. (Время не засчитано — квест начат не с шифра.)", "The code was in the tab title. (Time not counted — quest wasn't started from the cipher.)", locale)}</p>
           )}
 
           {/* ─── 1. Имя + опциональный отзыв за кнопкой ─── */}
@@ -175,20 +185,20 @@ export default function KodFinal() {
               <input
                 type="text" value={name}
                 onChange={(e) => { setName(e.target.value); try { localStorage.setItem("quest_name", e.target.value.trim()); } catch { /* */ } }}
-                maxLength={20} placeholder="Твоё имя" aria-label="Имя для таблицы лидеров"
+                maxLength={20} placeholder={pick("Твоё имя", "Your name", locale)} aria-label={pick("Имя для таблицы лидеров", "Name for the leaderboard", locale)}
                 className="bg-white/[0.06] border border-white/15 rounded-full px-5 py-3.5 text-[16px] text-white text-center placeholder:text-white/35 outline-none focus:border-[#A6FF00]/60 transition-colors"
               />
 
               <QuestButton onClick={submit} disabled={submitting} className="mt-1">
-                {submitting ? "..." : "В таблицу"}
+                {submitting ? "..." : pick("В таблицу", "To the board", locale)}
               </QuestButton>
-              <p className="text-[12px] text-white/30">Имя необязательно — таблица лидеров ниже в любом случае.</p>
+              <p className="text-[12px] text-white/30">{pick("Имя необязательно — таблица лидеров ниже в любом случае.", "Name is optional — the leaderboard is below either way.", locale)}</p>
             </div>
           ) : null}
 
           {/* ─── 2. После отправки: статус ─── */}
           {submitted ? (
-            <p className="text-[16px] text-white/75 mb-6 max-w-[420px]">Ты в таблице. Спасибо, что дошёл.</p>
+            <p className="text-[16px] text-white/75 mb-6 max-w-[420px]">{pick("Ты в таблице. Спасибо, что дошёл.", "You're on the board. Thanks for making it here.", locale)}</p>
           ) : null}
 
           {/* ─── 3. Лидерборд — виден сразу после победы ─── */}
@@ -196,12 +206,12 @@ export default function KodFinal() {
             <div className="w-full max-w-[380px] mx-auto mb-6 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-white/40">
-                  <span className="sr-only">Быстрее всех</span>
-                  <LedText text="Быстрее всех" className="h-[8px] w-auto" />
+                  <span className="sr-only">{pick("Быстрее всех", "Fastest", locale)}</span>
+                  <LedText text={pick("Быстрее всех", "Fastest", locale)} className="h-[8px] w-auto" />
                 </p>
                 <button type="button" onClick={() => setOthersOnly((v) => !v)}
                   className="text-[12px] tracking-[0.08em] uppercase text-white/35 hover:text-[#A6FF00] transition-colors">
-                  {othersOnly ? "все" : "без друзей"}
+                  {othersOnly ? pick("все", "all", locale) : pick("без друзей", "hide friends", locale)}
                 </button>
               </div>
               <ol className="text-left">
@@ -214,12 +224,12 @@ export default function KodFinal() {
                       </span>
                       <span className="flex-1 text-[16px] truncate">
                         {e.name}
-                        {e.tester ? <span className="ml-2 text-[10px] tracking-[0.1em] uppercase text-[#C9A66B]/70 align-middle">друг/тест</span> : null}
+                        {e.tester ? <span className="ml-2 text-[10px] tracking-[0.1em] uppercase text-[#C9A66B]/70 align-middle">{pick("друг/тест", "friend/test", locale)}</span> : null}
                       </span>
                       <span className="text-[12px] text-white/45 whitespace-nowrap tabular-nums inline-flex items-center gap-1.5">
                         {fmtQuestTime(e.timeMs)}
                         {e.hints > 0 ? (
-                          <span className="text-[#C9A66B]/80" title={`${e.hints} подсказок · штраф +${e.hints * 30}с`}>
+                          <span className="text-[#C9A66B]/80" title={pick(`${e.hints} подсказок · штраф +${e.hints * 30}с`, `${e.hints} hints · penalty +${e.hints * 30}s`, locale)}>
                             +{e.hints}
                           </span>
                         ) : null}
@@ -227,15 +237,15 @@ export default function KodFinal() {
                     </li>
                   );
                 })}
-                {shown.length === 0 ? <li className="py-2 text-sm text-white/35">Будь первым из остальных.</li> : null}
+                {shown.length === 0 ? <li className="py-2 text-sm text-white/35">{pick("Будь первым из остальных.", "Be the first of the rest.", locale)}</li> : null}
               </ol>
             </div>
           ) : null}
 
           {/* ─── Дальше: кооп — сразу под таблицей ─── */}
           <div className="mb-8 flex flex-col items-center">
-            <p className="text-[14px] text-white/45 mb-3 max-w-xs">Есть ещё одна. Но в одиночку её не пройти.</p>
-            <QuestButton href="/secret/pair" arrow>Кооп-загадка</QuestButton>
+            <p className="text-[14px] text-white/45 mb-3 max-w-xs">{pick("Есть ещё одна. Но в одиночку её не пройти.", "There's one more. But you can't solve it alone.", locale)}</p>
+            <QuestButton href="/secret/pair" arrow>{pick("Кооп-загадка", "Co-op riddle", locale)}</QuestButton>
           </div>
 
         </div>

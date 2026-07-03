@@ -4,6 +4,9 @@ import ProjectCard from "@/components/ProjectCard";
 import LedText from "@/components/LedText";
 import { experimentProjects } from "@/data/projects";
 import { motion, type Variants } from "framer-motion";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
+import { localizeProject } from "@/lib/localizeProject";
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 24 },
@@ -20,6 +23,7 @@ const stagger: Variants = {
 const viewport = { once: true, margin: "-10% 0px -10% 0px" };
 
 export default function ExperimentsPage() {
+  const locale = useLocale();
   return (
     <>
       {/* ===== HERO ===== */}
@@ -33,21 +37,22 @@ export default function ExperimentsPage() {
           <motion.div variants={fadeUp}>
             <div className="inline-flex items-center gap-2 text-[12px] md:text-[14px] tracking-[0.22em] uppercase text-white/50 font-medium mb-4">
               <span className="h-1 w-1 rounded-full bg-[#A6FF00]" />
-              Лаборатория
+              {pick("Лаборатория", "Lab", locale)}
             </div>
           </motion.div>
           <motion.h1 variants={fadeUp} className="mb-6 md:mb-8 text-white">
-            <span className="sr-only">Эксперименты</span>
-            <LedText text="Эксперименты" scale={2} dot={1.45} className="h-[28px] md:h-[52px] w-auto max-w-full" />
+            <span className="sr-only">{pick("Эксперименты", "Experiments", locale)}</span>
+            <LedText text={pick("Эксперименты", "Experiments", locale)} scale={2} dot={1.45} className="h-[28px] md:h-[52px] w-auto max-w-full" />
           </motion.h1>
           <motion.p
             variants={fadeUp}
             className="text-base md:text-lg text-white/60 leading-relaxed max-w-2xl"
           >
-            Пет-проекты на стыке дизайна, кода и AI. Здесь я пробую идеи, которые
-            не укладываются в рабочий контекст: WebGL-шейдеры, AI-агенты,
-            creative coding. Часть из них так и не вышла за пределы наброска, и
-            это тоже окей.
+            {pick(
+              "Пет-проекты на стыке дизайна, кода и AI. Здесь я пробую идеи, которые не укладываются в рабочий контекст: WebGL-шейдеры, AI-агенты, creative coding. Часть из них так и не вышла за пределы наброска, и это тоже окей.",
+              "Pet projects at the intersection of design, code and AI. This is where I try out ideas that don't fit into a work context: WebGL shaders, AI agents, creative coding. Some never got past a rough sketch — and that's fine too.",
+              locale,
+            )}
           </motion.p>
         </motion.div>
       </section>
@@ -63,7 +68,7 @@ export default function ExperimentsPage() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {experimentProjects.map((project, i) => (
             <motion.div key={project.slug} variants={fadeUp}>
-              <ProjectCard project={project} index={i} />
+              <ProjectCard project={localizeProject(project, locale)} index={i} />
             </motion.div>
           ))}
         </div>

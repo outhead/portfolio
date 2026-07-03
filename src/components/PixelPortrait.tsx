@@ -10,6 +10,8 @@
 
 import { useEffect, useRef } from "react";
 import { LED_GLYPHS } from "@/components/ledFont";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 const G0 = LED_GLYPHS["0"];
 const G1 = LED_GLYPHS["1"];
@@ -47,6 +49,7 @@ export default function PixelPortrait({
   shimmer = 0,
   className = "",
 }: PixelPortraitProps) {
+  const locale = useLocale();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const list = (frames && frames.length ? frames : [src]).join("|");
 
@@ -212,7 +215,7 @@ export default function PixelPortrait({
       ref={canvasRef}
       className={className}
       style={{ width: "100%", height: "100%", display: "block" }}
-      aria-label="Бинарный портрет"
+      aria-label={pick("Бинарный портрет", "Binary portrait", locale)}
       role="img"
     />
   );

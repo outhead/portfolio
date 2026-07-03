@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 /**
  * Блок «Подход» с кнопкой «Расшифровать на человеческий».
@@ -13,8 +15,8 @@ import { useEffect, useRef, useState } from "react";
  * Уважает prefers-reduced-motion: при включённом — мгновенная замена.
  */
 
-// Пул для перебора: кириллица + цифры. Из него берём случайный символ на тик.
-const SCRAMBLE_POOL = "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЭЮЯ0123456789";
+// Пул для перебора: кириллица + латиница + цифры. Из него берём случайный символ на тик.
+const SCRAMBLE_POOL = "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЭЮЯABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const randPoolChar = () =>
   SCRAMBLE_POOL[Math.floor(Math.random() * SCRAMBLE_POOL.length)];
 
@@ -159,6 +161,7 @@ export default function DecryptApproach({
   technical: string;
   simple: string;
 }) {
+  const locale = useLocale();
   const [revealed, setRevealed] = useState(false);
 
   const techParas = parseParagraphs(technical);
@@ -224,7 +227,9 @@ export default function DecryptApproach({
         <span className="font-mono leading-none transition-transform group-hover:-translate-x-0.5">
           {revealed ? "←" : "⌖"}
         </span>
-        {revealed ? "Вернуть как было" : "Расшифровать на человеческий"}
+        {revealed
+          ? pick("Вернуть как было", "Back to the original", locale)
+          : pick("Расшифровать на человеческий", "Explain in plain words", locale)}
       </button>
     </div>
   );

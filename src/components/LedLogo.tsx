@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 /**
  * LedLogo — «ЕГОР ШУГАЕВ» как диодное табло.
@@ -141,6 +143,7 @@ const ORDER: FxName[] = ["wave", "eq", "rain", "scan"];
 const SHINE_DUR = 1.2; // длительность блика
 
 export default function LedLogo({ className }: { className?: string }) {
+  const locale = useLocale();
   const els = useRef<(SVGCircleElement | null)[]>([]);
   const shineWanted = useRef(false);
   const hovering = useRef(false);
@@ -349,7 +352,7 @@ export default function LedLogo({ className }: { className?: string }) {
       viewBox={`0 0 ${VB_W} ${VB_H}`}
       className={className}
       role="img"
-      aria-label="Егор Шугаев"
+      aria-label={pick("Егор Шугаев", "Egor Shugaev", locale)}
       onPointerEnter={() => {
         hovering.current = true;
         shineWanted.current = true;
@@ -381,7 +384,7 @@ export default function LedLogo({ className }: { className?: string }) {
         opacity={0}
         style={{ cursor: "pointer", pointerEvents: "all" }}
         role="button"
-        aria-label="Запустить анимацию монограммы"
+        aria-label={pick("Запустить анимацию монограммы", "Play the monogram animation", locale)}
         onPointerDown={(e) => {
           e.stopPropagation();
           // Форсим проигрывание монограммы в след. кадре (даже если идёт эффект).

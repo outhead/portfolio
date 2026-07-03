@@ -22,6 +22,8 @@ import {
   type Target,
 } from "@/lib/optics";
 import { drawField } from "@/lib/opticsRender";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 const LW = FIELD_W, LH = FIELD_H;
 const clamp = (v: number, lo: number, hi: number) => (v < lo ? lo : v > hi ? hi : v);
@@ -37,6 +39,7 @@ export default function ConstellationFigures({
   lockMirror?: boolean;
   onSolve?: () => void;
 }) {
+  const locale = useLocale();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const solveCb = useRef(onSolve);
   solveCb.current = onSolve;
@@ -204,7 +207,11 @@ export default function ConstellationFigures({
         WebkitUserSelect: "none",
         WebkitTouchCallout: "none",
       } as React.CSSProperties}
-      aria-label="Головоломка: двигай камни-призмы, чтобы зажечь все узлы своего цвета"
+      aria-label={pick(
+        "Головоломка: двигай камни-призмы, чтобы зажечь все узлы своего цвета",
+        "Puzzle: drag the prism stones to light up every node in its color",
+        locale
+      )}
       role="img"
     />
   );

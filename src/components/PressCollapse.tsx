@@ -4,6 +4,8 @@ import LedText from "@/components/LedText";
 import { useState } from "react";
 import { ChevronDown, Newspaper } from "lucide-react";
 import CaseLinkCard, { type CaseLinkData } from "./CaseLinkCard";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 interface Props {
   links: CaseLinkData[];
@@ -15,8 +17,11 @@ interface Props {
  * При клике — раскрывает грид CaseLinkCard'ов с плавной анимацией высоты.
  */
 export default function PressCollapse({ links }: Props) {
+  const locale = useLocale();
   const [open, setOpen] = useState(false);
   if (!links || links.length === 0) return null;
+
+  const pressLabel = `${pick("Пресса и публикации", "Press & publications", locale)} · ${links.length}`;
 
   return (
     <div className="mt-8 md:mt-10">
@@ -30,8 +35,8 @@ export default function PressCollapse({ links }: Props) {
           <Newspaper className="w-3.5 h-3.5 text-[#A6FF00]" strokeWidth={2.25} />
         </span>
         <span>
-          <span className="sr-only">Пресса и публикации · {links.length}</span>
-          <LedText text={`Пресса и публикации · ${links.length}`} className="h-[9px] w-auto" />
+          <span className="sr-only">{pressLabel}</span>
+          <LedText text={pressLabel} className="h-[9px] w-auto" />
         </span>
         <ChevronDown
           className={`w-3.5 h-3.5 text-[#A6FF00] transition-transform duration-300 ${

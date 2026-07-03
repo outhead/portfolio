@@ -8,6 +8,8 @@ import { connectP2P, type P2PHandle } from "./rtc";
 import { connectRelay, type Relay } from "./pongRelay";
 import MagneticWaves from "./MagneticWaves";
 import { FW, FH, FIELD_STRENGTH, FIELD_FADE_PX, flowAngle } from "./field";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 /**
  * Сетевой ретро-пинг-понг (двое, по ссылке или сразу из кооп-пары через ?room=).
@@ -41,6 +43,7 @@ const rndCode = () =>
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
 
 export default function PongPage() {
+  const locale = useLocale();
   const [phase, setPhase] = useState<Phase>("connecting");
   const [role, setRole] = useState<"host" | "guest">("host");
   const [shareUrl, setShareUrl] = useState("");
@@ -1255,24 +1258,24 @@ export default function PongPage() {
       }} />
       <div className="relative z-[1] w-full max-w-[440px] mx-auto flex flex-col items-center text-center">
         <p className="text-white/40 mb-1.5 whitespace-nowrap">
-          <span className="sr-only">Пинг-понг · вдвоём</span>
-          <LedText text="Пинг-понг · вдвоём" className="h-[8px] w-auto" />
+          <span className="sr-only">{pick("Пинг-понг · вдвоём", "Ping-pong · two players", locale)}</span>
+          <LedText text={pick("Пинг-понг · вдвоём", "Ping-pong · two players", locale)} className="h-[8px] w-auto" />
           <span className="ml-2 normal-case tracking-normal" style={{ color: transport === "p2p" ? "rgba(166,255,0,0.65)" : "rgba(255,255,255,0.25)" }}>
-            <span className={transport === "p2p" ? "animate-pulse" : ""}>●</span> {transport === "p2p" ? "p2p" : "сервер"}
+            <span className={transport === "p2p" ? "animate-pulse" : ""}>●</span> {transport === "p2p" ? "p2p" : pick("сервер", "server", locale)}
           </span>
           {ping != null ? (
             <span className="ml-1.5 normal-case tracking-normal"
               style={{ color: ping <= 120 ? "rgba(166,255,0,0.7)" : ping <= 200 ? "#FFD60A" : "#FF6B6B" }}>
-              {ping} мс
+              {ping} {pick("мс", "ms", locale)}
             </span>
           ) : null}
           {mode === "field" ? (
-            <span className="ml-2 normal-case tracking-normal text-[#A6FF00]/65">⌁ поле</span>
+            <span className="ml-2 normal-case tracking-normal text-[#A6FF00]/65">⌁ {pick("поле", "field", locale)}</span>
           ) : null}
         </p>
         <div className="flex items-center justify-center gap-2.5 sm:gap-5 mb-2">
           <span className="text-white/40">
-            <LedText text={oppName || "соперник"} className="h-[7px] sm:h-[8px] w-auto" />
+            <LedText text={oppName || pick("соперник", "opponent", locale)} className="h-[7px] sm:h-[8px] w-auto" />
           </span>
           <span key={`t${theirs}`} className="text-white/80 score-pop inline-flex">
             <LedText text={String(theirs)} scale={2} dot={1.45} className="h-[16px] sm:h-[20px] w-auto" />
@@ -1284,7 +1287,7 @@ export default function PongPage() {
             <LedText text={String(mine)} scale={2} dot={1.45} className="h-[16px] sm:h-[20px] w-auto" />
           </span>
           <span className="text-white/40">
-            <LedText text={myName || "ты"} className="h-[7px] sm:h-[8px] w-auto" />
+            <LedText text={myName || pick("ты", "you", locale)} className="h-[7px] sm:h-[8px] w-auto" />
           </span>
         </div>
 
@@ -1298,7 +1301,7 @@ export default function PongPage() {
           {ping != null && ping > 200 ? (
             <div className="absolute top-2 left-1/2 -translate-x-1/2 z-[2] pointer-events-none px-3 py-1.5 rounded-md bg-black/70 backdrop-blur-sm border border-[#FF6B6B]/30">
               <p className="text-[12px] text-[#FF6B6B] leading-snug text-center max-w-[240px]">
-                Высокий пинг ({ping} мс) — мяч будет дёргаться.
+                {pick(`Высокий пинг (${ping} мс) — мяч будет дёргаться.`, `High ping (${ping} ms) — the ball will stutter.`, locale)}
               </p>
             </div>
           ) : null}
@@ -1313,43 +1316,43 @@ export default function PongPage() {
 
           {phase !== "playing" && phase !== "count" ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-md rounded-lg px-6 text-center">
-              {phase === "connecting" ? <p className="text-white/60 text-sm">Подключаюсь…</p> : null}
+              {phase === "connecting" ? <p className="text-white/60 text-sm">{pick("Подключаюсь…", "Connecting…", locale)}</p> : null}
 
               {phase === "waiting" ? (
                 role === "host" ? (
                   shareUrl ? (
                     <>
-                      <p className="text-[16px] text-white/80 mb-1">Жду соперника</p>
-                      <p className="text-[14px] text-white/45 mb-5 max-w-xs">Кинь ссылку другу — игра начнётся, когда он откроет.</p>
-                      <QuestButton onClick={copy}>{copied ? "скопировано" : "копировать ссылку"}</QuestButton>
+                      <p className="text-[16px] text-white/80 mb-1">{pick("Жду соперника", "Waiting for opponent", locale)}</p>
+                      <p className="text-[14px] text-white/45 mb-5 max-w-xs">{pick("Кинь ссылку другу — игра начнётся, когда он откроет.", "Send the link to a friend — the game starts when they open it.", locale)}</p>
+                      <QuestButton onClick={copy}>{copied ? pick("скопировано", "copied", locale) : pick("копировать ссылку", "copy link", locale)}</QuestButton>
                       <QuestButton href="/secret/pong?solo=field" variant="tertiary" className="mt-4">
-                        тренировка одному
+                        {pick("тренировка одному", "solo practice", locale)}
                       </QuestButton>
                     </>
                   ) : (
-                    <p className="text-white/70 text-sm">Жду, пока напарник откроет пинг-понг…</p>
+                    <p className="text-white/70 text-sm">{pick("Жду, пока напарник откроет пинг-понг…", "Waiting for your partner to open ping-pong…", locale)}</p>
                   )
                 ) : (
-                  <p className="text-white/70 text-sm">Готов. Начинаем…</p>
+                  <p className="text-white/70 text-sm">{pick("Готов. Начинаем…", "Ready. Starting…", locale)}</p>
                 )
               ) : null}
 
               {phase === "over" ? (
                 <>
                   <p className="text-[#A6FF00] mb-3 flex justify-center">
-                    <span className="sr-only">{iWon ? "Ты выиграл" : "Ты проиграл"}</span>
+                    <span className="sr-only">{iWon ? pick("Ты выиграл", "You won", locale) : pick("Ты проиграл", "You lost", locale)}</span>
                     <LedText
-                      text={iWon ? "Ты выиграл" : "Ты проиграл"}
+                      text={iWon ? pick("Ты выиграл", "You won", locale) : pick("Ты проиграл", "You lost", locale)}
                       scale={2}
                       dot={1.45}
                       className="h-[20px] sm:h-[26px] w-auto"
                     />
                   </p>
-                  <QuestButton onClick={rematch}>{role === "host" ? "Реванш" : "Запросить реванш"}</QuestButton>
+                  <QuestButton onClick={rematch}>{role === "host" ? pick("Реванш", "Rematch", locale) : pick("Запросить реванш", "Request rematch", locale)}</QuestButton>
                   <QuestButton
                     href={`/secret/duel${roomCode ? `?room=${roomCode}${role === "host" ? "&host=1" : ""}` : ""}`}
                     variant="secondary" arrow className="mt-3">
-                    Дуэль-сквош
+                    {pick("Дуэль-сквош", "Duel squash", locale)}
                   </QuestButton>
                 </>
               ) : null}
@@ -1358,9 +1361,9 @@ export default function PongPage() {
               {role === "host" && (phase === "waiting" || phase === "over") ? (
                 <p className="mt-5 text-[12px] text-white/35 max-w-xs">
                   {phase === "over" ? (
-                    <>реванш — в режиме <span className="text-[#A6FF00]">⌁ магнитное поле</span></>
+                    <>{pick("реванш — в режиме ", "rematch is in ", locale)}<span className="text-[#A6FF00]">⌁ {pick("магнитное поле", "magnetic field", locale)}</span></>
                   ) : (
-                    <>первый раунд — классика, дальше <span className="text-[#A6FF00]">⌁ магнитное поле</span></>
+                    <>{pick("первый раунд — классика, дальше ", "first round is classic, then ", locale)}<span className="text-[#A6FF00]">⌁ {pick("магнитное поле", "magnetic field", locale)}</span></>
                   )}
                 </p>
               ) : null}
@@ -1368,9 +1371,9 @@ export default function PongPage() {
           ) : null}
         </div>
 
-        <p className="hidden sm:block mt-3 text-[12px] text-white/40 max-w-xs">Двигай ракетку (внизу) пальцем или ←→. Мяч летит — отбивай. До {WIN_SCORE}.</p>
+        <p className="hidden sm:block mt-3 text-[12px] text-white/40 max-w-xs">{pick(`Двигай ракетку (внизу) пальцем или ←→. Мяч летит — отбивай. До ${WIN_SCORE}.`, `Move your paddle (at the bottom) with your finger or ←→. Bounce the ball back. First to ${WIN_SCORE}.`, locale)}</p>
         {mode === "field" ? (
-          <p className="mt-2 text-[12px] text-[#A6FF00]/55 max-w-xs">Магнитное поле сносит мяч. Поймал «+» — держи палец/ЛКМ и сдувай мяч струёй (10с).</p>
+          <p className="mt-2 text-[12px] text-[#A6FF00]/55 max-w-xs">{pick("Магнитное поле сносит мяч. Поймал «+» — держи палец/ЛКМ и сдувай мяч струёй (10с).", "The magnetic field drags the ball. Grab a «+» — hold your finger/left-click and blow the ball away with a jet (10s).", locale)}</p>
         ) : null}
       </div>
     </main>

@@ -6,6 +6,8 @@ import LedText from "@/components/LedText";
 import { layoutLedText } from "@/components/ledFont";
 import { flowAngle } from "@/app/secret/pong/field";
 import { loadSnakeBoard, saveSnakeScore, type SnakeEntry } from "@/components/snakeBoard";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 const NAME_KEY = "nf_snake_name";
 const BEST_KEY = "nf_snake_best";
@@ -21,31 +23,31 @@ const COMBO_WINDOW = 2500; // мс между съеденными для ком
 
 // Ранги: карьерная лестница дизайнера. Ступень показывается один раз —
 // в момент повышения; на экране конца игры — заработанный ранг.
-const RANKS: [number, string][] = [
-  [0, "ПРОХОЖИЙ"],
-  [1, "ПРАКТИКАНТ"],
-  [4, "СТАЖЕР"],
-  [8, "ДЖУН"],
-  [13, "ДЖУН ПЛЮС"],
-  [18, "МИДЛ"],
-  [23, "МИДЛ ПЛЮС"],
-  [28, "СЕНЬОР"],
-  [33, "ЛИД"],
-  [40, "АРТ-ДИРЕКТОР"],
-  [47, "ХЕД ОФ ДИЗАЙН"],
-  [55, "ДИЗАЙН-ДИРЕКТОР"],
-  [64, "VP ДИЗАЙНА"],
-  [74, "ЛЕГЕНДА ИНДУСТРИИ"],
-  [85, "ИКОНА ДИЗАЙНА"],
-  [100, "ГУРУ"],
-  [120, "БЕССМЕРТНЫЙ"],
-  [1000, "БОГ ЗМЕЙКИ"],
-  [1084, "БОГ"],
+const RANKS: [number, string, string][] = [
+  [0, "ПРОХОЖИЙ", "PASSERBY"],
+  [1, "ПРАКТИКАНТ", "TRAINEE"],
+  [4, "СТАЖЕР", "INTERN"],
+  [8, "ДЖУН", "JUNIOR"],
+  [13, "ДЖУН ПЛЮС", "JUNIOR PLUS"],
+  [18, "МИДЛ", "MIDDLE"],
+  [23, "МИДЛ ПЛЮС", "MIDDLE PLUS"],
+  [28, "СЕНЬОР", "SENIOR"],
+  [33, "ЛИД", "LEAD"],
+  [40, "АРТ-ДИРЕКТОР", "ART DIRECTOR"],
+  [47, "ХЕД ОФ ДИЗАЙН", "HEAD OF DESIGN"],
+  [55, "ДИЗАЙН-ДИРЕКТОР", "DESIGN DIRECTOR"],
+  [64, "VP ДИЗАЙНА", "VP OF DESIGN"],
+  [74, "ЛЕГЕНДА ИНДУСТРИИ", "INDUSTRY LEGEND"],
+  [85, "ИКОНА ДИЗАЙНА", "DESIGN ICON"],
+  [100, "ГУРУ", "GURU"],
+  [120, "БЕССМЕРТНЫЙ", "IMMORTAL"],
+  [1000, "БОГ ЗМЕЙКИ", "SNAKE GOD"],
+  [1084, "БОГ", "GOD"],
 ];
-const rankFor = (n: number) => {
-  let r = RANKS[0][1];
-  for (const [t, name] of RANKS) {
-    if (n >= t) r = name;
+const rankFor = (n: number, en = false) => {
+  let r = en ? RANKS[0][2] : RANKS[0][1];
+  for (const [t, ru, eng] of RANKS) {
+    if (n >= t) r = en ? eng : ru;
     else break;
   }
   return r;
@@ -74,6 +76,10 @@ type Wave = { x: number; y: number; t0: number; col: string };
 type Float = { x: number; y: number; t0: number; text: string };
 
 export default function NotFoundGame() {
+  const locale = useLocale();
+  const en = locale === "en";
+  const enRef = useRef(en);
+  enRef.current = en;
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const bgRef = useRef<HTMLCanvasElement>(null);
@@ -146,9 +152,9 @@ export default function NotFoundGame() {
       }
     };
     led("404", 320, 30, ACCENT);
-    led(rankFor(score), 500, 13, "rgba(255,255,255,0.85)");
-    led(`СЧЁТ ${score}`, 620, 17, ACCENT);
-    if (best > 0) led(`РЕКОРД ${best}`, 712, 11, "rgba(201,166,107,0.85)");
+    led(rankFor(score, en), 500, 13, "rgba(255,255,255,0.85)");
+    led(pick(`СЧЁТ ${score}`, `SCORE ${score}`, locale), 620, 17, ACCENT);
+    if (best > 0) led(pick(`РЕКОРД ${best}`, `BEST ${best}`, locale), 712, 11, "rgba(201,166,107,0.85)");
     c.fillStyle = ACCENT;
     for (let i = 0; i < 11; i++) {
       c.globalAlpha = 0.25 + i * 0.07;
@@ -166,14 +172,18 @@ export default function NotFoundGame() {
     setShareMsg("");
     const cv = buildShareCanvas();
     const host = typeof location !== "undefined" ? location.host : "";
-    const text = `Змейка на 404: счёт ${score}, ранг «${rankFor(score)}»${best > 0 ? `, рекорд ${best}` : ""}${host ? ` — ${host}` : ""}`;
+    const text = pick(
+      `Змейка на 404: счёт ${score}, ранг «${rankFor(score)}»${best > 0 ? `, рекорд ${best}` : ""}${host ? ` — ${host}` : ""}`,
+      `404 snake: score ${score}, rank "${rankFor(score, true)}"${best > 0 ? `, best ${best}` : ""}${host ? ` — ${host}` : ""}`,
+      locale,
+    );
     const blob: Blob | null = await new Promise((res) => cv.toBlob((b) => res(b), "image/png"));
     if (!blob) return;
     const file = new File([blob], "404-snake.png", { type: "image/png" });
     const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
     try {
       if (nav.canShare && nav.canShare({ files: [file] })) {
-        await nav.share({ files: [file], text, title: "404 — змейка" });
+        await nav.share({ files: [file], text, title: pick("404 — змейка", "404 — snake", locale) });
         return;
       }
     } catch {
@@ -187,9 +197,9 @@ export default function NotFoundGame() {
     URL.revokeObjectURL(url);
     try {
       await navigator.clipboard.writeText(text);
-      setShareMsg("Картинка сохранена · счёт скопирован");
+      setShareMsg(pick("Картинка сохранена · счёт скопирован", "Image saved · score copied", locale));
     } catch {
-      setShareMsg("Картинка сохранена");
+      setShareMsg(pick("Картинка сохранена", "Image saved", locale));
     }
   };
 
@@ -606,8 +616,8 @@ export default function NotFoundGame() {
         // ранг показываем только в момент повышения; на HINT_AT — подсказка
         if (sc === HINT_AT) setHint(true);
         else {
-          const r = rankFor(sc);
-          if (r !== rankFor(sc - 1)) showPraise(r);
+          const r = rankFor(sc, enRef.current);
+          if (r !== rankFor(sc - 1, enRef.current)) showPraise(r);
         }
       }
       if (grow > 0) grow--;
@@ -935,8 +945,8 @@ export default function NotFoundGame() {
           {/* HUD счёта во время игры */}
           {started && !over && (
             <div className="absolute top-3 left-4 pointer-events-none opacity-40">
-              <span className="sr-only">Счёт: {score}</span>
-              <LedText text={`СЧЁТ ${score}${best > 0 ? `   РЕКОРД ${best}` : ""}`} className="h-[8px] md:h-[10px] w-auto" />
+              <span className="sr-only">{pick("Счёт", "Score", locale)}: {score}</span>
+              <LedText text={pick(`СЧЁТ ${score}${best > 0 ? `   РЕКОРД ${best}` : ""}`, `SCORE ${score}${best > 0 ? `   BEST ${best}` : ""}`, locale)} className="h-[8px] md:h-[10px] w-auto" />
             </div>
           )}
 
@@ -945,39 +955,39 @@ export default function NotFoundGame() {
           {over && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-center px-5 py-6 overflow-y-auto bg-black/55">
               <div className="text-white/75">
-                <span className="sr-only">Игра окончена. Счёт {score}. Ранг: {rankFor(score)}.</span>
+                <span className="sr-only">{pick(`Игра окончена. Счёт ${score}. Ранг: ${rankFor(score)}.`, `Game over. Score ${score}. Rank: ${rankFor(score, true)}.`, locale)}</span>
                 <p className="text-white/35 mb-2">
-                  <LedText text="ТВОЙ РАНГ" className="h-[7px] w-auto mx-auto" />
+                  <LedText text={pick("ТВОЙ РАНГ", "YOUR RANK", locale)} className="h-[7px] w-auto mx-auto" />
                 </p>
-                <LedText text={rankFor(score)} className="h-[13px] md:h-[17px] w-auto mx-auto" />
+                <LedText text={rankFor(score, en)} className="h-[13px] md:h-[17px] w-auto mx-auto" />
               </div>
               <p className="text-white/40">
-                <LedText text={`СЧЁТ ${score}${best > 0 ? `   РЕКОРД ${best}` : ""}`} className="h-[9px] w-auto mx-auto" />
+                <LedText text={pick(`СЧЁТ ${score}${best > 0 ? `   РЕКОРД ${best}` : ""}`, `SCORE ${score}${best > 0 ? `   BEST ${best}` : ""}`, locale)} className="h-[9px] w-auto mx-auto" />
               </p>
               <div className="flex items-center gap-3">
                 <button type="button" onClick={() => restartRef.current()} className="inline-flex items-center rounded-lg px-5 py-2.5 bg-[#A6FF00] text-black hover:bg-[#B8FF33] transition-colors">
-                  <LedText text="ЕЩЁ РАЗ" className="h-[10px] w-auto" />
+                  <LedText text={pick("ЕЩЁ РАЗ", "AGAIN", locale)} className="h-[10px] w-auto" />
                 </button>
                 <button type="button" onClick={handleShare} className="inline-flex items-center rounded-lg px-5 py-2.5 bg-white/[0.06] text-white/75 hover:bg-white/[0.12] transition-colors">
-                  <LedText text="ПОДЕЛИТЬСЯ" className="h-[10px] w-auto" />
+                  <LedText text={pick("ПОДЕЛИТЬСЯ", "SHARE", locale)} className="h-[10px] w-auto" />
                 </button>
               </div>
               {shareMsg && <p className="text-white/40 -mt-1"><LedText text={shareMsg} className="h-[7px] w-auto mx-auto" /></p>}
 
               <div className="mt-1 w-full max-w-[330px] rounded-2xl border border-white/[0.08] bg-[#0c0c0b]/80 p-4">
-                <p className="text-[#A6FF00]/70 mb-3 flex justify-center"><LedText text="РЕЙТИНГ ЗМЕЙКИ" className="h-[8px] w-auto" /></p>
+                <p className="text-[#A6FF00]/70 mb-3 flex justify-center"><LedText text={pick("РЕЙТИНГ ЗМЕЙКИ", "SNAKE RANKING", locale)} className="h-[8px] w-auto" /></p>
                 {score > 0 && !submitted && (
                   <div className="flex items-center gap-2 mb-3">
-                    <input value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submitScore()} maxLength={32} placeholder="Имя"
+                    <input value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submitScore()} maxLength={32} placeholder={pick("Имя", "Name", locale)}
                       className="flex-1 min-w-0 bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 text-[14px] text-white/85 placeholder:text-white/30 outline-none focus:border-[#A6FF00]/40" />
                     <button type="button" onClick={submitScore} disabled={submitting}
                       className="shrink-0 rounded-lg px-3.5 py-2.5 bg-[#A6FF00] text-black hover:bg-[#B8FF33] disabled:opacity-50 transition-colors">
-                      <LedText text={submitting ? "..." : "В РЕЙТИНГ"} className="h-[8px] w-auto" />
+                      <LedText text={submitting ? "..." : pick("В РЕЙТИНГ", "SUBMIT", locale)} className="h-[8px] w-auto" />
                     </button>
                   </div>
                 )}
                 <ol className="space-y-1.5 text-left">
-                  {board.length === 0 && <li className="text-white/30 text-[13px] text-center py-1">Пока пусто — будь первым</li>}
+                  {board.length === 0 && <li className="text-white/30 text-[13px] text-center py-1">{pick("Пока пусто — будь первым", "Empty for now — be the first", locale)}</li>}
                   {board.slice(0, 7).map((e, i) => (
                     <li key={`${e.name}-${e.at}-${i}`} className="flex items-center gap-3 text-[13px] tabular-nums">
                       <span className="w-5 text-right text-white/35">{i + 1}</span>
@@ -994,8 +1004,8 @@ export default function NotFoundGame() {
         {/* Подсказка про пасхалку — под полем, после 25 съеденных */}
         {started && !over && hint && (
           <div className="mt-3 w-full max-w-[560px] rounded-lg bg-white/[0.04] border border-[#A6FF00]/15 px-3 py-2.5 flex flex-col items-center gap-1.5 text-center">
-            <LedText text="ПАСХАЛКА НА ГЛАВНОЙ" className="h-[8px] md:h-[9px] w-auto" />
-            <LedText text="ЖМИ ЛОГО В ПОРЯДКЕ РАБОТЫ ЕГОРА" className="h-[6px] md:h-[7px] w-auto" />
+            <LedText text={pick("ПАСХАЛКА НА ГЛАВНОЙ", "EASTER EGG ON HOME", locale)} className="h-[8px] md:h-[9px] w-auto" />
+            <LedText text={pick("ЖМИ ЛОГО В ПОРЯДКЕ РАБОТЫ ЕГОРА", "CLICK LOGOS IN ORDER OF EGOR'S JOBS", locale)} className="h-[6px] md:h-[7px] w-auto" />
           </div>
         )}
 
@@ -1025,19 +1035,19 @@ export default function NotFoundGame() {
         {!started && !over && (
           <div className="mt-6 text-center">
             <p className="text-white/40 leading-relaxed">
-              <span className="sr-only">Такой страницы нет</span>
-              <LedText text="ТАКОЙ СТРАНИЦЫ НЕТ" className="h-[8px] md:h-[9px] w-auto mx-auto" />
+              <span className="sr-only">{pick("Такой страницы нет", "No such page", locale)}</span>
+              <LedText text={pick("ТАКОЙ СТРАНИЦЫ НЕТ", "NO SUCH PAGE", locale)} className="h-[8px] md:h-[9px] w-auto mx-auto" />
             </p>
             <p className="mt-3 text-[#A6FF00]/70">
-              <LedText text="СВАЙП ИЛИ ← → — ПОЕХАЛИ" className="h-[9px] md:h-[11px] w-auto mx-auto" />
+              <LedText text={pick("СВАЙП ИЛИ ← → — ПОЕХАЛИ", "SWIPE OR ← → — GO", locale)} className="h-[9px] md:h-[11px] w-auto mx-auto" />
             </p>
           </div>
         )}
 
         {/* Выход */}
         <Link href="/" onClick={() => introRef.current()} className="mt-6 inline-flex items-center rounded-lg px-5 py-2.5 bg-white/[0.05] text-white/55 hover:bg-white/[0.1] hover:text-white/80 transition-colors no-underline">
-          <span className="sr-only">На главную</span>
-          <LedText text="На главную" className="h-[10px] w-auto" />
+          <span className="sr-only">{pick("На главную", "Home", locale)}</span>
+          <LedText text={pick("На главную", "Home", locale)} className="h-[10px] w-auto" />
         </Link>
       </div>
     </section>

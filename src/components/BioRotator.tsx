@@ -9,6 +9,8 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 export default function BioRotator({
   items,
@@ -19,6 +21,7 @@ export default function BioRotator({
   interval?: number;
   className?: string;
 }) {
+  const locale = useLocale();
   const [i, setI] = useState(0);
   const [paused, setPaused] = useState(false);
   const reduce = useRef(false);
@@ -76,13 +79,13 @@ export default function BioRotator({
       </div>
 
       {/* индикатор — квадратные LED-точки + прогресс активной */}
-      <div className="mt-6 flex items-center gap-2" role="tablist" aria-label="Абзацы о себе">
+      <div className="mt-6 flex items-center gap-2" role="tablist" aria-label={pick("Абзацы о себе", "Bio paragraphs", locale)}>
         {items.map((_, k) => (
           <button
             key={k}
             role="tab"
             aria-selected={k === i}
-            aria-label={`Абзац ${k + 1}`}
+            aria-label={pick(`Абзац ${k + 1}`, `Paragraph ${k + 1}`, locale)}
             onClick={() => setI(k)}
             className="group relative h-3 w-3 flex items-center justify-center"
           >

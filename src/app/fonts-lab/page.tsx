@@ -20,6 +20,8 @@ import localFont from "next/font/local";
 import LedText from "@/components/LedText";
 import { LedLines, LedCounter } from "@/components/LedBoard";
 import { Oled } from "@/components/OledKit";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 const plexMono = IBM_Plex_Mono({
   subsets: ["latin", "cyrillic"],
@@ -82,6 +84,7 @@ const VARIANTS = [
 ] as const;
 
 export default function FontsLab() {
+  const locale = useLocale();
   const [variant, setVariant] = useState<(typeof VARIANTS)[number]>(VARIANTS[0]);
   const [applyBody, setApplyBody] = useState(false);
 
@@ -96,10 +99,10 @@ export default function FontsLab() {
         {/* Шапка лаборатории */}
         <div className="flex flex-col gap-4">
           <div className="text-white/40">
-            <LedText text="Лаборатория" className="h-[10px] w-auto" />
+            <LedText text={pick("Лаборатория", "Lab", locale)} className="h-[10px] w-auto" />
           </div>
           <h1 className="text-white">
-            <LedLines text="Шрифт служебного слоя" maxChars={24} lineClass="h-[18px] md:h-[22px]" />
+            <LedLines text={pick("Шрифт служебного слоя", "Utility layer typeface", locale)} maxChars={24} lineClass="h-[18px] md:h-[22px]" />
           </h1>
         </div>
 
@@ -127,7 +130,7 @@ export default function FontsLab() {
               onChange={(e) => setApplyBody(e.target.checked)}
               className="accent-[#A6FF00]"
             />
-            применить и к боди
+            {pick("применить и к боди", "apply to body too", locale)}
           </label>
         </div>
 
@@ -135,9 +138,9 @@ export default function FontsLab() {
         <Oled className="p-6 md:p-8">
           <div className="flex justify-start gap-12 md:gap-16">
             {[
-              { v: "30", l: "запусков" },
-              { v: "11", l: "лет в дизайне" },
-              { v: "27", l: "команд" },
+              { v: "30", l: pick("запусков", "launches", locale) },
+              { v: "11", l: pick("лет в дизайне", "years in design", locale) },
+              { v: "27", l: pick("команд", "teams", locale) },
             ].map((m) => (
               <div key={m.l} className="flex flex-col gap-4">
                 <LedCounter value={m.v} tone="#C9A66B" />
@@ -158,13 +161,13 @@ export default function FontsLab() {
             className="mb-5 text-[12px] uppercase tracking-[0.1em] text-white/40"
             style={service}
           >
-            Экспертиза
+            {pick("Экспертиза", "Expertise", locale)}
           </div>
           <ul className="flex flex-col">
             {[
-              { num: "01", label: "Управление", note: "дизайн-функции и команды" },
-              { num: "02", label: "Направления", note: "B2C / B2E / EdTech / E-com" },
-              { num: "03", label: "Ремесло", note: "процессы и применение AI" },
+              { num: "01", label: pick("Управление", "Leadership", locale), note: pick("дизайн-функции и команды", "design functions and teams", locale) },
+              { num: "02", label: pick("Направления", "Domains", locale), note: "B2C / B2E / EdTech / E-com" },
+              { num: "03", label: pick("Ремесло", "Craft", locale), note: pick("процессы и применение AI", "processes and applying AI", locale) },
             ].map((item) => (
               <li key={item.num} className="flex items-center gap-4 py-3.5 border-b border-white/[0.05] last:border-0">
                 <span className="w-7 shrink-0 text-[12px] text-[#C9A66B]/70" style={service}>
@@ -187,12 +190,14 @@ export default function FontsLab() {
         {/* ── Паттерн: боди-абзац рядом с LED-заголовком ── */}
         <Oled className="p-6 md:p-8 flex flex-col gap-5">
           <h2 className="text-white">
-            <LedLines text="Сейчас мне интересна связка дизайн и AI" maxChars={26} lineClass="h-[13px] md:h-[15px]" />
+            <LedLines text={pick("Сейчас мне интересна связка дизайн и AI", "Right now I'm into design and AI together", locale)} maxChars={26} lineClass="h-[13px] md:h-[15px]" />
           </h2>
           <p className="max-w-[560px] text-[16px] md:text-[16px] leading-relaxed text-white/70" style={body}>
-            Менторю дизайнеров и лидов, экспериментирую сам, пишу код. Иногда
-            поделки получаются криво, но это часть процесса. От стратегии и
-            культуры до AI и цифровых продуктов.
+            {pick(
+              "Менторю дизайнеров и лидов, экспериментирую сам, пишу код. Иногда поделки получаются криво, но это часть процесса. От стратегии и культуры до AI и цифровых продуктов.",
+              "I mentor designers and leads, experiment myself, and write code. Sometimes the side projects come out rough, but that's part of the process. From strategy and culture to AI and digital products.",
+              locale,
+            )}
           </p>
           <div className="flex gap-2">
             {["Mentorship", "AI Agents", "Claude Code"].map((t) => (

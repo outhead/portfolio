@@ -8,6 +8,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import ParticlePortrait, { type PointCloud } from "@/components/ParticlePortrait";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 
 const DEFAULT_IMG = "/images/hero-portrait.png";
 const DEFAULT_DEPTH = "/images/hero-depth.png";
@@ -23,6 +25,7 @@ const SAMPLE_COUNT = 45000;
 const cdnImport = (u: string) => (new Function("u", "return import(u)")(u) as Promise<any>);
 
 export default function ParticleStudio() {
+  const locale = useLocale();
   const [portrait, setPortrait] = useState<string>(DEFAULT_IMG);
   const [depth, setDepth] = useState<string | undefined>(DEFAULT_DEPTH);
   const [count, setCount] = useState(6000);
@@ -52,20 +55,20 @@ export default function ParticleStudio() {
   async function process(srcUrl: string) {
     setBusy(true);
     try {
-      setStatus("Гружу модель глубины…");
+      setStatus(pick("Гружу модель глубины…", "Loading depth model…", locale));
       const TJS = await cdnImport(TJS_URL);
       TJS.env.allowLocalModels = false;
       const dpipe = await TJS.pipeline("depth-estimation", "onnx-community/depth-anything-v2-small", {
         progress_callback: (p: { status?: string; progress?: number }) => {
           if (!p || !p.status) return;
           if (p.status === "progress" && typeof p.progress === "number")
-            setStatus("Загрузка модели · " + Math.round(p.progress) + "%");
-          else if (p.status === "ready") setStatus("Считаю глубину…");
+            setStatus(pick("Загрузка модели · ", "Loading model · ", locale) + Math.round(p.progress) + "%");
+          else if (p.status === "ready") setStatus(pick("Считаю глубину…", "Computing depth…", locale));
         },
       });
       const img = await loadImage(srcUrl);
       const W = img.naturalWidth, H = img.naturalHeight;
-      setStatus("Считаю глубину…");
+      setStatus(pick("Считаю глубину…", "Computing depth…", locale));
       const dout = await dpipe(srcUrl);
       const dRaw: HTMLCanvasElement = dout.depth.toCanvas();
 
@@ -98,10 +101,10 @@ export default function ParticleStudio() {
 
       setPortrait(keepUrl(await toUrl(pc)));
       setDepth(keepUrl(await toUrl(dc)));
-      setStatus("Готово: глубина и вырезка применены.");
+      setStatus(pick("Готово: глубина и вырезка применены.", "Done: depth and cutout applied.", locale));
     } catch (err) {
       console.error(err);
-      setStatus("Не вышло посчитать глубину: " + (err instanceof Error ? err.message : String(err)));
+      setStatus(pick("Не вышло посчитать глубину: ", "Couldn't compute depth: ", locale) + (err instanceof Error ? err.message : String(err)));
     } finally {
       setBusy(false);
     }
@@ -121,7 +124,7 @@ export default function ParticleStudio() {
   // (настоящий объём, крутится на 360°, без угадывания глубины).
   async function load3D(file: File) {
     setBusy(true);
-    setStatus("Гружу 3D-движок…");
+    setStatus(pick("Гружу 3D-движок…", "Loading 3D engine…", locale));
     try {
       const THREE = await cdnImport(THREE_URL);
       const { MeshSurfaceSampler } = await cdnImport(SAMPLER_URL);
@@ -138,12 +141,12 @@ export default function ParticleStudio() {
       }
       root.updateMatrixWorld(true);
 
-      setStatus("Сэмплю точки с поверхности…");
+      setStatus(pick("Сэмплю точки с поверхности…", "Sampling points from the surface…", locale));
       const meshes: any[] = []; // eslint-disable-line @typescript-eslint/no-explicit-any
       root.traverse((o: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
         if (o.isMesh && o.geometry?.attributes?.position) meshes.push(o);
       });
-      if (!meshes.length) throw new Error("в модели нет полигонов");
+      if (!meshes.length) throw new Error(pick("в модели нет полигонов", "the model has no polygons", locale));
 
       const weights = meshes.map((m) => m.geometry.attributes.position.count);
       const wsum = weights.reduce((a: number, b: number) => a + b, 0) || 1;
@@ -188,10 +191,14 @@ export default function ParticleStudio() {
 
       setCloud({ positions, colors });
       setCloudKey(file.name + ":" + file.size + ":" + Date.now());
-      setStatus("Готово: " + w.toLocaleString("ru") + " точек с модели. Крутится сама, мышь — наклон.");
+      setStatus(
+        pick("Готово: ", "Done: ", locale) +
+          w.toLocaleString(locale === "en" ? "en" : "ru") +
+          pick(" точек с модели. Крутится сама, мышь — наклон.", " points from the model. Spins on its own, mouse tilts it.", locale),
+      );
     } catch (err) {
       console.error(err);
-      setStatus("Не вышло загрузить 3D: " + (err instanceof Error ? err.message : String(err)));
+      setStatus(pick("Не вышло загрузить 3D: ", "Couldn't load the 3D model: ", locale) + (err instanceof Error ? err.message : String(err)));
     } finally {
       setBusy(false);
     }
@@ -213,7 +220,7 @@ export default function ParticleStudio() {
   async function recordClip() {
     const canvas = wrapRef.current?.querySelector("canvas") as HTMLCanvasElement | null;
     if (!canvas) return;
-    setRecording(true); setStatus("Записываю клип…");
+    setRecording(true); setStatus(pick("Записываю клип…", "Recording a clip…", locale));
     try {
       const stream = canvas.captureStream(30);
       const mime = MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9" : "video/webm";
@@ -224,9 +231,9 @@ export default function ParticleStudio() {
       rec.start(); await new Promise((r) => setTimeout(r, 4200)); rec.stop(); await done;
       const url = URL.createObjectURL(new Blob(chunks, { type: "video/webm" }));
       download(url, "particles.webm"); setTimeout(() => URL.revokeObjectURL(url), 5000);
-      setStatus("Клип сохранён (webm).");
+      setStatus(pick("Клип сохранён (webm).", "Clip saved (webm).", locale));
     } catch (e) {
-      console.error(e); setStatus("Запись клипа не поддержана в этом браузере.");
+      console.error(e); setStatus(pick("Запись клипа не поддержана в этом браузере.", "Clip recording isn't supported in this browser.", locale));
     } finally { setRecording(false); }
   }
 
@@ -253,7 +260,7 @@ export default function ParticleStudio() {
           />
         </div>
         <p className="text-[12px] text-white/45 min-h-[16px]">
-          {status || "Закинь фото (посчитаем глубину) или 3D-модель (.glb/.obj)."}
+          {status || pick("Закинь фото (посчитаем глубину) или 3D-модель (.glb/.obj).", "Drop a photo (we'll compute depth) or a 3D model (.glb/.obj).", locale)}
         </p>
       </div>
 
@@ -261,24 +268,27 @@ export default function ParticleStudio() {
         <div className="flex flex-col gap-1.5">
           <div className="flex flex-wrap gap-2">
             <label className={`text-[13px] px-4 py-2 rounded-full border transition-colors cursor-pointer ${busy ? "opacity-50 pointer-events-none" : "border-[#A6FF00]/50 text-[#A6FF00] bg-[#A6FF00]/10 hover:bg-[#A6FF00]/20"}`}>
-              {busy ? "Обработка…" : "Загрузить фото"}
+              {busy ? pick("Обработка…", "Processing…", locale) : pick("Загрузить фото", "Upload photo", locale)}
               <input type="file" accept="image/jpeg,image/png,image/webp" onChange={onFile} disabled={busy} className="hidden" />
             </label>
             <label className={`text-[13px] px-4 py-2 rounded-full border transition-colors cursor-pointer ${busy ? "opacity-50 pointer-events-none" : "border-white/15 text-white/70 hover:text-white hover:border-white/30"}`}>
-              Загрузить 3D
+              {pick("Загрузить 3D", "Upload 3D", locale)}
               <input type="file" accept=".glb,.gltf,.obj" onChange={on3D} disabled={busy} className="hidden" />
             </label>
           </div>
           <p className="text-[12px] text-white/35">
-            Фото: JPEG/PNG/WebP (HEIC с айфона может не открыться). 3D: .glb, .gltf
-            или .obj — точки берутся прямо с поверхности модели, объём настоящий.
+            {pick(
+              "Фото: JPEG/PNG/WebP (HEIC с айфона может не открыться). 3D: .glb, .gltf или .obj — точки берутся прямо с поверхности модели, объём настоящий.",
+              "Photo: JPEG/PNG/WebP (an iPhone HEIC may not open). 3D: .glb, .gltf or .obj — points are taken straight from the model's surface, the volume is real.",
+              locale,
+            )}
           </p>
         </div>
 
         {([
-          ["Точек", count, setCount, 1500, 12000, 250],
-          ["Глубина", depthScale, setDepthScale, 0, 1.4, 0.05],
-          ["Размер точки", pointScale, setPointScale, 0.3, 1.6, 0.05],
+          [pick("Точек", "Dots", locale), count, setCount, 1500, 12000, 250],
+          [pick("Глубина", "Depth", locale), depthScale, setDepthScale, 0, 1.4, 0.05],
+          [pick("Размер точки", "Dot size", locale), pointScale, setPointScale, 0.3, 1.6, 0.05],
         ] as const).map(([label, val, set, min, max, step]) => (
           <label key={label} className="flex items-center gap-4 text-white/50">
             <span className="w-28 shrink-0 text-[13px]">{label}</span>
@@ -294,17 +304,20 @@ export default function ParticleStudio() {
         <div className="flex flex-wrap gap-2 pt-1">
           <button onClick={recordClip} disabled={recording}
             className="text-[13px] px-4 py-2 rounded-full border border-white/15 text-white/70 hover:text-white hover:border-white/30 transition-colors disabled:opacity-50">
-            {recording ? "Запись…" : "Записать клип (webm)"}
+            {recording ? pick("Запись…", "Recording…", locale) : pick("Записать клип (webm)", "Record clip (webm)", locale)}
           </button>
           <button onClick={saveAssets}
             className="text-[13px] px-4 py-2 rounded-full border border-white/15 text-white/70 hover:text-white hover:border-white/30 transition-colors">
-            Скачать ассеты
+            {pick("Скачать ассеты", "Download assets", locale)}
           </button>
         </div>
 
         <p className="text-[12px] text-white/35 max-w-[440px]">
-          Глубину считает Depth Anything прямо в браузере (модель грузится один
-          раз). Наведи курсор на холст — облако отыгрывает объём.
+          {pick(
+            "Глубину считает Depth Anything прямо в браузере (модель грузится один раз). Наведи курсор на холст — облако отыгрывает объём.",
+            "Depth Anything computes depth right in the browser (the model loads once). Hover the canvas — the cloud plays out its volume.",
+            locale,
+          )}
         </p>
       </div>
     </div>

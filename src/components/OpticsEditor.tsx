@@ -8,6 +8,8 @@
  * ──────────────────────────────────────────────────────────────── */
 
 import { useEffect, useRef, useState } from "react";
+import { useLocale } from "@/lib/useLocale";
+import { pick } from "@/lib/i18n";
 import {
   COLOR_KEYS,
   DEFAULT_LEVEL,
@@ -33,6 +35,7 @@ function clone(l: Level): Level {
 }
 
 export default function OpticsEditor() {
+  const locale = useLocale();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const levelRef = useRef<Level>(clone(DEFAULT_LEVEL));
   const selRef = useRef<Sel>(null);
@@ -165,38 +168,40 @@ export default function OpticsEditor() {
           style={{ width: VW, height: VH, display: "block", background: "#0b0d09", borderRadius: 12, border: "1px solid rgba(255,255,255,0.08)", touchAction: "none", cursor: "grab" }}
         />
         <div className="flex flex-wrap gap-2">
-          <button className={btn} onClick={addStone}>+ камень</button>
-          <button className={btn} onClick={addTarget}>+ цель</button>
-          <button className={btn} onClick={toggleMirror}>{L.mirror ? "убрать зеркало" : "+ зеркало"}</button>
-          <button className={btn} onClick={reset}>сброс</button>
+          <button className={btn} onClick={addStone}>{pick("+ камень", "+ stone", locale)}</button>
+          <button className={btn} onClick={addTarget}>{pick("+ цель", "+ target", locale)}</button>
+          <button className={btn} onClick={toggleMirror}>{L.mirror ? pick("убрать зеркало", "remove mirror", locale) : pick("+ зеркало", "+ mirror", locale)}</button>
+          <button className={btn} onClick={reset}>{pick("сброс", "reset", locale)}</button>
         </div>
         {sel && (
           <div className="flex flex-wrap items-center gap-2 text-[13px] text-white/70">
-            <span className="uppercase tracking-wider text-white/40">{sel.kind === "stone" ? "камень" : sel.kind === "target" ? "цель" : "зеркало"}</span>
+            <span className="uppercase tracking-wider text-white/40">{sel.kind === "stone" ? pick("камень", "stone", locale) : sel.kind === "target" ? pick("цель", "target", locale) : pick("зеркало", "mirror", locale)}</span>
             {sel.kind === "target" && (
               <button className={btn} onClick={() => { L.targets[sel.i].key = cycle(L.targets[sel.i].key); refresh(); }}>
-                цвет: {L.targets[sel.i].key}
+                {pick("цвет:", "color:", locale)} {L.targets[sel.i].key}
               </button>
             )}
             {sel.kind === "stone" && (
               <>
-                <button className={btn} onClick={() => { L.stones[sel.i].minus = cycle(L.stones[sel.i].minus); refresh(); }}>лево: {L.stones[sel.i].minus}</button>
-                <button className={btn} onClick={() => { L.stones[sel.i].plus = cycle(L.stones[sel.i].plus); refresh(); }}>право: {L.stones[sel.i].plus}</button>
+                <button className={btn} onClick={() => { L.stones[sel.i].minus = cycle(L.stones[sel.i].minus); refresh(); }}>{pick("лево:", "left:", locale)} {L.stones[sel.i].minus}</button>
+                <button className={btn} onClick={() => { L.stones[sel.i].plus = cycle(L.stones[sel.i].plus); refresh(); }}>{pick("право:", "right:", locale)} {L.stones[sel.i].plus}</button>
               </>
             )}
-            <button className={btn} onClick={del}>удалить</button>
+            <button className={btn} onClick={del}>{pick("удалить", "delete", locale)}</button>
           </div>
         )}
         <p className="text-[12px] text-white/40 max-w-[360px]">
-          Тащи элементы и цели. Камень: левая половина — цвет левой ветви, правая — правой.
-          Зеркало: тело двигает, серая точка крутит. Цель горит, когда в неё бьёт луч её цвета.
-          Позиции = стартовые. Когда соберёшь — скопируй JSON и пришли, вкручу как уровень.
+          {pick(
+            "Тащи элементы и цели. Камень: левая половина — цвет левой ветви, правая — правой. Зеркало: тело двигает, серая точка крутит. Цель горит, когда в неё бьёт луч её цвета. Позиции = стартовые. Когда соберёшь — скопируй JSON и пришли, вкручу как уровень.",
+            "Drag the elements and targets. Stone: the left half sets the left branch's color, the right half the right one. Mirror: the body moves it, the grey dot rotates it. A target lights up when a beam of its color hits it. Positions = the starting layout. Once it's set, copy the JSON and send it — I'll wire it in as a level.",
+            locale,
+          )}
         </p>
       </div>
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2">
-          <span className="text-[13px] text-white/50">JSON уровня</span>
-          <button className={btn} onClick={copy}>копировать</button>
+          <span className="text-[13px] text-white/50">{pick("JSON уровня", "Level JSON", locale)}</span>
+          <button className={btn} onClick={copy}>{pick("копировать", "copy", locale)}</button>
         </div>
         <textarea
           readOnly

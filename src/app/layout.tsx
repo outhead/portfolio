@@ -14,9 +14,13 @@ import Footer from "@/components/Footer";
 import BookingModal from "@/components/BookingModal";
 import YandexMetrika from "@/components/YandexMetrika";
 import ScrollGoals from "@/components/ScrollGoals";
+import LocaleHtml from "@/components/LocaleHtml";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://shugaev.vercel.app"),
+  alternates: {
+    languages: { ru: "/", en: "/en" },
+  },
   title: "Егор Шугаев — Дизайн-директор · Консультант · Ментор",
   description:
     "11 лет в дизайне, 7 в руководстве в бигтехе России: МТС (Art Director B2C и Design Director), Ozon (Community Lead), Газпром Нефть (Head of Design), MWS AI (AI Visioner). 11М+ пользователей, 100+ дизайнеров, CX Award 2024. Сейчас — консультирую, advisory, менторинг.",
@@ -176,12 +180,7 @@ export default function RootLayout({
         />
       </head>
       <body className={`antialiased ${cozette.variable}`}>
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[300] focus:bg-[#A6FF00] focus:text-black focus:px-4 focus:py-2 focus:rounded focus:text-sm focus:font-semibold"
-        >
-          Перейти к содержимому
-        </a>
+        <LocaleHtml />
         <Header />
         <main id="main-content">{children}</main>
         <Footer />
