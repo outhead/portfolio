@@ -33,14 +33,14 @@ const RANKS: [number, string, string][] = [
   [23, "МИДЛ ПЛЮС", "MIDDLE PLUS"],
   [28, "СЕНЬОР", "SENIOR"],
   [33, "ЛИД", "LEAD"],
-  [40, "АРТ-ДИРЕКТОР", "ART DIRECTOR"],
-  [47, "ХЕД ОФ ДИЗАЙН", "HEAD OF DESIGN"],
-  [55, "ДИЗАЙН-ДИРЕКТОР", "DESIGN DIRECTOR"],
-  [64, "VP ДИЗАЙНА", "VP OF DESIGN"],
-  [74, "ЛЕГЕНДА ИНДУСТРИИ", "INDUSTRY LEGEND"],
-  [85, "ИКОНА ДИЗАЙНА", "DESIGN ICON"],
-  [100, "ГУРУ", "GURU"],
-  [120, "БЕССМЕРТНЫЙ", "IMMORTAL"],
+  [45, "АРТ-ДИРЕКТОР", "ART DIRECTOR"],
+  [60, "ХЕД ОФ ДИЗАЙН", "HEAD OF DESIGN"],
+  [78, "ДИЗАЙН-ДИРЕКТОР", "DESIGN DIRECTOR"],
+  [95, "VP ДИЗАЙНА", "VP OF DESIGN"],
+  [115, "ЛЕГЕНДА ИНДУСТРИИ", "INDUSTRY LEGEND"],
+  [135, "ИКОНА ДИЗАЙНА", "DESIGN ICON"],
+  [160, "ГУРУ", "GURU"],
+  [200, "БЕССМЕРТНЫЙ", "IMMORTAL"],
   [1000, "БОГ ЗМЕЙКИ", "SNAKE GOD"],
   [1084, "БОГ", "GOD"],
 ];
@@ -92,7 +92,7 @@ export default function NotFoundGame() {
   const [board, setBoard] = useState<SnakeEntry[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [praise, setPraise] = useState("");
+  const [rank, setRank] = useState("");
   const [hint, setHint] = useState(false);
   const restartRef = useRef<() => void>(() => {});
   const introRef = useRef<() => void>(() => {});
@@ -500,7 +500,7 @@ export default function NotFoundGame() {
       setOver(false);
       setStarted(false);
       setScore(0);
-      setPraise("");
+      setRank("");
       setHint(false);
     };
 
@@ -545,7 +545,7 @@ export default function NotFoundGame() {
       setScore(0);
       setOver(false);
       setStarted(true);
-      setPraise("");
+      setRank(rankFor(0, enRef.current));
       setHint(false);
       fillFood(START_FOOD, true);
     };
@@ -571,13 +571,6 @@ export default function NotFoundGame() {
       // как взорвётся последний сегмент и догорят искры
       const wait = Math.max(700, Math.min(3200, deadSnake.length * 35 + 650));
       dieTimer = setTimeout(() => { if (!stopped) setOver(true); }, reduced ? 500 : wait);
-    };
-
-    let praiseTimer: ReturnType<typeof setTimeout> | null = null;
-    const showPraise = (text: string) => {
-      setPraise(text);
-      if (praiseTimer) clearTimeout(praiseTimer);
-      praiseTimer = setTimeout(() => { if (!stopped) setPraise(""); }, 1500);
     };
 
     const eatFx = (gx: number, gy: number) => {
@@ -613,12 +606,9 @@ export default function NotFoundGame() {
         // пока съеденная гаснет — на её место сразу новая
         fillFood(Math.max(START_FOOD, foods.length + 1));
         grow += 1;
-        // ранг показываем только в момент повышения; на HINT_AT — подсказка
+        // ранг висит постоянно; React перерендерит только при смене значения
+        setRank(rankFor(sc, enRef.current));
         if (sc === HINT_AT) setHint(true);
-        else {
-          const r = rankFor(sc, enRef.current);
-          if (r !== rankFor(sc - 1, enRef.current)) showPraise(r);
-        }
       }
       if (grow > 0) grow--;
       else {
@@ -915,7 +905,6 @@ export default function NotFoundGame() {
       stopped = true;
       cancelAnimationFrame(raf);
       if (dieTimer) clearTimeout(dieTimer);
-      if (praiseTimer) clearTimeout(praiseTimer);
       window.removeEventListener("keydown", onKey);
       canvas.removeEventListener("pointerdown", onPDown);
       canvas.removeEventListener("pointermove", onPMove);
@@ -926,13 +915,13 @@ export default function NotFoundGame() {
 
   return (
     <section className="relative z-[1] min-h-[calc(100svh-5rem)] bg-black flex flex-col items-center justify-start px-5 pt-8 md:pt-12 pb-6 select-none overflow-hidden">
-      <style>{`@keyframes nfPraise{0%{opacity:0;transform:translateY(6px) scale(.92)}18%{opacity:1;transform:translateY(0) scale(1)}78%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-4px) scale(1)}}`}</style>
+      <style>{`@keyframes nfRank{0%{opacity:0;transform:translateY(10px) scale(.9);filter:brightness(2.4)}55%{opacity:1;transform:translateY(-1px) scale(1.03);filter:brightness(1.7)}100%{opacity:1;transform:none;filter:brightness(1)}}`}</style>
 
-        {/* Похвала — над полем, своя на каждую съеденную */}
-        <div className="h-7 mb-1.5 flex items-end justify-center w-full pointer-events-none">
-          {started && !over && praise && (
-            <div key={praise + score} className="animate-[nfPraise_1.5s_ease-out]">
-              <LedText text={praise} className="h-[11px] md:h-[13px] w-auto" />
+        {/* Текущий ранг — постоянное табло над полем, перещёлкивается при повышении */}
+        <div className="h-8 mb-4 flex items-end justify-center w-full pointer-events-none">
+          {started && !over && rank && (
+            <div key={rank} className="animate-[nfRank_0.55s_ease-out]">
+              <LedText text={rank} className="h-[11px] md:h-[13px] w-auto" />
             </div>
           )}
         </div>
@@ -989,9 +978,12 @@ export default function NotFoundGame() {
                 <ol className="space-y-1.5 text-left">
                   {board.length === 0 && <li className="text-white/30 text-[13px] text-center py-1">{pick("Пока пусто — будь первым", "Empty for now — be the first", locale)}</li>}
                   {board.slice(0, 7).map((e, i) => (
-                    <li key={`${e.name}-${e.at}-${i}`} className="flex items-center gap-3 text-[13px] tabular-nums">
+                    <li key={`${e.name}-${e.at}-${i}`} className="flex items-baseline gap-3 text-[13px] tabular-nums">
                       <span className="w-5 text-right text-white/35">{i + 1}</span>
-                      <span className="flex-1 min-w-0 truncate text-white/75">{e.name}</span>
+                      <span className="flex-1 min-w-0 truncate text-white/75">
+                        {e.name}
+                        <span className="ml-2 text-[11px] text-white/30">{rankFor(e.score, en)}</span>
+                      </span>
                       <span className="text-[#A6FF00]/85 font-medium">{e.score}</span>
                     </li>
                   ))}
