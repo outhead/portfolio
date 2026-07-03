@@ -363,11 +363,10 @@ export default function ImageLightbox({ images, mode = "web" }: ImageLightboxPro
 
           <div
             className="flex-1 min-h-0 flex items-center justify-center px-4 md:px-8 overflow-hidden select-none [touch-action:none]"
-            onClick={(e) => e.stopPropagation()}
+            onClick={close}
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
-            onDoubleClick={toggleZoomAt}
             style={{ cursor: isZoomed ? "zoom-out" : "zoom-in" }}
           >
             <div
@@ -386,6 +385,8 @@ export default function ImageLightbox({ images, mode = "web" }: ImageLightboxPro
                   autoPlay
                   loop
                   playsInline
+                  onClick={(e) => e.stopPropagation()}
+                  onDoubleClick={(e) => e.stopPropagation()}
                   className="absolute inset-0 w-full h-full object-contain"
                 />
               ) : (
@@ -393,9 +394,11 @@ export default function ImageLightbox({ images, mode = "web" }: ImageLightboxPro
                   src={images[activeIndex].src}
                   alt={images[activeIndex].alt}
                   fill
-                  className="object-contain pointer-events-none"
+                  className="object-contain"
                   sizes="(max-width: 1400px) 100vw, 1400px"
                   draggable={false}
+                  onClick={(e) => e.stopPropagation()}
+                  onDoubleClick={toggleZoomAt}
                 />
               )}
             </div>
