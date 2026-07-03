@@ -142,7 +142,7 @@ export default function MentoringBooking() {
         <div className="flex items-center gap-2 text-[#A6FF00] mb-3">
           <LedText text={pick("Готово", "Done", locale)} className="h-[11px] w-auto" />
         </div>
-        <p className="text-[15px] text-white/80 mb-1.5">{slotFull(slot)}</p>
+        <p className="text-[15px] text-white/80 mb-1.5">{slotFull(slot, locale === "en")}</p>
         <p className="text-[13px] text-white/50 leading-relaxed mb-5 max-w-md">
           {pick(
             "Подтвержу в течение дня в Telegram и пришлю ссылку на встречу.",
@@ -152,7 +152,7 @@ export default function MentoringBooking() {
         </p>
         <button
           type="button"
-          onClick={() => downloadIcs(slot)}
+          onClick={() => downloadIcs(slot, locale === "en")}
           className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-[#A6FF00] text-black hover:bg-white transition-colors"
         >
           <LedText text={pick("В календарь", "Add to calendar", locale)} className="h-[10px] w-auto" />
@@ -258,7 +258,7 @@ export default function MentoringBooking() {
           {/* Время выбранного дня */}
           <div className="md:border-l md:border-white/[0.06] md:pl-8">
             <div className="text-[13px] text-white/45 mb-3">
-              {day ? day.label : pick("Выбери дату слева", "Pick a date on the left", locale)}
+              {day ? (locale === "en" ? day.labelEn : day.label) : pick("Выбери дату слева", "Pick a date on the left", locale)}
               <span className="text-white/30">{pick(" · 18:00–21:00 МСК · ~60 мин", " · 18:00–21:00 MSK · ~60 min", locale)}</span>
             </div>
             <div className="flex flex-wrap md:flex-col gap-2 md:max-w-[200px]">
@@ -284,7 +284,7 @@ export default function MentoringBooking() {
             className="flex items-center gap-2 text-[14px] text-white/75 hover:text-white transition-colors"
           >
             <span className="text-[#A6FF00]">✓</span>
-            {slot && <span>{slotFull(slot)}</span>}
+            {slot && <span>{slotFull(slot, locale === "en")}</span>}
             <span className="text-white/35 text-[13px]">{pick("· изменить", "· change", locale)}</span>
           </button>
 

@@ -1109,7 +1109,7 @@ function TestimonialCard({ t }: { t: Testimonial }) {
           >
             <Image
               src={showDog ? t.dog : t.avatar}
-              alt={showDog ? "Песик" : t.name}
+              alt={showDog ? pick("Песик", "Doggo", locale) : t.name}
               fill
               sizes="56px"
               className="object-cover"
@@ -1293,18 +1293,22 @@ const careerJobsEn: Array<{ year: string; company: string; role: string; scope: 
 ];
 
 // Английские параллели отзывов (индекс-в-индекс с TESTIMONIALS)
-const testimonialsEn: Array<{ quote: string; role: string; dogRole?: string }> = [
+const testimonialsEn: Array<{ quote: string; role: string; name?: string; dogName?: string; dogRole?: string }> = [
   {
     quote: "An innovator, fluent in AI. Level-headed — every decision is a considered one. He builds strong teams and processes that actually run smoothly. And on top of all that, a genuinely great person to work with.",
+    name: "Nikita Vishnevsky",
     role: "Managing Director, Raiffeisen (formerly MTS)",
   },
   {
     quote: "I worked with Egor both at Gazprom Neft and when he was at MTS. It's hard to find anyone better than Egor. He's a legend of design, AI, and management.",
+    name: "Egor Goncharuk",
     role: "Head of the Project Office, Gazprom Neft",
+    dogName: "Mikki Goncharuk",
     dogRole: "Head of the None-of-Your-Doggone-Business project, Woof Woof Neft",
   },
   {
     quote: "With Egor, hard problems get easier — strong hard skills paired with a rare knack for building processes that actually work. Egor genuinely cares about the outcome and does whatever it takes to get there.",
+    name: "Semyon Rechmedin",
     role: "CPO Eva, MegaFon (formerly CPO of the voice ecosystem)",
   },
 ];

@@ -68,7 +68,7 @@ export default function ExperimentsPage() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {experimentProjects.map((project, i) => (
             <motion.div key={project.slug} variants={fadeUp}>
-              <ProjectCard project={localizeProject(project, locale)} index={i} />
+              <ProjectCard project={localizeProject(project, locale)} index={i} showMeta={false} />
             </motion.div>
           ))}
         </div>

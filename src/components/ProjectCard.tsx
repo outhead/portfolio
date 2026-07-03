@@ -313,6 +313,8 @@ interface ProjectCardProps {
   wide?: boolean;
   /** Тег-строка в правом верхнем углу (LED). false — угол пустой. */
   showTags?: boolean;
+  /** Мета-строка «год · роль» под тайтлом. false — скрыть. */
+  showMeta?: boolean;
 }
 
 export default function ProjectCard({
@@ -321,6 +323,7 @@ export default function ProjectCard({
   featured = false,
   wide = false,
   showTags = true,
+  showMeta = true,
 }: ProjectCardProps) {
   // Ref для hover/IO. Hover отслеживаем сами в JS, потому что нужно
   // удерживать cover видимым пока видео доигрывается после mouseleave.
@@ -498,14 +501,16 @@ export default function ProjectCard({
             </h3>
             {/* Мета «год · роль». На мобиле видна сразу (opacity-100),
                 на desktop дремлет на 60% и проявляется по ховеру. */}
-            <div className="mt-1.5 md:mt-2 max-w-full text-white/50 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] transition-opacity duration-300 opacity-100 md:opacity-60 md:group-hover:opacity-100">
-              <span className="sr-only">{metaText}</span>
-              <LedText
-                text={metaText}
-                className="h-[8px] md:h-[9px] w-auto max-w-full"
-                preserve="xMidYMid meet"
-              />
-            </div>
+            {showMeta && (
+              <div className="mt-1.5 md:mt-2 max-w-full text-white/50 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] transition-opacity duration-300 opacity-100 md:opacity-60 md:group-hover:opacity-100">
+                <span className="sr-only">{metaText}</span>
+                <LedText
+                  text={metaText}
+                  className="h-[8px] md:h-[9px] w-auto max-w-full"
+                  preserve="xMidYMid meet"
+                />
+              </div>
+            )}
           </div>
         </div>
       </article>

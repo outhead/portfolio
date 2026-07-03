@@ -35,8 +35,11 @@ export type Slot = {
 export type DayGroup = {
   key: string; // YYYY-MM-DD (МСК)
   label: string; // «Пн, 7 июля»
+  labelEn: string; // "Mon, Jul 7"
   wd: string; // «Пн»
+  wdEn: string; // "Mon"
   dShort: string; // «7 июл»
+  dShortEn: string; // "Jul 7"
   slots: Slot[];
 };
 
@@ -48,6 +51,15 @@ const MON_RU = [
 const MON_SHORT = [
   "янв", "фев", "мар", "апр", "мая", "июн",
   "июл", "авг", "сен", "окт", "ноя", "дек",
+];
+const WD_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MON_EN = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+const MON_SHORT_EN = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
 
 /** Поля даты в МСК для абсолютного момента ms. */
@@ -74,9 +86,10 @@ export function slotTime(iso: string): string {
   return `${String(p.h).padStart(2, "0")}:${String(p.min).padStart(2, "0")}`;
 }
 
-/** Полная подпись слота: «Пн, 7 июля, 18:00 МСК». */
-export function slotFull(iso: string): string {
+/** Полная подпись слота: «Пн, 7 июля, 18:00 МСК» / "Mon, Jul 7, 18:00 MSK". */
+export function slotFull(iso: string, en = false): string {
   const p = mskParts(Date.parse(iso));
+  if (en) return `${WD_EN[p.wd]}, ${MON_SHORT_EN[p.m]} ${p.day}, ${slotTime(iso)} MSK`;
   return `${WD_RU[p.wd]}, ${p.day} ${MON_RU[p.m]}, ${slotTime(iso)} МСК`;
 }
 
@@ -136,8 +149,11 @@ export async function loadFreeSlots(): Promise<DayGroup[]> {
       g = {
         key,
         label: `${WD_RU[p.wd]}, ${p.day} ${MON_RU[p.m]}`,
+        labelEn: `${WD_EN[p.wd]}, ${MON_SHORT_EN[p.m]} ${p.day}`,
         wd: WD_RU[p.wd],
+        wdEn: WD_EN[p.wd],
         dShort: `${p.day} ${MON_SHORT[p.m]}`,
+        dShortEn: `${MON_SHORT_EN[p.m]} ${p.day}`,
         slots: [],
       };
       groups.set(key, g);
@@ -188,7 +204,7 @@ export async function createBooking(input: BookingInput): Promise<BookingResult>
 }
 
 /** .ics для менти: добавить встречу в свой календарь. */
-export function buildIcs(slotIso: string): string {
+export function buildIcs(slotIso: string, en = false): string {
   const start = new Date(Date.parse(slotIso));
   const end = new Date(start.getTime() + SLOT_MINUTES * 60 * 1000);
   const fmt = (d: Date) =>
@@ -197,7 +213,7 @@ export function buildIcs(slotIso: string): string {
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//egorshugaev//mentoring//RU",
+    "PRODID:-//egorshugaev//mentoring//EN",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",
@@ -205,16 +221,18 @@ export function buildIcs(slotIso: string): string {
     `DTSTAMP:${fmt(new Date())}`,
     `DTSTART:${fmt(start)}`,
     `DTEND:${fmt(end)}`,
-    "SUMMARY:Менторинг с Егором Шугаевым",
-    "DESCRIPTION:Сессия менторинга. Детали и ссылку на встречу пришлю в Telegram.",
+    en ? "SUMMARY:Mentoring with Egor Shugaev" : "SUMMARY:Менторинг с Егором Шугаевым",
+    en
+      ? "DESCRIPTION:Mentoring session. I'll send the details and the meeting link in Telegram."
+      : "DESCRIPTION:Сессия менторинга. Детали и ссылку на встречу пришлю в Telegram.",
     "END:VEVENT",
     "END:VCALENDAR",
   ].join("\r\n");
 }
 
 /** Триггерит скачивание .ics в браузере. */
-export function downloadIcs(slotIso: string) {
-  const blob = new Blob([buildIcs(slotIso)], { type: "text/calendar;charset=utf-8" });
+export function downloadIcs(slotIso: string, en = false) {
+  const blob = new Blob([buildIcs(slotIso, en)], { type: "text/calendar;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
