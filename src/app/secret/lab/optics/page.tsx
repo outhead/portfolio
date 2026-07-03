@@ -7,7 +7,13 @@
 import { useRef, useState } from "react";
 import ConstellationFigures from "@/components/ConstellationFigures";
 import ConstellationFiguresV2, { V2_DEFAULTS, type V2Params } from "@/components/ConstellationFiguresV2";
-import ConstellationFiguresV3 from "@/components/ConstellationFiguresV3";
+import ConstellationFiguresV3, {
+  V3_STYLE_DEFAULTS,
+  type GemStyle,
+  type RayStyle,
+  type TargetStyle,
+  type V3Style,
+} from "@/components/ConstellationFiguresV3";
 import { MENTORING_LEVEL } from "@/lib/optics";
 import { useLocale } from "@/lib/useLocale";
 import { pick } from "@/lib/i18n";
@@ -46,6 +52,39 @@ export default function OpticsLabPage() {
     setUi((prev) => ({ ...prev, [k]: v }));
   };
 
+  const styleRef = useRef<V3Style>({ ...V3_STYLE_DEFAULTS });
+  const [styleUi, setStyleUi] = useState<V3Style>({ ...V3_STYLE_DEFAULTS });
+  const setStyle = <K extends keyof V3Style>(k: K, v: V3Style[K]) => {
+    styleRef.current[k] = v;
+    setStyleUi((prev) => ({ ...prev, [k]: v }));
+  };
+  const applyPreset = (s: V3Style) => {
+    styleRef.current = { ...s };
+    setStyleUi({ ...s });
+  };
+
+  const GEMS: Array<{ v: GemStyle; ru: string; en: string }> = [
+    { v: "octa", ru: "3D-каркас", en: "3D wire" },
+    { v: "brilliant", ru: "Гранёный", en: "Faceted" },
+    { v: "crystal", ru: "Хрусталь", en: "Crystal" },
+    { v: "pixel", ru: "Пиксельный", en: "Pixel" },
+    { v: "cluster", ru: "Друза", en: "Cluster" },
+  ];
+  const RAYS: Array<{ v: RayStyle; ru: string; en: string }> = [
+    { v: "dots", ru: "Точки", en: "Dots" },
+    { v: "thread", ru: "Нить", en: "Thread" },
+    { v: "double", ru: "Двойной", en: "Double" },
+    { v: "comet", ru: "Кометы", en: "Comets" },
+    { v: "wave", ru: "Волна", en: "Wave" },
+  ];
+  const TARGETS: Array<{ v: TargetStyle; ru: string; en: string }> = [
+    { v: "ring", ru: "Круг", en: "Ring" },
+    { v: "crosshair", ru: "Прицел", en: "Crosshair" },
+    { v: "iris", ru: "Диафрагма", en: "Iris" },
+    { v: "rings2", ru: "Два кольца", en: "Two rings" },
+    { v: "brackets", ru: "Скобки", en: "Brackets" },
+  ];
+
   return (
     <main className="min-h-screen bg-[#080807] text-white px-4 py-8 md:px-8">
       <div className="max-w-6xl mx-auto">
@@ -65,6 +104,7 @@ export default function OpticsLabPage() {
                   level={MENTORING_LEVEL}
                   lockMirror
                   paramsRef={paramsRef}
+                  styleRef={styleRef}
                   onSolve={() => setSolved(true)}
                 />
               ) : mode === "v2" ? (
@@ -114,6 +154,56 @@ export default function OpticsLabPage() {
 
           {/* контролы V2 */}
           <div className="space-y-5 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 h-fit">
+            {/* Стили V3: кристалл / луч / цель + пресеты */}
+            {mode === "v3" && (
+              <div className="space-y-4 pb-4 border-b border-white/[0.08]">
+                <div className="text-[11px] uppercase tracking-wider text-white/50">{pick("Стили V3", "V3 styles", locale)}</div>
+                {([
+                  { label: pick("Кристалл", "Crystal", locale), items: GEMS, k: "gem" as const },
+                  { label: pick("Луч", "Ray", locale), items: RAYS, k: "ray" as const },
+                  { label: pick("Цель", "Target", locale), items: TARGETS, k: "target" as const },
+                ]).map((g) => (
+                  <div key={g.k}>
+                    <div className="text-[10px] uppercase tracking-wider text-white/35 mb-1.5">{g.label}</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {g.items.map((it) => (
+                        <button
+                          key={it.v}
+                          onClick={() => setStyle(g.k, it.v as never)}
+                          className={`h-7 px-2.5 rounded-md text-[11px] border transition-colors ${
+                            styleUi[g.k] === it.v
+                              ? "border-white/70 text-white bg-white/10"
+                              : "border-white/15 text-white/50 hover:text-white/80"
+                          }`}
+                        >
+                          {pick(it.ru, it.en, locale)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                <div className="flex gap-1.5 pt-1">
+                  <button
+                    onClick={() => applyPreset({ gem: "pixel", ray: "thread", target: "brackets" })}
+                    className="h-7 px-2.5 rounded-md text-[11px] border border-[#A6FF00]/40 text-[#A6FF00]/90 hover:bg-[#A6FF00]/10 transition-colors"
+                  >
+                    {pick("Пресет: LED", "Preset: LED", locale)}
+                  </button>
+                  <button
+                    onClick={() => applyPreset({ gem: "crystal", ray: "comet", target: "iris" })}
+                    className="h-7 px-2.5 rounded-md text-[11px] border border-white/25 text-white/70 hover:bg-white/10 transition-colors"
+                  >
+                    {pick("Пресет: Хрусталь", "Preset: Crystal", locale)}
+                  </button>
+                  <button
+                    onClick={() => applyPreset({ ...V3_STYLE_DEFAULTS })}
+                    className="h-7 px-2.5 rounded-md text-[11px] border border-white/15 text-white/50 hover:text-white/80 transition-colors"
+                  >
+                    {pick("Сброс", "Reset", locale)}
+                  </button>
+                </div>
+              </div>
+            )}
             <div className="text-[11px] uppercase tracking-wider text-white/50">{pick("Параметры V2", "V2 parameters", locale)}</div>
             <Slider label={pick("Скорость луча", "Ray speed", locale)} value={ui.raySpeed} min={0} max={80} step={2} onChange={(v) => set("raySpeed", v)} />
             <Slider label={pick("Шаг точек луча", "Ray dot spacing", locale)} value={ui.rayStep} min={4} max={14} step={1} onChange={(v) => set("rayStep", v)} />

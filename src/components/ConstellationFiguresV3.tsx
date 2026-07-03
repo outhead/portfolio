@@ -39,6 +39,13 @@ const GRID = "150,160,138";
 const clamp = (v: number, lo: number, hi: number) => (v < lo ? lo : v > hi ? hi : v);
 const css = (c: [number, number, number], a = 1) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
 
+/* Стили элементов — переключаются в песочнице без пересоздания сцены */
+export type GemStyle = "octa" | "brilliant" | "crystal" | "pixel" | "cluster";
+export type RayStyle = "dots" | "thread" | "double" | "comet" | "wave";
+export type TargetStyle = "ring" | "crosshair" | "iris" | "rings2" | "brackets";
+export type V3Style = { gem: GemStyle; ray: RayStyle; target: TargetStyle };
+export const V3_STYLE_DEFAULTS: V3Style = { gem: "octa", ray: "dots", target: "ring" };
+
 type Particle = { x: number; y: number; vx: number; vy: number; born: number; life: number; c: [number, number, number]; sz: number };
 
 export default function ConstellationFiguresV3({
@@ -46,12 +53,14 @@ export default function ConstellationFiguresV3({
   level = MENTORING_LEVEL,
   lockMirror = true,
   paramsRef,
+  styleRef,
   onSolve,
 }: {
   className?: string;
   level?: Level;
   lockMirror?: boolean;
   paramsRef?: React.MutableRefObject<V2Params>;
+  styleRef?: React.MutableRefObject<V3Style>;
   onSolve?: () => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -82,6 +91,7 @@ export default function ConstellationFiguresV3({
     const parts: Particle[] = [];
 
     const P = () => paramsRef?.current ?? V2_DEFAULTS;
+    const S = () => styleRef?.current ?? V3_STYLE_DEFAULTS;
 
     function layoutFromLevel() {
       live.emitter = { x: level.emitter.x * LW, y: level.emitter.y * LH };
@@ -115,32 +125,63 @@ export default function ConstellationFiguresV3({
       ctx!.fillRect(x - sz / 2, y - sz / 2, sz, sz);
     }
 
-    /** бегущий луч + тень; disperse=true — первые ~22px цвет раскрывается из белого */
+    /** бегущий луч + тень; disperse=true — первые ~22px цвет раскрывается из белого.
+     *  Стиль отрисовки — S().ray: dots / thread / double / comet / wave. */
     function ray(a: Pt, b: Pt, key: ColorKey, t: number, disperse = false) {
       const c = COLORS[key];
       const W0 = COLORS.white;
       const len = Math.hypot(b.x - a.x, b.y - a.y);
       if (len < 1) return;
+      const style = S().ray;
       const ux = (b.x - a.x) / len, uy = (b.y - a.y) / len;
+      const nx = -uy, ny = ux; // перпендикуляр
       const step = Math.max(4, coarse ? Math.min(P().rayStep, 8) : P().rayStep);
       const phase = ((t * P().raySpeed) % step + step) % step;
       const baseA = key === "white" ? 0.78 : 0.95;
+
+      // нить: сплошная тонкая линия-подложка
+      if (style === "thread") {
+        ctx!.strokeStyle = css(c, 0.22);
+        ctx!.lineWidth = 1.1;
+        ctx!.beginPath();
+        ctx!.moveTo(a.x, a.y);
+        ctx!.lineTo(b.x, b.y);
+        ctx!.stroke();
+      }
+
+      const mix = (d: number): [number, number, number] => {
+        if (!disperse || d >= 22) return c;
+        const k = d / 22;
+        return [
+          Math.round(W0[0] + (c[0] - W0[0]) * k),
+          Math.round(W0[1] + (c[1] - W0[1]) * k),
+          Math.round(W0[2] + (c[2] - W0[2]) * k),
+        ];
+      };
+
       for (let d = phase; d < len; d += step) {
         const w = 0.82 + 0.18 * Math.sin(d * 0.55 - t * 5);
         const near = Math.min(1, d / 26);
-        const x = a.x + ux * d, y = a.y + uy * d;
-        // дисперсия: цвет рождается из белого на первых сантиметрах после призмы
-        let cc = c;
-        if (disperse && d < 22) {
-          const k = d / 22;
-          cc = [
-            Math.round(W0[0] + (c[0] - W0[0]) * k),
-            Math.round(W0[1] + (c[1] - W0[1]) * k),
-            Math.round(W0[2] + (c[2] - W0[2]) * k),
-          ] as [number, number, number];
+        let x = a.x + ux * d, y = a.y + uy * d;
+        const cc = mix(d);
+        const alpha = baseA * w * (0.7 + 0.3 * near);
+        // волна: поперечное колыхание малой амплитудой
+        if (style === "wave" && !reduce) {
+          const off = Math.sin(d * 0.3 + t * 3) * 1.2;
+          x += nx * off; y += ny * off;
         }
-        px(x + 1.5, y + 5, 1.4, css(cc, 0.12 * w));
-        px(x, y, 2.2 + 0.5 * w, css(cc, baseA * w * (0.7 + 0.3 * near)));
+        px(x + 1.5, y + 5, 1.4, css(cc, 0.12 * w)); // тень-отражение
+        if (style === "double") {
+          px(x + nx * 1.2, y + ny * 1.2, 1.7, css(cc, alpha * 0.9));
+          px(x - nx * 1.2, y - ny * 1.2, 1.7, css(cc, alpha * 0.9));
+        } else {
+          px(x, y, 2.2 + 0.5 * w, css(cc, alpha));
+        }
+        // комета: затухающий хвост против движения
+        if (style === "comet") {
+          px(x - ux * 2.6, y - uy * 2.6, 1.6, css(cc, alpha * 0.5));
+          px(x - ux * 5.2, y - uy * 5.2, 1.1, css(cc, alpha * 0.22));
+        }
       }
       dot(a.x + ux * 3, a.y + uy * 3, 1.6, css(disperse ? W0 : c, 0.9), 10, `${c[0]},${c[1]},${c[2]}`);
     }
@@ -185,18 +226,75 @@ export default function ConstellationFiguresV3({
       // мягкая подсветка под кристаллом (цветная)
       dot(p.x - size / 3, y0, size * 0.5, css(cl, 0.08), 14 + lift * 8, `${cl[0]},${cl[1]},${cl[2]}`);
       dot(p.x + size / 3, y0, size * 0.5, css(cr, 0.08), 14 + lift * 8, `${cr[0]},${cr[1]},${cr[2]}`);
-      // рёбра: топ→экватор и низ→экватор
+      const style = S().gem;
       const nz = (z: number) => z / sxz; // -1..1
-      for (const v of eq) {
-        edge3(0, -size, 0, v.x, 0, nz(v.z), cl, cr, p.x, y0, dim);
-        edge3(0, size, 0, v.x, 0, nz(v.z), cl, cr, p.x, y0, dim);
+
+      // каркас октаэдра — базовая форма для octa / crystal / brilliant / cluster
+      const frame = (cx: number, cy: number, sz: number, mul: number) => {
+        const sx2 = sz * 0.78;
+        const eqL = [
+          { x: -sx2, z: 0 }, { x: sx2, z: 0 }, { x: 0, z: -sx2 }, { x: 0, z: sx2 },
+        ].map((v) => ({ x: v.x * cos + v.z * sin, z: (-v.x * sin + v.z * cos) / sx2 }));
+        for (const v of eqL) {
+          edge3(0, -sz, 0, v.x, 0, v.z, cl, cr, cx, cy, mul);
+          edge3(0, sz, 0, v.x, 0, v.z, cl, cr, cx, cy, mul);
+        }
+        const rr = [eqL[0], eqL[2], eqL[1], eqL[3]];
+        for (let i = 0; i < 4; i++) {
+          const a = rr[i], b = rr[(i + 1) % 4];
+          edge3(a.x, 0, a.z, b.x, 0, b.z, cl, cr, cx, cy, mul);
+        }
+      };
+
+      if (style === "pixel") {
+        // честный 2D-самоцвет: заполненный ромб, две половины, диагональный блик
+        for (let i = -size; i <= size; i++) {
+          const w = size - Math.abs(i);
+          for (let j = -w; j <= w; j += 2) {
+            const c = j < 0 ? cl : cr;
+            const edgeHl = i < 0 && Math.abs(j) >= w - 2 ? 1.35 : 1;
+            ctx!.fillStyle = css(
+              [Math.min(255, c[0] * edgeHl), Math.min(255, c[1] * edgeHl), Math.min(255, c[2] * edgeHl)],
+              Math.min(1, (0.9 + 0.1 * Math.sin(t * 2.2 + i + j)) * dim + lift * 0.1),
+            );
+            ctx!.fillRect(p.x + j - 0.9, y0 + i - 0.9, 1.8, 1.8);
+          }
+        }
+        // диагональный блик
+        for (let k = 0; k < 4; k++) px(p.x - size * 0.5 + k * 2, y0 - size * 0.6 + k * 2, 1.4, `rgba(255,255,248,${0.5 * dim})`);
+      } else if (style === "cluster") {
+        frame(p.x, y0, size, dim);
+        frame(p.x - size * 1.05, y0 + size * 0.45, size * 0.45, dim * 0.8);
+        frame(p.x + size * 0.95, y0 + size * 0.55, size * 0.32, dim * 0.7);
+      } else if (style === "crystal") {
+        // хрусталь: каркас тише + дуги-блики внутри
+        frame(p.x, y0, size, dim * 0.75);
+        for (let k = 0; k < 5; k++) {
+          const a = -0.9 + k * 0.22;
+          px(p.x + Math.cos(a) * size * 0.42, y0 + Math.sin(a) * size * 0.55, 1.1, `rgba(255,255,250,${(0.35 - k * 0.05) * dim})`);
+        }
+        for (let k = 0; k < 3; k++) {
+          const a = 1.6 + k * 0.3;
+          px(p.x + Math.cos(a) * size * 0.3, y0 + Math.sin(a) * size * 0.4, 1, `rgba(255,255,250,${0.2 * dim})`);
+        }
+      } else if (style === "brilliant") {
+        // гранёный: каркас + заливка точками, яркость по квадрантам
+        frame(p.x, y0, size, dim);
+        for (let iy = -size + 2; iy <= size - 2; iy += 3) {
+          const w = (size - Math.abs(iy)) * 0.78;
+          for (let ix = -w + 1; ix <= w - 1; ix += 3) {
+            const c = ix < 0 ? cl : cr;
+            const facet = (ix < 0 ? 1 : 0) + (iy < 0 ? 2 : 0);
+            const fb = [0.55, 0.75, 0.95, 0.4][facet];
+            px(p.x + ix, y0 + iy, 1.2, css(c, fb * dim * (0.8 + 0.2 * Math.sin(t * 2 + ix + iy))));
+          }
+        }
+      } else {
+        // octa — проволочный октаэдр (текущий)
+        frame(p.x, y0, size, dim);
       }
-      // экваториальный пояс — соседи по кругу
-      const ring = [eq[0], eq[2], eq[1], eq[3]];
-      for (let i = 0; i < 4; i++) {
-        const a = ring[i], b = ring[(i + 1) % 4];
-        edge3(a.x, 0, nz(a.z), b.x, 0, nz(b.z), cl, cr, p.x, y0, dim);
-      }
+      void nz; void eq;
+
       // ядро: рабочая призма горит изнутри цветами своих лучей
       if (working && !reduce) {
         active.forEach((k, ki) => {
@@ -227,17 +325,9 @@ export default function ConstellationFiguresV3({
       }
     }
 
-    /** цель: пунктирный круг + огонёк при попадании; near 0..1 — «почти попал», кольцо волнуется */
-    function targetRing(tg: Target, on: boolean, t: number, i: number, nearHit = 0) {
+    /** огонёк/маячок в центре цели — общий для всех стилей */
+    function targetCore(tg: Target, on: boolean, t: number, i: number) {
       const c = COLORS[tg.key];
-      const jitter = on || reduce ? 0 : nearHit * (1 + Math.sin(t * 10 + i) * 1.3);
-      for (let a = 0; a < Math.PI * 2; a += 0.5)
-        dot(
-          tg.x + Math.cos(a) * (7 + jitter * Math.sin(a * 3 + t * 8)),
-          tg.y + Math.sin(a) * (7 + jitter * Math.cos(a * 2 - t * 7)),
-          1.3,
-          css(c, on ? 0.85 : 0.45 + nearHit * 0.35),
-        );
       if (on) {
         dot(tg.x, tg.y, 10, css(c, 0.12), 20, `${c[0]},${c[1]},${c[2]}`);
         const fl = reduce ? 1 : 0.75 + 0.25 * Math.sin(t * 9 + i * 2);
@@ -247,6 +337,65 @@ export default function ConstellationFiguresV3({
         const bp = reduce ? 0 : 0.5 + 0.5 * Math.sin(t * 2 + i * 1.7);
         dot(tg.x, tg.y, 1.6, css(c, 0.3 + bp * 0.25));
       }
+    }
+
+    /** цель; near 0..1 — «почти попал». Стиль — S().target. */
+    function targetRing(tg: Target, on: boolean, t: number, i: number, nearHit = 0) {
+      const c = COLORS[tg.key];
+      const style = S().target;
+      const jitter = on || reduce ? 0 : nearHit * (1 + Math.sin(t * 10 + i) * 1.3);
+      const aBase = on ? 0.85 : 0.45 + nearHit * 0.35;
+
+      if (style === "brackets") {
+        // четыре уголка [ ] — рифма с лейблами сайта; дрожат при почти-попадании
+        const r = 8 + (on ? 0 : jitter * 0.6);
+        const L = 3.5;
+        for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]] as const) {
+          const cx = tg.x + sx * r, cy = tg.y + sy * r;
+          for (let k = 0; k <= 2; k++) {
+            px(cx - sx * (k * L) / 2, cy, 1.3, css(c, aBase));
+            px(cx, cy - sy * (k * L) / 2, 1.3, css(c, aBase));
+          }
+        }
+        targetCore(tg, on, t, i);
+        return;
+      }
+
+      if (style === "iris") {
+        // диафрагма: кольцо стягивается к центру при попадании и медленно вращается
+        const r = on ? 4.2 : 7 + jitter * 0.5;
+        const spin = on ? t * 1.2 : 0;
+        for (let k = 0; k < 10; k++) {
+          const a = (k / 10) * Math.PI * 2 + spin;
+          dot(tg.x + Math.cos(a) * r, tg.y + Math.sin(a) * r, 1.3, css(c, aBase));
+        }
+        targetCore(tg, on, t, i);
+        return;
+      }
+
+      if (style === "rings2") {
+        for (let a = 0; a < Math.PI * 2; a += 0.6) dot(tg.x + Math.cos(a) * 9, tg.y + Math.sin(a) * 9, 1.1, css(c, aBase * 0.45));
+        const rp = reduce ? 5 : 5 + Math.sin(t * 3 + i) * 0.8 + jitter * 0.5;
+        for (let a = 0.3; a < Math.PI * 2; a += 0.6) dot(tg.x + Math.cos(a) * rp, tg.y + Math.sin(a) * rp, 1.3, css(c, aBase));
+        targetCore(tg, on, t, i);
+        return;
+      }
+
+      // ring / crosshair — базовый пунктирный круг
+      for (let a = 0; a < Math.PI * 2; a += 0.5)
+        dot(
+          tg.x + Math.cos(a) * (7 + jitter * Math.sin(a * 3 + t * 8)),
+          tg.y + Math.sin(a) * (7 + jitter * Math.cos(a * 2 - t * 7)),
+          1.3,
+          css(c, aBase),
+        );
+      if (style === "crosshair") {
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+          px(tg.x + dx * 10, tg.y + dy * 10, 1.4, css(c, aBase));
+          px(tg.x + dx * 12.5, tg.y + dy * 12.5, 1.1, css(c, aBase * 0.6));
+        }
+      }
+      targetCore(tg, on, t, i);
     }
 
     function draw(now: number) {
