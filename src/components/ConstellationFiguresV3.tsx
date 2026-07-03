@@ -32,7 +32,6 @@ import {
   type Target,
 } from "@/lib/optics";
 import type { V2Params } from "@/components/ConstellationFiguresV2";
-import { V2_DEFAULTS } from "@/components/ConstellationFiguresV2";
 
 const LW = FIELD_W, LH = FIELD_H;
 const GRID = "150,160,138";
@@ -44,7 +43,9 @@ export type GemStyle = "octa" | "brilliant" | "crystal" | "pixel" | "cluster";
 export type RayStyle = "dots" | "thread" | "double" | "comet" | "wave";
 export type TargetStyle = "ring" | "crosshair" | "iris" | "rings2" | "brackets";
 export type V3Style = { gem: GemStyle; ray: RayStyle; target: TargetStyle };
-export const V3_STYLE_DEFAULTS: V3Style = { gem: "octa", ray: "dots", target: "ring" };
+/** Дефолты прода — связка, выбранная в песочнице 04.07.2026 */
+export const V3_STYLE_DEFAULTS: V3Style = { gem: "brilliant", ray: "comet", target: "ring" };
+export const V3_PARAM_DEFAULTS: V2Params = { raySpeed: 4, rayStep: 6, gemSize: 8, glow: 2, particles: true };
 
 type Particle = { x: number; y: number; vx: number; vy: number; born: number; life: number; c: [number, number, number]; sz: number };
 
@@ -90,7 +91,7 @@ export default function ConstellationFiguresV3({
     let prevHits: boolean[] = [];
     const parts: Particle[] = [];
 
-    const P = () => paramsRef?.current ?? V2_DEFAULTS;
+    const P = () => paramsRef?.current ?? V3_PARAM_DEFAULTS;
     const S = () => styleRef?.current ?? V3_STYLE_DEFAULTS;
 
     function layoutFromLevel() {

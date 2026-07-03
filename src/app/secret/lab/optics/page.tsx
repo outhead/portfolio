@@ -6,8 +6,9 @@
 
 import { useRef, useState } from "react";
 import ConstellationFigures from "@/components/ConstellationFigures";
-import ConstellationFiguresV2, { V2_DEFAULTS, type V2Params } from "@/components/ConstellationFiguresV2";
+import ConstellationFiguresV2, { type V2Params } from "@/components/ConstellationFiguresV2";
 import ConstellationFiguresV3, {
+  V3_PARAM_DEFAULTS,
   V3_STYLE_DEFAULTS,
   type GemStyle,
   type RayStyle,
@@ -41,8 +42,8 @@ function Slider({
 
 export default function OpticsLabPage() {
   const locale = useLocale();
-  const paramsRef = useRef<V2Params>({ ...V2_DEFAULTS });
-  const [ui, setUi] = useState<V2Params>({ ...V2_DEFAULTS });
+  const paramsRef = useRef<V2Params>({ ...V3_PARAM_DEFAULTS });
+  const [ui, setUi] = useState<V2Params>({ ...V3_PARAM_DEFAULTS });
   const [mode, setMode] = useState<"v3" | "v2" | "v1">("v3");
   const [nonce, setNonce] = useState(0); // пересоздать сцену (reset)
   const [solved, setSolved] = useState(false);
