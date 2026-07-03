@@ -315,7 +315,7 @@ interface ProjectCardProps {
   wide?: boolean;
   /** Тег-строка в правом верхнем углу (LED). false — угол пустой. */
   showTags?: boolean;
-  /** Мета-строка «год · роль» под тайтлом. false — скрыть. */
+  /** Мета-строка «год · роль» под тайтлом. По умолчанию скрыта; true — показать. */
   showMeta?: boolean;
 }
 
@@ -325,7 +325,7 @@ export default function ProjectCard({
   featured = false,
   wide = false,
   showTags = true,
-  showMeta = true,
+  showMeta = false,
 }: ProjectCardProps) {
   const locale = useLocale();
   // Ref для hover/IO. Hover отслеживаем сами в JS, потому что нужно
