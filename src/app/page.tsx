@@ -2219,7 +2219,7 @@ export default function PreviewHome() {
                 </div>
                 {/* Текст */}
                 <Link
-                  href="/speaking"
+                  href={localizedHref("/speaking", homeLocale)}
                   data-ym-goal="nav_speaking"
                   data-ym-goal-params='{"placement":"offer_blocks"}'
                   className="group no-underline p-6 md:p-8 flex flex-col justify-center gap-5 md:gap-6"

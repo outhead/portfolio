@@ -10,7 +10,7 @@ import Link from "next/link";
 import LedText from "@/components/LedText";
 import { LedLines } from "@/components/LedBoard";
 import { useLocale } from "@/lib/useLocale";
-import { pick } from "@/lib/i18n";
+import { pick, localizedHref } from "@/lib/i18n";
 
 const MAX_LEN = 24;
 
@@ -112,7 +112,7 @@ export default function LedDemo() {
         {/* Низ */}
         <div className="mt-auto pt-10 flex flex-col gap-4">
           <Link
-            href="/cases/led-font-engine"
+            href={localizedHref("/cases/led-font-engine", locale)}
             data-ym-goal="led_demo_to_case"
             className="inline-flex items-center gap-2 text-white/60 hover:text-[#A6FF00] transition-colors no-underline"
           >

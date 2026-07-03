@@ -9,6 +9,8 @@ import { CardCoverVideo } from "@/components/CoverVideo";
 import PixelCubePile from "@/components/PixelCubePile";
 import ParticlePortrait from "@/components/ParticlePortrait";
 import { layoutLedText, LED_ROWS } from "@/components/ledFont";
+import { useLocale } from "@/lib/useLocale";
+import { localizedHref } from "@/lib/i18n";
 
 /**
  * LedCover — единый LED-экран карточки на ОДНОЙ решётке диодов.
@@ -325,6 +327,7 @@ export default function ProjectCard({
   showTags = true,
   showMeta = true,
 }: ProjectCardProps) {
+  const locale = useLocale();
   // Ref для hover/IO. Hover отслеживаем сами в JS, потому что нужно
   // удерживать cover видимым пока видео доигрывается после mouseleave.
   const articleRef = useRef<HTMLElement>(null);
@@ -427,7 +430,7 @@ export default function ProjectCard({
 
   return (
     <Link
-      href={`/cases/${project.slug}`}
+      href={localizedHref(`/cases/${project.slug}`, locale)}
       data-ym-goal="case_open"
       data-ym-goal-params={goalParams}
       className="no-underline group h-full block"
