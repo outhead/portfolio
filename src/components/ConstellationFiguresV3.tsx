@@ -125,9 +125,8 @@ export default function ConstellationFiguresV3({
         const w = 0.82 + 0.18 * Math.sin(d * 0.55 - t * 5);
         const near = Math.min(1, d / 26);
         const x = a.x + ux * d, y = a.y + uy * d;
-        // тень луча
-        px(x + 2, y + 5, 1.6, `rgba(0,0,0,0.35)`);
-        px(x + 2, y + 5, 1.4, css(c, 0.06));
+        // «тень»-отражение луча на тёмном полу — приглушённый цвет со смещением
+        px(x + 1.5, y + 5, 1.4, css(c, 0.12 * w));
         // сам луч
         px(x, y, 2.2 + 0.5 * w, css(c, baseA * w * (0.7 + 0.3 * near)));
       }
@@ -159,13 +158,14 @@ export default function ConstellationFiguresV3({
       const eq = [
         { x: -sxz, z: 0 }, { x: sxz, z: 0 }, { x: 0, z: -sxz }, { x: 0, z: sxz },
       ].map((v) => ({ x: v.x * cos + v.z * sin, z: -v.x * sin + v.z * cos }));
-      // тень на полу
+      // «тень»-отражение на полу: эллипс из приглушённых цветных точек
       const shR = size * 0.9 - lift * 1.5;
-      for (let i = 0; i < 10; i++) {
-        const a = (i / 10) * Math.PI * 2;
-        px(p.x + Math.cos(a) * shR, p.y + size + 5 + Math.sin(a) * shR * 0.32, 1.3, `rgba(0,0,0,${0.35 - lift * 0.08})`);
+      for (let i = 0; i < 12; i++) {
+        const a = (i / 12) * Math.PI * 2;
+        const xx = Math.cos(a) * shR;
+        const c = xx < 0 ? cl : cr;
+        px(p.x + xx, p.y + size + 5 + Math.sin(a) * shR * 0.3, 1.2, css(c, 0.16 - lift * 0.05));
       }
-      px(p.x, p.y + size + 5, shR, "rgba(0,0,0,0.001)"); // стабилизация субпиксельного мерцания
       // мягкая подсветка под кристаллом (цветная)
       dot(p.x - size / 3, y0, size * 0.5, css(cl, 0.08), 14 + lift * 8, `${cl[0]},${cl[1]},${cl[2]}`);
       dot(p.x + size / 3, y0, size * 0.5, css(cr, 0.08), 14 + lift * 8, `${cr[0]},${cr[1]},${cr[2]}`);
