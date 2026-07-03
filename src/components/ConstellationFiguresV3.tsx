@@ -151,7 +151,9 @@ export default function ConstellationFiguresV3({
       const cl = COLORS[clKey], cr = COLORS[crKey];
       const bob = reduce ? 0 : Math.sin(t * 1.6 + p.x * 0.05) * 1.2;
       const y0 = p.y + bob - lift * 3;
-      const ang = reduce ? 0.5 : t * (0.7 + lift * 0.9) + p.x * 0.01;
+      // призма статична: свет делится гранью, вращение ломало бы физику.
+      // Фиксированный ракурс + чуть другой угол у каждого камня (по x).
+      const ang = 0.55 + Math.sin(p.x * 0.02) * 0.25;
       const cos = Math.cos(ang), sin = Math.sin(ang);
       const sxz = size * 0.78; // экватор чуть уже высоты — огранка
       // вершины: топ, низ и 4 экваториальные (x,z вращаются)
@@ -198,33 +200,20 @@ export default function ConstellationFiguresV3({
       }
     }
 
-    /** цель: площадка-эллипс в перспективе + столб света при попадании */
-    function targetPad(tg: Target, on: boolean, t: number, i: number) {
+    /** цель: пунктирный круг (как в проде) + огонёк при попадании */
+    function targetRing(tg: Target, on: boolean, t: number, i: number) {
       const c = COLORS[tg.key];
-      const rx = 9, ry = 3.8;
-      // площадка из точек
-      const n = 14;
-      for (let k = 0; k < n; k++) {
-        const a = (k / n) * Math.PI * 2 + (on ? t * 0.6 : 0);
-        px(tg.x + Math.cos(a) * rx, tg.y + 3 + Math.sin(a) * ry, 1.5, css(c, on ? 0.9 : 0.4));
+      for (let a = 0; a < Math.PI * 2; a += 0.5)
+        dot(tg.x + Math.cos(a) * 7, tg.y + Math.sin(a) * 7, 1.3, css(c, on ? 0.85 : 0.45));
+      if (on) {
+        dot(tg.x, tg.y, 10, css(c, 0.12), 20, `${c[0]},${c[1]},${c[2]}`);
+        const fl = reduce ? 1 : 0.75 + 0.25 * Math.sin(t * 9 + i * 2);
+        dot(tg.x, tg.y, 4.2 * fl, css(c, 0.95), 16, `${c[0]},${c[1]},${c[2]}`);
+        dot(tg.x, tg.y, 1.8, "rgba(255,255,240,1)", 8, `${c[0]},${c[1]},${c[2]}`);
+      } else {
+        const bp = reduce ? 0 : 0.5 + 0.5 * Math.sin(t * 2 + i * 1.7);
+        dot(tg.x, tg.y, 1.6, css(c, 0.3 + bp * 0.25));
       }
-      // маячок в центре
-      const bp = reduce ? 0.5 : 0.5 + 0.5 * Math.sin(t * 2 + i * 1.7);
-      dot(tg.x, tg.y + 3, 1.6, css(c, on ? 0.95 : 0.25 + bp * 0.25), on ? 10 : 0, `${c[0]},${c[1]},${c[2]}`);
-      // столб света
-      const colH = 26;
-      const steps = 7;
-      for (let k = 1; k <= steps; k++) {
-        const yy = tg.y + 3 - (colH * k) / steps;
-        const fl = reduce ? 1 : 0.7 + 0.3 * Math.sin(t * 7 + k * 1.3 + i * 2);
-        const alpha = on ? (1 - k / (steps + 1)) * 0.75 * fl : (1 - k / (steps + 1)) * 0.1;
-        px(tg.x, yy, on ? 2.1 : 1.5, css(c, alpha));
-        if (on) {
-          px(tg.x - 2.5, yy + 1, 1.1, css(c, alpha * 0.45));
-          px(tg.x + 2.5, yy + 1, 1.1, css(c, alpha * 0.45));
-        }
-      }
-      if (on) dot(tg.x, tg.y + 3 - colH, 1.8, "rgba(255,255,240,0.95)", 10, `${c[0]},${c[1]},${c[2]}`);
     }
 
     function draw(now: number) {
@@ -280,8 +269,8 @@ export default function ConstellationFiguresV3({
         dot(mA.x, mA.y, 3, `rgba(${GRID},0.9)`);
       }
 
-      // цели-площадки
-      targetsPx.forEach((tg, i) => targetPad(tg, hits[i], t, i));
+      // цели — пунктирные круги
+      targetsPx.forEach((tg, i) => targetRing(tg, hits[i], t, i));
 
       // кристаллы-октаэдры
       const gs = Math.max(p.gemSize, Math.min(15, 20 / s));
