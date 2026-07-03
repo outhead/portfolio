@@ -18,8 +18,11 @@ import {
   COLORS,
   FIELD_H,
   FIELD_W,
+  HITR,
   MENTORING_LEVEL,
+  STONE_R,
   mirrorEnds,
+  segDist,
   targetHits,
   trace,
   type ColorKey,
@@ -112,9 +115,10 @@ export default function ConstellationFiguresV3({
       ctx!.fillRect(x - sz / 2, y - sz / 2, sz, sz);
     }
 
-    /** бегущий луч + тонкая тень на «полу» (смещение вниз) */
-    function ray(a: Pt, b: Pt, key: ColorKey, t: number) {
+    /** бегущий луч + тень; disperse=true — первые ~22px цвет раскрывается из белого */
+    function ray(a: Pt, b: Pt, key: ColorKey, t: number, disperse = false) {
       const c = COLORS[key];
+      const W0 = COLORS.white;
       const len = Math.hypot(b.x - a.x, b.y - a.y);
       if (len < 1) return;
       const ux = (b.x - a.x) / len, uy = (b.y - a.y) / len;
@@ -125,16 +129,24 @@ export default function ConstellationFiguresV3({
         const w = 0.82 + 0.18 * Math.sin(d * 0.55 - t * 5);
         const near = Math.min(1, d / 26);
         const x = a.x + ux * d, y = a.y + uy * d;
-        // «тень»-отражение луча на тёмном полу — приглушённый цвет со смещением
-        px(x + 1.5, y + 5, 1.4, css(c, 0.12 * w));
-        // сам луч
-        px(x, y, 2.2 + 0.5 * w, css(c, baseA * w * (0.7 + 0.3 * near)));
+        // дисперсия: цвет рождается из белого на первых сантиметрах после призмы
+        let cc = c;
+        if (disperse && d < 22) {
+          const k = d / 22;
+          cc = [
+            Math.round(W0[0] + (c[0] - W0[0]) * k),
+            Math.round(W0[1] + (c[1] - W0[1]) * k),
+            Math.round(W0[2] + (c[2] - W0[2]) * k),
+          ] as [number, number, number];
+        }
+        px(x + 1.5, y + 5, 1.4, css(cc, 0.12 * w));
+        px(x, y, 2.2 + 0.5 * w, css(cc, baseA * w * (0.7 + 0.3 * near)));
       }
-      dot(a.x + ux * 3, a.y + uy * 3, 1.6, css(c, 0.9), 10, `${c[0]},${c[1]},${c[2]}`);
+      dot(a.x + ux * 3, a.y + uy * 3, 1.6, css(disperse ? W0 : c, 0.9), 10, `${c[0]},${c[1]},${c[2]}`);
     }
 
-    /** точки вдоль отрезка 3D-проекции */
-    function edge3(ax: number, ay: number, az: number, bx: number, by: number, bz: number, cl: [number, number, number], cr: [number, number, number], cx: number, cy: number) {
+    /** точки вдоль отрезка 3D-проекции; mul — общий множитель яркости */
+    function edge3(ax: number, ay: number, az: number, bx: number, by: number, bz: number, cl: [number, number, number], cr: [number, number, number], cx: number, cy: number, mul = 1) {
       const segs = 5;
       for (let i = 0; i <= segs; i++) {
         const t = i / segs;
@@ -142,12 +154,14 @@ export default function ConstellationFiguresV3({
         // ближе к камере (z больше) — ярче и крупнее
         const depth = (z + 1) / 2; // 0..1
         const c = x < 0 ? cl : cr;
-        px(cx + x * 1, cy + y * 1, 1.5 + depth * 1.1, css(c, 0.35 + depth * 0.6));
+        px(cx + x * 1, cy + y * 1, 1.5 + depth * 1.1, css(c, (0.35 + depth * 0.6) * mul));
       }
     }
 
-    /** кристалл: проволочный октаэдр из точек, вращение по Y, тень на полу */
-    function gem3d(p: Pt, size: number, clKey: ColorKey, crKey: ColorKey, t: number, lift: number) {
+    /** кристалл: проволочный октаэдр из точек; active — цвета лучей, идущих через призму */
+    function gem3d(p: Pt, size: number, clKey: ColorKey, crKey: ColorKey, t: number, lift: number, active: ColorKey[]) {
+      const working = active.length > 0;
+      const dim = working ? 1 : 0.55; // простаивающая призма тусклее
       const cl = COLORS[clKey], cr = COLORS[crKey];
       const bob = reduce ? 0 : Math.sin(t * 1.6 + p.x * 0.05) * 1.2;
       const y0 = p.y + bob - lift * 3;
@@ -174,18 +188,31 @@ export default function ConstellationFiguresV3({
       // рёбра: топ→экватор и низ→экватор
       const nz = (z: number) => z / sxz; // -1..1
       for (const v of eq) {
-        edge3(0, -size, 0, v.x, 0, nz(v.z), cl, cr, p.x, y0);
-        edge3(0, size, 0, v.x, 0, nz(v.z), cl, cr, p.x, y0);
+        edge3(0, -size, 0, v.x, 0, nz(v.z), cl, cr, p.x, y0, dim);
+        edge3(0, size, 0, v.x, 0, nz(v.z), cl, cr, p.x, y0, dim);
       }
       // экваториальный пояс — соседи по кругу
       const ring = [eq[0], eq[2], eq[1], eq[3]];
       for (let i = 0; i < 4; i++) {
         const a = ring[i], b = ring[(i + 1) % 4];
-        edge3(a.x, 0, nz(a.z), b.x, 0, nz(b.z), cl, cr, p.x, y0);
+        edge3(a.x, 0, nz(a.z), b.x, 0, nz(b.z), cl, cr, p.x, y0, dim);
+      }
+      // ядро: рабочая призма горит изнутри цветами своих лучей
+      if (working && !reduce) {
+        active.forEach((k, ki) => {
+          const c = COLORS[k];
+          const ph = t * 4 + ki * 2.1;
+          const rr = 1.6 + Math.sin(ph) * 0.7;
+          const ox = Math.cos(ph * 0.7 + ki) * size * 0.18;
+          const oy = Math.sin(ph * 0.9 + ki * 1.7) * size * 0.22;
+          dot(p.x + ox, y0 + oy, Math.max(0.8, rr), css(c, 0.55 + 0.3 * Math.sin(ph)), 8, `${c[0]},${c[1]},${c[2]}`);
+        });
+      } else if (working) {
+        dot(p.x, y0, 1.8, css(COLORS[active[0]], 0.7));
       }
       // вершинные точки — ярче
-      px(p.x, y0 - size, 2.2, "rgba(255,255,248,0.95)");
-      px(p.x, y0 + size, 2.0, css(cl, 0.8));
+      px(p.x, y0 - size, 2.2, `rgba(255,255,248,${0.95 * dim})`);
+      px(p.x, y0 + size, 2.0, css(cl, 0.8 * dim));
       // искра-блик
       if (!reduce) {
         const sp = (t * 0.9 + p.x * 0.013) % 1;
@@ -200,11 +227,17 @@ export default function ConstellationFiguresV3({
       }
     }
 
-    /** цель: пунктирный круг (как в проде) + огонёк при попадании */
-    function targetRing(tg: Target, on: boolean, t: number, i: number) {
+    /** цель: пунктирный круг + огонёк при попадании; near 0..1 — «почти попал», кольцо волнуется */
+    function targetRing(tg: Target, on: boolean, t: number, i: number, nearHit = 0) {
       const c = COLORS[tg.key];
+      const jitter = on || reduce ? 0 : nearHit * (1 + Math.sin(t * 10 + i) * 1.3);
       for (let a = 0; a < Math.PI * 2; a += 0.5)
-        dot(tg.x + Math.cos(a) * 7, tg.y + Math.sin(a) * 7, 1.3, css(c, on ? 0.85 : 0.45));
+        dot(
+          tg.x + Math.cos(a) * (7 + jitter * Math.sin(a * 3 + t * 8)),
+          tg.y + Math.sin(a) * (7 + jitter * Math.cos(a * 2 - t * 7)),
+          1.3,
+          css(c, on ? 0.85 : 0.45 + nearHit * 0.35),
+        );
       if (on) {
         dot(tg.x, tg.y, 10, css(c, 0.12), 20, `${c[0]},${c[1]},${c[2]}`);
         const fl = reduce ? 1 : 0.75 + 0.25 * Math.sin(t * 9 + i * 2);
@@ -246,8 +279,35 @@ export default function ConstellationFiguresV3({
         for (let x = step; x < LW; x += step) px(x, y, 0.8 + depth * 0.5, `rgba(${GRID},${0.03 + depth * 0.04})`);
       }
 
-      // лучи (с тенями)
-      for (const sg of segs) ray(sg.a, sg.b, sg.key, t);
+      // активность призм: через какие камни реально идёт свет
+      const R2 = STONE_R + 6;
+      const entryPts: Array<{ p: Pt } | null> = live.stones.map(() => null);
+      const outCols: ColorKey[][] = live.stones.map(() => []);
+      const segFromStone: boolean[] = segs.map(() => false);
+      segs.forEach((sg, si) => {
+        live.stones.forEach((st, i) => {
+          if (Math.hypot(sg.b.x - st.p.x, sg.b.y - st.p.y) < R2) entryPts[i] = { p: sg.b };
+          if (Math.hypot(sg.a.x - st.p.x, sg.a.y - st.p.y) < R2) {
+            outCols[i].push(sg.key);
+            segFromStone[si] = true;
+          }
+        });
+      });
+
+      // лучи (дисперсия у выходов из призм)
+      segs.forEach((sg, si) => ray(sg.a, sg.b, sg.key, t, segFromStone[si]));
+
+      // каустика: яркая точка + искры в месте входа луча в призму
+      entryPts.forEach((e) => {
+        if (!e) return;
+        dot(e.p.x, e.p.y, 1.9, "rgba(255,255,250,0.95)", 12, "235,238,230");
+        if (!reduce && P().particles) {
+          for (let k = 0; k < 2; k++) {
+            const a = Math.random() * Math.PI * 2, r = 3 + Math.random() * 4;
+            px(e.p.x + Math.cos(a) * r, e.p.y + Math.sin(a) * r, 1, `rgba(255,255,245,${0.25 + Math.random() * 0.35})`);
+          }
+        }
+      });
 
       // эмиттер: пульс
       const pulse = reduce ? 0 : (t * 1.4) % 1;
@@ -269,14 +329,26 @@ export default function ConstellationFiguresV3({
         dot(mA.x, mA.y, 3, `rgba(${GRID},0.9)`);
       }
 
-      // цели — пунктирные круги
-      targetsPx.forEach((tg, i) => targetRing(tg, hits[i], t, i));
+      // цели — пунктирные круги; «почти попал» — кольцо волнуется
+      targetsPx.forEach((tg, i) => {
+        let nearHit = 0;
+        if (!hits[i]) {
+          let minD = 1e9;
+          for (const sg of segs) {
+            if (sg.key !== tg.key) continue;
+            const d = segDist(tg.x, tg.y, sg.a.x, sg.a.y, sg.b.x, sg.b.y);
+            if (d < minD) minD = d;
+          }
+          if (minD > HITR && minD < 30) nearHit = 1 - (minD - HITR) / (30 - HITR);
+        }
+        targetRing(tg, hits[i], t, i, nearHit);
+      });
 
-      // кристаллы-октаэдры
+      // кристаллы-октаэдры (рабочие горят изнутри, простаивающие тусклее)
       const gs = Math.max(p.gemSize, Math.min(15, 20 / s));
       live.stones.forEach((st, i) => {
         const lift = drag?.kind === "stone" && drag.i === i ? 1 : hover === i ? 0.5 : 0;
-        gem3d(st.p, gs, st.minus, st.plus, t, lift);
+        gem3d(st.p, gs, st.minus, st.plus, t, lift, outCols[i]);
       });
 
       // частицы
