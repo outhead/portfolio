@@ -2,15 +2,13 @@
 
 /* ─────────────────────────────────────────────────────────────────
  * LedGridBurst — LED-панель блока «обо мне».
- * Портрет (вырезка с альфой) сэмплится в ту же сетку квадратных ячеек,
- * что и фон, и рисуется поверх тусклой сетки — лицо собрано из отдельных
+ * Портрет (вырезка с альфой) сэмплится в сетку квадратных ячеек и
+ * рисуется поверх тусклой золотой сетки — лицо собрано из отдельных
  * «диодов» с тем же шагом, что под кубом в хиро. Прозрачные ячейки —
- * тусклая золотая сетка. Периодически из точки расходится радиальная
- * волна-«взрыв»: фронт подсвечивает ячейки в тон (лайм → золото к краю);
- * плюс редкие одиночные «загорания» отдельных диодов. Взрыв также по
- * наведению/клику на блок.
+ * тусклая золотая сетка. Живость даёт только редкое одиночное
+ * «загорание» отдельных диодов (искры); радиальных волн-взрывов нет.
  * Перф: статичная база (сетка+портрет) пре-рендерится в offscreen и
- * каждый кадр только домалёвываются вспышки; DPR≤1.5, пауза вне экрана
+ * каждый кадр только домалёвываются искры; DPR≤1.5, пауза вне экрана
  * (IO) и в фоне (visibility), статичная картинка при reduced-motion.
  * ──────────────────────────────────────────────────────────────── */
 
@@ -20,12 +18,10 @@ type Props = {
   /** источник портрета (PNG с альфой); без него — только фоновая сетка */
   src?: string;
   className?: string;
-  /** размер ячейки в CSS-пикселях (шаг сетки) */
+  /** размер ячейки в CSS-пикселях (шаг сетки); меньше = детальнее */
   cell?: number;
   /** доля зазора между ячейками 0..0.5 */
   gap?: number;
-  /** мс между авто-взрывами */
-  interval?: number;
 };
 
 const LIME: [number, number, number] = [166, 255, 0];
@@ -34,9 +30,8 @@ const GOLD: [number, number, number] = [201, 166, 107];
 export default function LedGridBurst({
   src,
   className = "",
-  cell = 8,
+  cell = 5,
   gap = 0.2,
-  interval = 3800,
 }: Props) {
   const ref = useRef<HTMLCanvasElement>(null);
 
@@ -45,7 +40,6 @@ export default function LedGridBurst({
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    const parent = canvas.parentElement;
 
     const reduce =
       typeof window !== "undefined" &&
@@ -57,7 +51,6 @@ export default function LedGridBurst({
       cellPx = cell,
       cols = 0,
       rows = 0;
-    let maxR = 1;
 
     // портрет, сэмплированный в сетку
     let pr: Uint8ClampedArray | null = null; // r,g,b,a по ячейкам
@@ -69,13 +62,8 @@ export default function LedGridBurst({
     const sampler = document.createElement("canvas");
     const sctx = sampler.getContext("2d", { willReadFrequently: true })!;
 
-    type Burst = { x: number; y: number; t: number };
-    let bursts: Burst[] = [];
     type Spark = { gx: number; gy: number; t: number };
     let sparks: Spark[] = [];
-
-    const SPEED = 0.5; // px/мс фронт (×dpr)
-    const WAVE = 44; // толщина волны (CSS-px)
     const SPARK_LIFE = 620;
 
     function roundRect(
@@ -158,16 +146,8 @@ export default function LedGridBurst({
       cellPx = cell * dpr;
       cols = Math.ceil(cw / cellPx);
       rows = Math.ceil(ch / cellPx);
-      maxR = Math.hypot(cw, ch);
       if (imgRef && imgRef.complete && imgRef.naturalWidth) sampleImage(imgRef);
       else buildBase();
-    }
-
-    function addBurst(px?: number, py?: number) {
-      const x = px ?? cw * (0.32 + Math.random() * 0.36);
-      const y = py ?? ch * (0.28 + Math.random() * 0.4);
-      bursts.push({ x, y, t: performance.now() });
-      if (bursts.length > 5) bursts.shift();
     }
 
     function addSpark() {
@@ -186,15 +166,13 @@ export default function LedGridBurst({
       const inset = cellPx * gap * 0.5;
       const side = cellPx - inset * 2;
       const r = side * 0.22;
-      const speed = SPEED * dpr;
-      const wave = WAVE * dpr;
 
       // одиночные «загорания» диодов
       for (const s of sparks) {
         const age = now - s.t;
         if (age > SPARK_LIFE) continue;
         const e = Math.sin((age / SPARK_LIFE) * Math.PI); // 0→1→0
-        ctx!.fillStyle = `rgba(${LIME[0]},${LIME[1]},${LIME[2]},${e * 0.6})`;
+        ctx!.fillStyle = `rgba(${LIME[0]},${LIME[1]},${LIME[2]},${e * 0.5})`;
         roundRect(
           ctx!,
           s.gx * cellPx + inset,
@@ -205,47 +183,6 @@ export default function LedGridBurst({
         );
       }
       sparks = sparks.filter((s) => now - s.t <= SPARK_LIFE);
-
-      // радиальные взрывы — каждый кадр считаем энергию по ячейкам
-      if (bursts.length) {
-        for (let gy = 0; gy < rows; gy++) {
-          for (let gx = 0; gx < cols; gx++) {
-            const cxp = gx * cellPx + cellPx / 2;
-            const cyp = gy * cellPx + cellPx / 2;
-            let best = 0,
-              tone = 0;
-            for (let i = 0; i < bursts.length; i++) {
-              const b = bursts[i];
-              const front = (now - b.t) * speed;
-              const d = Math.hypot(cxp - b.x, cyp - b.y);
-              const band = Math.abs(d - front);
-              if (band < wave) {
-                const ring = 1 - band / wave;
-                const life = Math.max(0, 1 - front / maxR);
-                const e = ring * ring * life;
-                if (e > best) {
-                  best = e;
-                  tone = Math.min(1, front / maxR);
-                }
-              }
-            }
-            if (best <= 0.03) continue;
-            const cr = LIME[0] + (GOLD[0] - LIME[0]) * tone;
-            const cg = LIME[1] + (GOLD[1] - LIME[1]) * tone;
-            const cb = LIME[2] + (GOLD[2] - LIME[2]) * tone;
-            ctx!.fillStyle = `rgba(${cr | 0},${cg | 0},${cb | 0},${Math.min(1, best)})`;
-            roundRect(
-              ctx!,
-              gx * cellPx + inset,
-              gy * cellPx + inset,
-              side,
-              side,
-              r
-            );
-          }
-        }
-        bursts = bursts.filter((b) => (now - b.t) * speed < maxR + wave);
-      }
     }
 
     // ── портрет ──────────────────────────────────────────────────
@@ -262,16 +199,11 @@ export default function LedGridBurst({
     // ── жизненный цикл ───────────────────────────────────────────
     let raf = 0,
       running = false,
-      lastBurst = 0,
       lastSpark = 0,
       inView = true,
       visible = true;
 
     function loop(now: number) {
-      if (now - lastBurst > interval) {
-        addBurst();
-        lastBurst = now;
-      }
       if (now - lastSpark > 280 && Math.random() < 0.5) {
         addSpark();
         lastSpark = now;
@@ -283,7 +215,6 @@ export default function LedGridBurst({
     function start() {
       if (running || reduce) return;
       running = true;
-      lastBurst = performance.now();
       raf = requestAnimationFrame(loop);
     }
     function stop() {
@@ -296,11 +227,7 @@ export default function LedGridBurst({
     }
 
     layout();
-    if (reduce) {
-      paint(performance.now());
-    } else {
-      addBurst(cw * 0.5, ch * 0.42);
-    }
+    if (reduce) paint(performance.now());
 
     const ro = new ResizeObserver(() => {
       layout();
@@ -323,17 +250,6 @@ export default function LedGridBurst({
     };
     document.addEventListener("visibilitychange", onVis);
 
-    let lastPointer = 0;
-    function pointerBurst(e: PointerEvent) {
-      const t = performance.now();
-      if (t - lastPointer < 300) return;
-      lastPointer = t;
-      const rect = canvas!.getBoundingClientRect();
-      addBurst((e.clientX - rect.left) * dpr, (e.clientY - rect.top) * dpr);
-    }
-    parent?.addEventListener("pointerenter", pointerBurst);
-    parent?.addEventListener("pointermove", pointerBurst);
-
     evaluate();
 
     return () => {
@@ -341,11 +257,9 @@ export default function LedGridBurst({
       ro.disconnect();
       io.disconnect();
       document.removeEventListener("visibilitychange", onVis);
-      parent?.removeEventListener("pointerenter", pointerBurst);
-      parent?.removeEventListener("pointermove", pointerBurst);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [src, cell, gap, interval]);
+  }, [src, cell, gap]);
 
   return (
     <canvas
