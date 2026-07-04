@@ -3,6 +3,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import LedText from "@/components/LedText";
+import { useLocale } from "@/lib/useLocale";
+import { localizedHref } from "@/lib/i18n";
 
 /**
  * Единая кнопка квеста. Три уровня иерархии + общий вид, чтобы кнопки
@@ -52,6 +54,9 @@ export default function QuestButton({
   ariaLabel?: string;
   className?: string;
 }) {
+  // Внутренние ссылки локализуем сами: квесты ходят по /secret/*, и без
+  // префикса /en переходы выбрасывали из английской версии в русскую.
+  const locale = useLocale();
   const cls = `${base} ${styles[variant]} ${className}`;
   // primary/secondary — лейбл нашим LED-шрифтом в точках (currentColor); tertiary — обычным текстом.
   const led = variant !== "tertiary" && typeof children === "string";
@@ -78,7 +83,7 @@ export default function QuestButton({
       );
     }
     return (
-      <Link href={href} className={`${cls} no-underline`} data-ym-goal={ymGoal} aria-label={ariaLabel}>
+      <Link href={localizedHref(href, locale)} className={`${cls} no-underline`} data-ym-goal={ymGoal} aria-label={ariaLabel}>
         {inner}
       </Link>
     );

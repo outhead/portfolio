@@ -1033,25 +1033,36 @@ export default function NotFoundGame() {
           </div>
         )}
 
-        {/* D-pad для телефона */}
+        {/* Управление на телефоне: вертикаль слева, горизонталь справа —
+            зоны крупные, под большие пальцы обеих рук */}
         {started && !over && (
-          <div className="md:hidden mt-5 grid grid-cols-3 gap-2 w-[190px] select-none touch-none">
-            {([
-              ["↑", 0, -1, "col-start-2 row-start-1"],
-              ["←", -1, 0, "col-start-1 row-start-2"],
-              ["↓", 0, 1, "col-start-2 row-start-2"],
-              ["→", 1, 0, "col-start-3 row-start-2"],
-            ] as [string, number, number, string][]).map(([g, x, y, pos]) => (
-              <button
-                key={g}
-                type="button"
-                aria-label={g}
-                onPointerDown={(e) => { e.preventDefault(); dirRef.current(x, y); }}
-                className={`${pos} h-[58px] rounded-xl bg-white/[0.07] active:bg-[#A6FF00]/25 text-[#A6FF00]/80 text-2xl leading-none flex items-center justify-center transition-colors`}
-              >
-                {g}
-              </button>
-            ))}
+          <div className="md:hidden mt-5 w-full max-w-[480px] flex items-stretch gap-3 select-none touch-none">
+            <div className="flex-1 flex flex-col gap-2">
+              {([["↑", 0, -1], ["↓", 0, 1]] as [string, number, number][]).map(([g, x, y]) => (
+                <button
+                  key={g}
+                  type="button"
+                  aria-label={g}
+                  onPointerDown={(e) => { e.preventDefault(); dirRef.current(x, y); }}
+                  className="h-[72px] rounded-xl bg-white/[0.07] active:bg-[#A6FF00]/25 text-[#A6FF00]/80 text-3xl leading-none flex items-center justify-center transition-colors touch-none"
+                >
+                  {g}
+                </button>
+              ))}
+            </div>
+            <div className="flex-1 flex gap-2">
+              {([["←", -1, 0], ["→", 1, 0]] as [string, number, number][]).map(([g, x, y]) => (
+                <button
+                  key={g}
+                  type="button"
+                  aria-label={g}
+                  onPointerDown={(e) => { e.preventDefault(); dirRef.current(x, y); }}
+                  className="flex-1 h-[152px] rounded-xl bg-white/[0.07] active:bg-[#A6FF00]/25 text-[#A6FF00]/80 text-3xl leading-none flex items-center justify-center transition-colors touch-none"
+                >
+                  {g}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 

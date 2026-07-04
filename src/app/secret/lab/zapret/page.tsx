@@ -6,7 +6,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useLocale } from "@/lib/useLocale";
-import { pick } from "@/lib/i18n";
+import { pick, localizedHref } from "@/lib/i18n";
 
 /**
  * Прототип «Не нажимай» (There Is No Game). Очевидный ход («Выйти») — обманка.
@@ -95,7 +95,7 @@ export default function ZapretProto() {
             <LedLines text={pick("Готово", "Done", locale)} center maxChars={20} lineClass="h-[26px] md:h-[38px]" />
           </h1>
           <p className="text-sm text-white/60 mb-8 max-w-xs">{pick("Ты не послушался — в этом и был фокус.", "You didn't listen — that was the whole trick.", locale)}</p>
-          <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
+          <Link href={localizedHref("/", locale)} className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
             <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2.2} />
             <span className="sr-only">{pick("На главную", "Home", locale)}</span><LedText text={pick("На главную", "Home", locale)} className="h-[10px] w-auto" />
           </Link>

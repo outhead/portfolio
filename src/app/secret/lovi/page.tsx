@@ -7,7 +7,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import confetti from "canvas-confetti";
 import { useLocale } from "@/lib/useLocale";
-import { pick } from "@/lib/i18n";
+import { pick, localizedHref } from "@/lib/i18n";
 
 /**
  * Загадка №3 — «Найди выход» (за краем экрана).
@@ -443,7 +443,7 @@ export default function SecretLoviPage() {
               </div>
             ) : !submitted ? (<p className="text-sm text-white/40 mb-8">{pick("Разгадай первым.", "Be the first to solve it.", locale)}</p>) : null}
 
-            <Link href="/" data-ym-goal="quest3_solved"
+            <Link href={localizedHref("/", locale)} data-ym-goal="quest3_solved"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#A6FF00]/50 bg-[#A6FF00]/10 text-[#A6FF00] hover:bg-[#A6FF00] hover:text-black transition-colors no-underline">
               <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2.2} />
               <span className="sr-only">{pick("На главную", "Home", locale)}</span><LedText text={pick("На главную", "Home", locale)} className="h-[10px] w-auto" />

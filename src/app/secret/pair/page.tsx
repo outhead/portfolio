@@ -10,7 +10,7 @@ import QuestBackground from "@/components/QuestBackground";
 import QuestButton from "@/components/QuestButton";
 import PixelArt, { REACTION_ART } from "@/components/PixelArt";
 import { useLocale } from "@/lib/useLocale";
-import { pick } from "@/lib/i18n";
+import { pick, localizedHref } from "@/lib/i18n";
 
 /**
  * Кооп-загадка. Двое (можно и с одного устройства/сети — без проверки IP).
@@ -362,7 +362,7 @@ export default function PairPage() {
           <>
             <h1 className="mb-4 flex justify-center"><span className="sr-only">{pick("Сбой связи", "Connection lost", locale)}</span><LedText text={pick("Сбой связи", "Connection lost", locale)} scale={2} dot={1.45} className="h-[20px] md:h-[26px] w-auto" /></h1>
             <p className="text-white/55 text-sm mb-8 max-w-xs">{pick("Не удалось открыть сессию. Попробуй обновить страницу.", "Could not open the session. Try refreshing the page.", locale)}</p>
-            <Link href="/secret/lab/kod" className="text-[14px] text-white/40 hover:text-white/70 no-underline">{pick("← К терминалу", "← Back to terminal", locale)}</Link>
+            <Link href={localizedHref("/secret/lab/kod", locale)} className="text-[14px] text-white/40 hover:text-white/70 no-underline">{pick("← К терминалу", "← Back to terminal", locale)}</Link>
           </>
         ) : null}
 
