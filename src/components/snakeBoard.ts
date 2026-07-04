@@ -30,6 +30,26 @@ export async function loadSnakeBoard(limit = 10): Promise<SnakeEntry[]> {
   }
 }
 
+// Место по счёту: 1 + сколько результатов строго выше. HEAD + count=exact —
+// данные не гоняем, PostgREST отдаёт только Content-Range: */N.
+export async function snakePlace(score: number): Promise<number | null> {
+  try {
+    const res = await fetch(
+      `${SB_URL}/rest/v1/${SB_TABLE}?select=name&score=gt.${Math.round(score)}`,
+      {
+        method: "HEAD",
+        headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, Prefer: "count=exact" },
+        cache: "no-store",
+      }
+    );
+    const range = res.headers.get("content-range"); // "*/N" или "0-9/N"
+    const total = range ? parseInt(range.split("/")[1], 10) : NaN;
+    return Number.isFinite(total) ? total + 1 : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function saveSnakeScore(
   name: string,
   score: number

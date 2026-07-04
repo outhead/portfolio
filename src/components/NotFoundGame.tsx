@@ -5,7 +5,7 @@ import Link from "next/link";
 import LedText from "@/components/LedText";
 import { layoutLedText } from "@/components/ledFont";
 import { flowAngle } from "@/app/secret/pong/field";
-import { loadSnakeBoard, saveSnakeScore, type SnakeEntry } from "@/components/snakeBoard";
+import { loadSnakeBoard, saveSnakeScore, snakePlace, type SnakeEntry } from "@/components/snakeBoard";
 import { useLocale } from "@/lib/useLocale";
 import { pick } from "@/lib/i18n";
 
@@ -92,6 +92,7 @@ export default function NotFoundGame() {
   const [board, setBoard] = useState<SnakeEntry[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [place, setPlace] = useState<number | null>(null);
   const [rank, setRank] = useState("");
   const [hint, setHint] = useState(false);
   const restartRef = useRef<() => void>(() => {});
@@ -106,8 +107,17 @@ export default function NotFoundGame() {
   }, []);
 
   useEffect(() => {
-    if (over) loadSnakeBoard().then(setBoard);
-    else setSubmitted(false);
+    if (over) {
+      loadSnakeBoard().then(setBoard);
+      // место по текущему счёту — ещё до сабмита («ты был бы N-м»)
+      if (score > 0) snakePlace(score).then(setPlace);
+      else setPlace(null);
+    } else {
+      setSubmitted(false);
+      setPlace(null);
+    }
+    // score меняется только вместе с over — пересчёт по нему не нужен
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [over]);
 
   const submitScore = async () => {
@@ -977,16 +987,38 @@ export default function NotFoundGame() {
                 )}
                 <ol className="space-y-1.5 text-left">
                   {board.length === 0 && <li className="text-white/30 text-[13px] text-center py-1">{pick("Пока пусто — будь первым", "Empty for now — be the first", locale)}</li>}
-                  {board.slice(0, 7).map((e, i) => (
-                    <li key={`${e.name}-${e.at}-${i}`} className="flex items-baseline gap-3 text-[13px] tabular-nums">
-                      <span className="w-5 text-right text-white/35">{i + 1}</span>
-                      <span className="flex-1 min-w-0 truncate text-white/75">
-                        {e.name}
-                        <span className="ml-2 text-[11px] text-white/30">{rankFor(e.score, en)}</span>
-                      </span>
-                      <span className="text-[#A6FF00]/85 font-medium">{e.score}</span>
-                    </li>
-                  ))}
+                  {(() => {
+                    // своя строка в топе — подсвечиваем первую совпавшую
+                    const meName = (name.trim() || "Аноним");
+                    const myIdx = submitted ? board.findIndex((e) => e.name === meName && e.score === score) : -1;
+                    return board.slice(0, 10).map((e, i) => {
+                      const mine = i === myIdx && myIdx < 10;
+                      return (
+                        <li key={`${e.name}-${e.at}-${i}`} className={`flex items-baseline gap-3 text-[13px] tabular-nums ${mine ? "rounded bg-[#A6FF00]/[0.08] -mx-1.5 px-1.5" : ""}`}>
+                          <span className={`w-5 text-right ${mine ? "text-[#A6FF00]/70" : "text-white/35"}`}>{i + 1}</span>
+                          <span className={`flex-1 min-w-0 truncate ${mine ? "text-white" : "text-white/75"}`}>
+                            {e.name}
+                            <span className="ml-2 text-[11px] text-white/30">{rankFor(e.score, en)}</span>
+                          </span>
+                          <span className="text-[#A6FF00]/85 font-medium">{e.score}</span>
+                        </li>
+                      );
+                    });
+                  })()}
+                  {/* ты вне топа: разделитель + своё место (появляется и до сабмита) */}
+                  {score > 0 && place != null && place > 10 && (
+                    <>
+                      <li aria-hidden className="text-white/20 text-[11px] text-center leading-none select-none">···</li>
+                      <li className="flex items-baseline gap-3 text-[13px] tabular-nums rounded bg-[#A6FF00]/[0.08] -mx-1.5 px-1.5">
+                        <span className="w-5 text-right text-[#A6FF00]/70">{place}</span>
+                        <span className="flex-1 min-w-0 truncate text-white">
+                          {submitted ? (name.trim() || "Аноним") : pick("ТЫ", "YOU", locale)}
+                          <span className="ml-2 text-[11px] text-white/30">{rankFor(score, en)}</span>
+                        </span>
+                        <span className="text-[#A6FF00]/85 font-medium">{score}</span>
+                      </li>
+                    </>
+                  )}
                 </ol>
               </div>
             </div>
