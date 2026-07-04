@@ -98,6 +98,7 @@ export default function NotFoundGame() {
   const restartRef = useRef<() => void>(() => {});
   const introRef = useRef<() => void>(() => {});
   const dirRef = useRef<(x: number, y: number) => void>(() => {});
+  const turnRef = useRef<(s: 1 | -1) => void>(() => {});
 
   useEffect(() => {
     try {
@@ -237,6 +238,9 @@ export default function NotFoundGame() {
     let dir: Pt = { x: 1, y: 0 };
     let nextDir: Pt = { x: 1, y: 0 };
     let foods: Food[] = [];
+    const turnQ: (1 | -1)[] = []; // очередь относительных поворотов
+    // поворот вектора: экранный y вниз → по часовой (x,y)→(-y,x)
+    const rot = (d: Pt, s: 1 | -1): Pt => (s === 1 ? { x: -d.y, y: d.x } : { x: d.y, y: -d.x });
     let foodAcc = 0; // таймер автоподсева еды
     let grow = 0;
     let acc = 0;
@@ -523,7 +527,11 @@ export default function NotFoundGame() {
       }
       const hd = { x: Math.sign(snake[0].x - snake[1].x), y: Math.sign(snake[0].y - snake[1].y) };
       dir = { x: hd.x || 1, y: hd.y };
-      nextDir = px === -dir.x && py === -dir.y ? { ...dir } : { x: px, y: py };
+      // (0,0) — «продолжай как ехало кольцо» (старт с кнопки поворота)
+      nextDir =
+        (px === 0 && py === 0) || (px === -dir.x && py === -dir.y)
+          ? { ...dir }
+          : { x: px, y: py };
       begin();
     };
 
@@ -544,6 +552,7 @@ export default function NotFoundGame() {
       sc = 0;
       combo = 0;
       lastEatAt = -1e9;
+      turnQ.length = 0;
       ghost.fill(0);
       fx.length = 0;
       waves.length = 0;
@@ -597,7 +606,14 @@ export default function NotFoundGame() {
     };
 
     const stepGame = () => {
-      dir = nextDir;
+      // буфер относительных поворотов: по одному за тик — два быстрых тапа
+      // дают поворот на 180° за два шага, без мгновенного разворота в себя
+      if (turnQ.length) {
+        dir = rot(dir, turnQ.shift()!);
+        nextDir = { ...dir };
+      } else {
+        dir = nextDir;
+      }
       const h = snake[0];
       const nx = h.x + dir.x, ny = h.y + dir.y;
       if (nx < 0 || ny < 0 || nx >= cols || ny >= rows) return die();
@@ -634,6 +650,14 @@ export default function NotFoundGame() {
       nextDir = { x, y };
     };
     dirRef.current = setDir;
+
+    // относительный поворот (мобильные кнопки): по часовой (+1) / против (-1)
+    const turn = (s: 1 | -1) => {
+      if (mode === "intro") { startFromRing(0, 0); turnQ.push(s); return; }
+      if (mode === "dead") return;
+      if (turnQ.length < 2) turnQ.push(s);
+    };
+    turnRef.current = turn;
 
     let raf = 0, stopped = false, last: number | null = null;
 
@@ -1033,36 +1057,21 @@ export default function NotFoundGame() {
           </div>
         )}
 
-        {/* Управление на телефоне: вертикаль слева, горизонталь справа —
-            зоны крупные, под большие пальцы обеих рук */}
+        {/* Управление на телефоне: два относительных поворота — змейка
+            крутится влево/вправо от текущего курса, зоны на всю ширину */}
         {started && !over && (
           <div className="md:hidden mt-5 w-full max-w-[480px] flex items-stretch gap-3 select-none touch-none">
-            <div className="flex-1 flex flex-col gap-2">
-              {([["↑", 0, -1], ["↓", 0, 1]] as [string, number, number][]).map(([g, x, y]) => (
-                <button
-                  key={g}
-                  type="button"
-                  aria-label={g}
-                  onPointerDown={(e) => { e.preventDefault(); dirRef.current(x, y); }}
-                  className="h-[72px] rounded-xl bg-white/[0.07] active:bg-[#A6FF00]/25 text-[#A6FF00]/80 text-3xl leading-none flex items-center justify-center transition-colors touch-none"
-                >
-                  {g}
-                </button>
-              ))}
-            </div>
-            <div className="flex-1 flex gap-2">
-              {([["←", -1, 0], ["→", 1, 0]] as [string, number, number][]).map(([g, x, y]) => (
-                <button
-                  key={g}
-                  type="button"
-                  aria-label={g}
-                  onPointerDown={(e) => { e.preventDefault(); dirRef.current(x, y); }}
-                  className="flex-1 h-[152px] rounded-xl bg-white/[0.07] active:bg-[#A6FF00]/25 text-[#A6FF00]/80 text-3xl leading-none flex items-center justify-center transition-colors touch-none"
-                >
-                  {g}
-                </button>
-              ))}
-            </div>
+            {([["↺", -1], ["↻", 1]] as [string, 1 | -1][]).map(([g, s]) => (
+              <button
+                key={g}
+                type="button"
+                aria-label={s === 1 ? pick("Повернуть направо", "Turn right", locale) : pick("Повернуть налево", "Turn left", locale)}
+                onPointerDown={(e) => { e.preventDefault(); turnRef.current(s); }}
+                className="flex-1 h-[96px] rounded-xl bg-white/[0.07] active:bg-[#A6FF00]/25 text-[#A6FF00]/80 text-4xl leading-none flex items-center justify-center transition-colors touch-none"
+              >
+                {g}
+              </button>
+            ))}
           </div>
         )}
 
