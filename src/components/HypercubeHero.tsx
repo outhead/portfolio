@@ -70,8 +70,8 @@ vec3 starfield(vec3 dir){
   float h = hash21(c);
   if(h < 0.93) return vec3(0.0);
   vec2 f = fract(sp * 9.0) - 0.5;
-  float s = smoothstep(0.13, 0.0, length(f)) * (0.35 + 0.55 * fract(h * 17.3));
-  s *= 0.55 + 0.45 * sin(uTime * 1.4 + h * 40.0);
+  float s = smoothstep(0.13, 0.0, length(f)) * (0.5 + 0.5 * fract(h * 17.3));
+  s *= 0.78 + 0.22 * sin(uTime * 0.9 + h * 40.0); // мягкое мерцание, не гаснет в ноль
   return vec3(0.72, 0.75, 0.85) * s * 0.6;
 }
 
