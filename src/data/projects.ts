@@ -76,6 +76,15 @@ export interface Project {
    */
   heroFire?: boolean;
   /**
+   * Если задан — на фоне hero рендерится стеклянный SDF-куб (WebGL2 raymarch, без
+   * библиотек): куб на том же движке, что живой гиперкуб. В покое вращается, сквозь
+   * стекло тускло светится внутренняя решётка; по ховеру камера влетает внутрь, и
+   * кадр заполняется светящимися гранями. color — цвет свечения (по умолчанию золото).
+   * Один raymarch-пасс, DPR≤1.5, FPS-кап, пауза по IntersectionObserver, на
+   * prefers-reduced-motion / мобиле — статичный кадр.
+   */
+  heroHypercube?: { color?: string };
+  /**
    * Если задан — на странице кейса под results-баром рендерится заметная
    * лаймовая CTA-кнопка «Попробовать вживую» (для проектов с живым демо).
    */
@@ -974,7 +983,7 @@ export const projects: Project[] = [
   },
   {
     slug: "webgl-experiments",
-    title: "Стекло без меша",
+    title: "Гиперкуб",
     company: "Pet Project",
     role: "Creative Developer",
     period: "2025 — настоящее время",
@@ -987,6 +996,7 @@ export const projects: Project[] = [
     type: "experiment",
     coverColor: "#0a0a0a",
     coverImage: "/videos/webgl-cover.png",
+    heroHypercube: { color: "#d49c4d" },
     metric: "LIVE",
     metricLabel: "демо · MIT",
     tryUrl: "https://outhead.github.io/hypercube/",

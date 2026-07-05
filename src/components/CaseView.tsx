@@ -14,6 +14,7 @@ import LedShowcase from "@/components/LedShowcase";
 import ParticleStudio from "@/components/ParticleStudio";
 import ParticlePortrait from "@/components/ParticlePortrait";
 import PixelCube3D from "@/components/PixelCube3D";
+import HypercubeHero from "@/components/HypercubeHero";
 import type { Project } from "@/data/projects";
 import type { Locale } from "@/lib/i18n";
 import { localizedHref } from "@/lib/i18n";
@@ -50,6 +51,7 @@ export default function CaseView({
 }) {
   const t = getDict(locale).case;
   const heroCube = !!(project.cubeColor && project.cubeLogo && !project.coverParticles);
+  const heroHypercube = !!project.heroHypercube;
 
   return (
     <>
@@ -93,7 +95,15 @@ export default function CaseView({
             />
           </div>
         )}
-        {!heroCube && !project.coverParticles && (project.heroImage || project.coverImage || project.coverVideo) && (
+        {heroHypercube && (
+          <div className="absolute inset-0 z-0 pointer-events-none">
+            <HypercubeHero
+              color={project.heroHypercube!.color}
+              className="absolute inset-0 w-full h-full pointer-events-auto"
+            />
+          </div>
+        )}
+        {!heroCube && !heroHypercube && !project.coverParticles && (project.heroImage || project.coverImage || project.coverVideo) && (
           <div className="absolute inset-0 z-0">
             {project.heroImage ? (
               <Image

@@ -8,6 +8,7 @@ import { Project } from "@/data/projects";
 import { CardCoverVideo } from "@/components/CoverVideo";
 import PixelCubePile from "@/components/PixelCubePile";
 import ParticlePortrait from "@/components/ParticlePortrait";
+import HypercubeHero from "@/components/HypercubeHero";
 import { layoutLedText, LED_ROWS } from "@/components/ledFont";
 import { useLocale } from "@/lib/useLocale";
 import { localizedHref } from "@/lib/i18n";
@@ -421,6 +422,14 @@ export default function ProjectCard({
       pitch={5.2}
       maxCubes={featured || wide ? 45 : 32}
     />
+  ) : project.heroHypercube ? (
+    <>
+      {CoverTint}
+      <HypercubeHero
+        color={project.heroHypercube.color}
+        className="absolute inset-0 z-[1]"
+      />
+    </>
   ) : (
     <>
       {CoverTint}

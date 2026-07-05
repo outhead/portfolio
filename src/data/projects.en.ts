@@ -728,7 +728,7 @@ export const projectsEn: Record<string, ProjectEn> = {
     ],
   },
   "webgl-experiments": {
-    title: "Glass without a mesh",
+    title: "Hypercube",
     company: "Pet Project",
     role: "Creative Developer",
     period: "2025 — present",
