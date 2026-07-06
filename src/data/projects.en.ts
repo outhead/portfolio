@@ -769,6 +769,13 @@ export const projectsEn: Record<string, ProjectEn> = {
         ],
       },
       {
+        title: "The Platonic solids",
+        context:
+          "Four of the six shapes in the scene are Platonic solids: convex polyhedra where every face is the same regular polygon and the same number of edges meets at every vertex. There are exactly five of them; the Greeks knew them all. In the engine they aren't separate models but one SDF formula with a different set of cutting planes.",
+        approach:
+          "**Cube.** Six squares, eight vertices. The only solid with square faces; Plato tied it to earth, for its stability.\n\n**Octahedron.** Eight triangles, six vertices. Dual to the cube: the face centres of one give the vertices of the other. The element of air.\n\n**Icosahedron.** Twenty triangles, twelve vertices. The closest of the five to a sphere, which is why graphics use it to approximate one. The element of water.\n\n**Dodecahedron.** Twelve pentagons, twenty vertices. Dual to the icosahedron. Plato gave it not to an element but to the arrangement of the cosmos.",
+      },
+      {
         title: "Builder, Learn, and export",
         context:
           "Just showing a finished picture wasn't enough for me — I wanted anyone to be able to take it apart and build their own.",
