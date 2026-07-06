@@ -279,9 +279,11 @@ export default function HypercubeHero({
       typeof window !== "undefined" &&
       window.matchMedia &&
       window.matchMedia("(pointer: coarse)").matches;
-    const staticMode = reduce || coarse;
+    // Только prefers-reduced-motion — полностью статичный кадр. Мобилка (coarse)
+    // вращается как обычно, просто дешевле: меньше скейл и FPS-кап 30.
+    const staticMode = reduce;
 
-    const SCALE = staticMode ? 0.55 : 0.62;
+    const SCALE = reduce ? 0.55 : coarse ? 0.5 : 0.62;
     function resize() {
       const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
       const rect = cv.getBoundingClientRect();
@@ -300,9 +302,14 @@ export default function HypercubeHero({
 
     let enter = 0;
     let target = 0;
-    if (!staticMode) {
-      cv.addEventListener("pointerenter", () => (target = 1));
-      cv.addEventListener("pointerleave", () => (target = 0));
+    if (!reduce) {
+      if (coarse) {
+        // тач: тап переключает заход камеры внутрь (ховера нет)
+        cv.addEventListener("pointerdown", () => (target = target > 0.5 ? 0 : 1));
+      } else {
+        cv.addEventListener("pointerenter", () => (target = 1));
+        cv.addEventListener("pointerleave", () => (target = 0));
+      }
     }
 
     let visible = true;
@@ -315,7 +322,7 @@ export default function HypercubeHero({
     );
     io.observe(cv);
 
-    const FRAME = 1000 / 40;
+    const FRAME = coarse ? 1000 / 30 : 1000 / 40;
     let last = 0;
     let raf = 0;
     const start = performance.now();
