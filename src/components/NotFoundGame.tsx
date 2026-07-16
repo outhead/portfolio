@@ -151,21 +151,24 @@ export default function NotFoundGame() {
       }
     const led = (text: string, cy: number, pitch: number, color: string) => {
       const { dots, cols, rows } = layoutLedText(text, 1);
-      const w = cols * pitch;
+      // длинные строки (ранг, домен) ужимаем под ширину холста с полями
+      const p = Math.min(pitch, (S - 144) / cols);
+      const w = cols * p;
       const sx = S / 2 - w / 2;
-      const sy = cy - (rows * pitch) / 2;
+      const sy = cy - (rows * p) / 2;
       c.fillStyle = color;
       for (const d of dots) {
         if (!d.lit) continue;
         c.beginPath();
-        c.arc(sx + d.col * pitch + pitch / 2, sy + d.row * pitch + pitch / 2, pitch * 0.42, 0, Math.PI * 2);
+        c.arc(sx + d.col * p + p / 2, sy + d.row * p + p / 2, p * 0.42, 0, Math.PI * 2);
         c.fill();
       }
     };
     led("404", 320, 30, ACCENT);
     led(rankFor(score, en), 500, 13, "rgba(255,255,255,0.85)");
     led(pick(`СЧЁТ ${score}`, `SCORE ${score}`, locale), 620, 17, ACCENT);
-    if (best > 0) led(pick(`РЕКОРД ${best}`, `BEST ${best}`, locale), 712, 11, "rgba(201,166,107,0.85)");
+    if (best > score) led(pick(`РЕКОРД ${best}`, `BEST ${best}`, locale), 712, 11, "rgba(201,166,107,0.85)");
+    else if (score > 0) led(pick("НОВЫЙ РЕКОРД", "NEW BEST", locale), 712, 11, "rgba(201,166,107,0.85)");
     c.fillStyle = ACCENT;
     for (let i = 0; i < 11; i++) {
       c.globalAlpha = 0.25 + i * 0.07;
@@ -184,22 +187,34 @@ export default function NotFoundGame() {
     const cv = buildShareCanvas();
     const host = typeof location !== "undefined" ? location.host : "";
     const text = pick(
-      `Змейка на 404: счёт ${score}, ранг «${rankFor(score)}»${best > 0 ? `, рекорд ${best}` : ""}${host ? ` — ${host}` : ""}`,
-      `404 snake: score ${score}, rank "${rankFor(score, true)}"${best > 0 ? `, best ${best}` : ""}${host ? ` — ${host}` : ""}`,
+      `Змейка на 404: счёт ${score}, ранг «${rankFor(score)}»${best > score ? `, рекорд ${best}` : score > 0 ? ", новый рекорд" : ""}${host ? ` — ${host}` : ""}`,
+      `404 snake: score ${score}, rank "${rankFor(score, true)}"${best > score ? `, best ${best}` : score > 0 ? ", new best" : ""}${host ? ` — ${host}` : ""}`,
       locale,
     );
     const blob: Blob | null = await new Promise((res) => cv.toBlob((b) => res(b), "image/png"));
     if (!blob) return;
     const file = new File([blob], "404-snake.png", { type: "image/png" });
     const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
-    try {
-      if (nav.canShare && nav.canShare({ files: [file] })) {
+    // нативный share — только на тач-устройствах: на десктопе шит-лист macOS бесполезен
+    const coarse = window.matchMedia?.("(pointer: coarse)").matches ?? false;
+    if (coarse && nav.canShare && nav.canShare({ files: [file] })) {
+      try {
         await nav.share({ files: [file], text, title: pick("404 — змейка", "404 — snake", locale) });
         return;
+      } catch (e) {
+        if ((e as DOMException)?.name === "AbortError") return; // пользователь передумал
+        // иначе падаем в фолбэк ниже
       }
-    } catch {
-      return;
     }
+    // десктоп: картинка + текст в буфер, фолбэк — скачать PNG
+    try {
+      if (typeof ClipboardItem === "undefined") throw new Error("no ClipboardItem");
+      await navigator.clipboard.write([
+        new ClipboardItem({ "image/png": blob, "text/plain": new Blob([text], { type: "text/plain" }) }),
+      ]);
+      setShareMsg(pick("Картинка в буфере · вставь в чат", "Image copied · paste it anywhere", locale));
+      return;
+    } catch {}
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -985,7 +1000,7 @@ export default function NotFoundGame() {
                 <LedText text={rankFor(score, en)} className="h-[13px] md:h-[17px] w-auto mx-auto" />
               </div>
               <p className="text-white/40">
-                <LedText text={pick(`СЧЁТ ${score}${best > 0 ? `   РЕКОРД ${best}` : ""}`, `SCORE ${score}${best > 0 ? `   BEST ${best}` : ""}`, locale)} className="h-[9px] w-auto mx-auto" />
+                <LedText text={pick(`СЧЁТ ${score}${best > score ? `   РЕКОРД ${best}` : score > 0 ? "   НОВЫЙ РЕКОРД" : ""}`, `SCORE ${score}${best > score ? `   BEST ${best}` : score > 0 ? "   NEW BEST" : ""}`, locale)} className="h-[9px] w-auto mx-auto" />
               </p>
               <div className="flex items-center gap-3">
                 <button type="button" onClick={() => restartRef.current()} className="inline-flex items-center rounded-lg px-5 py-2.5 bg-[#A6FF00] text-black hover:bg-[#B8FF33] transition-colors">
